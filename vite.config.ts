@@ -1,5 +1,6 @@
 import { fileURLToPath } from 'node:url'
 import laravel from 'laravel-vite-plugin'
+import VueI18nPlugin from '@intlify/unplugin-vue-i18n/vite'
 import vue from '@vitejs/plugin-vue'
 import vueJsx from '@vitejs/plugin-vue-jsx'
 import AutoImport from 'unplugin-auto-import/vite'
@@ -75,6 +76,13 @@ export default defineConfig({
 
       // ℹ️ Disabled to avoid confusion & accidental usage
       ignore: ['useCookies', 'useStorage'],
+    }), // Docs: https://github.com/intlify/bundle-tools/tree/main/packages/unplugin-vue-i18n#intlifyunplugin-vue-i18n
+    VueI18nPlugin({
+      runtimeOnly: true,
+      compositionOnly: true,
+      include: [
+        fileURLToPath(new URL('./resources/ts/plugins/i18n/locales/**', import.meta.url)),
+      ],
     }),
     svgLoader(),
   ],
