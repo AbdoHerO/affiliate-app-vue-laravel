@@ -1,9 +1,58 @@
 <script setup lang="ts">
+import { useAuth } from '@/composables/useAuth'
+import { useRouter } from 'vue-router'
+
 const { t, locale } = useI18n()
+const { user, isAuthenticated, hasRole } = useAuth()
+const router = useRouter()
+
+// Redirect authenticated users to their appropriate dashboard
+onMounted(() => {
+  if (isAuthenticated.value) {
+    if (hasRole('admin')) {
+      router.push({ name: 'admin-dashboard' })
+    } else if (hasRole('affiliate')) {
+      router.push({ name: 'affiliate-dashboard' })
+    }
+  }
+})
 </script>
 
 <template>
   <div>
+    <!-- Authentication Status Card -->
+    <VCard
+      class="mb-6"
+      title="🔐 Authentication Status"
+    >
+      <VCardText>
+        <div class="mb-4">
+          <strong>Authenticated:</strong>
+          <VChip
+            :color="isAuthenticated ? 'success' : 'error'"
+            size="small"
+            class="ml-2"
+          >
+            {{ isAuthenticated ? 'Yes' : 'No' }}
+          </VChip>
+        </div>
+        <div v-if="isAuthenticated" class="mb-4">
+          <strong>User:</strong> {{ user?.name }}<br>
+          <strong>Email:</strong> {{ user?.email }}<br>
+          <strong>Roles:</strong> {{ user?.roles.join(', ') }}<br>
+          <strong>Permissions:</strong> {{ user?.permissions.join(', ') }}
+        </div>
+        <div v-else class="mb-4">
+          <VBtn
+            color="primary"
+            to="/login"
+          >
+            Login to Test Authentication
+          </VBtn>
+        </div>
+      </VCardText>
+    </VCard>
+
     <!-- i18n Test Card -->
     <VCard
       class="mb-6"

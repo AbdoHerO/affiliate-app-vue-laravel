@@ -1,5 +1,12 @@
 <script setup lang="ts">
 import avatar1 from '@images/avatars/avatar-1.png'
+import { useAuth } from '@/composables/useAuth'
+
+const { user, isAuthenticated, logout } = useAuth()
+
+const handleLogout = async () => {
+  await logout()
+}
 </script>
 
 <template>
@@ -48,9 +55,9 @@ import avatar1 from '@images/avatars/avatar-1.png'
             </template>
 
             <VListItemTitle class="font-weight-semibold">
-              John Doe
+              {{ user?.name || 'Guest' }}
             </VListItemTitle>
-            <VListItemSubtitle>Admin</VListItemSubtitle>
+            <VListItemSubtitle>{{ user?.roles.join(', ') || 'No Role' }}</VListItemSubtitle>
           </VListItem>
 
           <VDivider class="my-2" />
@@ -111,7 +118,10 @@ import avatar1 from '@images/avatars/avatar-1.png'
           <VDivider class="my-2" />
 
           <!-- 👉 Logout -->
-          <VListItem to="/login">
+          <VListItem
+            v-if="isAuthenticated"
+            @click="handleLogout"
+          >
             <template #prepend>
               <VIcon
                 class="me-2"
@@ -121,6 +131,22 @@ import avatar1 from '@images/avatars/avatar-1.png'
             </template>
 
             <VListItemTitle>Logout</VListItemTitle>
+          </VListItem>
+
+          <!-- 👉 Login -->
+          <VListItem
+            v-else
+            to="/login"
+          >
+            <template #prepend>
+              <VIcon
+                class="me-2"
+                icon="tabler-login"
+                size="22"
+              />
+            </template>
+
+            <VListItemTitle>Login</VListItemTitle>
           </VListItem>
         </VList>
       </VMenu>

@@ -110,4 +110,9 @@ export default defineConfig({
       './resources/ts/**/*.vue',
     ],
   },
+  server: {
+    hmr: {
+      host: 'localhost',
+    },
+  },
 })

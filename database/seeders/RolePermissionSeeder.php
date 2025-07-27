@@ -1,0 +1,86 @@
+<?php
+
+namespace Database\Seeders;
+
+use Illuminate\Database\Seeder;
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\Models\Permission;
+use App\Models\User;
+use Illuminate\Support\Facades\Hash;
+
+class RolePermissionSeeder extends Seeder
+{
+    /**
+     * Run the database seeds.
+     */
+    public function run(): void
+    {
+        // Reset cached roles and permissions
+        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+
+        // Create permissions for affiliate platform
+        $permissions = [
+            // Admin permissions
+            'manage users',
+            'manage affiliates',
+            'manage products',
+            'manage orders',
+            'manage payments',
+            'view reports',
+            'manage settings',
+
+            // Affiliate permissions
+            'create orders',
+            'view own orders',
+            'view own commissions',
+            'view marketing materials',
+            'update profile',
+        ];
+
+        foreach ($permissions as $permission) {
+            Permission::create(['name' => $permission]);
+        }
+
+        // Create roles
+        $adminRole = Role::create(['name' => 'admin']);
+        $affiliateRole = Role::create(['name' => 'affiliate']);
+
+        // Assign permissions to admin role (admin has all permissions)
+        $adminRole->givePermissionTo(Permission::all());
+
+        // Assign specific permissions to affiliate role
+        $affiliateRole->givePermissionTo([
+            'create orders',
+            'view own orders',
+            'view own commissions',
+            'view marketing materials',
+            'update profile',
+        ]);
+
+        // Create default admin user
+        $adminUser = User::create([
+            'name' => 'Admin User',
+            'email' => 'admin@cod.test',
+            'password' => Hash::make('password'),
+            'email_verified_at' => now(),
+        ]);
+
+        // Assign admin role to the user
+        $adminUser->assignRole('admin');
+
+        // Create a sample affiliate user for testing
+        $affiliateUser = User::create([
+            'name' => 'Test Affiliate',
+            'email' => 'affiliate@cod.test',
+            'password' => Hash::make('password'),
+            'email_verified_at' => now(),
+        ]);
+
+        // Assign affiliate role to the user
+        $affiliateUser->assignRole('affiliate');
+
+        $this->command->info('Roles, permissions, and users created successfully!');
+        $this->command->info('Admin user: admin@cod.test / password');
+        $this->command->info('Affiliate user: affiliate@cod.test / password');
+    }
+}

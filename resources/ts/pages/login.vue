@@ -9,6 +9,7 @@ import authV2MaskDark from '@images/pages/misc-mask-dark.png'
 import authV2MaskLight from '@images/pages/misc-mask-light.png'
 import { VNodeRenderer } from '@layouts/components/VNodeRenderer'
 import { themeConfig } from '@themeConfig'
+import { useAuth } from '@/composables/useAuth'
 
 definePage({
   meta: {
@@ -17,13 +18,29 @@ definePage({
   },
 })
 
+const { login, isLoading, error } = useAuth()
+
 const form = ref({
-  email: '',
-  password: '',
+  email: 'admin@cod.test', // Pre-fill for testing
+  password: 'password',    // Pre-fill for testing
   remember: false,
 })
 
 const isPasswordVisible = ref(false)
+const loginError = ref('')
+
+const handleLogin = async () => {
+  loginError.value = ''
+
+  try {
+    await login({
+      email: form.value.email,
+      password: form.value.password,
+    })
+  } catch (err) {
+    loginError.value = err instanceof Error ? err.message : 'Login failed'
+  }
+}
 
 const authThemeImg = useGenerateImageVariant(
   authV2LoginIllustrationLight,
@@ -94,7 +111,31 @@ const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
           </p>
         </VCardText>
         <VCardText>
-          <VForm @submit.prevent="() => {}">
+          <!-- Error Alert -->
+          <VAlert
+            v-if="loginError"
+            type="error"
+            class="mb-4"
+            closable
+            @click:close="loginError = ''"
+          >
+            {{ loginError }}
+          </VAlert>
+
+          <!-- Demo Credentials Info -->
+          <VAlert
+            type="info"
+            class="mb-4"
+            variant="tonal"
+          >
+            <div class="text-body-2">
+              <strong>Demo Credentials:</strong><br>
+              <strong>Admin:</strong> admin@cod.test / password<br>
+              <strong>Affiliate:</strong> affiliate@cod.test / password
+            </div>
+          </VAlert>
+
+          <VForm @submit.prevent="handleLogin">
             <VRow>
               <!-- email -->
               <VCol cols="12">
@@ -135,6 +176,8 @@ const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
                 <VBtn
                   block
                   type="submit"
+                  :loading="isLoading"
+                  :disabled="isLoading"
                 >
                   Login
                 </VBtn>
