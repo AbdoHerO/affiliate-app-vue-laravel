@@ -59,10 +59,12 @@ class RolePermissionSeeder extends Seeder
 
         // Create default admin user
         $adminUser = User::create([
-            'name' => 'Admin User',
+            'nom_complet' => 'Admin User',
             'email' => 'admin@cod.test',
-            'password' => Hash::make('password'),
-            'email_verified_at' => now(),
+            'mot_de_passe_hash' => Hash::make('password'),
+            'email_verifie' => true,
+            'statut' => 'actif',
+            'kyc_statut' => 'non_requis',
         ]);
 
         // Assign admin role to the user
@@ -70,10 +72,12 @@ class RolePermissionSeeder extends Seeder
 
         // Create a sample affiliate user for testing
         $affiliateUser = User::create([
-            'name' => 'Test Affiliate',
+            'nom_complet' => 'Test Affiliate',
             'email' => 'affiliate@cod.test',
-            'password' => Hash::make('password'),
-            'email_verified_at' => now(),
+            'mot_de_passe_hash' => Hash::make('password'),
+            'email_verifie' => true,
+            'statut' => 'actif',
+            'kyc_statut' => 'non_requis',
         ]);
 
         // Assign affiliate role to the user
