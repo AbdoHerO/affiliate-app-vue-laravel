@@ -2,6 +2,9 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Admin\UserManagementController;
+use App\Http\Controllers\Admin\RolePermissionController;
+use App\Http\Controllers\Admin\DashboardStatsController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -29,21 +32,29 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     // Admin only routes
     Route::middleware(['role:admin'])->prefix('admin')->group(function () {
-        Route::get('dashboard', function () {
-            return response()->json(['message' => 'Admin Dashboard']);
-        });
+        // Dashboard & Statistics
+        Route::get('dashboard/stats', [DashboardStatsController::class, 'getDashboardStats']);
+        Route::get('dashboard/charts', [DashboardStatsController::class, 'getChartData']);
 
-        Route::get('users', function () {
-            return response()->json(['message' => 'Manage Users - Admin Only']);
-        });
+        // User Management
+        Route::get('users', [UserManagementController::class, 'index']);
+        Route::post('users', [UserManagementController::class, 'store']);
+        Route::get('users/{id}', [UserManagementController::class, 'show']);
+        Route::put('users/{id}', [UserManagementController::class, 'update']);
+        Route::delete('users/{id}', [UserManagementController::class, 'destroy']);
+        Route::post('users/{id}/toggle-status', [UserManagementController::class, 'toggleStatus']);
+        Route::get('users/roles/list', [UserManagementController::class, 'getRoles']);
 
-        Route::get('affiliates', function () {
-            return response()->json(['message' => 'Manage Affiliates - Admin Only']);
-        });
-
-        Route::get('reports', function () {
-            return response()->json(['message' => 'View Reports - Admin Only']);
-        });
+        // Role & Permission Management
+        Route::get('roles', [RolePermissionController::class, 'getRoles']);
+        Route::post('roles', [RolePermissionController::class, 'createRole']);
+        Route::put('roles/{id}', [RolePermissionController::class, 'updateRole']);
+        Route::delete('roles/{id}', [RolePermissionController::class, 'deleteRole']);
+        Route::get('permissions', [RolePermissionController::class, 'getPermissions']);
+        Route::post('permissions', [RolePermissionController::class, 'createPermission']);
+        Route::delete('permissions/{id}', [RolePermissionController::class, 'deletePermission']);
+        Route::post('roles/{id}/permissions', [RolePermissionController::class, 'assignPermissions']);
+        Route::get('roles/stats', [RolePermissionController::class, 'getRoleStats']);
     });
 
     // Affiliate only routes

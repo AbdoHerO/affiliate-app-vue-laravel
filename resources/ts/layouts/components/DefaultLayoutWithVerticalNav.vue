@@ -1,5 +1,6 @@
 <script lang="ts" setup>
-import navItems from '@/navigation/vertical'
+import { useNavigation } from '@/composables/useNavigation'
+import { useAuth } from '@/composables/useAuth'
 import { themeConfig } from '@themeConfig'
 
 // Components
@@ -10,10 +11,32 @@ import NavBarI18n from '@core/components/I18n.vue'
 
 // @layouts plugin
 import { VerticalNavLayout } from '@layouts'
+
+// Get auth state and dynamic navigation
+const { isAuthenticated, user, isLoading } = useAuth()
+const { navItems } = useNavigation()
+
+// Show loading only while auth is initializing
+const isReady = computed(() => {
+  return !isLoading.value
+})
 </script>
 
 <template>
-  <VerticalNavLayout :nav-items="navItems">
+  <!-- Loading state until auth is ready -->
+  <div v-if="!isReady" class="d-flex justify-center align-center" style="height: 100vh;">
+    <div class="text-center">
+      <VProgressCircular
+        indeterminate
+        color="primary"
+        size="64"
+      />
+      <p class="mt-4">Loading...</p>
+    </div>
+  </div>
+
+  <!-- Main layout with navigation -->
+  <VerticalNavLayout v-else :nav-items="navItems">
     <!-- 👉 navbar -->
     <template #navbar="{ toggleVerticalOverlayNavActive }">
       <div class="d-flex h-100 align-center">
@@ -47,8 +70,5 @@ import { VerticalNavLayout } from '@layouts'
     <template #footer>
       <Footer />
     </template>
-
-    <!-- 👉 Customizer -->
-    <!-- <TheCustomizer /> -->
   </VerticalNavLayout>
 </template>

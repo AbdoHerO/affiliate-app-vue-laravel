@@ -21,7 +21,7 @@ class DashboardController extends Controller
 
         return response()->json([
             'message' => 'Welcome to Admin Dashboard',
-            'user' => $request->user()->name,
+            'user' => $request->user()->nom_complet,
             'role' => 'admin',
             'stats' => [
                 'total_affiliates' => 150,
@@ -46,7 +46,7 @@ class DashboardController extends Controller
 
         return response()->json([
             'message' => 'Welcome to Affiliate Dashboard',
-            'user' => $request->user()->name,
+            'user' => $request->user()->nom_complet,
             'role' => 'affiliate',
             'stats' => [
                 'my_orders' => 25,
@@ -94,7 +94,7 @@ class DashboardController extends Controller
 
         return response()->json([
             'message' => 'Order creation form',
-            'user' => $request->user()->name,
+            'user' => $request->user()->nom_complet,
             'available_products' => [
                 ['id' => 1, 'name' => 'Product A', 'commission_rate' => '10%'],
                 ['id' => 2, 'name' => 'Product B', 'commission_rate' => '15%'],

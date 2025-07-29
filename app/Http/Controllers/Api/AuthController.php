@@ -23,7 +23,7 @@ class AuthController extends Controller
 
         $user = User::where('email', $request->email)->first();
 
-        if (!$user || !Hash::check($request->password, $user->password)) {
+        if (!$user || !Hash::check($request->password, $user->mot_de_passe_hash)) {
             throw ValidationException::withMessages([
                 'email' => ['The provided credentials are incorrect.'],
             ]);
@@ -39,7 +39,7 @@ class AuthController extends Controller
             'message' => 'Login successful',
             'user' => [
                 'id' => $user->id,
-                'name' => $user->name,
+                'nom_complet' => $user->nom_complet,
                 'email' => $user->email,
                 'roles' => $user->getRoleNames(),
                 'permissions' => $user->getAllPermissions()->pluck('name'),
@@ -54,16 +54,18 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         $request->validate([
-            'name' => 'required|string|max:255',
+            'nom_complet' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
             'role' => 'required|string|in:affiliate', // Only allow affiliate registration
         ]);
 
         $user = User::create([
-            'name' => $request->name,
+            'nom_complet' => $request->nom_complet,
             'email' => $request->email,
-            'password' => Hash::make($request->password),
+            'mot_de_passe_hash' => Hash::make($request->password),
+            'statut' => 'actif',
+            'kyc_statut' => 'non_requis',
         ]);
 
         // Assign role
@@ -76,7 +78,7 @@ class AuthController extends Controller
             'message' => 'Registration successful',
             'user' => [
                 'id' => $user->id,
-                'name' => $user->name,
+                'nom_complet' => $user->nom_complet,
                 'email' => $user->email,
                 'roles' => $user->getRoleNames(),
                 'permissions' => $user->getAllPermissions()->pluck('name'),
@@ -95,7 +97,7 @@ class AuthController extends Controller
         return response()->json([
             'user' => [
                 'id' => $user->id,
-                'name' => $user->name,
+                'nom_complet' => $user->nom_complet,
                 'email' => $user->email,
                 'roles' => $user->getRoleNames(),
                 'permissions' => $user->getAllPermissions()->pluck('name'),

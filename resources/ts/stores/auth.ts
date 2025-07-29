@@ -50,6 +50,8 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   const initializeAuth = () => {
+    isLoading.value = true
+
     const storedToken = localStorage.getItem('auth_token')
     const storedUser = localStorage.getItem('auth_user')
 
@@ -62,6 +64,8 @@ export const useAuthStore = defineStore('auth', () => {
         clearAuth()
       }
     }
+
+    isLoading.value = false
   }
 
   const login = async (credentials: LoginCredentials): Promise<void> => {
