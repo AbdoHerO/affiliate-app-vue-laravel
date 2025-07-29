@@ -8,39 +8,138 @@ export function useNavigation() {
 
   const navItems = computed<VerticalNavItems>(() => {
     // Return empty array if not ready to prevent errors
-    if (!isAuthenticated.value || !user.value || isLoading.value) {
+    if (!isAuthenticated || !user || isLoading) {
       return []
     }
 
     // Additional safety check - ensure user has roles
-    if (!user.value.roles || !Array.isArray(user.value.roles) || user.value.roles.length === 0) {
+    if (!user.roles || !Array.isArray(user.roles) || user.roles.length === 0) {
       return []
     }
 
     try {
-      // Validate navigation items recursively
-      const validateNavItem = (item: any): boolean => {
-        if (!item || typeof item !== 'object') return false
-        if (!item.title || typeof item.title !== 'string') return false
-
-        // If it has children, validate them
-        if (item.children) {
-          return Array.isArray(item.children) && item.children.every(validateNavItem)
-        }
-
-        // If it has a route, validate it
-        if (item.to) {
-          return item.to.name && typeof item.to.name === 'string'
-        }
-
-        return true
-      }
 
       // Return appropriate navigation based on user role
       if (hasRole('admin')) {
-        return adminNavigation.filter(validateNavItem)
+        return [
+          {
+            title: 'Dashboard',
+            to: 'admin-dashboard',
+            icon: { icon: 'tabler-dashboard' },
+          },
+          {
+            title: 'User Management',
+            icon: { icon: 'tabler-users' },
+            children: [
+              {
+                title: 'All Users',
+                to: 'admin-users',
+              },
+              {
+                title: 'Roles & Permissions',
+                to: 'admin-roles',
+              },
+            ],
+          },
+          {
+            title: 'Affiliate Management',
+            icon: { icon: 'tabler-user-star' },
+            children: [
+              {
+                title: 'All Affiliates',
+                to: 'admin-affiliates',
+              },
+              {
+                title: 'Affiliate Tiers',
+                to: 'admin-affiliate-tiers',
+              },
+            ],
+          },
+          {
+            title: 'Order Management',
+            icon: { icon: 'tabler-shopping-cart' },
+            children: [
+              {
+                title: 'All Orders',
+                to: 'admin-orders',
+              },
+              {
+                title: 'Order Conflicts',
+                to: 'admin-order-conflicts',
+              },
+            ],
+          },
+          {
+            title: 'Product Management',
+            icon: { icon: 'tabler-package' },
+            children: [
+              {
+                title: 'Products',
+                to: 'admin-products',
+              },
+              {
+                title: 'Categories',
+                to: 'admin-categories',
+              },
+              {
+                title: 'Boutiques',
+                to: 'admin-boutiques',
+              },
+            ],
+          },
+          {
+            title: 'Financial Management',
+            icon: { icon: 'tabler-currency-dollar' },
+            children: [
+              {
+                title: 'Commissions',
+                to: 'admin-commissions',
+              },
+              {
+                title: 'Payments',
+                to: 'admin-payments',
+              },
+            ],
+          },
+          {
+            title: 'Reports & Analytics',
+            icon: { icon: 'tabler-chart-bar' },
+            children: [
+              {
+                title: 'Sales Reports',
+                to: 'admin-reports-sales',
+              },
+              {
+                title: 'Affiliate Performance',
+                to: 'admin-reports-affiliates',
+              },
+            ],
+          },
+        ]
       } else if (hasRole('affiliate')) {
-        return affiliateNavigation.filter(validateNavItem)
+        const affiliateNav = [
+          {
+            title: 'Dashboard',
+            to: 'affiliate-dashboard',
+            icon: { icon: 'tabler-dashboard' },
+          },
+          {
+            title: 'My Orders',
+            to: 'affiliate-orders',
+            icon: { icon: 'tabler-shopping-cart' },
+          },
+          {
+            title: 'My Commissions',
+            to: 'affiliate-commissions',
+            icon: { icon: 'tabler-currency-dollar' },
+          },
+          {
+            title: 'Marketing Materials',
+            to: 'affiliate-marketing',
+            icon: { icon: 'tabler-photo' },
+          },
+        ]
+        return affiliateNav
       }
     } catch (error) {
       console.error('Navigation error:', error)
@@ -48,6 +147,7 @@ export function useNavigation() {
     }
 
     // Default fallback
+    console.log('No role matched, returning empty navigation')
     return []
   })
 

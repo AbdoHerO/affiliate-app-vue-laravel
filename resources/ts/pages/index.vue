@@ -7,7 +7,7 @@ const router = useRouter()
 
 // Redirect authenticated users to their appropriate dashboard
 onMounted(() => {
-  if (isAuthenticated.value) {
+  if (isAuthenticated) {
     if (hasRole('admin')) {
       router.push({ name: 'admin-dashboard' })
     } else if (hasRole('affiliate')) {
