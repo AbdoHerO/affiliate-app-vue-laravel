@@ -1,9 +1,8 @@
 <script setup lang="ts">
+import { ref, computed } from 'vue'
 import { useAuth } from '@/composables/useAuth'
-import { useApi } from '@/composables/useApi'
-import AppTextField from '@core/components/app-form-elements/AppTextField.vue'
-import AppSelect from '@core/components/app-form-elements/AppSelect.vue'
-import TablePagination from '@core/components/TablePagination.vue'
+import { useI18n } from 'vue-i18n'
+// import { useApi } from '@/composables/useApi' // <- not used here, keep commented to avoid side effects
 
 definePage({
   meta: {
@@ -13,18 +12,28 @@ definePage({
 })
 
 const { hasPermission } = useAuth()
-const { api } = useApi()
+// const { api } = useApi() // <- not used; uncomment only when you actually call it
+const { t } = useI18n()
+
+type User = {
+  id: string
+  nom_complet: string
+  email: string
+  roles: string[]
+  statut: 'actif' | 'inactif' | 'suspendu'
+  kyc_statut: 'approuve' | 'refuse' | 'en_attente' | 'non_requis'
+  created_at: string
+}
 
 // Data
-const users = ref([])
+const users = ref<User[]>([
+  { id: '1', nom_complet: 'John Doe',  email: 'john@example.com', roles: ['admin'],     statut: 'actif',    kyc_statut: 'approuve',   created_at: '2024-01-01' },
+  { id: '2', nom_complet: 'Jane Smith',email: 'jane@example.com', roles: ['affiliate'], statut: 'actif',    kyc_statut: 'en_attente', created_at: '2024-01-02' },
+  { id: '3', nom_complet: 'Bob Wilson',email: 'bob@example.com',  roles: ['affiliate'], statut: 'suspendu', kyc_statut: 'refuse',     created_at: '2024-01-03' },
+])
+
 const loading = ref(false)
-const error = ref(null)
-const pagination = ref({
-  current_page: 1,
-  last_page: 1,
-  per_page: 15,
-  total: 0,
-})
+const error = ref<unknown>(null)
 
 // Filters
 const filters = ref({
@@ -33,18 +42,22 @@ const filters = ref({
   statut: '',
 })
 
-const roles = ref([])
+const roles = ref([
+  { title: 'Admin', value: 'admin' },
+  { title: 'Affiliate', value: 'affiliate' },
+])
+
 const statusOptions = [
-  { title: 'All Status', value: '' },
-  { title: 'Active', value: 'actif' },
-  { title: 'Inactive', value: 'inactif' },
-  { title: 'Suspended', value: 'suspendu' },
+  { title: t('all_status'), value: '' },
+  { title: t('active'), value: 'actif' },
+  { title: t('inactive'), value: 'inactif' },
+  { title: t('suspended'), value: 'suspendu' },
 ]
 
 // Dialog states
 const showCreateDialog = ref(false)
 const showEditDialog = ref(false)
-const selectedUser = ref(null)
+const selectedUser = ref<User | null>(null)
 
 // Form data
 const userForm = ref({
@@ -52,91 +65,54 @@ const userForm = ref({
   email: '',
   password: '',
   role: '',
-  statut: 'actif',
-  kyc_statut: 'non_requis',
+  statut: 'actif' as User['statut'],
+  kyc_statut: 'non_requis' as User['kyc_statut'],
 })
 
-// Fetch users
-const fetchUsers = async (page = 1) => {
-  try {
-    loading.value = true
-    const params = {
-      page,
-      per_page: pagination.value.per_page,
-      ...filters.value,
+// Mock functions (replace with real API later)
+const createUser = () => {
+  const newUser: User = {
+    id: Date.now().toString(),
+    nom_complet: userForm.value.nom_complet,
+    email: userForm.value.email,
+    roles: userForm.value.role ? [userForm.value.role] : [],
+    statut: userForm.value.statut,
+    kyc_statut: userForm.value.kyc_statut,
+    created_at: new Date().toISOString(),
+  }
+  users.value.push(newUser)
+  showCreateDialog.value = false
+  resetForm()
+}
+
+const updateUser = () => {
+  if (!selectedUser.value) return
+  const index = users.value.findIndex(u => u.id === selectedUser.value!.id)
+  if (index !== -1) {
+    users.value[index] = {
+      ...users.value[index],
+      nom_complet: userForm.value.nom_complet,
+      email: userForm.value.email,
+      roles: userForm.value.role ? [userForm.value.role] : [],
+      statut: userForm.value.statut,
+      kyc_statut: userForm.value.kyc_statut,
     }
-    
-    const response = await api.get('/admin/users', { params })
-    users.value = response.data.users
-    pagination.value = response.data.pagination
-  } catch (err) {
-    error.value = 'Failed to load users'
-    console.error('Users fetch error:', err)
-  } finally {
-    loading.value = false
+  }
+  showEditDialog.value = false
+  resetForm()
+}
+
+const toggleUserStatus = (user: User) => {
+  const index = users.value.findIndex(u => u.id === user.id)
+  if (index !== -1) {
+    users.value[index].statut = users.value[index].statut === 'actif' ? 'suspendu' : 'actif'
   }
 }
 
-// Fetch roles
-const fetchRoles = async () => {
-  try {
-    const response = await api.get('/admin/users/roles/list')
-    roles.value = response.data.roles.map(role => ({
-      title: role.name.charAt(0).toUpperCase() + role.name.slice(1),
-      value: role.name,
-    }))
-  } catch (err) {
-    console.error('Roles fetch error:', err)
-  }
-}
-
-// Create user
-const createUser = async () => {
-  try {
-    await api.post('/admin/users', userForm.value)
-    showCreateDialog.value = false
-    resetForm()
-    await fetchUsers()
-    // Show success message
-  } catch (err) {
-    console.error('Create user error:', err)
-  }
-}
-
-// Update user
-const updateUser = async () => {
-  try {
-    await api.put(`/admin/users/${selectedUser.value.id}`, userForm.value)
-    showEditDialog.value = false
-    resetForm()
-    await fetchUsers()
-    // Show success message
-  } catch (err) {
-    console.error('Update user error:', err)
-  }
-}
-
-// Toggle user status
-const toggleUserStatus = async (user) => {
-  try {
-    await api.post(`/admin/users/${user.id}/toggle-status`)
-    await fetchUsers()
-    // Show success message
-  } catch (err) {
-    console.error('Toggle status error:', err)
-  }
-}
-
-// Delete user
-const deleteUser = async (user) => {
-  if (confirm(`Are you sure you want to delete ${user.nom_complet}?`)) {
-    try {
-      await api.delete(`/admin/users/${user.id}`)
-      await fetchUsers()
-      // Show success message
-    } catch (err) {
-      console.error('Delete user error:', err)
-    }
+const deleteUser = (user: User) => {
+  if (confirm(t('confirm_delete_user', { name: user.nom_complet }))) {
+    const index = users.value.findIndex(u => u.id === user.id)
+    if (index !== -1) users.value.splice(index, 1)
   }
 }
 
@@ -153,7 +129,7 @@ const resetForm = () => {
   selectedUser.value = null
 }
 
-const openEditDialog = (user) => {
+const openEditDialog = (user: User) => {
   selectedUser.value = user
   userForm.value = {
     nom_complet: user.nom_complet,
@@ -166,32 +142,25 @@ const openEditDialog = (user) => {
   showEditDialog.value = true
 }
 
-// Search and filter
-const applyFilters = () => {
-  fetchUsers(1)
-}
+// Computed filtered users
+const filteredUsers = computed(() => {
+  return users.value.filter(user => {
+    const query = filters.value.search.trim().toLowerCase()
+    const matchesSearch =
+      !query ||
+      user.nom_complet.toLowerCase().includes(query) ||
+      user.email.toLowerCase().includes(query)
 
-const clearFilters = () => {
-  filters.value = {
-    search: '',
-    role: '',
-    statut: '',
-  }
-  fetchUsers(1)
-}
+    const matchesRole = !filters.value.role || user.roles.includes(filters.value.role)
+    const matchesStatus = !filters.value.statut || user.statut === filters.value.statut
 
-// Load data on mount
-onMounted(async () => {
-  await Promise.all([
-    fetchUsers(),
-    fetchRoles()
-  ])
+    return matchesSearch && matchesRole && matchesStatus
+  })
 })
 
-// Watch filters
-watch(filters, () => {
-  applyFilters()
-}, { deep: true })
+const clearFilters = () => {
+  filters.value = { search: '', role: '', statut: '' }
+}
 </script>
 
 <template>
@@ -201,8 +170,8 @@ watch(filters, () => {
       <VCardText>
         <div class="d-flex justify-space-between align-center">
           <div>
-            <h2 class="text-h4 mb-2">User Management</h2>
-            <p class="text-body-1 mb-0">Manage all users in the system</p>
+            <h2 class="text-h4 mb-2">{{ t('user_management') }}</h2>
+            <p class="text-body-1 mb-0">{{ t('manage_all_users') }}</p>
           </div>
           <VBtn
             color="primary"
@@ -210,7 +179,7 @@ watch(filters, () => {
             :disabled="!hasPermission('manage users')"
             @click="showCreateDialog = true"
           >
-            Add User
+            {{ t('add_user') }}
           </VBtn>
         </div>
       </VCardText>
@@ -221,33 +190,29 @@ watch(filters, () => {
       <VCardText>
         <VRow>
           <VCol cols="12" md="4">
-            <AppTextField
+            <VTextField
               v-model="filters.search"
-              placeholder="Search users..."
+              :placeholder="t('search_users')"
               prepend-inner-icon="tabler-search"
               clearable
             />
           </VCol>
           <VCol cols="12" md="3">
-            <AppSelect
+            <VSelect
               v-model="filters.role"
               :items="[{ title: 'All Roles', value: '' }, ...roles]"
               placeholder="Filter by role"
             />
           </VCol>
           <VCol cols="12" md="3">
-            <AppSelect
+            <VSelect
               v-model="filters.statut"
               :items="statusOptions"
               placeholder="Filter by status"
             />
           </VCol>
           <VCol cols="12" md="2">
-            <VBtn
-              block
-              variant="outlined"
-              @click="clearFilters"
-            >
+            <VBtn block variant="outlined" @click="clearFilters">
               Clear
             </VBtn>
           </VCol>
@@ -258,27 +223,24 @@ watch(filters, () => {
     <!-- Users Table -->
     <VCard>
       <VCardText>
-        <VTable v-if="!loading && users.length">
+        <VTable v-if="!loading && filteredUsers.length">
           <thead>
             <tr>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Role</th>
-              <th>Status</th>
-              <th>KYC Status</th>
-              <th>Created</th>
-              <th>Actions</th>
+              <th>{{ t('name') }}</th>
+              <th>{{ t('email') }}</th>
+              <th>{{ t('role') }}</th>
+              <th>{{ t('status') }}</th>
+              <th>{{ t('kyc_status') }}</th>
+              <th>{{ t('created') }}</th>
+              <th>{{ t('actions') }}</th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="user in users" :key="user.id">
+            <tr v-for="user in filteredUsers" :key="user.id">
               <td>{{ user.nom_complet }}</td>
               <td>{{ user.email }}</td>
               <td>
-                <VChip
-                  :color="user.roles[0] === 'admin' ? 'error' : 'primary'"
-                  size="small"
-                >
+                <VChip :color="user.roles[0] === 'admin' ? 'error' : 'primary'" size="small">
                   {{ user.roles[0] || 'No Role' }}
                 </VChip>
               </td>
@@ -301,13 +263,7 @@ watch(filters, () => {
               <td>{{ new Date(user.created_at).toLocaleDateString() }}</td>
               <td>
                 <div class="d-flex gap-2">
-                  <VBtn
-                    icon
-                    size="small"
-                    color="primary"
-                    variant="text"
-                    @click="openEditDialog(user)"
-                  >
+                  <VBtn icon size="small" color="primary" variant="text" @click="openEditDialog(user)">
                     <VIcon icon="tabler-edit" />
                   </VBtn>
                   <VBtn
@@ -319,13 +275,7 @@ watch(filters, () => {
                   >
                     <VIcon :icon="user.statut === 'actif' ? 'tabler-user-off' : 'tabler-user-check'" />
                   </VBtn>
-                  <VBtn
-                    icon
-                    size="small"
-                    color="error"
-                    variant="text"
-                    @click="deleteUser(user)"
-                  >
+                  <VBtn icon size="small" color="error" variant="text" @click="deleteUser(user)">
                     <VIcon icon="tabler-trash" />
                   </VBtn>
                 </div>
@@ -337,24 +287,57 @@ watch(filters, () => {
         <!-- Loading State -->
         <div v-else-if="loading" class="text-center py-8">
           <VProgressCircular indeterminate color="primary" />
-          <p class="mt-4">Loading users...</p>
+          <p class="mt-4">{{ t('loading_users') }}...</p>
         </div>
 
         <!-- Empty State -->
         <div v-else class="text-center py-8">
           <VIcon icon="tabler-users" size="64" class="mb-4" color="disabled" />
-          <h6 class="text-h6 mb-2">No users found</h6>
-          <p class="text-body-2">Try adjusting your search criteria</p>
+          <h6 class="text-h6 mb-2">{{ t('no_users_found') }}</h6>
+          <p class="text-body-2">{{ t('try_adjusting_search') }}</p>
         </div>
-
-        <!-- Pagination -->
-        <TablePagination
-          v-if="pagination.total > pagination.per_page"
-          v-model:page="pagination.current_page"
-          :length="pagination.last_page"
-          @update:page="fetchUsers"
-        />
       </VCardText>
     </VCard>
+
+    <!-- Create User Dialog -->
+    <VDialog v-model="showCreateDialog" max-width="600">
+      <VCard>
+        <VCardTitle>{{ t('create_new_user') }}</VCardTitle>
+        <VCardText>
+          <VForm @submit.prevent="createUser">
+            <VTextField v-model="userForm.nom_complet" :label="t('full_name')" :placeholder="t('enter_full_name')" required class="mb-4" />
+            <VTextField v-model="userForm.email" :label="t('email')" :placeholder="t('enter_email')" type="email" required class="mb-4" />
+            <VTextField v-model="userForm.password" :label="t('password')" :placeholder="t('enter_password')" type="password" required class="mb-4" />
+            <VSelect v-model="userForm.role" :items="roles" :label="t('role')" :placeholder="t('select_role')" required class="mb-4" />
+            <VSelect v-model="userForm.statut" :items="statusOptions.slice(1)" :label="t('status')" :placeholder="t('select_status')" required />
+          </VForm>
+        </VCardText>
+        <VCardActions>
+          <VSpacer />
+          <VBtn variant="outlined" @click="showCreateDialog = false">{{ t('cancel') }}</VBtn>
+          <VBtn color="primary" @click="createUser">{{ t('create_user') }}</VBtn>
+        </VCardActions>
+      </VCard>
+    </VDialog>
+
+    <!-- Edit User Dialog -->
+    <VDialog v-model="showEditDialog" max-width="600">
+      <VCard>
+        <VCardTitle>{{ t('edit_user') }}</VCardTitle>
+        <VCardText>
+          <VForm @submit.prevent="updateUser">
+            <VTextField v-model="userForm.nom_complet" :label="t('full_name')" :placeholder="t('enter_full_name')" required class="mb-4" />
+            <VTextField v-model="userForm.email" :label="t('email')" :placeholder="t('enter_email')" type="email" required class="mb-4" />
+            <VSelect v-model="userForm.role" :items="roles" :label="t('role')" :placeholder="t('select_role')" required class="mb-4" />
+            <VSelect v-model="userForm.statut" :items="statusOptions.slice(1)" :label="t('status')" :placeholder="t('select_status')" required />
+          </VForm>
+        </VCardText>
+        <VCardActions>
+          <VSpacer />
+          <VBtn variant="outlined" @click="showEditDialog = false">{{ t('cancel') }}</VBtn>
+          <VBtn color="primary" @click="updateUser">{{ t('update_user') }}</VBtn>
+        </VCardActions>
+      </VCard>
+    </VDialog>
   </div>
 </template>

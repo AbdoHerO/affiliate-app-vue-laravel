@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { useAuth } from '@/composables/useAuth'
-import { useApi } from '@/composables/useApi'
-import AppTextField from '@core/components/app-form-elements/AppTextField.vue'
+import { useI18n } from 'vue-i18n'
 
 definePage({
   meta: {
@@ -11,13 +10,40 @@ definePage({
 })
 
 const { hasPermission } = useAuth()
-const { api } = useApi()
+const { t } = useI18n()
 
-// Data
-const roles = ref([])
-const permissions = ref([])
+// Mock data
+const roles = ref([
+  {
+    id: '1',
+    name: 'admin',
+    display_name: 'Administrator',
+    description: 'Full system access',
+    permissions: ['manage users', 'manage roles', 'manage affiliates', 'manage orders'],
+    users_count: 2,
+    created_at: '2024-01-01',
+  },
+  {
+    id: '2',
+    name: 'affiliate',
+    display_name: 'Affiliate',
+    description: 'Affiliate user access',
+    permissions: ['view orders', 'view commissions'],
+    users_count: 15,
+    created_at: '2024-01-01',
+  },
+])
+
+const permissions = ref([
+  { id: '1', name: 'manage users', description: 'Can manage users' },
+  { id: '2', name: 'manage roles', description: 'Can manage roles and permissions' },
+  { id: '3', name: 'manage affiliates', description: 'Can manage affiliates' },
+  { id: '4', name: 'manage orders', description: 'Can manage orders' },
+  { id: '5', name: 'view orders', description: 'Can view orders' },
+  { id: '6', name: 'view commissions', description: 'Can view commissions' },
+])
+
 const loading = ref(false)
-const error = ref(null)
 
 // Dialog states
 const showCreateRoleDialog = ref(false)
@@ -309,7 +335,7 @@ onMounted(async () => {
         <VCardTitle>Create New Role</VCardTitle>
         <VCardText>
           <VForm @submit.prevent="createRole">
-            <AppTextField
+            <VTextField
               v-model="roleForm.name"
               label="Role Name"
               placeholder="Enter role name"
@@ -344,7 +370,7 @@ onMounted(async () => {
         <VCardTitle>Edit Role</VCardTitle>
         <VCardText>
           <VForm @submit.prevent="updateRole">
-            <AppTextField
+            <VTextField
               v-model="roleForm.name"
               label="Role Name"
               placeholder="Enter role name"
@@ -379,7 +405,7 @@ onMounted(async () => {
         <VCardTitle>Create New Permission</VCardTitle>
         <VCardText>
           <VForm @submit.prevent="createPermission">
-            <AppTextField
+            <VTextField
               v-model="permissionForm.name"
               label="Permission Name"
               placeholder="Enter permission name"
