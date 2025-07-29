@@ -266,6 +266,10 @@
   "try_adjusting_search": "Try adjusting your search criteria",
   "confirm_delete_user": "Are you sure you want to delete {name}?",
   "search_users": "Search users...",
+  "confirm_delete": "Confirm Delete",
+  "user_created_successfully": "User {name} created successfully!",
+  "user_updated_successfully": "User {name} updated successfully!",
+  "user_deleted_successfully": "User {name} deleted successfully!",
 
   "role_management": "Role & Permission Management",
   "manage_roles_permissions": "Manage roles and permissions in the system",
@@ -288,5 +292,10 @@
   "confirm_delete_role": "Are you sure you want to delete the role {name}?",
   "confirm_delete_permission": "Are you sure you want to delete the permission {name}?",
   "no_roles_found": "No roles found",
-  "no_permissions_found": "No permissions found"
+  "no_permissions_found": "No permissions found",
+  "role_created_successfully": "Role {name} created successfully!",
+  "role_updated_successfully": "Role {name} updated successfully!",
+  "role_deleted_successfully": "Role {name} deleted successfully!",
+  "permission_created_successfully": "Permission {name} created successfully!",
+  "permission_deleted_successfully": "Permission {name} deleted successfully!"
 }

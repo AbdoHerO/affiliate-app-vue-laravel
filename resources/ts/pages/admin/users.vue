@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue'
 import { useAuth } from '@/composables/useAuth'
 import { useI18n } from 'vue-i18n'
+import { useNotifications } from '@/composables/useNotifications'
 // import { useApi } from '@/composables/useApi' // <- not used here, keep commented to avoid side effects
 
 definePage({
@@ -14,6 +15,7 @@ definePage({
 const { hasPermission } = useAuth()
 // const { api } = useApi() // <- not used; uncomment only when you actually call it
 const { t } = useI18n()
+const { showSuccess, showError, showConfirm, snackbar, confirmDialog } = useNotifications()
 
 type User = {
   id: string
@@ -83,6 +85,7 @@ const createUser = () => {
   users.value.push(newUser)
   showCreateDialog.value = false
   resetForm()
+  showSuccess(t('user_created_successfully', { name: newUser.nom_complet }))
 }
 
 const updateUser = () => {
@@ -100,6 +103,7 @@ const updateUser = () => {
   }
   showEditDialog.value = false
   resetForm()
+  showSuccess(t('user_updated_successfully', { name: userForm.value.nom_complet }))
 }
 
 const toggleUserStatus = (user: User) => {
@@ -110,10 +114,17 @@ const toggleUserStatus = (user: User) => {
 }
 
 const deleteUser = (user: User) => {
-  if (confirm(t('confirm_delete_user', { name: user.nom_complet }))) {
-    const index = users.value.findIndex(u => u.id === user.id)
-    if (index !== -1) users.value.splice(index, 1)
-  }
+  showConfirm(
+    t('confirm_delete'),
+    t('confirm_delete_user', { name: user.nom_complet }),
+    () => {
+      const index = users.value.findIndex(u => u.id === user.id)
+      if (index !== -1) {
+        users.value.splice(index, 1)
+        showSuccess(t('user_deleted_successfully', { name: user.nom_complet }))
+      }
+    }
+  )
 }
 
 // Form helpers
@@ -337,6 +348,45 @@ const clearFilters = () => {
           <VBtn variant="outlined" @click="showEditDialog = false">{{ t('cancel') }}</VBtn>
           <VBtn color="primary" @click="updateUser">{{ t('update_user') }}</VBtn>
         </VCardActions>
+      </VCard>
+    </VDialog>
+
+    <!-- Success/Error Snackbar -->
+    <VSnackbar
+      v-model="snackbar.show"
+      :color="snackbar.color"
+      :timeout="snackbar.timeout"
+      location="top end"
+    >
+      {{ snackbar.message }}
+    </VSnackbar>
+
+    <!-- Confirmation Dialog -->
+    <VDialog v-model="confirmDialog.show" max-width="500">
+      <VCard class="text-center px-10 py-6">
+        <VCardText>
+          <VBtn
+            icon
+            variant="outlined"
+            color="warning"
+            class="my-4"
+            style="block-size: 88px; inline-size: 88px; pointer-events: none;"
+          >
+            <span class="text-5xl">!</span>
+          </VBtn>
+          <h6 class="text-lg font-weight-medium">
+            {{ confirmDialog.title }}
+          </h6>
+          <p class="mt-2">{{ confirmDialog.message }}</p>
+        </VCardText>
+        <VCardText class="d-flex align-center justify-center gap-2">
+          <VBtn variant="elevated" @click="confirmDialog.onConfirm">
+            {{ confirmDialog.confirmText }}
+          </VBtn>
+          <VBtn color="secondary" variant="tonal" @click="confirmDialog.onCancel">
+            {{ confirmDialog.cancelText }}
+          </VBtn>
+        </VCardText>
       </VCard>
     </VDialog>
   </div>

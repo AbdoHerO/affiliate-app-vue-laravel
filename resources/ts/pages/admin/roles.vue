@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useAuth } from '@/composables/useAuth'
 import { useI18n } from 'vue-i18n'
+import { useNotifications } from '@/composables/useNotifications'
 
 definePage({
   meta: {
@@ -11,6 +12,7 @@ definePage({
 
 const { hasPermission } = useAuth()
 const { t } = useI18n()
+const { showSuccess, showError, showConfirm, snackbar, confirmDialog } = useNotifications()
 
 // Mock data
 const roles = ref([
@@ -49,7 +51,7 @@ const loading = ref(false)
 const showCreateRoleDialog = ref(false)
 const showEditRoleDialog = ref(false)
 const showCreatePermissionDialog = ref(false)
-const selectedRole = ref(null)
+const selectedRole = ref<any>(null)
 
 // Form data
 const roleForm = ref({
@@ -61,93 +63,82 @@ const permissionForm = ref({
   name: '',
 })
 
-// Fetch roles
-const fetchRoles = async () => {
-  try {
-    loading.value = true
-    const response = await api.get('/admin/roles')
-    roles.value = response.data.roles
-  } catch (err) {
-    error.value = 'Failed to load roles'
-    console.error('Roles fetch error:', err)
-  } finally {
-    loading.value = false
-  }
-}
-
-// Fetch permissions
-const fetchPermissions = async () => {
-  try {
-    const response = await api.get('/admin/permissions')
-    permissions.value = response.data.permissions
-  } catch (err) {
-    console.error('Permissions fetch error:', err)
-  }
-}
+// Mock data is already loaded in refs above
 
 // Create role
-const createRole = async () => {
-  try {
-    await api.post('/admin/roles', roleForm.value)
-    showCreateRoleDialog.value = false
-    resetRoleForm()
-    await fetchRoles()
-    // Show success message
-  } catch (err) {
-    console.error('Create role error:', err)
+const createRole = () => {
+  const newRole = {
+    id: Date.now().toString(),
+    name: roleForm.value.name,
+    display_name: roleForm.value.name.charAt(0).toUpperCase() + roleForm.value.name.slice(1),
+    description: `${roleForm.value.name} role`,
+    permissions: [],
+    users_count: 0,
+    created_at: new Date().toISOString(),
   }
+  roles.value.push(newRole)
+  showCreateRoleDialog.value = false
+  resetRoleForm()
+  showSuccess(t('role_created_successfully', { name: newRole.name }))
 }
 
 // Update role
-const updateRole = async () => {
-  try {
-    await api.put(`/admin/roles/${selectedRole.value.id}`, roleForm.value)
-    showEditRoleDialog.value = false
-    resetRoleForm()
-    await fetchRoles()
-    // Show success message
-  } catch (err) {
-    console.error('Update role error:', err)
+const updateRole = () => {
+  if (!selectedRole.value) return
+  const index = roles.value.findIndex(r => r.id === selectedRole.value!.id)
+  if (index !== -1) {
+    roles.value[index] = {
+      ...roles.value[index],
+      name: roleForm.value.name,
+      display_name: roleForm.value.name.charAt(0).toUpperCase() + roleForm.value.name.slice(1),
+    }
   }
+  showEditRoleDialog.value = false
+  resetRoleForm()
+  showSuccess(t('role_updated_successfully', { name: roleForm.value.name }))
 }
 
 // Delete role
-const deleteRole = async (role) => {
-  if (confirm(`Are you sure you want to delete the role "${role.name}"?`)) {
-    try {
-      await api.delete(`/admin/roles/${role.id}`)
-      await fetchRoles()
-      // Show success message
-    } catch (err) {
-      console.error('Delete role error:', err)
+const deleteRole = (role: any) => {
+  showConfirm(
+    t('confirm_delete'),
+    t('confirm_delete_role', { name: role.name }),
+    () => {
+      const index = roles.value.findIndex(r => r.id === role.id)
+      if (index !== -1) {
+        roles.value.splice(index, 1)
+        showSuccess(t('role_deleted_successfully', { name: role.name }))
+      }
     }
-  }
+  )
 }
 
 // Create permission
-const createPermission = async () => {
-  try {
-    await api.post('/admin/permissions', permissionForm.value)
-    showCreatePermissionDialog.value = false
-    resetPermissionForm()
-    await fetchPermissions()
-    // Show success message
-  } catch (err) {
-    console.error('Create permission error:', err)
+const createPermission = () => {
+  const newPermission = {
+    id: Date.now().toString(),
+    name: permissionForm.value.name,
+    description: `${permissionForm.value.name} permission`,
   }
+  permissions.value.push(newPermission)
+  showCreatePermissionDialog.value = false
+  resetPermissionForm()
+  showSuccess(t('permission_created_successfully', { name: newPermission.name }))
 }
 
 // Delete permission
-const deletePermission = async (permission) => {
-  if (confirm(`Are you sure you want to delete the permission "${permission.name}"?`)) {
-    try {
-      await api.delete(`/admin/permissions/${permission.id}`)
-      await fetchPermissions()
-      // Show success message
-    } catch (err) {
-      console.error('Delete permission error:', err)
+const deletePermission = (permission: any) => {
+  showConfirm(
+    t('confirm_delete'),
+    t('confirm_delete_permission', { name: permission.name }),
+    () => {
+      const index = permissions.value.findIndex(p => p.id === permission.id)
+      if (index !== -1) {
+        permissions.value.splice(index, 1)
+        showSuccess(t('permission_deleted_successfully', { name: permission.name }))
+      }
     }
-  }
+  )
 }
 
 // Form helpers
@@ -165,7 +156,7 @@ const resetPermissionForm = () => {
   }
 }
 
-const openEditRoleDialog = (role) => {
+const openEditRoleDialog = (role: any) => {
   selectedRole.value = role
   roleForm.value = {
     name: role.name,
@@ -174,13 +165,7 @@ const openEditRoleDialog = (role) => {
   showEditRoleDialog.value = true
 }
 
-// Load data on mount
-onMounted(async () => {
-  await Promise.all([
-    fetchRoles(),
-    fetchPermissions()
-  ])
-})
+// Data is already loaded in refs, no need for onMounted
 </script>
 
 <template>
@@ -418,6 +403,45 @@ onMounted(async () => {
           <VBtn variant="outlined" @click="showCreatePermissionDialog = false">Cancel</VBtn>
           <VBtn color="primary" @click="createPermission">Create Permission</VBtn>
         </VCardActions>
+      </VCard>
+    </VDialog>
+
+    <!-- Success/Error Snackbar -->
+    <VSnackbar
+      v-model="snackbar.show"
+      :color="snackbar.color"
+      :timeout="snackbar.timeout"
+      location="top end"
+    >
+      {{ snackbar.message }}
+    </VSnackbar>
+
+    <!-- Confirmation Dialog -->
+    <VDialog v-model="confirmDialog.show" max-width="500">
+      <VCard class="text-center px-10 py-6">
+        <VCardText>
+          <VBtn
+            icon
+            variant="outlined"
+            color="warning"
+            class="my-4"
+            style="block-size: 88px; inline-size: 88px; pointer-events: none;"
+          >
+            <span class="text-5xl">!</span>
+          </VBtn>
+          <h6 class="text-lg font-weight-medium">
+            {{ confirmDialog.title }}
+          </h6>
+          <p class="mt-2">{{ confirmDialog.message }}</p>
+        </VCardText>
+        <VCardText class="d-flex align-center justify-center gap-2">
+          <VBtn variant="elevated" @click="confirmDialog.onConfirm">
+            {{ confirmDialog.confirmText }}
+          </VBtn>
+          <VBtn color="secondary" variant="tonal" @click="confirmDialog.onCancel">
+            {{ confirmDialog.cancelText }}
+          </VBtn>
+        </VCardText>
       </VCard>
     </VDialog>
   </div>
