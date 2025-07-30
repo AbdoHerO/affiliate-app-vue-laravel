@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import { useAuth } from '@/composables/useAuth'
 import { useI18n } from 'vue-i18n'
 import { useNotifications } from '@/composables/useNotifications'
-// import { useApi } from '@/composables/useApi' // <- not used here, keep commented to avoid side effects
+import { useApi } from '@/composables/useApi'
 
 definePage({
   meta: {
@@ -13,7 +13,7 @@ definePage({
 })
 
 const { hasPermission } = useAuth()
-// const { api } = useApi() // <- not used; uncomment only when you actually call it
+const api = useApi()               // ✅ get the instance once and reuse it
 const { t } = useI18n()
 const { showSuccess, showError, showConfirm, snackbar, confirmDialog } = useNotifications()
 
@@ -28,14 +28,15 @@ type User = {
 }
 
 // Data
-const users = ref<User[]>([
-  { id: '1', nom_complet: 'John Doe',  email: 'john@example.com', roles: ['admin'],     statut: 'actif',    kyc_statut: 'approuve',   created_at: '2024-01-01' },
-  { id: '2', nom_complet: 'Jane Smith',email: 'jane@example.com', roles: ['affiliate'], statut: 'actif',    kyc_statut: 'en_attente', created_at: '2024-01-02' },
-  { id: '3', nom_complet: 'Bob Wilson',email: 'bob@example.com',  roles: ['affiliate'], statut: 'suspendu', kyc_statut: 'refuse',     created_at: '2024-01-03' },
-])
-
+const users = ref<User[]>([])
 const loading = ref(false)
-const error = ref<unknown>(null)
+const error = ref<string | null>(null)
+const pagination = ref({
+  current_page: 1,
+  last_page: 1,
+  per_page: 15,
+  total: 0,
+})
 
 // Filters
 const filters = ref({
@@ -44,10 +45,7 @@ const filters = ref({
   statut: '',
 })
 
-const roles = ref([
-  { title: 'Admin', value: 'admin' },
-  { title: 'Affiliate', value: 'affiliate' },
-])
+const roles = ref<{ title: string; value: string }[]>([])
 
 const statusOptions = [
   { title: t('all_status'), value: '' },
@@ -71,45 +69,159 @@ const userForm = ref({
   kyc_statut: 'non_requis' as User['kyc_statut'],
 })
 
-// Mock functions (replace with real API later)
-const createUser = () => {
-  const newUser: User = {
-    id: Date.now().toString(),
-    nom_complet: userForm.value.nom_complet,
-    email: userForm.value.email,
-    roles: userForm.value.role ? [userForm.value.role] : [],
-    statut: userForm.value.statut,
-    kyc_statut: userForm.value.kyc_statut,
-    created_at: new Date().toISOString(),
+// -----------------------------
+// API Functions (fixed)
+// -----------------------------
+const fetchUsers = async (page = 1) => {
+  try {
+    loading.value = true
+    error.value = null
+
+    const params = new URLSearchParams({
+      page: page.toString(),
+      per_page: pagination.value.per_page.toString(),
+    })
+
+    if (filters.value.search) params.set('search', filters.value.search)
+    if (filters.value.role)   params.set('role', filters.value.role)
+    if (filters.value.statut) params.set('statut', filters.value.statut)
+
+    // ✅ always call the instance `api` and use params.toString()
+    const { data, error: apiError } = await api<any>(`/admin/users?${params.toString()}`)
+
+    if (apiError.value) {
+      error.value = apiError.value.message || 'Failed to load users'
+      showError(t('failed_to_load_users'))
+      console.error('Users fetch error:', apiError.value)
+    } else if (data.value) {
+      users.value = data.value.users.map((user: any) => ({
+        id: String(user.id),
+        nom_complet: user.nom_complet,
+        email: user.email,
+        roles: user.roles?.map((r: any) => r.name) ?? [],
+        statut: user.statut,
+        kyc_statut: user.kyc_statut,
+        created_at: user.created_at,
+      }))
+
+      pagination.value = data.value.pagination
+    }
+  } catch (err: any) {
+    error.value = err.message || 'Failed to load users'
+    showError(t('failed_to_load_users'))
+    console.error('Users fetch error:', err)
+  } finally {
+    loading.value = false
   }
-  users.value.push(newUser)
-  showCreateDialog.value = false
-  resetForm()
-  showSuccess(t('user_created_successfully', { name: newUser.nom_complet }))
 }
 
-const updateUser = () => {
+const fetchRoles = async () => {
+  try {
+    const { data, error: apiError } = await api<any>('/admin/users/roles/list')
+
+    if (apiError.value) {
+      console.error('Roles fetch error:', apiError.value)
+    } else if (data.value?.roles) {
+      roles.value = data.value.roles.map((role: any) => ({
+        title: role.name.charAt(0).toUpperCase() + role.name.slice(1),
+        value: role.name,
+      }))
+    }
+  } catch (err) {
+    console.error('Roles fetch error:', err)
+  }
+}
+
+const createUser = async () => {
+  try {
+    loading.value = true
+
+    const { data, error: apiError } = await api<any>('/admin/users', {
+      method: 'POST',
+      body: JSON.stringify({
+        nom_complet: userForm.value.nom_complet,
+        email: userForm.value.email,
+        password: userForm.value.password,
+        role: userForm.value.role,
+        statut: userForm.value.statut,
+        kyc_statut: userForm.value.kyc_statut,
+      }),
+      headers: { 'Content-Type': 'application/json' },
+    })
+
+    if (apiError.value) {
+      showError(apiError.value.message || t('failed_to_create_user'))
+      console.error('Create user error:', apiError.value)
+    } else if (data.value) {
+      showCreateDialog.value = false
+      const name = userForm.value.nom_complet
+      resetForm()
+      await fetchUsers(pagination.value.current_page)
+      showSuccess(t('user_created_successfully', { name }))
+    }
+  } catch (err: any) {
+    showError(err.message || t('failed_to_create_user'))
+    console.error('Create user error:', err)
+  } finally {
+    loading.value = false
+  }
+}
+
+const updateUser = async () => {
   if (!selectedUser.value) return
-  const index = users.value.findIndex(u => u.id === selectedUser.value!.id)
-  if (index !== -1) {
-    users.value[index] = {
-      ...users.value[index],
+
+  try {
+    loading.value = true
+
+    const payload: any = {
       nom_complet: userForm.value.nom_complet,
       email: userForm.value.email,
-      roles: userForm.value.role ? [userForm.value.role] : [],
+      role: userForm.value.role,
       statut: userForm.value.statut,
       kyc_statut: userForm.value.kyc_statut,
     }
+    if (userForm.value.password) payload.password = userForm.value.password
+
+    const { data, error: apiError } = await api<any>(`/admin/users/${selectedUser.value.id}`, {
+      method: 'PUT',
+      body: JSON.stringify(payload),
+      headers: { 'Content-Type': 'application/json' },
+    })
+
+    if (apiError.value) {
+      showError(apiError.value.message || t('failed_to_update_user'))
+      console.error('Update user error:', apiError.value)
+    } else if (data.value) {
+      showEditDialog.value = false
+      const name = userForm.value.nom_complet
+      resetForm()
+      await fetchUsers(pagination.value.current_page)
+      showSuccess(t('user_updated_successfully', { name }))
+    }
+  } catch (err: any) {
+    showError(err.message || t('failed_to_update_user'))
+    console.error('Update user error:', err)
+  } finally {
+    loading.value = false
   }
-  showEditDialog.value = false
-  resetForm()
-  showSuccess(t('user_updated_successfully', { name: userForm.value.nom_complet }))
 }
 
-const toggleUserStatus = (user: User) => {
-  const index = users.value.findIndex(u => u.id === user.id)
-  if (index !== -1) {
-    users.value[index].statut = users.value[index].statut === 'actif' ? 'suspendu' : 'actif'
+const toggleUserStatus = async (user: User) => {
+  try {
+    const { data, error: apiError } = await api<any>(`/admin/users/${user.id}/toggle-status`, {
+      method: 'POST',
+    })
+
+    if (apiError.value) {
+      showError(apiError.value.message || 'Failed to toggle user status')
+      console.error('Toggle status error:', apiError.value)
+    } else if (data.value) {
+      await fetchUsers(pagination.value.current_page)
+      showSuccess(t('user_status_updated_successfully'))
+    }
+  } catch (err: any) {
+    showError(err.message || 'Failed to toggle user status')
+    console.error('Toggle status error:', err)
   }
 }
 
@@ -117,13 +229,24 @@ const deleteUser = (user: User) => {
   showConfirm(
     t('confirm_delete'),
     t('confirm_delete_user', { name: user.nom_complet }),
-    () => {
-      const index = users.value.findIndex(u => u.id === user.id)
-      if (index !== -1) {
-        users.value.splice(index, 1)
-        showSuccess(t('user_deleted_successfully', { name: user.nom_complet }))
+    async () => {
+      try {
+        const { data, error: apiError } = await api<any>(`/admin/users/${user.id}`, {
+          method: 'DELETE',
+        })
+
+        if (apiError.value) {
+          showError(apiError.value.message || t('failed_to_delete_user'))
+          console.error('Delete user error:', apiError.value)
+        } else if (data.value) {
+          await fetchUsers(pagination.value.current_page)
+          showSuccess(t('user_deleted_successfully', { name: user.nom_complet }))
+        }
+      } catch (err: any) {
+        showError(err.message || t('failed_to_delete_user'))
+        console.error('Delete user error:', err)
       }
-    }
+    },
   )
 }
 
@@ -153,25 +276,24 @@ const openEditDialog = (user: User) => {
   showEditDialog.value = true
 }
 
-// Computed filtered users
-const filteredUsers = computed(() => {
-  return users.value.filter(user => {
-    const query = filters.value.search.trim().toLowerCase()
-    const matchesSearch =
-      !query ||
-      user.nom_complet.toLowerCase().includes(query) ||
-      user.email.toLowerCase().includes(query)
-
-    const matchesRole = !filters.value.role || user.roles.includes(filters.value.role)
-    const matchesStatus = !filters.value.statut || user.statut === filters.value.statut
-
-    return matchesSearch && matchesRole && matchesStatus
-  })
-})
-
 const clearFilters = () => {
   filters.value = { search: '', role: '', statut: '' }
+  fetchUsers(1)
 }
+
+// Load data on mount
+onMounted(async () => {
+  await Promise.all([fetchUsers(), fetchRoles()])
+})
+
+// Watch filters for real-time search
+watch(
+  filters,
+  () => {
+    fetchUsers(1)
+  },
+  { deep: true },
+)
 </script>
 
 <template>
@@ -234,7 +356,7 @@ const clearFilters = () => {
     <!-- Users Table -->
     <VCard>
       <VCardText>
-        <VTable v-if="!loading && filteredUsers.length">
+        <VTable v-if="!loading && users.length">
           <thead>
             <tr>
               <th>{{ t('name') }}</th>
@@ -247,7 +369,7 @@ const clearFilters = () => {
             </tr>
           </thead>
           <tbody>
-            <tr v-for="user in filteredUsers" :key="user.id">
+            <tr v-for="user in users" :key="user.id">
               <td>{{ user.nom_complet }}</td>
               <td>{{ user.email }}</td>
               <td>
@@ -306,6 +428,15 @@ const clearFilters = () => {
           <VIcon icon="tabler-users" size="64" class="mb-4" color="disabled" />
           <h6 class="text-h6 mb-2">{{ t('no_users_found') }}</h6>
           <p class="text-body-2">{{ t('try_adjusting_search') }}</p>
+        </div>
+
+        <!-- Pagination -->
+        <div v-if="pagination.total > pagination.per_page" class="d-flex justify-center mt-4">
+          <VPagination
+            v-model="pagination.current_page"
+            :length="pagination.last_page"
+            @update:model-value="fetchUsers"
+          />
         </div>
       </VCardText>
     </VCard>

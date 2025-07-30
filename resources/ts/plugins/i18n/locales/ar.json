@@ -270,6 +270,10 @@
   "user_created_successfully": "تم إنشاء المستخدم {name} بنجاح!",
   "user_updated_successfully": "تم تحديث المستخدم {name} بنجاح!",
   "user_deleted_successfully": "تم حذف المستخدم {name} بنجاح!",
+  "failed_to_load_users": "فشل في تحميل المستخدمين",
+  "failed_to_create_user": "فشل في إنشاء المستخدم",
+  "failed_to_update_user": "فشل في تحديث المستخدم",
+  "failed_to_delete_user": "فشل في حذف المستخدم",
 
   "role_management": "إدارة الأدوار والصلاحيات",
   "manage_roles_permissions": "إدارة الأدوار والصلاحيات في النظام",

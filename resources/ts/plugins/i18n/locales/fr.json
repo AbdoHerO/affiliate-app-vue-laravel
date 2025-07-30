@@ -271,6 +271,10 @@
   "user_created_successfully": "Utilisateur {name} créé avec succès!",
   "user_updated_successfully": "Utilisateur {name} mis à jour avec succès!",
   "user_deleted_successfully": "Utilisateur {name} supprimé avec succès!",
+  "failed_to_load_users": "Échec du chargement des utilisateurs",
+  "failed_to_create_user": "Échec de la création de l'utilisateur",
+  "failed_to_update_user": "Échec de la mise à jour de l'utilisateur",
+  "failed_to_delete_user": "Échec de la suppression de l'utilisateur",
 
   "role_management": "Gestion des Rôles et Permissions",
   "manage_roles_permissions": "Gérer les rôles et permissions du système",

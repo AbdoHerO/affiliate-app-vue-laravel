@@ -1,10 +1,10 @@
 import type { VerticalNavItems } from '@layouts/types'
 
-// Admin Navigation
+// Admin Navigation (all `to` are string paths now)
 const adminNavigation = [
   {
     title: 'Dashboard',
-    to: { name: 'admin-dashboard' },
+    to: '/admin/dashboard',
     icon: { icon: 'tabler-dashboard' },
   },
   {
@@ -13,12 +13,12 @@ const adminNavigation = [
     children: [
       {
         title: 'All Users',
-        to: { name: 'admin-users' },
+        to: '/admin/users',
         icon: { icon: 'tabler-user-circle' },
       },
       {
         title: 'Roles & Permissions',
-        to: { name: 'admin-roles' },
+        to: '/admin/roles',
         icon: { icon: 'tabler-shield-lock' },
       },
     ],
@@ -29,12 +29,12 @@ const adminNavigation = [
     children: [
       {
         title: 'All Affiliates',
-        to: { name: 'admin-affiliates' },
+        to: '/admin/affiliates',
         icon: { icon: 'tabler-users-group' },
       },
       {
         title: 'Affiliate Tiers',
-        to: { name: 'admin-affiliate-tiers' },
+        to: '/admin/affiliate-tiers',
         icon: { icon: 'tabler-medal' },
       },
     ],
@@ -45,12 +45,12 @@ const adminNavigation = [
     children: [
       {
         title: 'All Orders',
-        to: { name: 'admin-orders' },
+        to: '/admin/orders',
         icon: { icon: 'tabler-list-details' },
       },
       {
         title: 'Order Conflicts',
-        to: { name: 'admin-order-conflicts' },
+        to: '/admin/order-conflicts',
         icon: { icon: 'tabler-alert-triangle' },
       },
     ],
@@ -61,17 +61,17 @@ const adminNavigation = [
     children: [
       {
         title: 'Products',
-        to: { name: 'admin-products' },
+        to: '/admin/products',
         icon: { icon: 'tabler-box' },
       },
       {
         title: 'Categories',
-        to: { name: 'admin-categories' },
+        to: '/admin/categories',
         icon: { icon: 'tabler-category' },
       },
       {
         title: 'Boutiques',
-        to: { name: 'admin-boutiques' },
+        to: '/admin/boutiques',
         icon: { icon: 'tabler-building-store' },
       },
     ],
@@ -82,12 +82,12 @@ const adminNavigation = [
     children: [
       {
         title: 'Commissions',
-        to: { name: 'admin-commissions' },
+        to: '/admin/commissions',
         icon: { icon: 'tabler-percentage' },
       },
       {
         title: 'Payments',
-        to: { name: 'admin-payments' },
+        to: '/admin/payments',
         icon: { icon: 'tabler-credit-card' },
       },
     ],
@@ -98,42 +98,41 @@ const adminNavigation = [
     children: [
       {
         title: 'Sales Reports',
-        to: { name: 'admin-reports-sales' },
+        to: '/admin/reports/sales',
         icon: { icon: 'tabler-chart-line' },
       },
       {
         title: 'Affiliate Performance',
-        to: { name: 'admin-reports-affiliates' },
+        to: '/admin/reports/affiliates',
         icon: { icon: 'tabler-chart-pie' },
       },
     ],
   },
 ] satisfies VerticalNavItems
 
-// Affiliate Navigation
+// Affiliate Navigation (string paths)
 const affiliateNavigation = [
   {
     title: 'Dashboard',
-    to: { name: 'affiliate-dashboard' },
+    to: '/affiliate/dashboard',
     icon: { icon: 'tabler-dashboard' },
   },
   {
     title: 'My Orders',
-    to: { name: 'affiliate-orders' },
+    to: '/affiliate/orders',
     icon: { icon: 'tabler-shopping-cart' },
   },
   {
     title: 'My Commissions',
-    to: { name: 'affiliate-commissions' },
+    to: '/affiliate/commissions',
     icon: { icon: 'tabler-currency-dollar' },
   },
   {
     title: 'Marketing Materials',
-    to: { name: 'affiliate-marketing' },
+    to: '/affiliate/marketing',
     icon: { icon: 'tabler-photo' },
   },
 ] satisfies VerticalNavItems
 
-// Export admin navigation by default (will be dynamically switched based on user role)
 export default adminNavigation
 export { affiliateNavigation }

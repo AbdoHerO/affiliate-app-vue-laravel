@@ -270,6 +270,11 @@
   "user_created_successfully": "User {name} created successfully!",
   "user_updated_successfully": "User {name} updated successfully!",
   "user_deleted_successfully": "User {name} deleted successfully!",
+  "failed_to_load_users": "Failed to load users",
+  "failed_to_create_user": "Failed to create user",
+  "failed_to_update_user": "Failed to update user",
+  "failed_to_delete_user": "Failed to delete user",
+  "user_status_updated_successfully": "User status updated successfully",
 
   "role_management": "Role & Permission Management",
   "manage_roles_permissions": "Manage roles and permissions in the system",
@@ -297,5 +302,9 @@
   "role_updated_successfully": "Role {name} updated successfully!",
   "role_deleted_successfully": "Role {name} deleted successfully!",
   "permission_created_successfully": "Permission {name} created successfully!",
-  "permission_deleted_successfully": "Permission {name} deleted successfully!"
+  "permission_deleted_successfully": "Permission {name} deleted successfully!",
+  "failed_to_load_roles": "Failed to load roles",
+  "failed_to_create_role": "Failed to create role",
+  "failed_to_update_role": "Failed to update role",
+  "failed_to_delete_role": "Failed to delete role"
 }

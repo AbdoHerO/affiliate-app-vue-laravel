@@ -1,7 +1,9 @@
 <script setup lang="ts">
+import { ref, onMounted } from 'vue'
 import { useAuth } from '@/composables/useAuth'
 import { useI18n } from 'vue-i18n'
 import { useNotifications } from '@/composables/useNotifications'
+import { useApi } from '@/composables/useApi'
 
 definePage({
   meta: {
@@ -14,38 +16,11 @@ const { hasPermission } = useAuth()
 const { t } = useI18n()
 const { showSuccess, showError, showConfirm, snackbar, confirmDialog } = useNotifications()
 
-// Mock data
-const roles = ref([
-  {
-    id: '1',
-    name: 'admin',
-    display_name: 'Administrator',
-    description: 'Full system access',
-    permissions: ['manage users', 'manage roles', 'manage affiliates', 'manage orders'],
-    users_count: 2,
-    created_at: '2024-01-01',
-  },
-  {
-    id: '2',
-    name: 'affiliate',
-    display_name: 'Affiliate',
-    description: 'Affiliate user access',
-    permissions: ['view orders', 'view commissions'],
-    users_count: 15,
-    created_at: '2024-01-01',
-  },
-])
-
-const permissions = ref([
-  { id: '1', name: 'manage users', description: 'Can manage users' },
-  { id: '2', name: 'manage roles', description: 'Can manage roles and permissions' },
-  { id: '3', name: 'manage affiliates', description: 'Can manage affiliates' },
-  { id: '4', name: 'manage orders', description: 'Can manage orders' },
-  { id: '5', name: 'view orders', description: 'Can view orders' },
-  { id: '6', name: 'view commissions', description: 'Can view commissions' },
-])
-
+// Data
+const roles = ref<any[]>([])
+const permissions = ref<any[]>([])
 const loading = ref(false)
+const error = ref<string | null>(null)
 
 // Dialog states
 const showCreateRoleDialog = ref(false)
@@ -63,23 +38,74 @@ const permissionForm = ref({
   name: '',
 })
 
-// Mock data is already loaded in refs above
+// API Functions
+const fetchRoles = async () => {
+  try {
+    loading.value = true
+    error.value = null
 
-// Create role
-const createRole = () => {
-  const newRole = {
-    id: Date.now().toString(),
-    name: roleForm.value.name,
-    display_name: roleForm.value.name.charAt(0).toUpperCase() + roleForm.value.name.slice(1),
-    description: `${roleForm.value.name} role`,
-    permissions: [],
-    users_count: 0,
-    created_at: new Date().toISOString(),
+    const { data, error: apiError } = await useApi<any>('/admin/roles')
+
+    if (apiError.value) {
+      error.value = apiError.value.message || 'Failed to load roles'
+      showError(t('failed_to_load_roles'))
+      console.error('Roles fetch error:', apiError.value)
+    } else if (data.value?.roles) {
+      roles.value = data.value.roles
+    }
+  } catch (err: any) {
+    error.value = err.message || 'Failed to load roles'
+    showError(t('failed_to_load_roles'))
+    console.error('Roles fetch error:', err)
+  } finally {
+    loading.value = false
   }
-  roles.value.push(newRole)
-  showCreateRoleDialog.value = false
-  resetRoleForm()
-  showSuccess(t('role_created_successfully', { name: newRole.name }))
+}
+
+const fetchPermissions = async () => {
+  try {
+    const { data, error: apiError } = await useApi<any>('/admin/permissions')
+
+    if (apiError.value) {
+      console.error('Permissions fetch error:', apiError.value)
+    } else if (data.value?.permissions) {
+      permissions.value = data.value.permissions
+    }
+  } catch (err) {
+    console.error('Permissions fetch error:', err)
+  }
+}
+
+const createRole = async () => {
+  try {
+    loading.value = true
+
+    const { data, error: apiError } = await useApi<any>('/admin/roles', {
+      method: 'POST',
+      body: JSON.stringify({
+        name: roleForm.value.name,
+        permissions: roleForm.value.permissions,
+      }),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+
+    if (apiError.value) {
+      showError(apiError.value.message || t('failed_to_create_role'))
+      console.error('Create role error:', apiError.value)
+    } else if (data.value) {
+      showCreateRoleDialog.value = false
+      resetRoleForm()
+      await fetchRoles()
+      showSuccess(t('role_created_successfully', { name: roleForm.value.name }))
+    }
+  } catch (err: any) {
+    showError(err.message || t('failed_to_create_role'))
+    console.error('Create role error:', err)
+  } finally {
+    loading.value = false
+  }
 }
 
 // Update role
@@ -165,7 +191,13 @@ const openEditRoleDialog = (role: any) => {
   showEditRoleDialog.value = true
 }
 
-// Data is already loaded in refs, no need for onMounted
+// Load data on mount
+onMounted(async () => {
+  await Promise.all([
+    fetchRoles(),
+    fetchPermissions()
+  ])
+})
 </script>
 
 <template>
