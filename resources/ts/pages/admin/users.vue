@@ -13,7 +13,6 @@ definePage({
 })
 
 const { hasPermission } = useAuth()
-const api = useApi()               // ✅ get the instance once and reuse it
 const { t } = useI18n()
 const { showSuccess, showError, showConfirm, snackbar, confirmDialog } = useNotifications()
 
@@ -86,8 +85,10 @@ const fetchUsers = async (page = 1) => {
     if (filters.value.role)   params.set('role', filters.value.role)
     if (filters.value.statut) params.set('statut', filters.value.statut)
 
-    // ✅ always call the instance `api` and use params.toString()
-    const { data, error: apiError } = await api<any>(`/admin/users?${params.toString()}`)
+    // ✅ always call useApi directly and use params.toString()
+    const url = `/admin/users?${params.toString()}`
+    console.assert(typeof url === 'string', 'URL must be a string')
+    const { data, error: apiError } = await useApi<any>(url)
 
     if (apiError.value) {
       error.value = apiError.value.message || 'Failed to load users'
@@ -117,7 +118,7 @@ const fetchUsers = async (page = 1) => {
 
 const fetchRoles = async () => {
   try {
-    const { data, error: apiError } = await api<any>('/admin/users/roles/list')
+    const { data, error: apiError } = await useApi<any>('/admin/users/roles/list')
 
     if (apiError.value) {
       console.error('Roles fetch error:', apiError.value)
@@ -136,7 +137,7 @@ const createUser = async () => {
   try {
     loading.value = true
 
-    const { data, error: apiError } = await api<any>('/admin/users', {
+    const { data, error: apiError } = await useApi<any>('/admin/users', {
       method: 'POST',
       body: JSON.stringify({
         nom_complet: userForm.value.nom_complet,
@@ -182,7 +183,7 @@ const updateUser = async () => {
     }
     if (userForm.value.password) payload.password = userForm.value.password
 
-    const { data, error: apiError } = await api<any>(`/admin/users/${selectedUser.value.id}`, {
+    const { data, error: apiError } = await useApi<any>(`/admin/users/${selectedUser.value.id}`, {
       method: 'PUT',
       body: JSON.stringify(payload),
       headers: { 'Content-Type': 'application/json' },
@@ -208,7 +209,7 @@ const updateUser = async () => {
 
 const toggleUserStatus = async (user: User) => {
   try {
-    const { data, error: apiError } = await api<any>(`/admin/users/${user.id}/toggle-status`, {
+    const { data, error: apiError } = await useApi<any>(`/admin/users/${user.id}/toggle-status`, {
       method: 'POST',
     })
 
@@ -231,7 +232,7 @@ const deleteUser = (user: User) => {
     t('confirm_delete_user', { name: user.nom_complet }),
     async () => {
       try {
-        const { data, error: apiError } = await api<any>(`/admin/users/${user.id}`, {
+        const { data, error: apiError } = await useApi<any>(`/admin/users/${user.id}`, {
           method: 'DELETE',
         })
 
