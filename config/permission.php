@@ -26,6 +26,14 @@ return [
 
         'role' => Spatie\Permission\Models\Role::class,
 
+        /*
+         * When using the "HasRoles" trait from this package, we need to know which
+         * Eloquent model should be used to retrieve your users. This is used
+         * for the relationship between users and roles/permissions.
+         */
+
+        'user' => App\Models\User::class,
+
     ],
 
     'table_names' => [

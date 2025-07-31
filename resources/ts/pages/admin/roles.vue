@@ -47,11 +47,14 @@ const fetchRoles = async () => {
     const { data, error: apiError } = await useApi<any>('/admin/roles')
 
     if (apiError.value) {
-      error.value = apiError.value.message || 'Failed to load roles'
-      showError(t('failed_to_load_roles'))
+      const errorMessage = apiError.value.message || 'Failed to load roles'
+      error.value = errorMessage
+      showError(errorMessage)
       console.error('Roles fetch error:', apiError.value)
-    } else if (data.value?.roles) {
-      roles.value = data.value.roles
+    } else if (data.value) {
+      // Handle both data.roles and data.data formats
+      roles.value = data.value.data || data.value.roles || []
+      console.log('✅ Roles loaded successfully:', roles.value.length)
     }
   } catch (err: any) {
     error.value = err.message || 'Failed to load roles'
@@ -67,11 +70,17 @@ const fetchPermissions = async () => {
     const { data, error: apiError } = await useApi<any>('/admin/permissions')
 
     if (apiError.value) {
+      const errorMessage = apiError.value.message || 'Failed to load permissions'
+      showError(errorMessage)
       console.error('Permissions fetch error:', apiError.value)
-    } else if (data.value?.permissions) {
-      permissions.value = data.value.permissions
+    } else if (data.value) {
+      // Handle both data.permissions and data.data formats
+      permissions.value = data.value.data || data.value.permissions || []
+      console.log('✅ Permissions loaded successfully:', permissions.value.length)
     }
-  } catch (err) {
+  } catch (err: any) {
+    const errorMessage = err.message || 'Failed to load permissions'
+    showError(errorMessage)
     console.error('Permissions fetch error:', err)
   }
 }
@@ -92,7 +101,15 @@ const createRole = async () => {
     })
 
     if (apiError.value) {
-      showError(apiError.value.message || t('failed_to_create_role'))
+      let errorMessage = apiError.value.message || t('failed_to_create_role')
+
+      // Handle validation errors
+      if (apiError.value.errors) {
+        const validationErrors = Object.values(apiError.value.errors).flat()
+        errorMessage = validationErrors.join(', ')
+      }
+
+      showError(errorMessage)
       console.error('Create role error:', apiError.value)
     } else if (data.value) {
       showCreateRoleDialog.value = false
@@ -109,19 +126,46 @@ const createRole = async () => {
 }
 
 // Update role
-const updateRole = () => {
+const updateRole = async () => {
   if (!selectedRole.value) return
-  const index = roles.value.findIndex(r => r.id === selectedRole.value!.id)
-  if (index !== -1) {
-    roles.value[index] = {
-      ...roles.value[index],
-      name: roleForm.value.name,
-      display_name: roleForm.value.name.charAt(0).toUpperCase() + roleForm.value.name.slice(1),
+
+  try {
+    loading.value = true
+
+    const { data, error: apiError } = await useApi<any>(`/admin/roles/${selectedRole.value.id}`, {
+      method: 'PUT',
+      body: JSON.stringify({
+        name: roleForm.value.name,
+        permissions: roleForm.value.permissions,
+      }),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+
+    if (apiError.value) {
+      let errorMessage = apiError.value.message || t('failed_to_update_role')
+
+      // Handle validation errors
+      if (apiError.value.errors) {
+        const validationErrors = Object.values(apiError.value.errors).flat()
+        errorMessage = validationErrors.join(', ')
+      }
+
+      showError(errorMessage)
+      console.error('Update role error:', apiError.value)
+    } else if (data.value) {
+      showEditRoleDialog.value = false
+      resetRoleForm()
+      await fetchRoles()
+      showSuccess(t('role_updated_successfully', { name: roleForm.value.name }))
     }
+  } catch (err: any) {
+    showError(err.message || t('failed_to_update_role'))
+    console.error('Update role error:', err)
+  } finally {
+    loading.value = false
   }
-  showEditRoleDialog.value = false
-  resetRoleForm()
-  showSuccess(t('role_updated_successfully', { name: roleForm.value.name }))
 }
 
 // Delete role
@@ -129,27 +173,70 @@ const deleteRole = (role: any) => {
   showConfirm(
     t('confirm_delete'),
     t('confirm_delete_role', { name: role.name }),
-    () => {
-      const index = roles.value.findIndex(r => r.id === role.id)
-      if (index !== -1) {
-        roles.value.splice(index, 1)
-        showSuccess(t('role_deleted_successfully', { name: role.name }))
+    async () => {
+      try {
+        loading.value = true
+
+        const { data, error: apiError } = await useApi<any>(`/admin/roles/${role.id}`, {
+          method: 'DELETE',
+        })
+
+        if (apiError.value) {
+          let errorMessage = apiError.value.message || t('failed_to_delete_role')
+          showError(errorMessage)
+          console.error('Delete role error:', apiError.value)
+        } else if (data.value) {
+          await fetchRoles()
+          showSuccess(t('role_deleted_successfully', { name: role.name }))
+        }
+      } catch (err: any) {
+        showError(err.message || t('failed_to_delete_role'))
+        console.error('Delete role error:', err)
+      } finally {
+        loading.value = false
       }
     }
   )
 }
 
 // Create permission
-const createPermission = () => {
-  const newPermission = {
-    id: Date.now().toString(),
-    name: permissionForm.value.name,
-    description: `${permissionForm.value.name} permission`,
+const createPermission = async () => {
+  try {
+    loading.value = true
+
+    const { data, error: apiError } = await useApi<any>('/admin/permissions', {
+      method: 'POST',
+      body: JSON.stringify({
+        name: permissionForm.value.name,
+      }),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+
+    if (apiError.value) {
+      let errorMessage = apiError.value.message || t('failed_to_create_permission')
+
+      // Handle validation errors
+      if (apiError.value.errors) {
+        const validationErrors = Object.values(apiError.value.errors).flat()
+        errorMessage = validationErrors.join(', ')
+      }
+
+      showError(errorMessage)
+      console.error('Create permission error:', apiError.value)
+    } else if (data.value) {
+      showCreatePermissionDialog.value = false
+      resetPermissionForm()
+      await fetchPermissions()
+      showSuccess(t('permission_created_successfully', { name: permissionForm.value.name }))
+    }
+  } catch (err: any) {
+    showError(err.message || t('failed_to_create_permission'))
+    console.error('Create permission error:', err)
+  } finally {
+    loading.value = false
   }
-  permissions.value.push(newPermission)
-  showCreatePermissionDialog.value = false
-  resetPermissionForm()
-  showSuccess(t('permission_created_successfully', { name: newPermission.name }))
 }
 
 // Delete permission
@@ -157,11 +244,27 @@ const deletePermission = (permission: any) => {
   showConfirm(
     t('confirm_delete'),
     t('confirm_delete_permission', { name: permission.name }),
-    () => {
-      const index = permissions.value.findIndex(p => p.id === permission.id)
-      if (index !== -1) {
-        permissions.value.splice(index, 1)
-        showSuccess(t('permission_deleted_successfully', { name: permission.name }))
+    async () => {
+      try {
+        loading.value = true
+
+        const { data, error: apiError } = await useApi<any>(`/admin/permissions/${permission.id}`, {
+          method: 'DELETE',
+        })
+
+        if (apiError.value) {
+          let errorMessage = apiError.value.message || t('failed_to_delete_permission')
+          showError(errorMessage)
+          console.error('Delete permission error:', apiError.value)
+        } else if (data.value) {
+          await fetchPermissions()
+          showSuccess(t('permission_deleted_successfully', { name: permission.name }))
+        }
+      } catch (err: any) {
+        showError(err.message || t('failed_to_delete_permission'))
+        console.error('Delete permission error:', err)
+      } finally {
+        loading.value = false
       }
     }
   )

@@ -156,7 +156,15 @@ const createUser = async () => {
     })
 
     if (apiError.value) {
-      showError(apiError.value.message || t('failed_to_create_user'))
+      let errorMessage = apiError.value.message || t('failed_to_create_user')
+
+      // Handle validation errors
+      if (apiError.value.errors) {
+        const validationErrors = Object.values(apiError.value.errors).flat()
+        errorMessage = validationErrors.join(', ')
+      }
+
+      showError(errorMessage)
       console.error('Create user error:', apiError.value)
     } else if (data.value) {
       showCreateDialog.value = false
@@ -195,7 +203,15 @@ const updateUser = async () => {
     })
 
     if (apiError.value) {
-      showError(apiError.value.message || t('failed_to_update_user'))
+      let errorMessage = apiError.value.message || t('failed_to_update_user')
+
+      // Handle validation errors
+      if (apiError.value.errors) {
+        const validationErrors = Object.values(apiError.value.errors).flat()
+        errorMessage = validationErrors.join(', ')
+      }
+
+      showError(errorMessage)
       console.error('Update user error:', apiError.value)
     } else if (data.value) {
       showEditDialog.value = false

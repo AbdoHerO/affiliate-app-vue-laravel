@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 
@@ -15,23 +17,44 @@ class RolePermissionController extends Controller
      */
     public function getRoles(Request $request)
     {
-        // Check admin permission
-        if (!$request->user()->hasRole('admin')) {
-            return response()->json(['message' => 'Access denied'], Response::HTTP_FORBIDDEN);
+        try {
+            // Check admin permission
+            if (!$request->user()->hasRole('admin')) {
+                return response()->json(['message' => 'Access denied'], Response::HTTP_FORBIDDEN);
+            }
+
+            $roles = Role::with('permissions')->get();
+
+            return response()->json([
+                'data' => $roles->map(function ($role) {
+                    // Get users count safely
+                    $usersCount = 0;
+                    try {
+                        $usersCount = \App\Models\User::role($role->name)->count();
+                    } catch (\Exception $e) {
+                        // Fallback: count users with this role directly
+                        $usersCount = \App\Models\User::whereHas('roles', function($query) use ($role) {
+                            $query->where('name', $role->name);
+                        })->count();
+                    }
+
+                    return [
+                        'id' => $role->id,
+                        'name' => $role->name,
+                        'permissions' => $role->permissions->pluck('name')->toArray(),
+                        'users_count' => $usersCount,
+                        'created_at' => $role->created_at?->format('Y-m-d H:i:s'),
+                        'updated_at' => $role->updated_at?->format('Y-m-d H:i:s'),
+                    ];
+                })->toArray(),
+                'total' => $roles->count()
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to fetch roles',
+                'error' => $e->getMessage()
+            ], 500);
         }
-
-        $roles = Role::with('permissions')->get();
-
-        return response()->json([
-            'roles' => $roles->map(function ($role) {
-                return [
-                    'id' => $role->id,
-                    'name' => $role->name,
-                    'permissions' => $role->permissions->pluck('name'),
-                    'users_count' => $role->users()->count(),
-                ];
-            })
-        ]);
     }
 
     /**
@@ -39,16 +62,42 @@ class RolePermissionController extends Controller
      */
     public function getPermissions(Request $request)
     {
-        // Check admin permission
-        if (!$request->user()->hasRole('admin')) {
-            return response()->json(['message' => 'Access denied'], Response::HTTP_FORBIDDEN);
+        try {
+            // Check admin permission
+            if (!$request->user()->hasRole('admin')) {
+                return response()->json(['message' => 'Access denied'], Response::HTTP_FORBIDDEN);
+            }
+
+            $permissions = Permission::orderBy('name')->get(['id', 'name', 'created_at']);
+
+            return response()->json([
+                'data' => $permissions->map(function ($permission) {
+                    // Get roles count safely
+                    $rolesCount = 0;
+                    try {
+                        $rolesCount = $permission->roles()->count();
+                    } catch (\Exception $e) {
+                        // Fallback: count roles with this permission directly
+                        $rolesCount = \Spatie\Permission\Models\Role::whereHas('permissions', function($query) use ($permission) {
+                            $query->where('name', $permission->name);
+                        })->count();
+                    }
+
+                    return [
+                        'id' => $permission->id,
+                        'name' => $permission->name,
+                        'roles_count' => $rolesCount,
+                        'created_at' => $permission->created_at?->format('Y-m-d H:i:s'),
+                    ];
+                })->toArray(),
+                'total' => $permissions->count()
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to fetch permissions',
+                'error' => $e->getMessage()
+            ], 500);
         }
-
-        $permissions = Permission::all(['id', 'name']);
-
-        return response()->json([
-            'permissions' => $permissions
-        ]);
     }
 
     /**
@@ -64,13 +113,31 @@ class RolePermissionController extends Controller
         $request->validate([
             'name' => 'required|string|max:255|unique:roles,name',
             'permissions' => 'array',
-            'permissions.*' => 'exists:permissions,name',
+            'permissions.*' => 'string|max:255',
         ]);
+
+        // Validate that permissions exist in database
+        if ($request->has('permissions') && !empty($request->permissions)) {
+            $existingPermissions = Permission::whereIn('name', $request->permissions)->pluck('name')->toArray();
+            $invalidPermissions = array_diff($request->permissions, $existingPermissions);
+
+            if (!empty($invalidPermissions)) {
+                return response()->json([
+                    'message' => 'Some permissions do not exist',
+                    'errors' => [
+                        'permissions' => ['The following permissions do not exist: ' . implode(', ', $invalidPermissions)]
+                    ],
+                    'available_permissions' => Permission::pluck('name')->toArray()
+                ], 422);
+            }
+        }
 
         $role = Role::create(['name' => $request->name]);
 
-        if ($request->has('permissions')) {
-            $role->givePermissionTo($request->permissions);
+        if ($request->has('permissions') && !empty($request->permissions)) {
+            // Get permission objects instead of names to avoid guard issues
+            $permissionObjects = Permission::whereIn('name', $request->permissions)->get();
+            $role->permissions()->sync($permissionObjects->pluck('id'));
         }
 
         return response()->json([
@@ -105,8 +172,24 @@ class RolePermissionController extends Controller
         $request->validate([
             'name' => 'sometimes|required|string|max:255|unique:roles,name,' . $role->id,
             'permissions' => 'array',
-            'permissions.*' => 'exists:permissions,name',
+            'permissions.*' => 'string|max:255',
         ]);
+
+        // Validate that permissions exist in database
+        if ($request->has('permissions') && !empty($request->permissions)) {
+            $existingPermissions = Permission::whereIn('name', $request->permissions)->pluck('name')->toArray();
+            $invalidPermissions = array_diff($request->permissions, $existingPermissions);
+
+            if (!empty($invalidPermissions)) {
+                return response()->json([
+                    'message' => 'Some permissions do not exist',
+                    'errors' => [
+                        'permissions' => ['The following permissions do not exist: ' . implode(', ', $invalidPermissions)]
+                    ],
+                    'available_permissions' => Permission::pluck('name')->toArray()
+                ], 422);
+            }
+        }
 
         if ($request->has('name')) {
             $role->name = $request->name;
@@ -114,7 +197,9 @@ class RolePermissionController extends Controller
         }
 
         if ($request->has('permissions')) {
-            $role->syncPermissions($request->permissions);
+            // Get permission objects instead of names to avoid guard issues
+            $permissionObjects = Permission::whereIn('name', $request->permissions)->get();
+            $role->permissions()->sync($permissionObjects->pluck('id'));
         }
 
         return response()->json([
@@ -146,14 +231,32 @@ class RolePermissionController extends Controller
             ], Response::HTTP_FORBIDDEN);
         }
 
-        // Check if role has users
-        if ($role->users()->count() > 0) {
+        // Check if role has users using direct database query
+        $usersCount = 0;
+        try {
+            $usersCount = DB::table('model_has_roles')
+                ->where('role_id', $role->id)
+                ->count();
+        } catch (\Exception $e) {
+            Log::warning('Failed to count users for role: ' . $e->getMessage());
+        }
+
+        if ($usersCount > 0) {
             return response()->json([
                 'message' => 'Cannot delete role that has assigned users'
             ], Response::HTTP_FORBIDDEN);
         }
 
-        $role->delete();
+        // Delete role using direct database query to avoid relationship issues
+        try {
+            // First remove role permissions
+            DB::table('role_has_permissions')->where('role_id', $role->id)->delete();
+            // Then delete the role
+            DB::table('roles')->where('id', $role->id)->delete();
+        } catch (\Exception $e) {
+            // Fallback to model deletion
+            $role->delete();
+        }
 
         return response()->json([
             'message' => 'Role deleted successfully'
@@ -190,31 +293,61 @@ class RolePermissionController extends Controller
      */
     public function deletePermission(Request $request, $id)
     {
-        // Check admin permission
-        if (!$request->user()->hasRole('admin')) {
-            return response()->json(['message' => 'Access denied'], Response::HTTP_FORBIDDEN);
-        }
+        try {
+            // Check admin permission
+            if (!$request->user()->hasRole('admin')) {
+                return response()->json(['message' => 'Access denied'], Response::HTTP_FORBIDDEN);
+            }
 
-        $permission = Permission::findOrFail($id);
+            $permission = Permission::findOrFail($id);
 
-        // Prevent deletion of core permissions
-        $corePermissions = [
-            'manage users', 'manage affiliates', 'manage products', 'manage orders',
-            'manage payments', 'view reports', 'manage settings', 'create orders',
-            'view own orders', 'view own commissions', 'view marketing materials', 'update profile'
-        ];
+            // Prevent deletion of core permissions
+            $corePermissions = [
+                'manage users', 'manage affiliates', 'manage products', 'manage orders',
+                'manage payments', 'view reports', 'manage settings', 'create orders',
+                'view own orders', 'view own commissions', 'view marketing materials', 'update profile'
+            ];
 
-        if (in_array($permission->name, $corePermissions)) {
+            if (in_array($permission->name, $corePermissions)) {
+                return response()->json([
+                    'message' => 'Cannot delete core system permissions'
+                ], Response::HTTP_FORBIDDEN);
+            }
+
+            // Check if permission is assigned to any roles using direct database query
+            $rolesCount = 0;
+            try {
+                $rolesCount = DB::table('role_has_permissions')
+                    ->where('permission_id', $permission->id)
+                    ->count();
+            } catch (\Exception $e) {
+                // If counting fails, allow deletion but log the error
+                Log::warning('Failed to count roles for permission: ' . $e->getMessage());
+            }
+
+            if ($rolesCount > 0) {
+                return response()->json([
+                    'message' => 'Cannot delete permission that is assigned to roles. Please remove it from all roles first.'
+                ], Response::HTTP_FORBIDDEN);
+            }
+
+            // Delete permission using direct database query to avoid relationship issues
+            try {
+                DB::table('permissions')->where('id', $permission->id)->delete();
+            } catch (\Exception $e) {
+                // Fallback to model deletion
+                $permission->delete();
+            }
+
             return response()->json([
-                'message' => 'Cannot delete core system permissions'
-            ], Response::HTTP_FORBIDDEN);
+                'message' => 'Permission deleted successfully'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to delete permission',
+                'error' => $e->getMessage()
+            ], 500);
         }
-
-        $permission->delete();
-
-        return response()->json([
-            'message' => 'Permission deleted successfully'
-        ]);
     }
 
     /**
