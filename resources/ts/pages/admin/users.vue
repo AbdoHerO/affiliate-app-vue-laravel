@@ -20,10 +20,15 @@ type User = {
   id: string
   nom_complet: string
   email: string
+  telephone?: string
+  adresse?: string
+  statut: 'actif' | 'inactif' | 'bloque'
+  email_verifie: boolean
+  kyc_statut: 'non_requis' | 'en_attente' | 'valide' | 'refuse'
   roles: string[]
-  statut: 'actif' | 'inactif' | 'suspendu'
-  kyc_statut: 'approuve' | 'refuse' | 'en_attente' | 'non_requis'
+  remember_token?: string
   created_at: string
+  updated_at?: string
 }
 
 // Data
@@ -50,7 +55,14 @@ const statusOptions = [
   { title: t('all_status'), value: '' },
   { title: t('active'), value: 'actif' },
   { title: t('inactive'), value: 'inactif' },
-  { title: t('suspended'), value: 'suspendu' },
+  { title: t('blocked'), value: 'bloque' },
+]
+
+const kycStatusOptions = [
+  { title: t('not_required'), value: 'non_requis' },
+  { title: t('pending'), value: 'en_attente' },
+  { title: t('approved'), value: 'valide' },
+  { title: t('rejected'), value: 'refuse' },
 ]
 
 // Dialog states
@@ -63,6 +75,8 @@ const userForm = ref({
   nom_complet: '',
   email: '',
   password: '',
+  telephone: '',
+  adresse: '',
   role: '',
   statut: 'actif' as User['statut'],
   kyc_statut: 'non_requis' as User['kyc_statut'],
@@ -147,7 +161,9 @@ const createUser = async () => {
         nom_complet: userForm.value.nom_complet,
         email: userForm.value.email,
         password: userForm.value.password,
-        password_confirmation: userForm.value.password, // Add password confirmation
+        password_confirmation: userForm.value.password,
+        telephone: userForm.value.telephone,
+        adresse: userForm.value.adresse,
         role: userForm.value.role,
         statut: userForm.value.statut,
         kyc_statut: userForm.value.kyc_statut,
@@ -190,6 +206,8 @@ const updateUser = async () => {
     const payload: any = {
       nom_complet: userForm.value.nom_complet,
       email: userForm.value.email,
+      telephone: userForm.value.telephone,
+      adresse: userForm.value.adresse,
       role: userForm.value.role,
       statut: userForm.value.statut,
       kyc_statut: userForm.value.kyc_statut,
@@ -278,6 +296,8 @@ const resetForm = () => {
     nom_complet: '',
     email: '',
     password: '',
+    telephone: '',
+    adresse: '',
     role: '',
     statut: 'actif',
     kyc_statut: 'non_requis',
@@ -291,6 +311,8 @@ const openEditDialog = (user: User) => {
     nom_complet: user.nom_complet,
     email: user.email,
     password: '',
+    telephone: user.telephone || '',
+    adresse: user.adresse || '',
     role: user.roles[0] || '',
     statut: user.statut,
     kyc_statut: user.kyc_statut,
@@ -383,6 +405,7 @@ watch(
             <tr>
               <th>{{ t('name') }}</th>
               <th>{{ t('email') }}</th>
+              <th>{{ t('phone') }}</th>
               <th>{{ t('role') }}</th>
               <th>{{ t('status') }}</th>
               <th>{{ t('kyc_status') }}</th>
@@ -394,6 +417,7 @@ watch(
             <tr v-for="user in users" :key="user.id">
               <td>{{ user.nom_complet }}</td>
               <td>{{ user.email }}</td>
+              <td>{{ user.telephone || '-' }}</td>
               <td>
                 <VChip :color="user.roles[0] === 'admin' ? 'error' : 'primary'" size="small">
                   {{ user.roles[0] || 'No Role' }}
@@ -401,7 +425,7 @@ watch(
               </td>
               <td>
                 <VChip
-                  :color="user.statut === 'actif' ? 'success' : user.statut === 'suspendu' ? 'error' : 'warning'"
+                  :color="user.statut === 'actif' ? 'success' : user.statut === 'bloque' ? 'error' : 'warning'"
                   size="small"
                 >
                   {{ user.statut }}
@@ -409,7 +433,7 @@ watch(
               </td>
               <td>
                 <VChip
-                  :color="user.kyc_statut === 'approuve' ? 'success' : user.kyc_statut === 'refuse' ? 'error' : 'warning'"
+                  :color="user.kyc_statut === 'valide' ? 'success' : user.kyc_statut === 'refuse' ? 'error' : 'warning'"
                   size="small"
                 >
                   {{ user.kyc_statut }}
@@ -472,8 +496,11 @@ watch(
             <VTextField v-model="userForm.nom_complet" :label="t('full_name')" :placeholder="t('enter_full_name')" required class="mb-4" />
             <VTextField v-model="userForm.email" :label="t('email')" :placeholder="t('enter_email')" type="email" required class="mb-4" />
             <VTextField v-model="userForm.password" :label="t('password')" :placeholder="t('enter_password')" type="password" required class="mb-4" />
+            <VTextField v-model="userForm.telephone" :label="t('phone')" :placeholder="t('enter_phone')" class="mb-4" />
+            <VTextarea v-model="userForm.adresse" :label="t('address')" :placeholder="t('enter_address')" rows="3" class="mb-4" />
             <VSelect v-model="userForm.role" :items="roles" :label="t('role')" :placeholder="t('select_role')" required class="mb-4" />
-            <VSelect v-model="userForm.statut" :items="statusOptions.slice(1)" :label="t('status')" :placeholder="t('select_status')" required />
+            <VSelect v-model="userForm.statut" :items="statusOptions.slice(1)" :label="t('status')" :placeholder="t('select_status')" required class="mb-4" />
+            <VSelect v-model="userForm.kyc_statut" :items="kycStatusOptions" :label="t('kyc_status')" :placeholder="t('select_kyc_status')" required />
           </VForm>
         </VCardText>
         <VCardActions>
@@ -492,8 +519,11 @@ watch(
           <VForm @submit.prevent="updateUser">
             <VTextField v-model="userForm.nom_complet" :label="t('full_name')" :placeholder="t('enter_full_name')" required class="mb-4" />
             <VTextField v-model="userForm.email" :label="t('email')" :placeholder="t('enter_email')" type="email" required class="mb-4" />
+            <VTextField v-model="userForm.telephone" :label="t('phone')" :placeholder="t('enter_phone')" class="mb-4" />
+            <VTextarea v-model="userForm.adresse" :label="t('address')" :placeholder="t('enter_address')" rows="3" class="mb-4" />
             <VSelect v-model="userForm.role" :items="roles" :label="t('role')" :placeholder="t('select_role')" required class="mb-4" />
-            <VSelect v-model="userForm.statut" :items="statusOptions.slice(1)" :label="t('status')" :placeholder="t('select_status')" required />
+            <VSelect v-model="userForm.statut" :items="statusOptions.slice(1)" :label="t('status')" :placeholder="t('select_status')" required class="mb-4" />
+            <VSelect v-model="userForm.kyc_statut" :items="kycStatusOptions" :label="t('kyc_status')" :placeholder="t('select_kyc_status')" required />
           </VForm>
         </VCardText>
         <VCardActions>

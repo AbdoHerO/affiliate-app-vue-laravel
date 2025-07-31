@@ -39,6 +39,10 @@ export function useNavigation() {
                 title: 'Roles & Permissions',
                 to: 'admin-roles',
               },
+              {
+                title: 'KYC Documents',
+                to: 'admin-kyc-documents',
+              },
             ],
           },
           {

@@ -27,6 +27,7 @@ declare module 'vue-router/auto-routes' {
     'admin-commissions': RouteRecordInfo<'admin-commissions', '/admin/commissions', Record<never, never>, Record<never, never>>,
     'admin-dashboard': RouteRecordInfo<'admin-dashboard', '/admin/dashboard', Record<never, never>, Record<never, never>>,
     'admin-dashboard-simple': RouteRecordInfo<'admin-dashboard-simple', '/admin/dashboard-simple', Record<never, never>, Record<never, never>>,
+    'admin-kyc-documents': RouteRecordInfo<'admin-kyc-documents', '/admin/kyc-documents', Record<never, never>, Record<never, never>>,
     'admin-order-conflicts': RouteRecordInfo<'admin-order-conflicts', '/admin/order-conflicts', Record<never, never>, Record<never, never>>,
     'admin-orders': RouteRecordInfo<'admin-orders', '/admin/orders', Record<never, never>, Record<never, never>>,
     'admin-payments': RouteRecordInfo<'admin-payments', '/admin/payments', Record<never, never>, Record<never, never>>,

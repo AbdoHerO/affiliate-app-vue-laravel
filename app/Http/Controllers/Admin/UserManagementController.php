@@ -72,16 +72,22 @@ class UserManagementController extends Controller
             'nom_complet' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
+            'telephone' => 'nullable|string|max:20',
+            'adresse' => 'nullable|string|max:500',
             'role' => 'required|string|exists:roles,name',
-            'statut' => 'required|string|in:actif,inactif,suspendu',
-            'kyc_statut' => 'required|string|in:non_requis,en_attente,approuve,refuse',
+            'statut' => 'required|string|in:actif,inactif,bloque',
+            'email_verifie' => 'boolean',
+            'kyc_statut' => 'required|string|in:non_requis,en_attente,valide,refuse',
         ]);
 
         $user = User::create([
             'nom_complet' => $request->nom_complet,
             'email' => $request->email,
             'mot_de_passe_hash' => Hash::make($request->password),
+            'telephone' => $request->telephone,
+            'adresse' => $request->adresse,
             'statut' => $request->statut,
+            'email_verifie' => $request->boolean('email_verifie', false),
             'kyc_statut' => $request->kyc_statut,
         ]);
 
@@ -144,9 +150,12 @@ class UserManagementController extends Controller
             'nom_complet' => 'sometimes|required|string|max:255',
             'email' => ['sometimes', 'required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
             'password' => 'sometimes|nullable|string|min:8',
+            'telephone' => 'sometimes|nullable|string|max:20',
+            'adresse' => 'sometimes|nullable|string|max:500',
             'role' => 'sometimes|required|string|exists:roles,name',
-            'statut' => 'sometimes|required|string|in:actif,inactif,suspendu',
-            'kyc_statut' => 'sometimes|required|string|in:non_requis,en_attente,approuve,refuse',
+            'statut' => 'sometimes|required|string|in:actif,inactif,bloque',
+            'email_verifie' => 'sometimes|boolean',
+            'kyc_statut' => 'sometimes|required|string|in:non_requis,en_attente,valide,refuse',
         ]);
 
         // Update user fields
@@ -159,8 +168,17 @@ class UserManagementController extends Controller
         if ($request->has('password') && $request->password) {
             $user->mot_de_passe_hash = Hash::make($request->password);
         }
+        if ($request->has('telephone')) {
+            $user->telephone = $request->telephone;
+        }
+        if ($request->has('adresse')) {
+            $user->adresse = $request->adresse;
+        }
         if ($request->has('statut')) {
             $user->statut = $request->statut;
+        }
+        if ($request->has('email_verifie')) {
+            $user->email_verifie = $request->boolean('email_verifie');
         }
         if ($request->has('kyc_statut')) {
             $user->kyc_statut = $request->kyc_statut;

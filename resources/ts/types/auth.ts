@@ -1,10 +1,15 @@
 export interface User {
-  id: number
-  name: string
+  id: string // UUID
+  nom_complet: string
   email: string
+  telephone?: string
+  adresse?: string
+  statut: 'actif' | 'inactif' | 'bloque'
+  email_verifie: boolean
+  kyc_statut: 'non_requis' | 'en_attente' | 'valide' | 'refuse'
   roles: string[]
   permissions: string[]
-  email_verified_at?: string
+  remember_token?: string
   created_at?: string
   updated_at?: string
 }

@@ -5,6 +5,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\Admin\RolePermissionController;
 use App\Http\Controllers\Admin\DashboardStatsController;
+use App\Http\Controllers\Admin\KycDocumentController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -55,6 +56,15 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::delete('permissions/{id}', [RolePermissionController::class, 'deletePermission']);
         Route::post('roles/{id}/permissions', [RolePermissionController::class, 'assignPermissions']);
         Route::get('roles/stats', [RolePermissionController::class, 'getRoleStats']);
+
+        // KYC Documents Management
+        Route::get('kyc-documents', [KycDocumentController::class, 'index']);
+        Route::post('kyc-documents', [KycDocumentController::class, 'store']);
+        Route::get('kyc-documents/{id}', [KycDocumentController::class, 'show']);
+        Route::put('kyc-documents/{id}', [KycDocumentController::class, 'update']);
+        Route::delete('kyc-documents/{id}', [KycDocumentController::class, 'destroy']);
+        Route::get('kyc-documents/{id}/download', [KycDocumentController::class, 'download']);
+        Route::get('users/{userId}/kyc-documents', [KycDocumentController::class, 'getUserDocuments']);
     });
 
     // Affiliate only routes

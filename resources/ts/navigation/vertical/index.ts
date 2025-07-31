@@ -21,6 +21,11 @@ const adminNavigation = [
         to: '/admin/roles',
         icon: { icon: 'tabler-shield-lock' },
       },
+      {
+        title: 'KYC Documents',
+        to: '/admin/kyc-documents',
+        icon: { icon: 'tabler-file-certificate' },
+      },
     ],
   },
   {
