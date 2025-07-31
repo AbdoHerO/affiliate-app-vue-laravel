@@ -8,6 +8,7 @@ export const useAuthStore = defineStore('auth', () => {
   const token = ref<string | null>(null)
   const isLoading = ref(false)
   const error = ref<string | null>(null)
+  const isInitialized = ref(false)
 
   // Getters
   const isAuthenticated = computed(() => !!token.value && !!user.value)
@@ -43,28 +44,41 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   const clearAuth = () => {
+    console.log('🧹 [Auth Store] Clearing authentication')
     user.value = null
     token.value = null
+    error.value = null
+    isInitialized.value = false
     localStorage.removeItem('auth_token')
     localStorage.removeItem('auth_user')
   }
 
   const initializeAuth = () => {
+    if (isInitialized.value) return
+
+    console.log('🔄 [Auth Store] Initializing authentication...')
     isLoading.value = true
 
     const storedToken = localStorage.getItem('auth_token')
     const storedUser = localStorage.getItem('auth_user')
 
+    console.log('🔍 [Auth Store] Stored token:', storedToken ? storedToken.substring(0, 20) + '...' : 'None')
+    console.log('🔍 [Auth Store] Stored user:', storedUser ? 'Found' : 'None')
+
     if (storedToken && storedUser) {
       token.value = storedToken
       try {
         user.value = JSON.parse(storedUser)
+        console.log('✅ [Auth Store] Authentication restored from storage')
       } catch (e) {
-        console.error('Failed to parse stored user data:', e)
+        console.error('❌ [Auth Store] Failed to parse stored user data:', e)
         clearAuth()
       }
+    } else {
+      console.log('ℹ️ [Auth Store] No stored authentication found')
     }
 
+    isInitialized.value = true
     isLoading.value = false
   }
 
@@ -73,7 +87,8 @@ export const useAuthStore = defineStore('auth', () => {
     error.value = null
 
     try {
-      const response = await fetch('/api/auth/login', {
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '/api'
+      const response = await fetch(`${apiBaseUrl}/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -102,7 +117,8 @@ export const useAuthStore = defineStore('auth', () => {
     error.value = null
 
     try {
-      const response = await fetch('/api/auth/register', {
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '/api'
+      const response = await fetch(`${apiBaseUrl}/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -131,7 +147,8 @@ export const useAuthStore = defineStore('auth', () => {
 
     try {
       if (token.value) {
-        await fetch('/api/auth/logout', {
+        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '/api'
+        await fetch(`${apiBaseUrl}/auth/logout`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token.value}`,
@@ -151,7 +168,8 @@ export const useAuthStore = defineStore('auth', () => {
     if (!token.value) return
 
     try {
-      const response = await fetch('/api/auth/user', {
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '/api'
+      const response = await fetch(`${apiBaseUrl}/auth/user`, {
         headers: {
           'Authorization': `Bearer ${token.value}`,
           'Content-Type': 'application/json',
@@ -176,6 +194,7 @@ export const useAuthStore = defineStore('auth', () => {
     token,
     isLoading,
     error,
+    isInitialized,
 
     // Getters
     isAuthenticated,
@@ -189,6 +208,8 @@ export const useAuthStore = defineStore('auth', () => {
     hasAnyPermission,
 
     // Actions
+    setToken,
+    setUser,
     login,
     register,
     logout,

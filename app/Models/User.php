@@ -49,6 +49,14 @@ class User extends Authenticatable
     ];
 
     /**
+     * Get the password attribute for authentication
+     */
+    public function getAuthPassword()
+    {
+        return $this->mot_de_passe_hash;
+    }
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>

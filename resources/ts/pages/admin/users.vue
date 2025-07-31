@@ -85,15 +85,19 @@ const fetchUsers = async (page = 1) => {
     if (filters.value.role)   params.set('role', filters.value.role)
     if (filters.value.statut) params.set('statut', filters.value.statut)
 
-    // ✅ always call useApi directly and use params.toString()
     const url = `/admin/users?${params.toString()}`
-    console.assert(typeof url === 'string', 'URL must be a string')
     const { data, error: apiError } = await useApi<any>(url)
 
     if (apiError.value) {
       error.value = apiError.value.message || 'Failed to load users'
       showError(t('failed_to_load_users'))
       console.error('Users fetch error:', apiError.value)
+
+      // Handle authentication errors
+      if (apiError.value.status === 401) {
+        showError('Authentication required. Please login again.')
+        // Optionally redirect to login
+      }
     } else if (data.value) {
       users.value = data.value.users.map((user: any) => ({
         id: String(user.id),
@@ -143,6 +147,7 @@ const createUser = async () => {
         nom_complet: userForm.value.nom_complet,
         email: userForm.value.email,
         password: userForm.value.password,
+        password_confirmation: userForm.value.password, // Add password confirmation
         role: userForm.value.role,
         statut: userForm.value.statut,
         kyc_statut: userForm.value.kyc_statut,

@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Test Suite</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .test-result { margin: 10px 0; padding: 10px; border-radius: 3px; }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .warning { background-color: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        button { padding: 10px 15px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; }
+        .auth-section { background: #e7f3ff; }
+        .admin-section { background: #fff7e6; }
+    </style>
+</head>
+<body>
+    <h1>API Test Suite - Laravel Backend</h1>
+    
+    <div class="test-section auth-section">
+        <h2>Authentication Tests</h2>
+        <button onclick="runFullTest()" style="background: #28a745; font-weight: bold;">🚀 Run Full Test Suite</button>
+        <button onclick="debugLocalStorage()" style="background: #17a2b8;">🔍 Debug Storage</button>
+        <button onclick="setFreshToken()" style="background: #ffc107;">🔧 Get Fresh Token</button>
+        <button onclick="testLogin()">Test Login</button>
+        <button onclick="testRegister()">Test Register</button>
+        <button onclick="testAuthUser()">Test Get Auth User</button>
+        <button onclick="testLogout()">Test Logout</button>
+        <div id="auth-results"></div>
+    </div>
+
+    <div class="test-section admin-section">
+        <h2>Admin API Tests</h2>
+        <button onclick="testGetUsers()">Test Get Users</button>
+        <button onclick="testCreateUser()">Test Create User</button>
+        <button onclick="testGetRoles()">Test Get Roles</button>
+        <button onclick="testCreateRole()">Test Create Role</button>
+        <button onclick="testGetPermissions()">Test Get Permissions</button>
+        <div id="admin-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Database Connection Test</h2>
+        <button onclick="testDatabaseConnection()">Test Database</button>
+        <div id="db-results"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://127.0.0.1:8000/api';
+        let authToken = localStorage.getItem('auth_token') || '';
+
+        // For testing - set a fresh token (get new one from login)
+        async function setFreshToken() {
+            logResult('auth-results', '🔧 Getting fresh token...', 'warning');
+
+            // First login to get a fresh token
+            const { response, data } = await makeRequest('/auth/login', {
+                method: 'POST',
+                body: JSON.stringify({
+                    email: 'admin@cod.test',
+                    password: 'password'
+                })
+            });
+
+            if (response.ok && data.token) {
+                authToken = data.token;
+                localStorage.setItem('auth_token', authToken);
+                logResult('auth-results', '✅ Fresh token obtained and set!', 'success');
+            } else {
+                logResult('auth-results', '❌ Failed to get fresh token', 'error');
+            }
+        }
+
+        function logResult(containerId, message, type = 'info') {
+            const container = document.getElementById(containerId);
+            const div = document.createElement('div');
+            div.className = `test-result ${type}`;
+            div.innerHTML = `<strong>${new Date().toLocaleTimeString()}</strong>: ${message}`;
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function logResponse(containerId, response, data) {
+            const message = `
+                <div>Status: ${response.status} ${response.statusText}</div>
+                <pre>${JSON.stringify(data, null, 2)}</pre>
+            `;
+            logResult(containerId, message, response.ok ? 'success' : 'error');
+        }
+
+        async function makeRequest(url, options = {}) {
+            console.log('🔍 Making request to:', `${API_BASE}${url}`);
+            console.log('🔑 Auth token:', authToken ? authToken.substring(0, 20) + '...' : 'NO TOKEN');
+
+            const defaultOptions = {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    ...(authToken && { 'Authorization': `Bearer ${authToken}` })
+                }
+            };
+
+            const finalOptions = {
+                ...defaultOptions,
+                ...options,
+                headers: { ...defaultOptions.headers, ...options.headers }
+            };
+
+            console.log('📤 Request headers:', finalOptions.headers);
+
+            try {
+                const response = await fetch(`${API_BASE}${url}`, finalOptions);
+                const data = await response.json().catch(() => ({}));
+                console.log('📥 Response status:', response.status);
+                return { response, data };
+            } catch (error) {
+                console.error('❌ Request error:', error);
+                return {
+                    response: { ok: false, status: 0, statusText: 'Network Error' },
+                    data: { error: error.message }
+                };
+            }
+        }
+
+        // Authentication Tests
+        async function testLogin() {
+            logResult('auth-results', 'Testing login...', 'warning');
+            const { response, data } = await makeRequest('/auth/login', {
+                method: 'POST',
+                body: JSON.stringify({
+                    email: 'admin@cod.test',
+                    password: 'password'
+                })
+            });
+
+            if (response.ok && data.token) {
+                authToken = data.token;
+                localStorage.setItem('auth_token', authToken);
+                localStorage.setItem('auth_user', JSON.stringify(data.user));
+                logResult('auth-results', 'Login successful! Token saved.', 'success');
+            }
+            
+            logResponse('auth-results', response, data);
+        }
+
+        async function testRegister() {
+            logResult('auth-results', 'Testing registration...', 'warning');
+            const { response, data } = await makeRequest('/auth/register', {
+                method: 'POST',
+                body: JSON.stringify({
+                    nom_complet: 'Test User ' + Date.now(),
+                    email: `test${Date.now()}@example.com`,
+                    password: 'password123',
+                    password_confirmation: 'password123',
+                    role: 'affiliate'
+                })
+            });
+
+            logResponse('auth-results', response, data);
+        }
+
+        async function testAuthUser() {
+            logResult('auth-results', 'Testing get authenticated user...', 'warning');
+            const { response, data } = await makeRequest('/auth/user');
+            logResponse('auth-results', response, data);
+        }
+
+        async function testLogout() {
+            logResult('auth-results', 'Testing logout...', 'warning');
+            const { response, data } = await makeRequest('/auth/logout', { method: 'POST' });
+            
+            if (response.ok) {
+                authToken = '';
+                localStorage.removeItem('auth_token');
+                localStorage.removeItem('auth_user');
+                logResult('auth-results', 'Logout successful! Token cleared.', 'success');
+            }
+            
+            logResponse('auth-results', response, data);
+        }
+
+        // Admin API Tests
+        async function testGetUsers() {
+            logResult('admin-results', 'Testing get users...', 'warning');
+            const { response, data } = await makeRequest('/admin/users');
+            logResponse('admin-results', response, data);
+        }
+
+        async function testCreateUser() {
+            logResult('admin-results', 'Testing create user...', 'warning');
+            const { response, data } = await makeRequest('/admin/users', {
+                method: 'POST',
+                body: JSON.stringify({
+                    nom_complet: 'API Test User ' + Date.now(),
+                    email: `apitest${Date.now()}@example.com`,
+                    password: 'password123',
+                    password_confirmation: 'password123',
+                    role: 'affiliate',
+                    statut: 'actif',
+                    kyc_statut: 'non_requis'
+                })
+            });
+            logResponse('admin-results', response, data);
+        }
+
+        async function testGetRoles() {
+            logResult('admin-results', 'Testing get roles...', 'warning');
+            const { response, data } = await makeRequest('/admin/roles');
+            logResponse('admin-results', response, data);
+        }
+
+        async function testCreateRole() {
+            logResult('admin-results', 'Testing create role...', 'warning');
+            const { response, data } = await makeRequest('/admin/roles', {
+                method: 'POST',
+                body: JSON.stringify({
+                    name: 'test-role-' + Date.now(),
+                    permissions: []
+                })
+            });
+            logResponse('admin-results', response, data);
+        }
+
+        async function testGetPermissions() {
+            logResult('admin-results', 'Testing get permissions...', 'warning');
+            const { response, data } = await makeRequest('/admin/permissions');
+            logResponse('admin-results', response, data);
+        }
+
+        async function testDatabaseConnection() {
+            logResult('db-results', 'Testing database connection...', 'warning');
+            
+            // Test via a simple endpoint that requires DB
+            const { response, data } = await makeRequest('/admin/users?per_page=1');
+            
+            if (response.ok) {
+                logResult('db-results', 'Database connection appears to be working!', 'success');
+            } else if (response.status === 401) {
+                logResult('db-results', 'Database test requires authentication. Please login first.', 'warning');
+            } else {
+                logResult('db-results', 'Database connection may have issues.', 'error');
+            }
+            
+            logResponse('db-results', response, data);
+        }
+
+        // Full test suite
+        async function runFullTest() {
+            logResult('auth-results', '🚀 Starting Full Test Suite...', 'warning');
+            logResult('admin-results', '🚀 Starting Full Test Suite...', 'warning');
+            logResult('db-results', '🚀 Starting Full Test Suite...', 'warning');
+
+            try {
+                // Step 1: Login
+                await testLogin();
+                await new Promise(resolve => setTimeout(resolve, 1000));
+
+                // Step 2: Test authenticated user
+                await testAuthUser();
+                await new Promise(resolve => setTimeout(resolve, 1000));
+
+                // Step 3: Test admin endpoints
+                await testGetUsers();
+                await new Promise(resolve => setTimeout(resolve, 1000));
+
+                await testGetRoles();
+                await new Promise(resolve => setTimeout(resolve, 1000));
+
+                await testGetPermissions();
+                await new Promise(resolve => setTimeout(resolve, 1000));
+
+                // Step 4: Test create user
+                await testCreateUser();
+                await new Promise(resolve => setTimeout(resolve, 1000));
+
+                // Step 5: Test database
+                await testDatabaseConnection();
+
+                logResult('auth-results', '✅ Full test suite completed!', 'success');
+                logResult('admin-results', '✅ Full test suite completed!', 'success');
+                logResult('db-results', '✅ Full test suite completed!', 'success');
+            } catch (error) {
+                logResult('auth-results', '❌ Test suite failed: ' + error.message, 'error');
+            }
+        }
+
+        // Debug function to check localStorage
+        function debugLocalStorage() {
+            logResult('auth-results', '🔍 Debugging localStorage...', 'warning');
+            logResult('auth-results', `auth_token: ${localStorage.getItem('auth_token') || 'NOT FOUND'}`, 'info');
+            logResult('auth-results', `auth_user: ${localStorage.getItem('auth_user') || 'NOT FOUND'}`, 'info');
+            logResult('auth-results', `accessToken: ${localStorage.getItem('accessToken') || 'NOT FOUND'}`, 'info');
+
+            // Check all localStorage keys
+            const allKeys = Object.keys(localStorage);
+            logResult('auth-results', `All localStorage keys: ${allKeys.join(', ')}`, 'info');
+        }
+
+        // Auto-load token on page load
+        window.onload = function() {
+            debugLocalStorage();
+
+            if (authToken) {
+                logResult('auth-results', 'Found existing auth token in localStorage', 'success');
+            } else {
+                logResult('auth-results', 'No auth token found. Please login first.', 'warning');
+            }
+        };
+    </script>
+</body>
+</html>

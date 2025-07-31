@@ -71,7 +71,7 @@ class UserManagementController extends Controller
         $request->validate([
             'nom_complet' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8',
+            'password' => 'required|string|min:8|confirmed',
             'role' => 'required|string|exists:roles,name',
             'statut' => 'required|string|in:actif,inactif,suspendu',
             'kyc_statut' => 'required|string|in:non_requis,en_attente,approuve,refuse',
