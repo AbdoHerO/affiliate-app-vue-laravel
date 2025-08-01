@@ -4,6 +4,7 @@ import { useAuth } from '@/composables/useAuth'
 import { useI18n } from 'vue-i18n'
 import { useNotifications } from '@/composables/useNotifications'
 import { useApi } from '@/composables/useApi'
+import { useFormErrors } from '@/composables/useFormErrors'
 
 definePage({
   meta: {
@@ -81,6 +82,9 @@ const userForm = ref({
   statut: 'actif' as User['statut'],
   kyc_statut: 'non_requis' as User['kyc_statut'],
 })
+
+// Form errors handling
+const { errors: userErrors, set: setUserErrors, clear: clearUserErrors } = useFormErrors<typeof userForm.value>()
 
 // -----------------------------
 // API Functions (fixed)
@@ -172,17 +176,11 @@ const createUser = async () => {
     })
 
     if (apiError.value) {
-      let errorMessage = apiError.value.message || t('failed_to_create_user')
-
-      // Handle validation errors
-      if (apiError.value.errors) {
-        const validationErrors = Object.values(apiError.value.errors).flat()
-        errorMessage = validationErrors.join(', ')
-      }
-
-      showError(errorMessage)
+      setUserErrors(apiError.value.errors)
+      showError(apiError.value.message)
       console.error('Create user error:', apiError.value)
     } else if (data.value) {
+      clearUserErrors()
       showCreateDialog.value = false
       const name = userForm.value.nom_complet
       resetForm()
@@ -221,17 +219,11 @@ const updateUser = async () => {
     })
 
     if (apiError.value) {
-      let errorMessage = apiError.value.message || t('failed_to_update_user')
-
-      // Handle validation errors
-      if (apiError.value.errors) {
-        const validationErrors = Object.values(apiError.value.errors).flat()
-        errorMessage = validationErrors.join(', ')
-      }
-
-      showError(errorMessage)
+      setUserErrors(apiError.value.errors)
+      showError(apiError.value.message)
       console.error('Update user error:', apiError.value)
     } else if (data.value) {
+      clearUserErrors()
       showEditDialog.value = false
       const name = userForm.value.nom_complet
       resetForm()
@@ -493,12 +485,12 @@ watch(
         <VCardTitle>{{ t('create_new_user') }}</VCardTitle>
         <VCardText>
           <VForm @submit.prevent="createUser">
-            <VTextField v-model="userForm.nom_complet" :label="t('full_name')" :placeholder="t('enter_full_name')" required class="mb-4" />
-            <VTextField v-model="userForm.email" :label="t('email')" :placeholder="t('enter_email')" type="email" required class="mb-4" />
-            <VTextField v-model="userForm.password" :label="t('password')" :placeholder="t('enter_password')" type="password" required class="mb-4" />
-            <VTextField v-model="userForm.telephone" :label="t('phone')" :placeholder="t('enter_phone')" class="mb-4" />
-            <VTextarea v-model="userForm.adresse" :label="t('address')" :placeholder="t('enter_address')" rows="3" class="mb-4" />
-            <VSelect v-model="userForm.role" :items="roles" :label="t('role')" :placeholder="t('select_role')" required class="mb-4" />
+            <VTextField v-model="userForm.nom_complet" :label="t('full_name')" :placeholder="t('enter_full_name')" :error-messages="userErrors.nom_complet" required class="mb-4" />
+            <VTextField v-model="userForm.email" :label="t('email')" :placeholder="t('enter_email')" :error-messages="userErrors.email" type="email" required class="mb-4" />
+            <VTextField v-model="userForm.password" :label="t('password')" :placeholder="t('enter_password')" :error-messages="userErrors.password" type="password" required class="mb-4" />
+            <VTextField v-model="userForm.telephone" :label="t('phone')" :placeholder="t('enter_phone')" :error-messages="userErrors.telephone" class="mb-4" />
+            <VTextarea v-model="userForm.adresse" :label="t('address')" :placeholder="t('enter_address')" :error-messages="userErrors.adresse" rows="3" class="mb-4" />
+            <VSelect v-model="userForm.role" :items="roles" :label="t('role')" :placeholder="t('select_role')" :error-messages="userErrors.role" required class="mb-4" />
             <VSelect v-model="userForm.statut" :items="statusOptions.slice(1)" :label="t('status')" :placeholder="t('select_status')" required class="mb-4" />
             <VSelect v-model="userForm.kyc_statut" :items="kycStatusOptions" :label="t('kyc_status')" :placeholder="t('select_kyc_status')" required />
           </VForm>
@@ -517,11 +509,11 @@ watch(
         <VCardTitle>{{ t('edit_user') }}</VCardTitle>
         <VCardText>
           <VForm @submit.prevent="updateUser">
-            <VTextField v-model="userForm.nom_complet" :label="t('full_name')" :placeholder="t('enter_full_name')" required class="mb-4" />
-            <VTextField v-model="userForm.email" :label="t('email')" :placeholder="t('enter_email')" type="email" required class="mb-4" />
-            <VTextField v-model="userForm.telephone" :label="t('phone')" :placeholder="t('enter_phone')" class="mb-4" />
-            <VTextarea v-model="userForm.adresse" :label="t('address')" :placeholder="t('enter_address')" rows="3" class="mb-4" />
-            <VSelect v-model="userForm.role" :items="roles" :label="t('role')" :placeholder="t('select_role')" required class="mb-4" />
+            <VTextField v-model="userForm.nom_complet" :label="t('full_name')" :placeholder="t('enter_full_name')" :error-messages="userErrors.nom_complet" required class="mb-4" />
+            <VTextField v-model="userForm.email" :label="t('email')" :placeholder="t('enter_email')" :error-messages="userErrors.email" type="email" required class="mb-4" />
+            <VTextField v-model="userForm.telephone" :label="t('phone')" :placeholder="t('enter_phone')" :error-messages="userErrors.telephone" class="mb-4" />
+            <VTextarea v-model="userForm.adresse" :label="t('address')" :placeholder="t('enter_address')" :error-messages="userErrors.adresse" rows="3" class="mb-4" />
+            <VSelect v-model="userForm.role" :items="roles" :label="t('role')" :placeholder="t('select_role')" :error-messages="userErrors.role" required class="mb-4" />
             <VSelect v-model="userForm.statut" :items="statusOptions.slice(1)" :label="t('status')" :placeholder="t('select_status')" required class="mb-4" />
             <VSelect v-model="userForm.kyc_statut" :items="kycStatusOptions" :label="t('kyc_status')" :placeholder="t('select_kyc_status')" required />
           </VForm>

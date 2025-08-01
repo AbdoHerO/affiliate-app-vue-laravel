@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n'
 import { useAuth } from '@/composables/useAuth'
 import { useApi } from '@/composables/useApi'
 import { useNotifications } from '@/composables/useNotifications'
+import { normalizeFromResponse } from '@/services/ErrorService'
 
 definePage({
   meta: {
@@ -14,7 +15,7 @@ definePage({
 
 const { t } = useI18n()
 const { hasPermission } = useAuth()
-const { showSuccess, showError, showConfirm, confirmDialog } = useNotifications()
+const { showSuccess, showError, showConfirm, snackbar, confirmDialog } = useNotifications()
 
 // Types
 type KycDocument = {
@@ -201,9 +202,8 @@ const fetchDocuments = async (page = 1) => {
     const { data, error: apiError } = await useApi<any>(url)
 
     if (apiError.value) {
-      const errorMessage = apiError.value.message || 'Failed to load KYC documents'
-      error.value = errorMessage
-      showError(errorMessage)
+      error.value = apiError.value.message
+      showError(apiError.value.message)
       console.error('KYC documents fetch error:', apiError.value)
     } else if (data.value) {
       documents.value = data.value.data || []
@@ -280,17 +280,9 @@ const uploadDocument = async () => {
     console.log('🔍 Upload response status:', response.status)
 
     if (!response.ok) {
-      const errorData = await response.json()
-      console.error('❌ Upload error response:', errorData)
-
-      let errorMessage = errorData.message || t('failed_to_upload_document')
-
-      if (errorData.errors) {
-        const validationErrors = Object.values(errorData.errors).flat()
-        errorMessage = validationErrors.join(', ')
-      }
-
-      showError(errorMessage)
+      const nerr = await normalizeFromResponse(response)
+      console.error('❌ Upload error response:', nerr)
+      showError(nerr.message) // e.g., 409 -> "User already has a document of this type"
       return
     }
 
@@ -337,14 +329,7 @@ const reviewDocument = async () => {
     })
 
     if (apiError.value) {
-      let errorMessage = apiError.value.message || t('failed_to_review_document')
-      
-      if (apiError.value.errors) {
-        const validationErrors = Object.values(apiError.value.errors).flat()
-        errorMessage = validationErrors.join(', ')
-      }
-      
-      showError(errorMessage)
+      showError(apiError.value.message)
       console.error('Review document error:', apiError.value)
     } else if (data.value) {
       showReviewDialog.value = false
@@ -458,8 +443,7 @@ const deleteDocument = (document: KycDocument) => {
         })
 
         if (apiError.value) {
-          let errorMessage = apiError.value.message || t('failed_to_delete_document')
-          showError(errorMessage)
+          showError(apiError.value.message)
           console.error('Delete document error:', apiError.value)
         } else if (data.value) {
           await fetchDocuments()
@@ -804,6 +788,31 @@ onMounted(async () => {
           <VBtn color="secondary" variant="tonal" @click="confirmDialog.onCancel">
             {{ confirmDialog.cancelText }}
           </VBtn>
+        </VCardText>
+      </VCard>
+    </VDialog>
+
+    <!-- Success/Error Snackbar -->
+    <VSnackbar
+      v-model="snackbar.show"
+      :color="snackbar.color"
+      :timeout="snackbar.timeout"
+      location="top end"
+    >
+      {{ snackbar.message }}
+    </VSnackbar>
+
+    <!-- Confirmation Dialog -->
+    <VDialog v-model="confirmDialog.show" max-width="500">
+      <VCard class="text-center px-10 py-6">
+        <VCardText>
+          <VIcon icon="tabler-help" size="50" class="text-warning mb-4" />
+          <h6 class="text-h6 mb-4">{{ confirmDialog.title }}</h6>
+          <p class="text-body-1 mb-6">{{ confirmDialog.message }}</p>
+          <div class="d-flex gap-4 justify-center">
+            <VBtn color="error" @click="confirmDialog.onConfirm">{{ confirmDialog.confirmText }}</VBtn>
+            <VBtn variant="outlined" @click="confirmDialog.onCancel">{{ confirmDialog.cancelText }}</VBtn>
+          </div>
         </VCardText>
       </VCard>
     </VDialog>

@@ -4,6 +4,7 @@ import { useAuth } from '@/composables/useAuth'
 import { useI18n } from 'vue-i18n'
 import { useNotifications } from '@/composables/useNotifications'
 import { useApi } from '@/composables/useApi'
+import { useFormErrors } from '@/composables/useFormErrors'
 
 definePage({
   meta: {
@@ -37,6 +38,10 @@ const roleForm = ref({
 const permissionForm = ref({
   name: '',
 })
+
+// Form errors handling
+const { errors: roleErrors, set: setRoleErrors, clear: clearRoleErrors } = useFormErrors<typeof roleForm.value>()
+const { errors: permissionErrors, set: setPermissionErrors, clear: clearPermissionErrors } = useFormErrors<typeof permissionForm.value>()
 
 // API Functions
 const fetchRoles = async () => {
@@ -101,17 +106,11 @@ const createRole = async () => {
     })
 
     if (apiError.value) {
-      let errorMessage = apiError.value.message || t('failed_to_create_role')
-
-      // Handle validation errors
-      if (apiError.value.errors) {
-        const validationErrors = Object.values(apiError.value.errors).flat()
-        errorMessage = validationErrors.join(', ')
-      }
-
-      showError(errorMessage)
+      setRoleErrors(apiError.value.errors)
+      showError(apiError.value.message)
       console.error('Create role error:', apiError.value)
     } else if (data.value) {
+      clearRoleErrors()
       showCreateRoleDialog.value = false
       resetRoleForm()
       await fetchRoles()
@@ -144,17 +143,11 @@ const updateRole = async () => {
     })
 
     if (apiError.value) {
-      let errorMessage = apiError.value.message || t('failed_to_update_role')
-
-      // Handle validation errors
-      if (apiError.value.errors) {
-        const validationErrors = Object.values(apiError.value.errors).flat()
-        errorMessage = validationErrors.join(', ')
-      }
-
-      showError(errorMessage)
+      setRoleErrors(apiError.value.errors)
+      showError(apiError.value.message)
       console.error('Update role error:', apiError.value)
     } else if (data.value) {
+      clearRoleErrors()
       showEditRoleDialog.value = false
       resetRoleForm()
       await fetchRoles()
@@ -215,17 +208,11 @@ const createPermission = async () => {
     })
 
     if (apiError.value) {
-      let errorMessage = apiError.value.message || t('failed_to_create_permission')
-
-      // Handle validation errors
-      if (apiError.value.errors) {
-        const validationErrors = Object.values(apiError.value.errors).flat()
-        errorMessage = validationErrors.join(', ')
-      }
-
-      showError(errorMessage)
+      setPermissionErrors(apiError.value.errors)
+      showError(apiError.value.message)
       console.error('Create permission error:', apiError.value)
     } else if (data.value) {
+      clearPermissionErrors()
       showCreatePermissionDialog.value = false
       resetPermissionForm()
       await fetchPermissions()
@@ -459,6 +446,7 @@ onMounted(async () => {
               v-model="roleForm.name"
               label="Role Name"
               placeholder="Enter role name"
+              :error-messages="roleErrors.name"
               required
               class="mb-4"
             />
@@ -494,6 +482,7 @@ onMounted(async () => {
               v-model="roleForm.name"
               label="Role Name"
               placeholder="Enter role name"
+              :error-messages="roleErrors.name"
               required
               class="mb-4"
             />
@@ -529,6 +518,7 @@ onMounted(async () => {
               v-model="permissionForm.name"
               label="Permission Name"
               placeholder="Enter permission name"
+              :error-messages="permissionErrors.name"
               required
             />
           </VForm>
