@@ -64,6 +64,30 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::put('kyc-documents/{id}', [KycDocumentController::class, 'update']);
         Route::delete('kyc-documents/{id}', [KycDocumentController::class, 'destroy']);
         Route::get('kyc-documents/{id}/download', [KycDocumentController::class, 'download']);
+        Route::get('kyc-documents/{id}/view', [KycDocumentController::class, 'view']);
+
+        // Simple file access route (temporary for testing)
+        Route::get('kyc-documents/{id}/file', function($id) {
+            $document = \App\Models\KycDocument::findOrFail($id);
+            $filePath = storage_path('app/public/' . $document->url_fichier);
+
+            if (!file_exists($filePath)) {
+                abort(404, 'File not found');
+            }
+
+            $extension = pathinfo($filePath, PATHINFO_EXTENSION);
+            $mimeType = match(strtolower($extension)) {
+                'pdf' => 'application/pdf',
+                'jpg', 'jpeg' => 'image/jpeg',
+                'png' => 'image/png',
+                default => 'application/octet-stream'
+            };
+
+            return response()->file($filePath, [
+                'Content-Type' => $mimeType,
+                'Content-Disposition' => 'inline'
+            ]);
+        });
         Route::get('users/{userId}/kyc-documents', [KycDocumentController::class, 'getUserDocuments']);
     });
 

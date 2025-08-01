@@ -86,7 +86,9 @@ class KycDocumentController extends Controller
 
         // Store the file
         $file = $request->file('fichier');
-        $fileName = time() . '_' . $file->getClientOriginalName();
+        $originalName = $file->getClientOriginalName();
+        $extension = $file->getClientOriginalExtension();
+        $fileName = time() . '_' . uniqid() . '.' . $extension;
         $filePath = $file->storeAs('kyc-documents', $fileName, 'public');
 
         $document = KycDocument::create([
@@ -196,7 +198,60 @@ class KycDocumentController extends Controller
             return response()->json(['message' => 'File not found'], Response::HTTP_NOT_FOUND);
         }
 
-        return Storage::disk('public')->download($document->url_fichier);
+        $filePath = Storage::disk('public')->path($document->url_fichier);
+        $fileName = basename($document->url_fichier);
+
+        // Get file extension to determine MIME type
+        $extension = pathinfo($fileName, PATHINFO_EXTENSION);
+        $mimeType = match(strtolower($extension)) {
+            'pdf' => 'application/pdf',
+            'jpg', 'jpeg' => 'image/jpeg',
+            'png' => 'image/png',
+            default => 'application/octet-stream'
+        };
+
+        // Create a more descriptive filename
+        $downloadName = "kyc-{$document->type_doc}-{$document->utilisateur->nom_complet}.{$extension}";
+        $downloadName = preg_replace('/[^a-zA-Z0-9._-]/', '_', $downloadName);
+
+        return response()->file($filePath, [
+            'Content-Type' => $mimeType,
+            'Content-Disposition' => 'attachment; filename="' . $downloadName . '"'
+        ]);
+    }
+
+    /**
+     * View the specified KYC document in browser.
+     */
+    public function view(Request $request, string $id)
+    {
+        // Check admin permission
+        if (!$request->user()->hasRole('admin')) {
+            return response()->json(['message' => 'Access denied'], Response::HTTP_FORBIDDEN);
+        }
+
+        $document = KycDocument::findOrFail($id);
+
+        if (!Storage::disk('public')->exists($document->url_fichier)) {
+            return response()->json(['message' => 'File not found'], Response::HTTP_NOT_FOUND);
+        }
+
+        $filePath = Storage::disk('public')->path($document->url_fichier);
+        $fileName = basename($document->url_fichier);
+
+        // Get file extension to determine MIME type
+        $extension = pathinfo($fileName, PATHINFO_EXTENSION);
+        $mimeType = match(strtolower($extension)) {
+            'pdf' => 'application/pdf',
+            'jpg', 'jpeg' => 'image/jpeg',
+            'png' => 'image/png',
+            default => 'application/octet-stream'
+        };
+
+        return response()->file($filePath, [
+            'Content-Type' => $mimeType,
+            'Content-Disposition' => 'inline; filename="' . $fileName . '"'
+        ]);
     }
 
     /**
@@ -213,7 +268,6 @@ class KycDocumentController extends Controller
         }
 
         $hasRefused = $documents->where('statut', 'refuse')->isNotEmpty();
-        $hasPending = $documents->where('statut', 'en_attente')->isNotEmpty();
         $allValidated = $documents->every(fn($doc) => $doc->statut === 'valide');
 
         if ($hasRefused) {

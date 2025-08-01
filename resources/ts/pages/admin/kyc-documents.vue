@@ -113,23 +113,71 @@ const filteredDocuments = computed(() => {
 const fetchUsers = async () => {
   try {
     loadingUsers.value = true
-    const { data, error: apiError } = await useApi<any>('/admin/users?per_page=1000') // Get all users
+    console.log('🔍 Fetching users...')
 
-    if (apiError.value) {
-      console.error('Users fetch error:', apiError.value)
-      showError('Failed to load users')
-    } else if (data.value) {
-      const usersData = data.value.data || []
-      users.value = usersData.map((user: any) => ({
-        title: `${user.nom_complet} (${user.email}) - ${user.kyc_statut}`,
-        value: user.id,
-        subtitle: `Role: ${user.roles?.[0] || 'No role'} | Status: ${user.statut}`
-      }))
-      console.log('✅ Users loaded successfully:', users.value.length)
+    // Try to fetch users with error handling
+    const baseUrl = import.meta.env.VITE_API_BASE_URL || '/api'
+    const usersUrl = `${baseUrl}/admin/users?per_page=1000`
+
+    console.log('🔍 Fetching users from:', usersUrl)
+
+    const response = await fetch(usersUrl, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      }
+    })
+
+    console.log('🔍 Users API response status:', response.status)
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`)
     }
+
+    const responseData = await response.json()
+    console.log('🔍 Users API response data:', responseData)
+
+    // Handle the correct API response format
+    let usersData = []
+    if (responseData.users && Array.isArray(responseData.users)) {
+      usersData = responseData.users
+      console.log('✅ Found users in responseData.users:', usersData.length)
+    } else if (responseData.data && Array.isArray(responseData.data)) {
+      usersData = responseData.data
+      console.log('✅ Found users in responseData.data:', usersData.length)
+    } else if (Array.isArray(responseData)) {
+      usersData = responseData
+      console.log('✅ Found users in responseData array:', usersData.length)
+    } else {
+      console.error('❌ Unexpected users data format:', responseData)
+      console.error('❌ Expected: { users: [...] } or { data: [...] } or [...]')
+      showError('Unexpected users data format')
+      return
+    }
+
+    console.log('🔍 Processing users data:', usersData)
+
+    if (usersData.length === 0) {
+      console.log('⚠️ No users found in response')
+      users.value = []
+      return
+    }
+
+    users.value = usersData.map((user: any) => {
+      const userOption = {
+        title: `${user.nom_complet} (${user.email}) - ${user.kyc_statut}`,
+        value: user.id
+      }
+      console.log('🔍 Created user option:', userOption)
+      return userOption
+    })
+
+    console.log('✅ Users loaded successfully:', users.value.length, users.value)
+
   } catch (err: any) {
-    console.error('Users fetch error:', err)
-    showError('Failed to load users')
+    console.error('❌ Users fetch error:', err)
+    showError('Failed to load users: ' + err.message)
   } finally {
     loadingUsers.value = false
   }
@@ -183,38 +231,80 @@ const uploadDocument = async () => {
     return
   }
 
+  if (!uploadForm.value.utilisateur_id) {
+    showError('Please select a user')
+    return
+  }
+
+  if (!uploadForm.value.type_doc) {
+    showError('Please select a document type')
+    return
+  }
+
   try {
     loading.value = true
+
+    console.log('🔍 Upload form data:', {
+      utilisateur_id: uploadForm.value.utilisateur_id,
+      type_doc: uploadForm.value.type_doc,
+      fichier: uploadForm.value.fichier?.name
+    })
 
     const formData = new FormData()
     formData.append('utilisateur_id', uploadForm.value.utilisateur_id)
     formData.append('type_doc', uploadForm.value.type_doc)
     formData.append('fichier', uploadForm.value.fichier)
 
-    const { data, error: apiError } = await useApi<any>('/admin/kyc-documents', {
+    // Debug FormData contents
+    console.log('🔍 FormData contents:')
+    for (const [key, value] of formData.entries()) {
+      console.log(`  ${key}:`, value)
+    }
+
+    // Use direct fetch for file upload instead of useApi
+    const baseUrl = import.meta.env.VITE_API_BASE_URL || '/api'
+    const uploadUrl = `${baseUrl}/admin/kyc-documents`
+
+    console.log('🔍 Upload URL:', uploadUrl)
+
+    const response = await fetch(uploadUrl, {
       method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+        'Accept': 'application/json',
+        // Don't set Content-Type for FormData - let browser set it with boundary
+      },
       body: formData,
     })
 
-    if (apiError.value) {
-      let errorMessage = apiError.value.message || t('failed_to_upload_document')
-      
-      if (apiError.value.errors) {
-        const validationErrors = Object.values(apiError.value.errors).flat()
+    console.log('🔍 Upload response status:', response.status)
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      console.error('❌ Upload error response:', errorData)
+
+      let errorMessage = errorData.message || t('failed_to_upload_document')
+
+      if (errorData.errors) {
+        const validationErrors = Object.values(errorData.errors).flat()
         errorMessage = validationErrors.join(', ')
       }
-      
+
       showError(errorMessage)
-      console.error('Upload document error:', apiError.value)
-    } else if (data.value) {
-      showUploadDialog.value = false
-      resetUploadForm()
-      await fetchDocuments()
-      showSuccess(t('document_uploaded_successfully'))
+      return
     }
+
+    const responseData = await response.json()
+    console.log('✅ Upload success response:', responseData)
+
+    showUploadDialog.value = false
+    resetUploadForm()
+    await fetchDocuments()
+    showSuccess(t('document_uploaded_successfully'))
+
   } catch (err: any) {
+    console.error('❌ Upload document error:', err)
     showError(err.message || t('failed_to_upload_document'))
-    console.error('Upload document error:', err)
   } finally {
     loading.value = false
   }
@@ -270,31 +360,89 @@ const reviewDocument = async () => {
   }
 }
 
-const downloadDocument = async (document: KycDocument) => {
+const downloadDocument = async (doc: KycDocument) => {
   try {
-    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/admin/kyc-documents/${document.id}/download`, {
+    console.log('🔍 Downloading document:', doc.id)
+
+    const baseUrl = import.meta.env.VITE_API_BASE_URL || '/api'
+    const downloadUrl = `${baseUrl}/admin/kyc-documents/${doc.id}/download`
+
+    console.log('🔍 Download URL:', downloadUrl)
+
+    const response = await fetch(downloadUrl, {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
       },
     })
 
+    console.log('🔍 Download response status:', response.status)
+    console.log('🔍 Download response headers:', Object.fromEntries(response.headers.entries()))
+
     if (response.ok) {
       const blob = await response.blob()
+      console.log('🔍 Downloaded blob:', { size: blob.size, type: blob.type })
+
+      // Get filename from Content-Disposition header or create one
+      const contentDisposition = response.headers.get('Content-Disposition')
+      let filename = `kyc-${doc.type_doc}-${doc.utilisateur.nom_complet}`
+
+      if (contentDisposition) {
+        const filenameMatch = contentDisposition.match(/filename="([^"]+)"/)
+        if (filenameMatch) {
+          filename = filenameMatch[1]
+        }
+      } else {
+        // Determine extension from blob type or file path
+        const fileExtension = getFileExtensionFromPath(doc.url_fichier) || getExtensionFromMimeType(blob.type)
+        filename += `.${fileExtension}`
+      }
+
+      console.log('🔍 Download filename:', filename)
+
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `kyc-${document.type_doc}-${document.utilisateur.nom_complet}.pdf`
+      a.download = filename
       document.body.appendChild(a)
       a.click()
       window.URL.revokeObjectURL(url)
       document.body.removeChild(a)
+
+      console.log('✅ Download completed successfully')
     } else {
+      const errorText = await response.text()
+      console.error('❌ Download failed:', response.status, errorText)
       showError('Failed to download document')
     }
   } catch (err) {
+    console.error('❌ Download error:', err)
     showError('Failed to download document')
-    console.error('Download error:', err)
   }
+}
+
+// Helper functions
+const getFileExtensionFromPath = (filePath: string): string | null => {
+  const match = filePath.match(/\.([^.]+)$/)
+  return match ? match[1] : null
+}
+
+const getExtensionFromMimeType = (mimeType: string): string => {
+  switch (mimeType) {
+    case 'application/pdf': return 'pdf'
+    case 'image/jpeg': return 'jpg'
+    case 'image/png': return 'png'
+    default: return 'bin'
+  }
+}
+
+const viewDocument = (doc: KycDocument) => {
+  const baseUrl = import.meta.env.VITE_API_BASE_URL || '/api'
+  const viewUrl = `${baseUrl}/admin/kyc-documents/${doc.id}/file`
+
+  console.log('🔍 Opening view URL:', viewUrl)
+
+  // Simple approach: open in new tab
+  window.open(viewUrl, '_blank')
 }
 
 const deleteDocument = async (document: KycDocument) => {
@@ -344,6 +492,13 @@ const handleFileChange = (event: Event) => {
   const target = event.target as HTMLInputElement
   if (target.files && target.files[0]) {
     uploadForm.value.fichier = target.files[0]
+    console.log('🔍 File selected:', {
+      name: target.files[0].name,
+      size: target.files[0].size,
+      type: target.files[0].type
+    })
+  } else {
+    console.log('❌ No file selected')
   }
 }
 
@@ -367,9 +522,9 @@ const getTypeLabel = (type: string) => {
 }
 
 // Lifecycle
-onMounted(() => {
-  fetchDocuments()
-  fetchUsers()
+onMounted(async () => {
+  await fetchDocuments()
+  await fetchUsers()
 })
 </script>
 
@@ -429,7 +584,6 @@ onMounted(() => {
               :label="t('filter_by_user')"
               :loading="loadingUsers"
               clearable
-              filterable
               @update:model-value="fetchDocuments(1)"
             />
           </VCol>
@@ -487,12 +641,16 @@ onMounted(() => {
               <td>{{ new Date(document.created_at).toLocaleDateString() }}</td>
               <td>
                 <div class="d-flex gap-2">
+                  <VBtn icon size="small" color="success" variant="text" @click="viewDocument(document)">
+                    <VIcon icon="tabler-eye" />
+                    <VTooltip activator="parent">{{ t('view') }}</VTooltip>
+                  </VBtn>
                   <VBtn icon size="small" color="primary" variant="text" @click="downloadDocument(document)">
                     <VIcon icon="tabler-download" />
                     <VTooltip activator="parent">{{ t('download') }}</VTooltip>
                   </VBtn>
                   <VBtn icon size="small" color="info" variant="text" @click="openReviewDialog(document)">
-                    <VIcon icon="tabler-eye" />
+                    <VIcon icon="tabler-edit" />
                     <VTooltip activator="parent">{{ t('review') }}</VTooltip>
                   </VBtn>
                   <VBtn icon size="small" color="error" variant="text" @click="deleteDocument(document)">
@@ -544,23 +702,8 @@ onMounted(() => {
               :loading="loadingUsers"
               required
               clearable
-              filterable
               class="mb-4"
             >
-              <template #item="{ props, item }">
-                <VListItem v-bind="props">
-                  <VListItemTitle>{{ item.title.split(' (')[0] }}</VListItemTitle>
-                  <VListItemSubtitle>{{ item.title.split(' (')[1]?.replace(')', '') }}</VListItemSubtitle>
-                  <template #append>
-                    <VChip
-                      size="x-small"
-                      :color="item.title.includes('valide') ? 'success' : item.title.includes('refuse') ? 'error' : 'warning'"
-                    >
-                      {{ item.title.split(' - ')[1] }}
-                    </VChip>
-                  </template>
-                </VListItem>
-              </template>
               <template #no-data>
                 <VListItem>
                   <VListItemTitle>{{ t('no_users_found') }}</VListItemTitle>
