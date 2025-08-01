@@ -14,7 +14,7 @@ definePage({
 
 const { t } = useI18n()
 const { hasPermission } = useAuth()
-const { showSuccess, showError } = useNotifications()
+const { showSuccess, showError, showConfirm, confirmDialog } = useNotifications()
 
 // Types
 type KycDocument = {
@@ -445,30 +445,34 @@ const viewDocument = (doc: KycDocument) => {
   window.open(viewUrl, '_blank')
 }
 
-const deleteDocument = async (document: KycDocument) => {
-  if (!confirm(t('confirm_delete_document'))) return
+const deleteDocument = (document: KycDocument) => {
+  showConfirm(
+    t('confirm_delete'),
+    t('confirm_delete_document_desc', { type: getTypeLabel(document.type_doc), user: document.utilisateur.nom_complet }),
+    async () => {
+      try {
+        loading.value = true
 
-  try {
-    loading.value = true
+        const { data, error: apiError } = await useApi<any>(`/admin/kyc-documents/${document.id}`, {
+          method: 'DELETE',
+        })
 
-    const { data, error: apiError } = await useApi<any>(`/admin/kyc-documents/${document.id}`, {
-      method: 'DELETE',
-    })
-
-    if (apiError.value) {
-      let errorMessage = apiError.value.message || t('failed_to_delete_document')
-      showError(errorMessage)
-      console.error('Delete document error:', apiError.value)
-    } else if (data.value) {
-      await fetchDocuments()
-      showSuccess(t('document_deleted_successfully'))
+        if (apiError.value) {
+          let errorMessage = apiError.value.message || t('failed_to_delete_document')
+          showError(errorMessage)
+          console.error('Delete document error:', apiError.value)
+        } else if (data.value) {
+          await fetchDocuments()
+          showSuccess(t('document_deleted_successfully'))
+        }
+      } catch (err: any) {
+        showError(err.message || t('failed_to_delete_document'))
+        console.error('Delete document error:', err)
+      } finally {
+        loading.value = false
+      }
     }
-  } catch (err: any) {
-    showError(err.message || t('failed_to_delete_document'))
-    console.error('Delete document error:', err)
-  } finally {
-    loading.value = false
-  }
+  )
 }
 
 // Form helpers
@@ -772,6 +776,35 @@ onMounted(async () => {
           <VBtn variant="outlined" @click="showReviewDialog = false">{{ t('cancel') }}</VBtn>
           <VBtn color="primary" @click="reviewDocument" :loading="loading">{{ t('save') }}</VBtn>
         </VCardActions>
+      </VCard>
+    </VDialog>
+
+    <!-- Confirmation Dialog -->
+    <VDialog v-model="confirmDialog.show" max-width="500">
+      <VCard class="text-center px-10 py-6">
+        <VCardText>
+          <VBtn
+            icon
+            variant="outlined"
+            color="warning"
+            class="my-4"
+            style="block-size: 88px; inline-size: 88px; pointer-events: none;"
+          >
+            <span class="text-5xl">!</span>
+          </VBtn>
+          <h6 class="text-lg font-weight-medium">
+            {{ confirmDialog.title }}
+          </h6>
+          <p class="mt-2">{{ confirmDialog.message }}</p>
+        </VCardText>
+        <VCardText class="d-flex align-center justify-center gap-2">
+          <VBtn variant="elevated" @click="confirmDialog.onConfirm">
+            {{ confirmDialog.confirmText }}
+          </VBtn>
+          <VBtn color="secondary" variant="tonal" @click="confirmDialog.onCancel">
+            {{ confirmDialog.cancelText }}
+          </VBtn>
+        </VCardText>
       </VCard>
     </VDialog>
   </div>

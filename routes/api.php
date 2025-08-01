@@ -66,28 +66,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('kyc-documents/{id}/download', [KycDocumentController::class, 'download']);
         Route::get('kyc-documents/{id}/view', [KycDocumentController::class, 'view']);
 
-        // Simple file access route (temporary for testing)
-        Route::get('kyc-documents/{id}/file', function($id) {
-            $document = \App\Models\KycDocument::findOrFail($id);
-            $filePath = storage_path('app/public/' . $document->url_fichier);
 
-            if (!file_exists($filePath)) {
-                abort(404, 'File not found');
-            }
-
-            $extension = pathinfo($filePath, PATHINFO_EXTENSION);
-            $mimeType = match(strtolower($extension)) {
-                'pdf' => 'application/pdf',
-                'jpg', 'jpeg' => 'image/jpeg',
-                'png' => 'image/png',
-                default => 'application/octet-stream'
-            };
-
-            return response()->file($filePath, [
-                'Content-Type' => $mimeType,
-                'Content-Disposition' => 'inline'
-            ]);
-        });
         Route::get('users/{userId}/kyc-documents', [KycDocumentController::class, 'getUserDocuments']);
     });
 
@@ -142,4 +121,27 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('dashboard/affiliate', [DashboardController::class, 'affiliateDashboard']);
     Route::get('users/manage', [DashboardController::class, 'manageUsers']);
     Route::get('orders/create-form', [DashboardController::class, 'createOrder']);
+});
+
+// Public file access route for KYC documents (no auth required for file viewing)
+Route::get('admin/kyc-documents/{id}/file', function($id) {
+    $document = \App\Models\KycDocument::findOrFail($id);
+    $filePath = storage_path('app/public/' . $document->url_fichier);
+
+    if (!file_exists($filePath)) {
+        abort(404, 'File not found');
+    }
+
+    $extension = pathinfo($filePath, PATHINFO_EXTENSION);
+    $mimeType = match(strtolower($extension)) {
+        'pdf' => 'application/pdf',
+        'jpg', 'jpeg' => 'image/jpeg',
+        'png' => 'image/png',
+        default => 'application/octet-stream'
+    };
+
+    return response()->file($filePath, [
+        'Content-Type' => $mimeType,
+        'Content-Disposition' => 'inline'
+    ]);
 });
