@@ -19,7 +19,7 @@ class KycDocumentController extends Controller
     {
         // Check admin permission
         if (!$request->user()->hasRole('admin')) {
-            return response()->json(['message' => 'Access denied'], Response::HTTP_FORBIDDEN);
+            return response()->json(['message' => __('messages.access_denied')], Response::HTTP_FORBIDDEN);
         }
 
         $query = KycDocument::with('utilisateur:id,nom_complet,email');
@@ -64,7 +64,7 @@ class KycDocumentController extends Controller
     {
         // Check admin permission
         if (!$request->user()->hasRole('admin')) {
-            return response()->json(['message' => 'Access denied'], Response::HTTP_FORBIDDEN);
+            return response()->json(['message' => __('messages.access_denied')], Response::HTTP_FORBIDDEN);
         }
 
         $request->validate([
@@ -80,7 +80,7 @@ class KycDocumentController extends Controller
 
         if ($existingDoc) {
             return response()->json([
-                'message' => 'User already has a document of this type'
+                'message' => __('messages.user_already_has_document_type')
             ], Response::HTTP_CONFLICT);
         }
 
@@ -101,7 +101,7 @@ class KycDocumentController extends Controller
         $document->load('utilisateur:id,nom_complet,email');
 
         return response()->json([
-            'message' => 'KYC document uploaded successfully',
+            'message' => __('messages.document_uploaded_successfully'),
             'document' => $document
         ], Response::HTTP_CREATED);
     }
@@ -113,7 +113,7 @@ class KycDocumentController extends Controller
     {
         // Check admin permission
         if (!$request->user()->hasRole('admin')) {
-            return response()->json(['message' => 'Access denied'], Response::HTTP_FORBIDDEN);
+            return response()->json(['message' => __('messages.access_denied')], Response::HTTP_FORBIDDEN);
         }
 
         $document = KycDocument::with('utilisateur:id,nom_complet,email')->findOrFail($id);
@@ -128,7 +128,7 @@ class KycDocumentController extends Controller
     {
         // Check admin permission
         if (!$request->user()->hasRole('admin')) {
-            return response()->json(['message' => 'Access denied'], Response::HTTP_FORBIDDEN);
+            return response()->json(['message' => __('messages.access_denied')], Response::HTTP_FORBIDDEN);
         }
 
         $document = KycDocument::findOrFail($id);
@@ -149,7 +149,7 @@ class KycDocumentController extends Controller
         $document->load('utilisateur:id,nom_complet,email');
 
         return response()->json([
-            'message' => 'KYC document updated successfully',
+            'message' => __('messages.document_reviewed_successfully'),
             'document' => $document
         ]);
     }
@@ -161,7 +161,7 @@ class KycDocumentController extends Controller
     {
         // Check admin permission
         if (!$request->user()->hasRole('admin')) {
-            return response()->json(['message' => 'Access denied'], Response::HTTP_FORBIDDEN);
+            return response()->json(['message' => __('messages.access_denied')], Response::HTTP_FORBIDDEN);
         }
 
         $document = KycDocument::findOrFail($id);
@@ -178,7 +178,7 @@ class KycDocumentController extends Controller
         $this->updateUserKycStatus($userId);
 
         return response()->json([
-            'message' => 'KYC document deleted successfully'
+            'message' => __('messages.document_deleted_successfully')
         ]);
     }
 
@@ -189,13 +189,13 @@ class KycDocumentController extends Controller
     {
         // Check admin permission
         if (!$request->user()->hasRole('admin')) {
-            return response()->json(['message' => 'Access denied'], Response::HTTP_FORBIDDEN);
+            return response()->json(['message' => __('messages.access_denied')], Response::HTTP_FORBIDDEN);
         }
 
         $document = KycDocument::findOrFail($id);
 
         if (!Storage::disk('public')->exists($document->url_fichier)) {
-            return response()->json(['message' => 'File not found'], Response::HTTP_NOT_FOUND);
+            return response()->json(['message' => __('messages.not_found')], Response::HTTP_NOT_FOUND);
         }
 
         $filePath = Storage::disk('public')->path($document->url_fichier);
@@ -227,13 +227,13 @@ class KycDocumentController extends Controller
     {
         // Check admin permission
         if (!$request->user()->hasRole('admin')) {
-            return response()->json(['message' => 'Access denied'], Response::HTTP_FORBIDDEN);
+            return response()->json(['message' => __('messages.access_denied')], Response::HTTP_FORBIDDEN);
         }
 
         $document = KycDocument::findOrFail($id);
 
         if (!Storage::disk('public')->exists($document->url_fichier)) {
-            return response()->json(['message' => 'File not found'], Response::HTTP_NOT_FOUND);
+            return response()->json(['message' => __('messages.not_found')], Response::HTTP_NOT_FOUND);
         }
 
         $filePath = Storage::disk('public')->path($document->url_fichier);
@@ -286,7 +286,7 @@ class KycDocumentController extends Controller
     {
         // Check admin permission
         if (!$request->user()->hasRole('admin')) {
-            return response()->json(['message' => 'Access denied'], Response::HTTP_FORBIDDEN);
+            return response()->json(['message' => __('messages.access_denied')], Response::HTTP_FORBIDDEN);
         }
 
         $user = User::findOrFail($userId);

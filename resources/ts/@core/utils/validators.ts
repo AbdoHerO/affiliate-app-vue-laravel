@@ -1,11 +1,14 @@
 import { isEmpty, isEmptyArray, isNullOrUndefined } from './helpers'
+import { i18n } from '@/plugins/i18n'
+
+const { t } = i18n.global
 
 // 👉 Required Validator
 export const requiredValidator = (value: unknown) => {
   if (isNullOrUndefined(value) || isEmptyArray(value) || value === false)
-    return 'This field is required'
+    return t('validation_required')
 
-  return !!String(value).trim().length || 'This field is required'
+  return !!String(value).trim().length || t('validation_required')
 }
 
 // 👉 Email Validator
@@ -16,9 +19,9 @@ export const emailValidator = (value: unknown) => {
   const re = /^(?:[^<>()[\]\\.,;:\s@"]+(?:\.[^<>()[\]\\.,;:\s@"]+)*|".+")@(?:\[\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\]|(?:[a-z\-\d]+\.)+[a-z]{2,})$/i
 
   if (Array.isArray(value))
-    return value.every(val => re.test(String(val))) || 'The Email field must be a valid email'
+    return value.every(val => re.test(String(val))) || t('validation_email')
 
-  return re.test(String(value)) || 'The Email field must be a valid email'
+  return re.test(String(value)) || t('validation_email')
 }
 
 // 👉 Password Validator
@@ -27,19 +30,19 @@ export const passwordValidator = (password: string) => {
 
   const validPassword = regExp.test(password)
 
-  return validPassword || 'Field must contain at least one uppercase, lowercase, special character and digit with min 8 chars'
+  return validPassword || t('validation_min_length', { min: 8 })
 }
 
 // 👉 Confirm Password Validator
 export const confirmedValidator = (value: string, target: string) =>
 
-  value === target || 'The Confirm Password field confirmation does not match'
+  value === target || t('validation_password_mismatch')
 
 // 👉 Between Validator
 export const betweenValidator = (value: unknown, min: number, max: number) => {
   const valueAsNumber = Number(value)
 
-  return (Number(min) <= valueAsNumber && Number(max) >= valueAsNumber) || `Enter number between ${min} and ${max}`
+  return (Number(min) <= valueAsNumber && Number(max) >= valueAsNumber) || t('validation_between', { min, max })
 }
 
 // 👉 Integer Validator
@@ -48,9 +51,9 @@ export const integerValidator = (value: unknown) => {
     return true
 
   if (Array.isArray(value))
-    return value.every(val => /^-?\d+$/.test(String(val))) || 'This field must be an integer'
+    return value.every(val => /^-?\d+$/.test(String(val))) || t('validation_integer')
 
-  return /^-?\d+$/.test(String(value)) || 'This field must be an integer'
+  return /^-?\d+$/.test(String(value)) || t('validation_integer')
 }
 
 // 👉 Regex Validator
@@ -65,7 +68,7 @@ export const regexValidator = (value: unknown, regex: RegExp | string): string |
   if (Array.isArray(value))
     return value.every(val => regexValidator(val, regeX))
 
-  return regeX.test(String(value)) || 'The Regex field format is invalid'
+  return regeX.test(String(value)) || t('validation_format_invalid')
 }
 
 // 👉 Alpha Validator
@@ -73,7 +76,7 @@ export const alphaValidator = (value: unknown) => {
   if (isEmpty(value))
     return true
 
-  return /^[A-Z]*$/i.test(String(value)) || 'The Alpha field may only contain alphabetic characters'
+  return /^[A-Z]*$/i.test(String(value)) || t('validation_alpha_only')
 }
 
 // 👉 URL Validator
@@ -83,7 +86,7 @@ export const urlValidator = (value: unknown) => {
 
   const re = /^https?:\/\/[^\s$.?#].\S*$/
 
-  return re.test(String(value)) || 'URL is invalid'
+  return re.test(String(value)) || t('validation_url_invalid')
 }
 
 // 👉 Length Validator
@@ -91,7 +94,7 @@ export const lengthValidator = (value: unknown, length: number) => {
   if (isEmpty(value))
     return true
 
-  return String(value).length === length || `"The length of the Characters field must be ${length} characters."`
+  return String(value).length === length || t('validation_exact_length', { length })
 }
 
 // 👉 Alpha-dash Validator
@@ -101,5 +104,5 @@ export const alphaDashValidator = (value: unknown) => {
 
   const valueAsString = String(value)
 
-  return /^[\w-]*$/.test(valueAsString) || 'All Character are not valid'
+  return /^[\w-]*$/.test(valueAsString) || t('validation_alpha_dash_only')
 }

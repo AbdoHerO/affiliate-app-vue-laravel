@@ -15,12 +15,12 @@ class DashboardController extends Controller
         // Check if user has admin role
         if (!$request->user()->hasRole('admin')) {
             return response()->json([
-                'message' => 'Access denied. Admin role required.',
+                'message' => __('messages.api_access_denied_admin'),
             ], Response::HTTP_FORBIDDEN);
         }
 
         return response()->json([
-            'message' => 'Welcome to Admin Dashboard',
+            'message' => __('messages.api_welcome_admin'),
             'user' => $request->user()->nom_complet,
             'role' => 'admin',
             'stats' => [
@@ -40,12 +40,12 @@ class DashboardController extends Controller
         // Check if user has affiliate role
         if (!$request->user()->hasRole('affiliate')) {
             return response()->json([
-                'message' => 'Access denied. Affiliate role required.',
+                'message' => __('messages.api_access_denied_affiliate'),
             ], Response::HTTP_FORBIDDEN);
         }
 
         return response()->json([
-            'message' => 'Welcome to Affiliate Dashboard',
+            'message' => __('messages.api_welcome_affiliate'),
             'user' => $request->user()->nom_complet,
             'role' => 'affiliate',
             'stats' => [
@@ -65,13 +65,13 @@ class DashboardController extends Controller
         // Check if user has specific permission
         if (!$request->user()->can('manage users')) {
             return response()->json([
-                'message' => 'Access denied. "Manage Users" permission required.',
+                'message' => __('messages.api_access_denied_permission', ['permission' => 'Manage Users']),
                 'user_permissions' => $request->user()->getAllPermissions()->pluck('name'),
             ], Response::HTTP_FORBIDDEN);
         }
 
         return response()->json([
-            'message' => 'User Management Panel',
+            'message' => __('messages.api_user_management_panel'),
             'users' => [
                 ['id' => 1, 'name' => 'Admin User', 'role' => 'admin'],
                 ['id' => 2, 'name' => 'Test Affiliate', 'role' => 'affiliate'],
@@ -87,13 +87,13 @@ class DashboardController extends Controller
         // Check if user has specific permission
         if (!$request->user()->can('create orders')) {
             return response()->json([
-                'message' => 'Access denied. "Create Orders" permission required.',
+                'message' => __('messages.api_access_denied_permission', ['permission' => 'Create Orders']),
                 'user_permissions' => $request->user()->getAllPermissions()->pluck('name'),
             ], Response::HTTP_FORBIDDEN);
         }
 
         return response()->json([
-            'message' => 'Order creation form',
+            'message' => __('messages.api_order_creation_form'),
             'user' => $request->user()->nom_complet,
             'available_products' => [
                 ['id' => 1, 'name' => 'Product A', 'commission_rate' => '10%'],
@@ -116,7 +116,7 @@ class DashboardController extends Controller
         }
 
         return response()->json([
-            'message' => 'Access denied. No valid role assigned.',
+            'message' => __('messages.api_access_denied_no_role'),
         ], Response::HTTP_FORBIDDEN);
     }
 }

@@ -19,7 +19,7 @@ class UserManagementController extends Controller
     {
         // Check admin permission
         if (!$request->user()->hasRole('admin')) {
-            return response()->json(['message' => 'Access denied'], Response::HTTP_FORBIDDEN);
+            return response()->json(['message' => __('messages.access_denied')], Response::HTTP_FORBIDDEN);
         }
 
         $query = User::with('roles');
@@ -65,7 +65,7 @@ class UserManagementController extends Controller
     {
         // Check admin permission
         if (!$request->user()->hasRole('admin')) {
-            return response()->json(['message' => 'Access denied'], Response::HTTP_FORBIDDEN);
+            return response()->json(['message' => __('messages.access_denied')], Response::HTTP_FORBIDDEN);
         }
 
         $request->validate([
@@ -95,7 +95,7 @@ class UserManagementController extends Controller
         $user->assignRole($request->role);
 
         return response()->json([
-            'message' => 'User created successfully',
+            'message' => __('messages.user_created_successfully'),
             'user' => [
                 'id' => $user->id,
                 'nom_complet' => $user->nom_complet,
@@ -114,7 +114,7 @@ class UserManagementController extends Controller
     {
         // Check admin permission
         if (!$request->user()->hasRole('admin')) {
-            return response()->json(['message' => 'Access denied'], Response::HTTP_FORBIDDEN);
+            return response()->json(['message' => __('messages.access_denied')], Response::HTTP_FORBIDDEN);
         }
 
         $user = User::with(['roles', 'permissions'])->findOrFail($id);
@@ -141,7 +141,7 @@ class UserManagementController extends Controller
     {
         // Check admin permission
         if (!$request->user()->hasRole('admin')) {
-            return response()->json(['message' => 'Access denied'], Response::HTTP_FORBIDDEN);
+            return response()->json(['message' => __('messages.access_denied')], Response::HTTP_FORBIDDEN);
         }
 
         $user = User::findOrFail($id);
@@ -192,7 +192,7 @@ class UserManagementController extends Controller
         }
 
         return response()->json([
-            'message' => 'User updated successfully',
+            'message' => __('messages.user_updated_successfully'),
             'user' => [
                 'id' => $user->id,
                 'nom_complet' => $user->nom_complet,
@@ -211,7 +211,7 @@ class UserManagementController extends Controller
     {
         // Check admin permission
         if (!$request->user()->hasRole('admin')) {
-            return response()->json(['message' => 'Access denied'], Response::HTTP_FORBIDDEN);
+            return response()->json(['message' => __('messages.access_denied')], Response::HTTP_FORBIDDEN);
         }
 
         $user = User::findOrFail($id);
@@ -219,14 +219,14 @@ class UserManagementController extends Controller
         // Prevent admin from deleting themselves
         if ($user->id === $request->user()->id) {
             return response()->json([
-                'message' => 'You cannot delete your own account'
+                'message' => __('messages.cannot_delete_own_account')
             ], Response::HTTP_FORBIDDEN);
         }
 
         $user->delete();
 
         return response()->json([
-            'message' => 'User deleted successfully'
+            'message' => __('messages.user_deleted_successfully')
         ]);
     }
 
@@ -237,7 +237,7 @@ class UserManagementController extends Controller
     {
         // Check admin permission
         if (!$request->user()->hasRole('admin')) {
-            return response()->json(['message' => 'Access denied'], Response::HTTP_FORBIDDEN);
+            return response()->json(['message' => __('messages.access_denied')], Response::HTTP_FORBIDDEN);
         }
 
         $roles = Role::all(['id', 'name']);
@@ -254,7 +254,7 @@ class UserManagementController extends Controller
     {
         // Check admin permission
         if (!$request->user()->hasRole('admin')) {
-            return response()->json(['message' => 'Access denied'], Response::HTTP_FORBIDDEN);
+            return response()->json(['message' => __('messages.access_denied')], Response::HTTP_FORBIDDEN);
         }
 
         $user = User::findOrFail($id);
@@ -262,7 +262,7 @@ class UserManagementController extends Controller
         // Prevent admin from deactivating themselves
         if ($user->id === $request->user()->id) {
             return response()->json([
-                'message' => 'You cannot change your own status'
+                'message' => __('messages.cannot_change_own_status')
             ], Response::HTTP_FORBIDDEN);
         }
 
@@ -270,7 +270,7 @@ class UserManagementController extends Controller
         $user->save();
 
         return response()->json([
-            'message' => 'User status updated successfully',
+            'message' => __('messages.user_status_updated_successfully'),
             'user' => [
                 'id' => $user->id,
                 'nom_complet' => $user->nom_complet,

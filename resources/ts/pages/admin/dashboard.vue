@@ -41,8 +41,8 @@ const navigateTo = (routeName: string) => {
       <VCardText>
         <div class="d-flex justify-space-between align-center">
           <div>
-            <h2 class="text-h4 mb-2">Admin Dashboard</h2>
-            <p class="text-body-1 mb-0">Welcome, {{ user?.nom_complet }}! 👋</p>
+            <h2 class="text-h4 mb-2">{{ $t('title_admin_dashboard') }}</h2>
+            <p class="text-body-1 mb-0">{{ $t('welcome_admin', { name: user?.nom_complet }) }}</p>
           </div>
           <VBtn
             color="error"
@@ -50,7 +50,7 @@ const navigateTo = (routeName: string) => {
             prepend-icon="tabler-logout"
             @click="handleLogout"
           >
-            Logout
+            {{ $t('action_logout') }}
           </VBtn>
         </div>
       </VCardText>
@@ -67,7 +67,7 @@ const navigateTo = (routeName: string) => {
               </VAvatar>
               <div>
                 <h6 class="text-h6">{{ stats.totalAffiliates }}</h6>
-                <p class="text-body-2 mb-0">Total Affiliates</p>
+                <p class="text-body-2 mb-0">{{ $t('stats_total_affiliates') }}</p>
               </div>
             </div>
           </VCardText>
@@ -83,7 +83,7 @@ const navigateTo = (routeName: string) => {
               </VAvatar>
               <div>
                 <h6 class="text-h6">{{ stats.totalOrders }}</h6>
-                <p class="text-body-2 mb-0">Total Orders</p>
+                <p class="text-body-2 mb-0">{{ $t('stats_total_orders') }}</p>
               </div>
             </div>
           </VCardText>
@@ -99,7 +99,7 @@ const navigateTo = (routeName: string) => {
               </VAvatar>
               <div>
                 <h6 class="text-h6">${{ stats.totalRevenue.toLocaleString() }}</h6>
-                <p class="text-body-2 mb-0">Total Revenue</p>
+                <p class="text-body-2 mb-0">{{ $t('stats_revenue') }}</p>
               </div>
             </div>
           </VCardText>
@@ -115,7 +115,7 @@ const navigateTo = (routeName: string) => {
               </VAvatar>
               <div>
                 <h6 class="text-h6">{{ stats.pendingOrders }}</h6>
-                <p class="text-body-2 mb-0">Pending Orders</p>
+                <p class="text-body-2 mb-0">{{ $t('stats_pending_orders') }}</p>
               </div>
             </div>
           </VCardText>
@@ -126,7 +126,7 @@ const navigateTo = (routeName: string) => {
     <!-- Quick Actions -->
     <VCard class="mb-6">
       <VCardText>
-        <h5 class="text-h5 mb-4">Quick Actions</h5>
+        <h5 class="text-h5 mb-4">{{ $t('quick_actions') }}</h5>
         <VRow>
           <VCol cols="12" sm="6" md="3">
             <VBtn
@@ -137,7 +137,7 @@ const navigateTo = (routeName: string) => {
               @click="navigateTo('admin-users')"
             >
               <VIcon start icon="tabler-users" />
-              Manage Users
+              {{ $t('manage_users') }}
             </VBtn>
           </VCol>
           <VCol cols="12" sm="6" md="3">
@@ -149,7 +149,7 @@ const navigateTo = (routeName: string) => {
               @click="navigateTo('admin-affiliates')"
             >
               <VIcon start icon="tabler-user-star" />
-              Manage Affiliates
+              {{ $t('manage_affiliates') }}
             </VBtn>
           </VCol>
           <VCol cols="12" sm="6" md="3">
@@ -161,7 +161,7 @@ const navigateTo = (routeName: string) => {
               @click="navigateTo('admin-orders')"
             >
               <VIcon start icon="tabler-shopping-cart" />
-              Order Management
+              {{ $t('order_management') }}
             </VBtn>
           </VCol>
           <VCol cols="12" sm="6" md="3">
@@ -173,7 +173,7 @@ const navigateTo = (routeName: string) => {
               @click="navigateTo('admin-reports-sales')"
             >
               <VIcon start icon="tabler-chart-bar" />
-              Reports
+              {{ $t('reports') }}
             </VBtn>
           </VCol>
         </VRow>
@@ -183,14 +183,14 @@ const navigateTo = (routeName: string) => {
     <!-- User Info -->
     <VCard>
       <VCardText>
-        <h5 class="text-h5 mb-4">User Information</h5>
+        <h5 class="text-h5 mb-4">{{ $t('user_info') }}</h5>
         <VRow>
           <VCol cols="12">
             <div class="text-body-1">
-              <strong>Name:</strong> {{ user?.nom_complet }}<br>
-              <strong>Email:</strong> {{ user?.email }}<br>
-              <strong>Roles:</strong> {{ user?.roles?.join(', ') }}<br>
-              <strong>Permissions:</strong> {{ user?.permissions?.join(', ') }}
+              <strong>{{ $t('user_name') }}:</strong> {{ user?.nom_complet }}<br>
+              <strong>{{ $t('user_email') }}:</strong> {{ user?.email }}<br>
+              <strong>{{ $t('user_role') }}:</strong> {{ user?.roles?.join(', ') }}<br>
+              <strong>{{ $t('user_permissions') }}:</strong> {{ user?.permissions?.join(', ') }}
             </div>
           </VCol>
         </VRow>

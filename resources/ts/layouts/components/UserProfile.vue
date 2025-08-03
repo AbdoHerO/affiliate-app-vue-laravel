@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import avatar1 from '@images/avatars/avatar-1.png'
 import { useAuth } from '@/composables/useAuth'
+import { useI18n } from 'vue-i18n'
 
 const { user, isAuthenticated, logout } = useAuth()
+const { t } = useI18n()
 
 const handleLogout = async () => {
   await logout()
@@ -72,7 +74,7 @@ const handleLogout = async () => {
               />
             </template>
 
-            <VListItemTitle>Profile</VListItemTitle>
+            <VListItemTitle>{{ t('profile') }}</VListItemTitle>
           </VListItem>
 
           <!-- 👉 Settings -->
@@ -85,7 +87,7 @@ const handleLogout = async () => {
               />
             </template>
 
-            <VListItemTitle>Settings</VListItemTitle>
+            <VListItemTitle>{{ t('settings') }}</VListItemTitle>
           </VListItem>
 
           <!-- 👉 Pricing -->
@@ -98,7 +100,7 @@ const handleLogout = async () => {
               />
             </template>
 
-            <VListItemTitle>Pricing</VListItemTitle>
+            <VListItemTitle>{{ t('pricing') }}</VListItemTitle>
           </VListItem>
 
           <!-- 👉 FAQ -->
@@ -111,7 +113,7 @@ const handleLogout = async () => {
               />
             </template>
 
-            <VListItemTitle>FAQ</VListItemTitle>
+            <VListItemTitle>{{ t('faq') }}</VListItemTitle>
           </VListItem>
 
           <!-- Divider -->
@@ -130,7 +132,7 @@ const handleLogout = async () => {
               />
             </template>
 
-            <VListItemTitle>Logout</VListItemTitle>
+            <VListItemTitle>{{ t('logout') }}</VListItemTitle>
           </VListItem>
 
           <!-- 👉 Login -->
@@ -146,7 +148,7 @@ const handleLogout = async () => {
               />
             </template>
 
-            <VListItemTitle>Login</VListItemTitle>
+            <VListItemTitle>{{ t('login') }}</VListItemTitle>
           </VListItem>
         </VList>
       </VMenu>

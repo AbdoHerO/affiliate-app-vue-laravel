@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import AuthProvider from '@/views/pages/authentication/AuthProvider.vue'
 import { useGenerateImageVariant } from '@core/composable/useGenerateImageVariant'
+import { useI18n } from 'vue-i18n'
 import authV2LoginIllustrationBorderedDark from '@images/pages/auth-v2-login-illustration-bordered-dark.png'
 import authV2LoginIllustrationBorderedLight from '@images/pages/auth-v2-login-illustration-bordered-light.png'
 import authV2LoginIllustrationDark from '@images/pages/auth-v2-login-illustration-dark.png'
@@ -19,6 +20,7 @@ definePage({
 })
 
 const { login, isLoading, error } = useAuth()
+const { t } = useI18n()
 
 const form = ref({
   email: 'admin@cod.test', // Pre-fill for testing
@@ -38,7 +40,7 @@ const handleLogin = async () => {
       password: form.value.password,
     })
   } catch (err) {
-    loginError.value = err instanceof Error ? err.message : 'Login failed'
+    loginError.value = err instanceof Error ? err.message : t('error_login_failed')
   }
 }
 
@@ -104,10 +106,10 @@ const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
       >
         <VCardText>
           <h4 class="text-h4 mb-1">
-            Welcome to <span class="text-capitalize">{{ themeConfig.app.title }}</span>! 👋🏻
+            {{ t('login_title', { title: themeConfig.app.title }) }}
           </h4>
           <p class="mb-0">
-            Please sign-in to your account and start the adventure
+            {{ t('login_subtitle') }}
           </p>
         </VCardText>
         <VCardText>
@@ -129,9 +131,9 @@ const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
             variant="tonal"
           >
             <div class="text-body-2">
-              <strong>Demo Credentials:</strong><br>
-              <strong>Admin:</strong> admin@cod.test / password<br>
-              <strong>Affiliate:</strong> affiliate@cod.test / password
+              <strong>{{ t('demo_credentials') }}</strong><br>
+              <strong>{{ t('admin_credentials') }}</strong><br>
+              <strong>{{ t('affiliate_credentials') }}</strong>
             </div>
           </VAlert>
 
@@ -142,9 +144,9 @@ const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
                 <AppTextField
                   v-model="form.email"
                   autofocus
-                  label="Email or Username"
+                  :label="t('placeholder_email_or_username')"
                   type="email"
-                  placeholder="johndoe@email.com"
+                  :placeholder="t('placeholder_enter_email')"
                 />
               </VCol>
 
@@ -152,8 +154,8 @@ const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
               <VCol cols="12">
                 <AppTextField
                   v-model="form.password"
-                  label="Password"
-                  placeholder="············"
+                  :label="t('form_password')"
+                  :placeholder="t('placeholder_enter_password')"
                   :type="isPasswordVisible ? 'text' : 'password'"
                   autocomplete="password"
                   :append-inner-icon="isPasswordVisible ? 'tabler-eye-off' : 'tabler-eye'"
@@ -163,13 +165,13 @@ const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
                 <div class="d-flex align-center flex-wrap justify-space-between my-6">
                   <VCheckbox
                     v-model="form.remember"
-                    label="Remember me"
+                    :label="t('remember_me')"
                   />
                   <a
                     class="text-primary"
                     href="javascript:void(0)"
                   >
-                    Forgot Password?
+                    {{ t('forgot_password') }}
                   </a>
                 </div>
 
@@ -179,7 +181,7 @@ const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
                   :loading="isLoading"
                   :disabled="isLoading"
                 >
-                  Login
+                  {{ t('action_login') }}
                 </VBtn>
               </VCol>
 
@@ -189,13 +191,13 @@ const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
                 class="text-body-1 text-center"
               >
                 <span class="d-inline-block">
-                  New on our platform?
+                  {{ t('new_on_platform') }}
                 </span>
                 <a
                   class="text-primary ms-1 d-inline-block text-body-1"
                   href="javascript:void(0)"
                 >
-                  Create an account
+                  {{ t('create_account') }}
                 </a>
               </VCol>
 
@@ -204,7 +206,7 @@ const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
                 class="d-flex align-center"
               >
                 <VDivider />
-                <span class="mx-4">or</span>
+                <span class="mx-4">{{ t('or') }}</span>
                 <VDivider />
               </VCol>
 

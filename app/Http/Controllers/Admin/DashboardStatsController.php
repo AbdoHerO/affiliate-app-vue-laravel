@@ -23,7 +23,7 @@ class DashboardStatsController extends Controller
     {
         // Check admin permission
         if (!$request->user()->hasRole('admin')) {
-            return response()->json(['message' => 'Access denied'], Response::HTTP_FORBIDDEN);
+            return response()->json(['message' => __('messages.access_denied')], Response::HTTP_FORBIDDEN);
         }
 
         $stats = [

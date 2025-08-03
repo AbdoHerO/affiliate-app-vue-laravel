@@ -25,7 +25,7 @@ class AuthController extends Controller
 
         if (!$user || !Hash::check($request->password, $user->mot_de_passe_hash)) {
             throw ValidationException::withMessages([
-                'email' => ['The provided credentials are incorrect.'],
+                'email' => [__('messages.api_invalid_credentials')],
             ]);
         }
 
@@ -36,7 +36,7 @@ class AuthController extends Controller
         $token = $user->createToken('auth-token')->plainTextToken;
 
         return response()->json([
-            'message' => 'Login successful',
+            'message' => __('messages.api_login_successful'),
             'user' => [
                 'id' => $user->id,
                 'nom_complet' => $user->nom_complet,
@@ -75,7 +75,7 @@ class AuthController extends Controller
         $token = $user->createToken('auth-token')->plainTextToken;
 
         return response()->json([
-            'message' => 'Registration successful',
+            'message' => __('messages.api_registration_successful'),
             'user' => [
                 'id' => $user->id,
                 'nom_complet' => $user->nom_complet,

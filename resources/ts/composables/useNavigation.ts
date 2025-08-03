@@ -1,10 +1,12 @@
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useAuth } from '@/composables/useAuth'
 import adminNavigation, { affiliateNavigation } from '@/navigation/vertical'
 import type { VerticalNavItems } from '@layouts/types'
 
 export function useNavigation() {
   const { hasRole, isAuthenticated, user, isLoading } = useAuth()
+  const { t } = useI18n()
 
   const navItems = computed<VerticalNavItems>(() => {
     // Return empty array if not ready to prevent errors
@@ -23,98 +25,98 @@ export function useNavigation() {
       if (hasRole('admin')) {
         return [
           {
-            title: 'Dashboard',
+            title: t('nav_dashboard'),
             to: 'admin-dashboard',
             icon: { icon: 'tabler-dashboard' },
           },
           {
-            title: 'User Management',
+            title: t('nav_user_management'),
             icon: { icon: 'tabler-users' },
             children: [
               {
-                title: 'All Users',
+                title: t('nav_all_users'),
                 to: 'admin-users',
               },
               {
-                title: 'Roles & Permissions',
+                title: t('nav_roles_permissions'),
                 to: 'admin-roles',
               },
               {
-                title: 'KYC Documents',
+                title: t('nav_kyc_documents'),
                 to: 'admin-kyc-documents',
               },
             ],
           },
           {
-            title: 'Affiliate Management',
+            title: t('nav_affiliate_management'),
             icon: { icon: 'tabler-user-star' },
             children: [
               {
-                title: 'All Affiliates',
+                title: t('nav_all_affiliates'),
                 to: 'admin-affiliates',
               },
               {
-                title: 'Affiliate Tiers',
+                title: t('nav_affiliate_tiers'),
                 to: 'admin-affiliate-tiers',
               },
             ],
           },
           {
-            title: 'Order Management',
+            title: t('nav_order_management'),
             icon: { icon: 'tabler-shopping-cart' },
             children: [
               {
-                title: 'All Orders',
+                title: t('nav_all_orders'),
                 to: 'admin-orders',
               },
               {
-                title: 'Order Conflicts',
+                title: t('nav_order_conflicts'),
                 to: 'admin-order-conflicts',
               },
             ],
           },
           {
-            title: 'Product Management',
+            title: t('nav_product_management'),
             icon: { icon: 'tabler-package' },
             children: [
               {
-                title: 'Products',
+                title: t('nav_products'),
                 to: 'admin-products',
               },
               {
-                title: 'Categories',
+                title: t('nav_categories'),
                 to: 'admin-categories',
               },
               {
-                title: 'Boutiques',
+                title: t('nav_boutiques'),
                 to: 'admin-boutiques',
               },
             ],
           },
           {
-            title: 'Financial Management',
+            title: t('nav_financial_management'),
             icon: { icon: 'tabler-currency-dollar' },
             children: [
               {
-                title: 'Commissions',
+                title: t('nav_commissions'),
                 to: 'admin-commissions',
               },
               {
-                title: 'Payments',
+                title: t('nav_payments'),
                 to: 'admin-payments',
               },
             ],
           },
           {
-            title: 'Reports & Analytics',
+            title: t('nav_reports_analytics'),
             icon: { icon: 'tabler-chart-bar' },
             children: [
               {
-                title: 'Sales Reports',
+                title: t('nav_sales_reports'),
                 to: 'admin-reports-sales',
               },
               {
-                title: 'Affiliate Performance',
+                title: t('nav_affiliate_performance'),
                 to: 'admin-reports-affiliates',
               },
             ],
@@ -123,22 +125,22 @@ export function useNavigation() {
       } else if (hasRole('affiliate')) {
         const affiliateNav = [
           {
-            title: 'Dashboard',
+            title: t('nav_dashboard'),
             to: 'affiliate-dashboard',
             icon: { icon: 'tabler-dashboard' },
           },
           {
-            title: 'My Orders',
+            title: t('nav_my_orders'),
             to: 'affiliate-orders',
             icon: { icon: 'tabler-shopping-cart' },
           },
           {
-            title: 'My Commissions',
+            title: t('nav_my_commissions'),
             to: 'affiliate-commissions',
             icon: { icon: 'tabler-currency-dollar' },
           },
           {
-            title: 'Marketing Materials',
+            title: t('nav_marketing_materials'),
             to: 'affiliate-marketing',
             icon: { icon: 'tabler-photo' },
           },

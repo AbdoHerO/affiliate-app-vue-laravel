@@ -30,10 +30,10 @@ const handleLogout = async () => {
         <div class="d-flex justify-space-between align-center">
           <div>
             <h2 class="text-h4 mb-2">
-              {{ $t('Affiliate Dashboard') }}
+              {{ $t('title_affiliate_dashboard') }}
             </h2>
             <p class="text-body-1 mb-0">
-              {{ $t('Welcome') }}, {{ user?.name }}! 🚀
+              {{ $t('welcome_affiliate', { name: user?.nom_complet }) }}
             </p>
           </div>
           <VBtn
@@ -41,7 +41,7 @@ const handleLogout = async () => {
             variant="outlined"
             @click="handleLogout"
           >
-            {{ $t('Logout') }}
+            {{ $t('action_logout') }}
           </VBtn>
         </div>
       </VCardText>
@@ -69,7 +69,7 @@ const handleLogout = async () => {
                   {{ stats.myOrders }}
                 </h6>
                 <p class="text-body-2 mb-0">
-                  My {{ $t('Orders') }}
+                  {{ $t('stats_my_orders_count') }}
                 </p>
               </div>
             </div>
@@ -97,7 +97,7 @@ const handleLogout = async () => {
                   {{ stats.pendingOrders }}
                 </h6>
                 <p class="text-body-2 mb-0">
-                  {{ $t('Pending Orders') }}
+                  {{ $t('stats_pending_orders_count') }}
                 </p>
               </div>
             </div>
@@ -125,7 +125,7 @@ const handleLogout = async () => {
                   ${{ stats.totalCommissions.toFixed(2) }}
                 </h6>
                 <p class="text-body-2 mb-0">
-                  {{ $t('Total Earnings') }}
+                  {{ $t('stats_total_earnings') }}
                 </p>
               </div>
             </div>
@@ -153,7 +153,7 @@ const handleLogout = async () => {
                   ${{ stats.thisMonthEarnings.toFixed(2) }}
                 </h6>
                 <p class="text-body-2 mb-0">
-                  This Month
+                  {{ $t('stats_this_month_earnings') }}
                 </p>
               </div>
             </div>
@@ -166,7 +166,7 @@ const handleLogout = async () => {
     <VCard class="mb-6">
       <VCardText>
         <h5 class="text-h5 mb-4">
-          Quick Actions
+          {{ $t('quick_actions') }}
         </h5>
         <VRow>
           <VCol
@@ -184,7 +184,7 @@ const handleLogout = async () => {
                 start
                 icon="tabler-plus"
               />
-              {{ $t('Create Order') }}
+              {{ $t('create_order') }}
             </VBtn>
           </VCol>
           <VCol
@@ -202,7 +202,7 @@ const handleLogout = async () => {
                 start
                 icon="tabler-list"
               />
-              {{ $t('Order History') }}
+              {{ $t('order_history') }}
             </VBtn>
           </VCol>
           <VCol
@@ -220,7 +220,7 @@ const handleLogout = async () => {
                 start
                 icon="tabler-coins"
               />
-              {{ $t('Commissions') }}
+              {{ $t('view_commissions') }}
             </VBtn>
           </VCol>
           <VCol
@@ -238,7 +238,7 @@ const handleLogout = async () => {
                 start
                 icon="tabler-photo"
               />
-              {{ $t('Marketing Materials') }}
+              {{ $t('view_marketing_materials') }}
             </VBtn>
           </VCol>
         </VRow>
@@ -249,16 +249,16 @@ const handleLogout = async () => {
     <VCard class="mb-6">
       <VCardText>
         <h5 class="text-h5 mb-4">
-          Recent Orders
+          {{ $t('table_recent_orders') }}
         </h5>
         <VTable>
           <thead>
             <tr>
-              <th>Order ID</th>
-              <th>Product</th>
-              <th>Customer</th>
-              <th>Status</th>
-              <th>Commission</th>
+              <th>{{ $t('table_order_id') }}</th>
+              <th>{{ $t('table_product') }}</th>
+              <th>{{ $t('table_customer') }}</th>
+              <th>{{ $t('table_status') }}</th>
+              <th>{{ $t('table_commission') }}</th>
             </tr>
           </thead>
           <tbody>
@@ -271,7 +271,7 @@ const handleLogout = async () => {
                   color="success"
                   size="small"
                 >
-                  Delivered
+                  {{ $t('status_delivered') }}
                 </VChip>
               </td>
               <td>$25.00</td>
@@ -285,7 +285,7 @@ const handleLogout = async () => {
                   color="warning"
                   size="small"
                 >
-                  Pending
+                  {{ $t('status_pending') }}
                 </VChip>
               </td>
               <td>$15.50</td>
@@ -299,7 +299,7 @@ const handleLogout = async () => {
                   color="info"
                   size="small"
                 >
-                  Shipped
+                  {{ $t('status_shipped') }}
                 </VChip>
               </td>
               <td>$30.25</td>
@@ -313,15 +313,15 @@ const handleLogout = async () => {
     <VCard>
       <VCardText>
         <h5 class="text-h5 mb-4">
-          Account Information
+          {{ $t('user_info') }}
         </h5>
         <VRow>
           <VCol cols="12">
             <div class="text-body-1">
-              <strong>Name:</strong> {{ user?.name }}<br>
-              <strong>Email:</strong> {{ user?.email }}<br>
-              <strong>Role:</strong> {{ user?.roles.join(', ') }}<br>
-              <strong>Available Actions:</strong> {{ user?.permissions.join(', ') }}
+              <strong>{{ $t('user_name') }}:</strong> {{ user?.nom_complet }}<br>
+              <strong>{{ $t('user_email') }}:</strong> {{ user?.email }}<br>
+              <strong>{{ $t('user_role') }}:</strong> {{ user?.roles?.join(', ') }}<br>
+              <strong>{{ $t('user_permissions') }}:</strong> {{ user?.permissions?.join(', ') }}
             </div>
           </VCol>
         </VRow>

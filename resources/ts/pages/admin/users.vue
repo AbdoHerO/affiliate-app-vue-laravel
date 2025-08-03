@@ -113,7 +113,7 @@ const fetchUsers = async (page = 1) => {
 
       // Handle authentication errors
       if (apiError.value.status === 401) {
-        showError('Authentication required. Please login again.')
+        showError(t('error_authentication_required'))
         // Optionally redirect to login
       }
     } else if (data.value) {
@@ -377,12 +377,12 @@ watch(
             <VSelect
               v-model="filters.statut"
               :items="statusOptions"
-              placeholder="Filter by status"
+              :placeholder="t('filter_by_status')"
             />
           </VCol>
           <VCol cols="12" md="2">
             <VBtn block variant="outlined" @click="clearFilters">
-              Clear
+              {{ t('clear') }}
             </VBtn>
           </VCol>
         </VRow>
@@ -412,7 +412,7 @@ watch(
               <td>{{ user.telephone || '-' }}</td>
               <td>
                 <VChip :color="user.roles[0] === 'admin' ? 'error' : 'primary'" size="small">
-                  {{ user.roles[0] || 'No Role' }}
+                  {{ user.roles[0] || t('no_role') }}
                 </VChip>
               </td>
               <td>

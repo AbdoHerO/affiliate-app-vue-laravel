@@ -3,111 +3,111 @@ import type { VerticalNavItems } from '@layouts/types'
 // Admin Navigation (all `to` are string paths now)
 const adminNavigation = [
   {
-    title: 'Dashboard',
+    title: 'nav_dashboard',
     to: '/admin/dashboard',
     icon: { icon: 'tabler-dashboard' },
   },
   {
-    title: 'User Management',
+    title: 'nav_user_management',
     icon: { icon: 'tabler-users' },
     children: [
       {
-        title: 'All Users',
+        title: 'nav_all_users',
         to: '/admin/users',
         icon: { icon: 'tabler-user-circle' },
       },
       {
-        title: 'Roles & Permissions',
+        title: 'nav_roles_permissions',
         to: '/admin/roles',
         icon: { icon: 'tabler-shield-lock' },
       },
       {
-        title: 'KYC Documents',
+        title: 'nav_kyc_documents',
         to: '/admin/kyc-documents',
         icon: { icon: 'tabler-file-certificate' },
       },
     ],
   },
   {
-    title: 'Affiliate Management',
+    title: 'nav_affiliate_management',
     icon: { icon: 'tabler-user-star' },
     children: [
       {
-        title: 'All Affiliates',
+        title: 'nav_all_affiliates',
         to: '/admin/affiliates',
         icon: { icon: 'tabler-users-group' },
       },
       {
-        title: 'Affiliate Tiers',
+        title: 'nav_affiliate_tiers',
         to: '/admin/affiliate-tiers',
         icon: { icon: 'tabler-medal' },
       },
     ],
   },
   {
-    title: 'Order Management',
+    title: 'nav_order_management',
     icon: { icon: 'tabler-shopping-cart' },
     children: [
       {
-        title: 'All Orders',
+        title: 'nav_all_orders',
         to: '/admin/orders',
         icon: { icon: 'tabler-list-details' },
       },
       {
-        title: 'Order Conflicts',
+        title: 'nav_order_conflicts',
         to: '/admin/order-conflicts',
         icon: { icon: 'tabler-alert-triangle' },
       },
     ],
   },
   {
-    title: 'Product Management',
+    title: 'nav_product_management',
     icon: { icon: 'tabler-package' },
     children: [
       {
-        title: 'Products',
+        title: 'nav_products',
         to: '/admin/products',
         icon: { icon: 'tabler-box' },
       },
       {
-        title: 'Categories',
+        title: 'nav_categories',
         to: '/admin/categories',
         icon: { icon: 'tabler-category' },
       },
       {
-        title: 'Boutiques',
+        title: 'nav_boutiques',
         to: '/admin/boutiques',
         icon: { icon: 'tabler-building-store' },
       },
     ],
   },
   {
-    title: 'Financial Management',
+    title: 'nav_financial_management',
     icon: { icon: 'tabler-currency-dollar' },
     children: [
       {
-        title: 'Commissions',
+        title: 'nav_commissions',
         to: '/admin/commissions',
         icon: { icon: 'tabler-percentage' },
       },
       {
-        title: 'Payments',
+        title: 'nav_payments',
         to: '/admin/payments',
         icon: { icon: 'tabler-credit-card' },
       },
     ],
   },
   {
-    title: 'Reports & Analytics',
+    title: 'nav_reports_analytics',
     icon: { icon: 'tabler-chart-bar' },
     children: [
       {
-        title: 'Sales Reports',
+        title: 'nav_sales_reports',
         to: '/admin/reports/sales',
         icon: { icon: 'tabler-chart-line' },
       },
       {
-        title: 'Affiliate Performance',
+        title: 'nav_affiliate_performance',
         to: '/admin/reports/affiliates',
         icon: { icon: 'tabler-chart-pie' },
       },
@@ -118,22 +118,22 @@ const adminNavigation = [
 // Affiliate Navigation (string paths)
 const affiliateNavigation = [
   {
-    title: 'Dashboard',
+    title: 'nav_dashboard',
     to: '/affiliate/dashboard',
     icon: { icon: 'tabler-dashboard' },
   },
   {
-    title: 'My Orders',
+    title: 'nav_my_orders',
     to: '/affiliate/orders',
     icon: { icon: 'tabler-shopping-cart' },
   },
   {
-    title: 'My Commissions',
+    title: 'nav_my_commissions',
     to: '/affiliate/commissions',
     icon: { icon: 'tabler-currency-dollar' },
   },
   {
-    title: 'Marketing Materials',
+    title: 'nav_marketing_materials',
     to: '/affiliate/marketing',
     icon: { icon: 'tabler-photo' },
   },
