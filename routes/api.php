@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\FileUploadController;
+use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\Admin\RolePermissionController;
@@ -14,6 +16,8 @@ Route::prefix('auth')->group(function () {
     Route::post('login', [AuthController::class, 'login']);
     Route::post('register', [AuthController::class, 'register']);
 });
+
+
 
 // Protected authentication routes
 Route::middleware('auth:sanctum')->group(function () {
@@ -89,14 +93,15 @@ Route::middleware(['auth:sanctum'])->group(function () {
         });
     });
 
-    // Routes accessible by both admin and affiliate
-    Route::get('profile', function (Request $request) {
-        return response()->json([
-            'message' => 'User Profile',
-            'user' => $request->user()->only(['id', 'name', 'email']),
-            'roles' => $request->user()->getRoleNames(),
-        ]);
-    });
+    // File upload routes
+    Route::post('upload/profile-image', [FileUploadController::class, 'uploadProfileImage']);
+    Route::delete('upload/file', [FileUploadController::class, 'deleteFile']);
+
+
+    // Profile management routes
+    Route::get('profile', [ProfileController::class, 'show']);
+    Route::put('profile', [ProfileController::class, 'update']);
+    Route::put('profile/password', [ProfileController::class, 'updatePassword']);
 
     // Permission-based routes (more granular than role-based)
     Route::middleware(['permission:manage users'])->get('admin/users/manage', function () {

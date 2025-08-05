@@ -121,6 +121,11 @@ export function useNavigation() {
               },
             ],
           },
+          {
+            title: t('profile'),
+            to: 'profile',
+            icon: { icon: 'tabler-user' },
+          },
         ]
       } else if (hasRole('affiliate')) {
         const affiliateNav = [
@@ -143,6 +148,11 @@ export function useNavigation() {
             title: t('nav_marketing_materials'),
             to: 'affiliate-marketing',
             icon: { icon: 'tabler-photo' },
+          },
+          {
+            title: t('profile'),
+            to: 'profile',
+            icon: { icon: 'tabler-user' },
           },
         ]
         return affiliateNav

@@ -207,6 +207,25 @@
   "user_permissions": "Permissions",
 
   // ===========================================
+  // PROFILE PAGE
+  // ===========================================
+  "profile": "Profile",
+  "teams": "Teams",
+  "projects": "Projects",
+  "connections": "Connections",
+  "about": "About",
+  "contacts": "Contacts",
+  "overview": "Overview",
+  "profile_information": "Profile Information",
+  "profile_image": "Profile Image",
+  "profile_image_url": "Profile Image URL",
+  "enter_profile_image_url": "Enter profile image URL",
+  "upload_image": "Upload Image",
+  "change_image": "Change Image",
+  "upload_image_hint": "Allowed JPG, GIF or PNG. Max size of 5MB",
+  "remove": "Remove",
+
+  // ===========================================
   // LANGUAGE & LOCALIZATION
   // ===========================================
   "language": "Language",

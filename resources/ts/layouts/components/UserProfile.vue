@@ -1,10 +1,15 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import avatar1 from '@images/avatars/avatar-1.png'
 import { useAuth } from '@/composables/useAuth'
 import { useI18n } from 'vue-i18n'
+import { getAvatarUrl } from '@/utils/imageUtils'
 
 const { user, isAuthenticated, logout } = useAuth()
 const { t } = useI18n()
+
+// Computed property for user avatar URL
+const userAvatarUrl = computed(() => getAvatarUrl(user.value?.photo_profil))
 
 const handleLogout = async () => {
   await logout()
@@ -22,10 +27,10 @@ const handleLogout = async () => {
   >
     <VAvatar
       class="cursor-pointer"
-      color="primary"
-      variant="tonal"
+      :color="!user?.photo_profil ? 'primary' : undefined"
+      :variant="!user?.photo_profil ? 'tonal' : undefined"
     >
-      <VImg :src="avatar1" />
+      <VImg :src="userAvatarUrl" />
 
       <!-- SECTION Menu -->
       <VMenu
@@ -47,25 +52,28 @@ const handleLogout = async () => {
                   color="success"
                 >
                   <VAvatar
-                    color="primary"
-                    variant="tonal"
+                    :color="!user?.photo_profil ? 'primary' : undefined"
+                    :variant="!user?.photo_profil ? 'tonal' : undefined"
                   >
-                    <VImg :src="avatar1" />
+                    <VImg :src="userAvatarUrl" />
                   </VAvatar>
                 </VBadge>
               </VListItemAction>
             </template>
 
             <VListItemTitle class="font-weight-semibold">
-              {{ user?.name || 'Guest' }}
+              {{ user?.nom_complet || 'Guest' }}
             </VListItemTitle>
-            <VListItemSubtitle>{{ user?.roles.join(', ') || 'No Role' }}</VListItemSubtitle>
+            <VListItemSubtitle>{{ user?.roles?.join(', ') || 'No Role' }}</VListItemSubtitle>
           </VListItem>
 
           <VDivider class="my-2" />
 
           <!-- 👉 Profile -->
-          <VListItem link>
+          <VListItem
+            link
+            to="/profile"
+          >
             <template #prepend>
               <VIcon
                 class="me-2"

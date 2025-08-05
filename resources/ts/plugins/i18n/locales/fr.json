@@ -605,5 +605,24 @@
   "validation_alpha_only": "Ce champ ne peut contenir que des caractères alphabétiques",
   "validation_url_invalid": "L'URL est invalide",
   "validation_exact_length": "Doit contenir exactement {length} caractères",
-  "validation_alpha_dash_only": "Ce champ ne peut contenir que des lettres, chiffres, tirets et underscores"
+  "validation_alpha_dash_only": "Ce champ ne peut contenir que des lettres, chiffres, tirets et underscores",
+
+  // ===========================================
+  // PROFILE PAGE
+  // ===========================================
+  "profile": "Profil",
+  "teams": "Équipes",
+  "projects": "Projets",
+  "connections": "Connexions",
+  "about": "À propos",
+  "contacts": "Contacts",
+  "overview": "Aperçu",
+  "profile_information": "Informations du profil",
+  "profile_image": "Image de profil",
+  "profile_image_url": "URL de l'image de profil",
+  "enter_profile_image_url": "Entrez l'URL de l'image de profil",
+  "upload_image": "Téléverser une image",
+  "change_image": "Changer l'image",
+  "upload_image_hint": "JPG, GIF ou PNG autorisés. Taille max de 5MB",
+  "remove": "Supprimer"
 }

@@ -5,6 +5,8 @@ import { useI18n } from 'vue-i18n'
 import { useNotifications } from '@/composables/useNotifications'
 import { useApi } from '@/composables/useApi'
 import { useFormErrors } from '@/composables/useFormErrors'
+import ProfileImageUpload from '@/components/ProfileImageUpload.vue'
+import { getAvatarUrl } from '@/utils/imageUtils'
 
 definePage({
   meta: {
@@ -17,12 +19,15 @@ const { hasPermission } = useAuth()
 const { t } = useI18n()
 const { showSuccess, showError, showConfirm, snackbar, confirmDialog } = useNotifications()
 
+
+
 type User = {
   id: string
   nom_complet: string
   email: string
   telephone?: string
   adresse?: string
+  photo_profil?: string
   statut: 'actif' | 'inactif' | 'bloque'
   email_verifie: boolean
   kyc_statut: 'non_requis' | 'en_attente' | 'valide' | 'refuse'
@@ -78,6 +83,7 @@ const userForm = ref({
   password: '',
   telephone: '',
   adresse: '',
+  photo_profil: '',
   role: '',
   statut: 'actif' as User['statut'],
   kyc_statut: 'non_requis' as User['kyc_statut'],
@@ -121,10 +127,15 @@ const fetchUsers = async (page = 1) => {
         id: String(user.id),
         nom_complet: user.nom_complet,
         email: user.email,
+        telephone: user.telephone,
+        adresse: user.adresse,
+        photo_profil: user.photo_profil,
         roles: user.roles?.map((r: any) => r.name) ?? [],
         statut: user.statut,
+        email_verifie: user.email_verifie,
         kyc_statut: user.kyc_statut,
         created_at: user.created_at,
+        updated_at: user.updated_at,
       }))
 
       pagination.value = data.value.pagination
@@ -159,6 +170,8 @@ const createUser = async () => {
   try {
     loading.value = true
 
+
+
     const { data, error: apiError } = await useApi<any>('/admin/users', {
       method: 'POST',
       body: JSON.stringify({
@@ -168,6 +181,7 @@ const createUser = async () => {
         password_confirmation: userForm.value.password,
         telephone: userForm.value.telephone,
         adresse: userForm.value.adresse,
+        photo_profil: userForm.value.photo_profil,
         role: userForm.value.role,
         statut: userForm.value.statut,
         kyc_statut: userForm.value.kyc_statut,
@@ -201,11 +215,14 @@ const updateUser = async () => {
   try {
     loading.value = true
 
+
+
     const payload: any = {
       nom_complet: userForm.value.nom_complet,
       email: userForm.value.email,
       telephone: userForm.value.telephone,
       adresse: userForm.value.adresse,
+      photo_profil: userForm.value.photo_profil,
       role: userForm.value.role,
       statut: userForm.value.statut,
       kyc_statut: userForm.value.kyc_statut,
@@ -290,6 +307,7 @@ const resetForm = () => {
     password: '',
     telephone: '',
     adresse: '',
+    photo_profil: '',
     role: '',
     statut: 'actif',
     kyc_statut: 'non_requis',
@@ -305,6 +323,7 @@ const openEditDialog = (user: User) => {
     password: '',
     telephone: user.telephone || '',
     adresse: user.adresse || '',
+    photo_profil: user.photo_profil || '',
     role: user.roles[0] || '',
     statut: user.statut,
     kyc_statut: user.kyc_statut,
@@ -395,6 +414,7 @@ watch(
         <VTable v-if="!loading && users.length">
           <thead>
             <tr>
+              <th>{{ t('profile_image') }}</th>
               <th>{{ t('name') }}</th>
               <th>{{ t('email') }}</th>
               <th>{{ t('phone') }}</th>
@@ -407,6 +427,15 @@ watch(
           </thead>
           <tbody>
             <tr v-for="user in users" :key="user.id">
+              <td>
+                <VAvatar size="40">
+                  <VImg
+                    :src="getAvatarUrl(user.photo_profil)"
+                    :alt="user.nom_complet"
+                    cover
+                  />
+                </VAvatar>
+              </td>
               <td>{{ user.nom_complet }}</td>
               <td>{{ user.email }}</td>
               <td>{{ user.telephone || '-' }}</td>
@@ -490,6 +519,12 @@ watch(
             <VTextField v-model="userForm.password" :label="t('password')" :placeholder="t('enter_password')" :error-messages="userErrors.password" type="password" required class="mb-4" />
             <VTextField v-model="userForm.telephone" :label="t('phone')" :placeholder="t('enter_phone')" :error-messages="userErrors.telephone" class="mb-4" />
             <VTextarea v-model="userForm.adresse" :label="t('address')" :placeholder="t('enter_address')" :error-messages="userErrors.adresse" rows="3" class="mb-4" />
+            <ProfileImageUpload
+              v-model="userForm.photo_profil"
+              :label="t('profile_image')"
+              :error-messages="userErrors.photo_profil"
+              class="mb-4"
+            />
             <VSelect v-model="userForm.role" :items="roles" :label="t('role')" :placeholder="t('select_role')" :error-messages="userErrors.role" required class="mb-4" />
             <VSelect v-model="userForm.statut" :items="statusOptions.slice(1)" :label="t('status')" :placeholder="t('select_status')" required class="mb-4" />
             <VSelect v-model="userForm.kyc_statut" :items="kycStatusOptions" :label="t('kyc_status')" :placeholder="t('select_kyc_status')" required />
@@ -513,6 +548,12 @@ watch(
             <VTextField v-model="userForm.email" :label="t('email')" :placeholder="t('enter_email')" :error-messages="userErrors.email" type="email" required class="mb-4" />
             <VTextField v-model="userForm.telephone" :label="t('phone')" :placeholder="t('enter_phone')" :error-messages="userErrors.telephone" class="mb-4" />
             <VTextarea v-model="userForm.adresse" :label="t('address')" :placeholder="t('enter_address')" :error-messages="userErrors.adresse" rows="3" class="mb-4" />
+            <ProfileImageUpload
+              v-model="userForm.photo_profil"
+              :label="t('profile_image')"
+              :error-messages="userErrors.photo_profil"
+              class="mb-4"
+            />
             <VSelect v-model="userForm.role" :items="roles" :label="t('role')" :placeholder="t('select_role')" :error-messages="userErrors.role" required class="mb-4" />
             <VSelect v-model="userForm.statut" :items="statusOptions.slice(1)" :label="t('status')" :placeholder="t('select_status')" required class="mb-4" />
             <VSelect v-model="userForm.kyc_statut" :items="kycStatusOptions" :label="t('kyc_status')" :placeholder="t('select_kyc_status')" required />

@@ -33,6 +33,7 @@ class User extends Authenticatable
         'mot_de_passe_hash',
         'telephone',
         'adresse',
+        'photo_profil',
         'statut',
         'email_verifie',
         'kyc_statut',

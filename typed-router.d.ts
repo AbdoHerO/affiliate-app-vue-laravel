@@ -41,6 +41,7 @@ declare module 'vue-router/auto-routes' {
     'affiliate-marketing': RouteRecordInfo<'affiliate-marketing', '/affiliate/marketing', Record<never, never>, Record<never, never>>,
     'affiliate-orders': RouteRecordInfo<'affiliate-orders', '/affiliate/orders', Record<never, never>, Record<never, never>>,
     'login': RouteRecordInfo<'login', '/login', Record<never, never>, Record<never, never>>,
+    'profile': RouteRecordInfo<'profile', '/profile', Record<never, never>, Record<never, never>>,
     'test-auth': RouteRecordInfo<'test-auth', '/test-auth', Record<never, never>, Record<never, never>>,
     'unauthorized': RouteRecordInfo<'unauthorized', '/unauthorized', Record<never, never>, Record<never, never>>,
   }

@@ -68,4 +68,18 @@ return [
     'api_login_successful' => 'Login successful',
     'api_registration_successful' => 'Registration successful',
     'api_invalid_credentials' => 'The provided credentials are incorrect.',
+
+    // File upload messages
+    'file_uploaded_successfully' => 'File uploaded successfully.',
+    'file_upload_failed' => 'File upload failed.',
+    'file_deleted_successfully' => 'File deleted successfully.',
+    'file_delete_failed' => 'File deletion failed.',
+    'file_not_found' => 'File not found.',
+
+    // Profile management
+    'profile_updated_successfully' => 'Profile updated successfully.',
+    'profile_update_failed' => 'Profile update failed.',
+    'password_updated_successfully' => 'Password updated successfully.',
+    'password_update_failed' => 'Password update failed.',
+    'current_password_incorrect' => 'Current password is incorrect.',
 ];

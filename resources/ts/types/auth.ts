@@ -4,6 +4,7 @@ export interface User {
   email: string
   telephone?: string
   adresse?: string
+  photo_profil?: string
   statut: 'actif' | 'inactif' | 'bloque'
   email_verifie: boolean
   kyc_statut: 'non_requis' | 'en_attente' | 'valide' | 'refuse'

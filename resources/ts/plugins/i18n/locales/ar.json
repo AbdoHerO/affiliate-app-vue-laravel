@@ -377,5 +377,24 @@
   "validation_alpha_only": "يجب أن يحتوي هذا الحقل على أحرف أبجدية فقط",
   "validation_url_invalid": "الرابط غير صحيح",
   "validation_exact_length": "يجب أن يحتوي على {length} أحرف بالضبط",
-  "validation_alpha_dash_only": "يجب أن يحتوي هذا الحقل على أحرف وأرقام وشرطات وشرطات سفلية فقط"
+  "validation_alpha_dash_only": "يجب أن يحتوي هذا الحقل على أحرف وأرقام وشرطات وشرطات سفلية فقط",
+
+  // ===========================================
+  // PROFILE PAGE
+  // ===========================================
+  "profile": "الملف الشخصي",
+  "teams": "الفرق",
+  "projects": "المشاريع",
+  "connections": "الاتصالات",
+  "about": "حول",
+  "contacts": "جهات الاتصال",
+  "overview": "نظرة عامة",
+  "profile_information": "معلومات الملف الشخصي",
+  "profile_image": "صورة الملف الشخصي",
+  "profile_image_url": "رابط صورة الملف الشخصي",
+  "enter_profile_image_url": "أدخل رابط صورة الملف الشخصي",
+  "upload_image": "رفع صورة",
+  "change_image": "تغيير الصورة",
+  "upload_image_hint": "مسموح JPG، GIF أو PNG. حجم أقصى 5MB",
+  "remove": "إزالة"
 }

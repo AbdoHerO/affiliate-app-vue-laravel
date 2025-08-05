@@ -68,12 +68,15 @@ class UserManagementController extends Controller
             return response()->json(['message' => __('messages.access_denied')], Response::HTTP_FORBIDDEN);
         }
 
+
+
         $request->validate([
             'nom_complet' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
             'telephone' => 'nullable|string|max:20',
             'adresse' => 'nullable|string|max:500',
+            'photo_profil' => 'nullable|string|max:500',
             'role' => 'required|string|exists:roles,name',
             'statut' => 'required|string|in:actif,inactif,bloque',
             'email_verifie' => 'boolean',
@@ -86,6 +89,7 @@ class UserManagementController extends Controller
             'mot_de_passe_hash' => Hash::make($request->password),
             'telephone' => $request->telephone,
             'adresse' => $request->adresse,
+            'photo_profil' => $request->photo_profil,
             'statut' => $request->statut,
             'email_verifie' => $request->boolean('email_verifie', false),
             'kyc_statut' => $request->kyc_statut,
@@ -144,6 +148,8 @@ class UserManagementController extends Controller
             return response()->json(['message' => __('messages.access_denied')], Response::HTTP_FORBIDDEN);
         }
 
+
+
         $user = User::findOrFail($id);
 
         $request->validate([
@@ -152,6 +158,7 @@ class UserManagementController extends Controller
             'password' => 'sometimes|nullable|string|min:8',
             'telephone' => 'sometimes|nullable|string|max:20',
             'adresse' => 'sometimes|nullable|string|max:500',
+            'photo_profil' => 'sometimes|nullable|string|max:500',
             'role' => 'sometimes|required|string|exists:roles,name',
             'statut' => 'sometimes|required|string|in:actif,inactif,bloque',
             'email_verifie' => 'sometimes|boolean',
@@ -173,6 +180,9 @@ class UserManagementController extends Controller
         }
         if ($request->has('adresse')) {
             $user->adresse = $request->adresse;
+        }
+        if ($request->has('photo_profil')) {
+            $user->photo_profil = $request->photo_profil;
         }
         if ($request->has('statut')) {
             $user->statut = $request->statut;

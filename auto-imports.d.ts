@@ -53,8 +53,10 @@ declare global {
   const formatDate: typeof import('./resources/ts/@core/utils/formatters')['formatDate']
   const formatDateToMonthShort: typeof import('./resources/ts/@core/utils/formatters')['formatDateToMonthShort']
   const getActivePinia: typeof import('pinia')['getActivePinia']
+  const getAvatarUrl: typeof import('./resources/ts/utils/imageUtils')['getAvatarUrl']
   const getCurrentInstance: typeof import('vue')['getCurrentInstance']
   const getCurrentScope: typeof import('vue')['getCurrentScope']
+  const getImageUrl: typeof import('./resources/ts/utils/imageUtils')['getImageUrl']
   const h: typeof import('vue')['h']
   const hexToRgb: typeof import('./resources/ts/@core/utils/colorConverter')['hexToRgb']
   const ignorableWatch: typeof import('@vueuse/core')['ignorableWatch']
@@ -424,8 +426,10 @@ declare module 'vue' {
     readonly formatDate: UnwrapRef<typeof import('./resources/ts/@core/utils/formatters')['formatDate']>
     readonly formatDateToMonthShort: UnwrapRef<typeof import('./resources/ts/@core/utils/formatters')['formatDateToMonthShort']>
     readonly getActivePinia: UnwrapRef<typeof import('pinia')['getActivePinia']>
+    readonly getAvatarUrl: UnwrapRef<typeof import('./resources/ts/utils/imageUtils')['getAvatarUrl']>
     readonly getCurrentInstance: UnwrapRef<typeof import('vue')['getCurrentInstance']>
     readonly getCurrentScope: UnwrapRef<typeof import('vue')['getCurrentScope']>
+    readonly getImageUrl: UnwrapRef<typeof import('./resources/ts/utils/imageUtils')['getImageUrl']>
     readonly h: UnwrapRef<typeof import('vue')['h']>
     readonly hexToRgb: UnwrapRef<typeof import('./resources/ts/@core/utils/colorConverter')['hexToRgb']>
     readonly ignorableWatch: UnwrapRef<typeof import('@vueuse/core')['ignorableWatch']>
