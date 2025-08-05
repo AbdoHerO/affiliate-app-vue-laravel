@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { useAuth } from '@/composables/useAuth'
+import { getAvatarUrl } from '@/utils/imageUtils'
 import type { ProfileHeader } from '@/types/profile'
 import defaultCoverImg from '@images/pages/user-profile-header-bg.png'
 import defaultAvatar from '@images/avatars/avatar-1.png'
@@ -26,7 +27,7 @@ const profileHeaderData = computed<ProfileHeader>(() => {
       ? `Joined ${new Date(user.value.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}`
       : 'Join date unknown',
     designation: user.value.roles?.includes('admin') ? 'Administrator' : 'Affiliate Partner',
-    profileImg: user.value.photo_profil || defaultAvatar,
+    profileImg: getAvatarUrl(user.value.photo_profil),
     coverImg: defaultCoverImg,
   }
 })
@@ -59,12 +60,20 @@ const onFileChange = (event: Event) => {
 
 <template>
   <VCard v-if="profileHeaderData">
-    <VImg
-      :src="profileHeaderData.coverImg"
-      min-height="125"
-      max-height="250"
-      cover
-    />
+    <div
+      class="profile-cover-bg"
+      style="min-height: 200px; background: linear-gradient(135deg, rgb(var(--v-theme-primary)) 0%, rgb(var(--v-theme-secondary)) 100%);"
+    >
+      <div class="d-flex align-end justify-end pa-4">
+        <VChip
+          :color="user?.statut === 'actif' ? 'success' : 'error'"
+          size="small"
+          class="text-capitalize"
+        >
+          {{ user?.statut }}
+        </VChip>
+      </div>
+    </div>
 
     <VCardText class="d-flex align-bottom flex-sm-row flex-column justify-center gap-x-6">
       <div class="d-flex h-0 position-relative">

@@ -68,4 +68,51 @@ return [
     'api_login_successful' => 'Connexion réussie',
     'api_registration_successful' => 'Inscription réussie',
     'api_invalid_credentials' => 'Les identifiants fournis sont incorrects.',
+
+    // Profile management
+    'profile_updated_successfully' => 'Profil mis à jour avec succès.',
+    'profile_update_failed' => 'Échec de la mise à jour du profil.',
+    'password_updated_successfully' => 'Mot de passe mis à jour avec succès.',
+    'password_update_failed' => 'Échec de la mise à jour du mot de passe.',
+    'current_password_incorrect' => 'Le mot de passe actuel est incorrect.',
+
+    // Profile page
+    'joined' => 'Rejoint',
+    'email_verified' => 'Email Vérifié',
+    'email_not_verified' => 'Email Non Vérifié',
+    'contact_information' => 'Informations de Contact',
+    'roles_permissions' => 'Rôles et Permissions',
+    'account_overview' => 'Aperçu du Compte',
+    'member_since' => 'Membre depuis',
+    'last_updated' => 'Dernière mise à jour',
+    'account_type' => 'Type de Compte',
+    'administrator' => 'Administrateur',
+    'affiliate' => 'Affilié',
+    'verified' => 'Vérifié',
+    'not_verified' => 'Non Vérifié',
+    'unknown' => 'Inconnu',
+
+    // Security
+    'change_password' => 'Changer le Mot de Passe',
+    'current_password' => 'Mot de Passe Actuel',
+    'new_password' => 'Nouveau Mot de Passe',
+    'confirm_password' => 'Confirmer le Mot de Passe',
+    'two_factor_authentication' => 'Authentification à Deux Facteurs',
+    'recent_devices' => 'Appareils Récents',
+
+    // Account Settings
+    'account_details' => 'Détails du Compte',
+    'upload_photo' => 'Télécharger une Photo',
+    'save_changes' => 'Enregistrer les Modifications',
+    'delete_account' => 'Supprimer le Compte',
+
+    // Activity Timeline
+    'activity_timeline' => 'Chronologie d\'Activité',
+    'recent_account_activity' => 'Activité récente du compte',
+
+    // Affiliate Stats
+    'total_commissions' => 'Commissions Totales',
+    'pending_commissions' => 'Commissions en Attente',
+    'total_orders' => 'Commandes Totales',
+    'conversion_rate' => 'Taux de Conversion',
 ];
