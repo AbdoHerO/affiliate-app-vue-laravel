@@ -698,12 +698,20 @@
   "common_edit": "Modifier",
   "common_view": "Voir",
   "common_delete": "Supprimer",
-  "common_save": "Enregistrer",
-  "common_cancel": "Annuler",
+  "common.save": "Enregistrer",
+  "common.cancel": "Annuler",
   "common_back": "Retour",
   "common_search": "Rechercher",
   "common_filter": "Filtrer",
   "common_reset": "Réinitialiser",
   "common_loading": "Chargement...",
-  "common_no_data": "Aucune donnée disponible"
+  "common_no_data": "Aucune donnée disponible",
+  "form_name": "Nom",
+  "common.created_at":  "Créé le",
+  "common.updated_at": "Mis à jour le",
+  "common.close": "fermer",
+  "common.confirm": "Confirmer",
+  "common.sort.created_desc": "Plus récent d'abord",
+  "common.sort.name_asc": "Nom (A-Z)",
+  "common.sort.status": "Statut"
 }

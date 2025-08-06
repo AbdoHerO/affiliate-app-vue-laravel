@@ -470,12 +470,20 @@
   "common_edit": "تعديل",
   "common_view": "عرض",
   "common_delete": "حذف",
-  "common_save": "حفظ",
-  "common_cancel": "إلغاء",
+  "common.save": "حفظ",
+  "common.cancel": "إلغاء",
   "common_back": "رجوع",
   "common_search": "بحث",
   "common_filter": "تصفية",
   "common_reset": "إعادة تعيين",
   "common_loading": "جاري التحميل...",
-  "common_no_data": "لا توجد بيانات متاحة"
+  "common_no_data": "لا توجد بيانات متاحة",
+  "form_name": "الاسم",
+  "common.created_at": "تاريخ الإنشاء",
+  "common.updated_at": "تاريخ التحديث",
+  "common.close": "إغلاق" ,
+  "common.confirm": "تأكيد",
+  "common.sort.created_desc": "الأحدث أولاً",
+  "common.sort.name_asc": "الاسم (أ-ي)",
+  "common.sort.status": "الحالة"
 }
