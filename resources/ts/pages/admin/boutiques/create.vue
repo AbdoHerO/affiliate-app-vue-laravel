@@ -1,0 +1,257 @@
+<script setup lang="ts">
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
+import { useBoutiquesStore, type BoutiqueFormData } from '@/stores/admin/boutiques'
+import { useNotifications } from '@/composables/useNotifications'
+import { useApi } from '@/composables/useApi'
+
+definePage({
+  meta: {
+    layout: 'default',
+    requiresAuth: true,
+    requiresRole: 'admin',
+  },
+})
+
+const { t } = useI18n()
+const router = useRouter()
+const boutiquesStore = useBoutiquesStore()
+const { showError } = useNotifications()
+
+// Form state
+const form = ref<BoutiqueFormData>({
+  nom: '',
+  slug: '',
+  proprietaire_id: '',
+  email_pro: '',
+  adresse: '',
+  statut: 'actif',
+  commission_par_defaut: 0,
+})
+
+const isLoading = ref(false)
+const errors = ref<Record<string, string[]>>({})
+const users = ref<Array<{ id: string; nom_complet: string; email: string }>>([])
+
+// Form validation
+const validateForm = () => {
+  errors.value = {}
+  
+  if (!form.value.nom.trim()) {
+    errors.value.nom = ['Le nom est requis']
+  }
+  
+  if (!form.value.proprietaire_id) {
+    errors.value.proprietaire_id = ['Le propriétaire est requis']
+  }
+  
+  if (form.value.email_pro && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.value.email_pro)) {
+    errors.value.email_pro = ['Format email invalide']
+  }
+  
+  return Object.keys(errors.value).length === 0
+}
+
+// Load users for proprietaire selection
+const loadUsers = async () => {
+  try {
+    const { data, error } = await useApi<any>('/admin/users?per_page=100')
+    if (error.value) {
+      showError('Erreur lors du chargement des utilisateurs')
+      return
+    }
+    users.value = data.value?.data || []
+  } catch (err) {
+    showError('Erreur lors du chargement des utilisateurs')
+  }
+}
+
+// Handle form submission
+const handleSubmit = async () => {
+  if (!validateForm()) return
+
+  isLoading.value = true
+  
+  try {
+    await boutiquesStore.create(form.value)
+    router.push({ name: 'admin-boutiques' })
+  } catch (error: any) {
+    if (error.status === 422 && error.data?.errors) {
+      errors.value = error.data.errors
+    }
+  } finally {
+    isLoading.value = false
+  }
+}
+
+const goBack = () => {
+  router.push({ name: 'admin-boutiques' })
+}
+
+// Auto-generate slug from nom
+const generateSlug = () => {
+  if (form.value.nom && !form.value.slug) {
+    form.value.slug = form.value.nom
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '')
+  }
+}
+
+onMounted(() => {
+  loadUsers()
+})
+</script>
+
+<template>
+  <div>
+    <!-- Breadcrumbs -->
+    <VBreadcrumbs
+      :items="[
+        { title: t('boutiques.breadcrumbs.home'), to: '/' },
+        { title: t('boutiques.breadcrumbs.boutiques'), to: { name: 'admin-boutiques' } },
+        { title: t('boutiques.breadcrumbs.create') },
+      ]"
+      class="pa-0 mb-4"
+    />
+
+    <VRow>
+      <VCol cols="12">
+        <VCard>
+          <VCardTitle class="d-flex align-center justify-space-between">
+            <span>{{ t('boutiques.create_title') || 'Créer une boutique' }}</span>
+            <VBtn
+              variant="outlined"
+              size="small"
+              @click="goBack"
+            >
+              {{ t('common.back') || 'Retour' }}
+            </VBtn>
+          </VCardTitle>
+          
+          <VCardText>
+            <VForm @submit.prevent="handleSubmit">
+              <VRow>
+                <!-- Nom -->
+                <VCol cols="12" md="6">
+                  <VTextField
+                    v-model="form.nom"
+                    :label="t('boutiques.fields.nom') || 'Nom'"
+                    :error-messages="errors.nom"
+                    variant="outlined"
+                    required
+                    @blur="generateSlug"
+                  />
+                </VCol>
+
+                <!-- Slug -->
+                <VCol cols="12" md="6">
+                  <VTextField
+                    v-model="form.slug"
+                    :label="t('boutiques.fields.slug') || 'Slug'"
+                    :error-messages="errors.slug"
+                    variant="outlined"
+                    hint="URL-friendly version du nom (généré automatiquement)"
+                  />
+                </VCol>
+
+                <!-- Propriétaire -->
+                <VCol cols="12" md="6">
+                  <VSelect
+                    v-model="form.proprietaire_id"
+                    :items="users"
+                    item-value="id"
+                    item-title="nom_complet"
+                    :label="t('boutiques.fields.proprietaire') || 'Propriétaire'"
+                    :error-messages="errors.proprietaire_id"
+                    variant="outlined"
+                    required
+                  >
+                    <template #item="{ props, item }">
+                      <VListItem v-bind="props">
+                        <VListItemTitle>{{ item.raw.nom_complet }}</VListItemTitle>
+                        <VListItemSubtitle>{{ item.raw.email }}</VListItemSubtitle>
+                      </VListItem>
+                    </template>
+                  </VSelect>
+                </VCol>
+
+                <!-- Statut -->
+                <VCol cols="12" md="6">
+                  <VSelect
+                    v-model="form.statut"
+                    :items="[
+                      { value: 'actif', title: t('boutiques.status.actif') || 'Actif' },
+                      { value: 'suspendu', title: t('boutiques.status.suspendu') || 'Suspendu' },
+                      { value: 'desactive', title: t('boutiques.status.desactive') || 'Désactivé' },
+                    ]"
+                    :label="t('boutiques.fields.statut') || 'Statut'"
+                    :error-messages="errors.statut"
+                    variant="outlined"
+                    required
+                  />
+                </VCol>
+
+                <!-- Email professionnel -->
+                <VCol cols="12" md="6">
+                  <VTextField
+                    v-model="form.email_pro"
+                    :label="t('boutiques.fields.email_pro') || 'Email professionnel'"
+                    :error-messages="errors.email_pro"
+                    variant="outlined"
+                    type="email"
+                  />
+                </VCol>
+
+                <!-- Commission par défaut -->
+                <VCol cols="12" md="6">
+                  <VTextField
+                    v-model.number="form.commission_par_defaut"
+                    :label="t('boutiques.fields.commission_par_defaut') || 'Commission par défaut (%)'"
+                    :error-messages="errors.commission_par_defaut"
+                    variant="outlined"
+                    type="number"
+                    min="0"
+                    max="100"
+                    suffix="%"
+                  />
+                </VCol>
+
+                <!-- Adresse -->
+                <VCol cols="12">
+                  <VTextarea
+                    v-model="form.adresse"
+                    :label="t('boutiques.fields.adresse') || 'Adresse'"
+                    :error-messages="errors.adresse"
+                    variant="outlined"
+                    rows="3"
+                  />
+                </VCol>
+              </VRow>
+
+              <!-- Actions -->
+              <VRow class="mt-4">
+                <VCol cols="12" class="d-flex gap-4 justify-end">
+                  <VBtn
+                    variant="outlined"
+                    @click="goBack"
+                  >
+                    {{ t('common.cancel') || 'Annuler' }}
+                  </VBtn>
+                  <VBtn
+                    type="submit"
+                    color="primary"
+                    :loading="isLoading"
+                  >
+                    {{ t('common.create') || 'Créer' }}
+                  </VBtn>
+                </VCol>
+              </VRow>
+            </VForm>
+          </VCardText>
+        </VCard>
+      </VCol>
+    </VRow>
+  </div>
+</template>

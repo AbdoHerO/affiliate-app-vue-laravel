@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\Admin\RolePermissionController;
 use App\Http\Controllers\Admin\DashboardStatsController;
 use App\Http\Controllers\Admin\KycDocumentController;
+use App\Http\Controllers\Admin\BoutiqueController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -72,6 +73,13 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
 
         Route::get('users/{userId}/kyc-documents', [KycDocumentController::class, 'getUserDocuments']);
+
+        // Boutique Management
+        Route::get('boutiques', [BoutiqueController::class, 'index']);
+        Route::post('boutiques', [BoutiqueController::class, 'store']);
+        Route::get('boutiques/{id}', [BoutiqueController::class, 'show']);
+        Route::put('boutiques/{id}', [BoutiqueController::class, 'update']);
+        Route::delete('boutiques/{id}', [BoutiqueController::class, 'destroy']);
     });
 
     // Affiliate only routes

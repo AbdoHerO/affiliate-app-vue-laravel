@@ -23,6 +23,7 @@ declare module 'vue-router/auto-routes' {
     'admin-affiliate-tiers': RouteRecordInfo<'admin-affiliate-tiers', '/admin/affiliate-tiers', Record<never, never>, Record<never, never>>,
     'admin-affiliates': RouteRecordInfo<'admin-affiliates', '/admin/affiliates', Record<never, never>, Record<never, never>>,
     'admin-boutiques': RouteRecordInfo<'admin-boutiques', '/admin/boutiques', Record<never, never>, Record<never, never>>,
+    'admin-boutiques-create': RouteRecordInfo<'admin-boutiques-create', '/admin/boutiques/create', Record<never, never>, Record<never, never>>,
     'admin-categories': RouteRecordInfo<'admin-categories', '/admin/categories', Record<never, never>, Record<never, never>>,
     'admin-commissions': RouteRecordInfo<'admin-commissions', '/admin/commissions', Record<never, never>, Record<never, never>>,
     'admin-dashboard': RouteRecordInfo<'admin-dashboard', '/admin/dashboard', Record<never, never>, Record<never, never>>,

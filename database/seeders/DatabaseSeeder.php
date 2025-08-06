@@ -15,6 +15,7 @@ class DatabaseSeeder extends Seeder
         // Seed roles, permissions, and default users
         $this->call([
             RolePermissionSeeder::class,
+            BoutiqueSeeder::class,
         ]);
     }
 }
