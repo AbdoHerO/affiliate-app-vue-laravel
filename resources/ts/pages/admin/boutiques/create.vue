@@ -236,14 +236,14 @@ onMounted(() => {
                     variant="outlined"
                     @click="goBack"
                   >
-                    {{ t('common_cancel') || 'Annuler' }}
+                    {{ t('common.cancel') || 'Annuler' }}
                   </VBtn>
                   <VBtn
                     type="submit"
                     color="primary"
                     :loading="isLoading"
                   >
-                    {{ t('common_create') || 'Créer' }}
+                    {{ t('common.save') || 'Créer' }}
                   </VBtn>
                 </VCol>
               </VRow>

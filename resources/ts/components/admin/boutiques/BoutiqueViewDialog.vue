@@ -135,13 +135,13 @@
         >
           {{ $t('common.close') }}
         </VBtn>
-        <VBtn
+        <!-- <VBtn
           color="primary"
           prepend-icon="tabler-edit"
           @click="editBoutique"
         >
           {{ $t('common.edit') }}
-        </VBtn>
+        </VBtn> -->
       </VCardActions>
     </VCard>
   </VDialog>

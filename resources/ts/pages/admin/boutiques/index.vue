@@ -2,7 +2,9 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import { storeToRefs } from 'pinia'
 import { useBoutiquesStore, type Boutique } from '@/stores/admin/boutiques'
+import { useAuthStore } from '@/stores/auth'
 import Breadcrumbs from '@/components/common/Breadcrumbs.vue'
 import ConfirmModal from '@/components/common/ConfirmModal.vue'
 import BoutiqueCrudDialog from '@/components/admin/boutiques/BoutiqueCrudDialog.vue'
@@ -18,7 +20,19 @@ definePage({
 // Composables
 const router = useRouter()
 const { t } = useI18n()
+const authStore = useAuthStore()
 const boutiquesStore = useBoutiquesStore()
+
+// Keep functions on the store instance
+const { fetchBoutiques, setFilters, destroy } = boutiquesStore
+
+// Turn reactive state into refs
+const {
+  items: boutiques,
+  isLoading,
+  pagination,
+  totalItems
+} = storeToRefs(boutiquesStore)
 
 // Reactive state
 const searchQuery = ref('')
@@ -32,23 +46,27 @@ const selectedBoutique = ref<Boutique | null>(null)
 const crudMode = ref<'create' | 'edit'>('create')
 const isDeleting = ref(false)
 
-// Store getters
-const { 
-  items: boutiques,
-  isLoading,
-  pagination,
-  totalItems,
-  getStatusBadgeColor
-} = boutiquesStore
+// Computed properties with setters for v-model
+const currentPage = computed({
+  get: () => pagination.value.current_page,
+  set: (p: number) => {
+    setFilters({ page: p })
+    fetchData()
+  },
+})
 
-// Computed properties
-const currentPage = computed(() => pagination.current_page)
-const perPage = computed(() => pagination.per_page)
+const perPage = computed({
+  get: () => pagination.value.per_page,
+  set: (n: number) => {
+    setFilters({ per_page: n, page: 1 })
+    fetchData()
+  },
+})
 
-const totalBoutiques = computed(() => totalItems)
-const activeCount = computed(() => boutiques.filter(b => b.statut === 'actif').length)
-const suspendedCount = computed(() => boutiques.filter(b => b.statut === 'suspendu').length)  
-const deactivatedCount = computed(() => boutiques.filter(b => b.statut === 'desactive').length)
+const totalBoutiques = computed(() => totalItems.value)
+const activeCount = computed(() => boutiques.value.filter((b: Boutique) => b.statut === 'actif').length)
+const suspendedCount = computed(() => boutiques.value.filter((b: Boutique) => b.statut === 'suspendu').length)
+const deactivatedCount = computed(() => boutiques.value.filter((b: Boutique) => b.statut === 'desactive').length)
 
 const breadcrumbs = computed(() => [
   { title: t('title_admin_dashboard'), to: '/admin' },
@@ -71,9 +89,9 @@ const statusOptions = computed(() => [
 ])
 
 const sortOptions = computed(() => [
-  { title: t('created'), value: 'created_at' },
-  { title: t('admin_boutiques_name'), value: 'nom' },
-  { title: t('admin_boutiques_status'), value: 'statut' }
+  { title: t('common.sort.created_desc'), value: 'created_at' },
+  { title: t('common.sort.name_asc'), value: 'nom' },
+  { title: t('common.sort.status'), value: 'statut' }
 ])
 
 const deleteMessage = computed(() => {
@@ -84,15 +102,16 @@ const deleteMessage = computed(() => {
 
 // Methods
 const fetchData = () => {
-  boutiquesStore.fetchBoutiques()
+  fetchBoutiques()
 }
 
 const applyFilters = () => {
-  boutiquesStore.setFilters({
-    search: searchQuery.value,
+  setFilters({
+    q: searchQuery.value,
     statut: statusFilter.value,
-    sort_by: sortBy.value,
-    sort_desc: sortDesc.value,
+    sort: sortBy.value,
+    dir: sortDesc.value ? 'desc' : 'asc',
+    page: 1,
   })
   fetchData()
 }
@@ -138,10 +157,10 @@ const openDeleteDialog = (boutique: Boutique) => {
 
 const confirmDelete = async () => {
   if (!selectedBoutique.value) return
-  
+
   isDeleting.value = true
   try {
-    await boutiquesStore.deleteBoutique(selectedBoutique.value.id)
+    await destroy(selectedBoutique.value.id)
     showDeleteDialog.value = false
     selectedBoutique.value = null
     fetchData()
@@ -173,7 +192,18 @@ const getInitials = (name: string) => {
 
 // Lifecycle
 onMounted(() => {
-  fetchData()
+  // Wait for auth to be initialized before fetching data
+  if (authStore.isInitialized) {
+    fetchData()
+  } else {
+    // Watch for auth initialization
+    const unwatch = watch(() => authStore.isInitialized, (initialized) => {
+      if (initialized) {
+        fetchData()
+        unwatch() // Stop watching once initialized
+      }
+    })
+  }
 })
 </script>
 
