@@ -92,6 +92,7 @@ export const useAuthStore = defineStore('auth', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json',
         },
         body: JSON.stringify(credentials),
       })
@@ -122,6 +123,7 @@ export const useAuthStore = defineStore('auth', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json',
         },
         body: JSON.stringify(registerData),
       })
@@ -153,6 +155,7 @@ export const useAuthStore = defineStore('auth', () => {
           headers: {
             'Authorization': `Bearer ${token.value}`,
             'Content-Type': 'application/json',
+            'Accept': 'application/json',
           },
         })
       }
@@ -173,6 +176,7 @@ export const useAuthStore = defineStore('auth', () => {
         headers: {
           'Authorization': `Bearer ${token.value}`,
           'Content-Type': 'application/json',
+          'Accept': 'application/json',
         },
       })
 
