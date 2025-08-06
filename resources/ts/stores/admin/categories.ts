@@ -14,8 +14,7 @@ export interface CategoryFormData {
   nom: string
   slug?: string
   description?: string
-  image?: File | null
-  image_url?: string | null
+  image_url?: string
   ordre?: number
   actif?: boolean
 }
@@ -135,18 +134,12 @@ export const useCategoriesStore = defineStore('categories', {
       this.error = null
 
       try {
-        // Create FormData for file upload
-        const formData = new FormData()
-        formData.append('nom', data.nom)
-        if (data.slug) formData.append('slug', data.slug)
-        if (data.description) formData.append('description', data.description)
-        if (data.ordre !== undefined) formData.append('ordre', String(data.ordre))
-        formData.append('actif', data.actif ? '1' : '0')
-        if (data.image) formData.append('image', data.image)
-
         const { data: responseData, error: apiError } = await useApi('/admin/categories', {
           method: 'POST',
-          body: formData
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
         })
 
         if (apiError.value) {
@@ -180,21 +173,12 @@ export const useCategoriesStore = defineStore('categories', {
       this.error = null
 
       try {
-        // Create FormData for file upload
-        const formData = new FormData()
-        if (data.nom) formData.append('nom', data.nom)
-        if (data.slug) formData.append('slug', data.slug)
-        if (data.description) formData.append('description', data.description)
-        if (data.ordre !== undefined) formData.append('ordre', String(data.ordre))
-        if (data.actif !== undefined) formData.append('actif', data.actif ? '1' : '0')
-        if (data.image) formData.append('image', data.image)
-
-        // Add _method for Laravel to handle PUT with FormData
-        formData.append('_method', 'PUT')
-
         const { data: responseData, error: apiError } = await useApi(`/admin/categories/${id}`, {
-          method: 'POST', // Use POST with _method=PUT for FormData
-          body: formData
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
         })
 
         if (apiError.value) {

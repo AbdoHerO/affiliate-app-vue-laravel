@@ -898,6 +898,10 @@
   "common.confirm": "Confirm",
   "common.sort.created_desc": "Newest first",
   "common.sort.name_asc": "Name (A–Z)",
-  "common.sort.status": "Status"
+  "common.sort.status": "Status",
+  "common.upload": "Upload",
+  "common.change": "Change",
+  "common.remove": "Remove",
+  "common_uploading": "Uploading"
   
 }

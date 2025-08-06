@@ -2,6 +2,7 @@
 import { computed, nextTick, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useCategoriesStore, type Category, type CategoryFormData } from '@/stores/admin/categories'
+import CategoryImageUpload from './CategoryImageUpload.vue'
 
 interface Props {
   modelValue: boolean
@@ -28,12 +29,11 @@ const form = ref<CategoryFormData>({
   description: '',
   ordre: 0,
   actif: true,
-  image: null
+  image_url: ''
 })
 
 const formRef = ref()
 const isSubmitting = ref(false)
-const imagePreview = ref<string | null>(null)
 
 // Computed properties
 const isOpen = computed({
@@ -92,9 +92,8 @@ const resetForm = () => {
     description: '',
     ordre: 0,
     actif: true,
-    image: null
+    image_url: ''
   }
-  imagePreview.value = null
   if (formRef.value) {
     formRef.value.resetValidation()
   }
@@ -105,45 +104,15 @@ const loadCategoryData = () => {
     form.value = {
       nom: props.category.nom,
       slug: props.category.slug,
-      description: props.category.description || '',
+      description: '',
       ordre: props.category.ordre || 0,
       actif: props.category.actif,
-      image: null
+      image_url: props.category.image_url || ''
     }
-    imagePreview.value = props.category.image_url || null
   }
 }
 
-const handleImageChange = (event: Event) => {
-  const target = event.target as HTMLInputElement
-  const file = target.files?.[0]
-  
-  if (file) {
-    if (file.size > 2 * 1024 * 1024) { // 2MB limit
-      // Show error toast
-      return
-    }
-    
-    form.value.image = file
-    
-    // Create preview
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      imagePreview.value = e.target?.result as string
-    }
-    reader.readAsDataURL(file)
-  }
-}
 
-const removeImage = () => {
-  form.value.image = null
-  imagePreview.value = null
-  // Clear file input
-  const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement
-  if (fileInput) {
-    fileInput.value = ''
-  }
-}
 
 const submitForm = async () => {
   if (!formRef.value) return
@@ -220,42 +189,11 @@ watch(() => form.value.nom, (newNom) => {
           <VRow>
             <!-- Image Upload -->
             <VCol cols="12">
-              <div class="mb-4">
-                <VLabel class="mb-2">{{ $t('admin_categories_image') }}</VLabel>
-                
-                <div v-if="imagePreview" class="mb-4">
-                  <div class="d-flex align-center gap-4">
-                    <VImg
-                      :src="imagePreview"
-                      width="80"
-                      height="80"
-                      class="rounded"
-                      cover
-                    />
-                    <VBtn
-                      color="error"
-                      variant="outlined"
-                      size="small"
-                      prepend-icon="tabler-trash"
-                      @click="removeImage"
-                    >
-                      {{ $t('common_remove') }}
-                    </VBtn>
-                  </div>
-                </div>
-                
-                <VFileInput
-                  accept="image/*"
-                  :label="imagePreview ? $t('admin_categories_change_image') : $t('admin_categories_select_image')"
-                  variant="outlined"
-                  prepend-icon="tabler-camera"
-                  show-size
-                  @change="handleImageChange"
-                />
-                <div class="text-caption text-medium-emphasis mt-1">
-                  {{ $t('admin_categories_image_help') }}
-                </div>
-              </div>
+              <CategoryImageUpload
+                v-model="form.image_url"
+                :label="$t('admin_categories_image')"
+                class="mb-4"
+              />
             </VCol>
 
             <!-- Name -->

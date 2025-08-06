@@ -25,7 +25,7 @@ class StoreCategorieRequest extends FormRequest
         return [
             'nom' => ['required', 'string', 'max:255'],
             'slug' => ['sometimes', 'nullable', 'string', 'max:255', 'unique:categories,slug'],
-            'image_url' => ['sometimes', 'nullable', 'string', 'max:500', 'url'],
+            'image_url' => ['sometimes', 'nullable', 'string', 'max:500'],
             'ordre' => ['sometimes', 'nullable', 'integer', 'min:0'],
             'actif' => ['sometimes', 'boolean']
         ];
@@ -63,7 +63,6 @@ class StoreCategorieRequest extends FormRequest
             'slug.unique' => __('messages.category_slug_unique'),
             'image_url.string' => __('messages.category_image_string'),
             'image_url.max' => __('messages.category_image_max'),
-            'image_url.url' => __('messages.category_image_url'),
             'ordre.integer' => __('messages.category_order_integer'),
             'ordre.min' => __('messages.category_order_min'),
             'actif.boolean' => __('messages.category_status_boolean')

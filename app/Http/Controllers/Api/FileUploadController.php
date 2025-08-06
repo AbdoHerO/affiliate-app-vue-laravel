@@ -56,6 +56,50 @@ class FileUploadController extends Controller
     }
 
     /**
+     * Upload category image
+     */
+    public function uploadCategoryImage(Request $request)
+    {
+        // Debug logging
+        Log::info('Category image upload request received', [
+            'method' => $request->method(),
+            'has_file' => $request->hasFile('category_image'),
+            'user' => $request->user() ? $request->user()->id : 'none'
+        ]);
+
+        $request->validate([
+            'category_image' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:5120', // 5MB max
+        ]);
+
+        try {
+            $file = $request->file('category_image');
+
+            // Generate unique filename
+            $filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
+
+            // Store in public/storage/category-images directory
+            $path = $file->storeAs('category-images', $filename, 'public');
+
+            // Return the full URL
+            $url = Storage::url($path);
+
+            return response()->json([
+                'success' => true,
+                'message' => __('messages.file_uploaded_successfully'),
+                'url' => $url,
+                'path' => $path
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => __('messages.file_upload_failed'),
+                'error' => $e->getMessage()
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
      * Delete uploaded file
      */
     public function deleteFile(Request $request)

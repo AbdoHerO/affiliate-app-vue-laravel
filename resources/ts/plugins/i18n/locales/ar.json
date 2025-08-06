@@ -515,5 +515,9 @@
   "common.confirm": "تأكيد",
   "common.sort.created_desc": "الأحدث أولاً",
   "common.sort.name_asc": "الاسم (أ-ي)",
-  "common.sort.status": "الحالة"
+  "common.sort.status": "الحالة",
+  "common.upload": "رفع",
+  "common.change": "تغيير",
+  "common.remove": "إزالة",
+  "common_uploading": "جاري الرفع"
 }

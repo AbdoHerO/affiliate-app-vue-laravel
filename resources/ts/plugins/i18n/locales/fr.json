@@ -746,5 +746,9 @@
   "common.confirm": "Confirmer",
   "common.sort.created_desc": "Plus récent d'abord",
   "common.sort.name_asc": "Nom (A-Z)",
-  "common.sort.status": "Statut"
+  "common.sort.status": "Statut",
+  "common.upload": "Télécharger",
+  "common.change": "Changer",
+  "common.remove": "Supprimer",
+  "common_uploading": "Téléchargement"
 }
