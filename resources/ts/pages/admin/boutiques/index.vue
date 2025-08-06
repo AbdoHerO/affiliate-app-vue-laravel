@@ -71,9 +71,9 @@ const statusOptions = computed(() => [
 ])
 
 const sortOptions = computed(() => [
-  { title: t('common.sort.created_desc'), value: 'created_at' },
-  { title: t('common.sort.name_asc'), value: 'nom' },
-  { title: t('common.sort.status'), value: 'statut' }
+  { title: t('created'), value: 'created_at' },
+  { title: t('admin_boutiques_name'), value: 'nom' },
+  { title: t('admin_boutiques_status'), value: 'statut' }
 ])
 
 const deleteMessage = computed(() => {

@@ -459,5 +459,23 @@
   "admin_boutiques_filter_status_pending": "في الانتظار",
   "admin_boutiques_filter_category_all": "كل الفئات",
   "admin_boutiques_pagination_info": "عرض {from} إلى {to} من {total} متجر",
-  "admin_boutiques_items_per_page": "العناصر في كل صفحة"
+  "admin_boutiques_items_per_page": "العناصر في كل صفحة",
+
+  "breadcrumb_home": "الرئيسية",
+  "breadcrumb_admin": "الإدارة",
+  "breadcrumb_create": "إنشاء",
+  "breadcrumb_edit": "تعديل",
+  "breadcrumb_view": "عرض",
+  "common_create": "إنشاء",
+  "common_edit": "تعديل",
+  "common_view": "عرض",
+  "common_delete": "حذف",
+  "common_save": "حفظ",
+  "common_cancel": "إلغاء",
+  "common_back": "رجوع",
+  "common_search": "بحث",
+  "common_filter": "تصفية",
+  "common_reset": "إعادة تعيين",
+  "common_loading": "جاري التحميل...",
+  "common_no_data": "لا توجد بيانات متاحة"
 }

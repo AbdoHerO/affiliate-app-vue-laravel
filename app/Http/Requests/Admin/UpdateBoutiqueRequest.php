@@ -54,7 +54,7 @@ class UpdateBoutiqueRequest extends FormRequest
                 'max:160',
                 Rule::unique('boutiques', 'slug')->ignore($this->route('id'))
             ],
-            'proprietaire_id' => 'required|uuid|exists:utilisateurs,id',
+            'proprietaire_id' => 'required|uuid|exists:users,id',
             'email_pro' => 'nullable|email|max:190',
             'adresse' => 'nullable|string',
             'statut' => 'required|in:actif,suspendu,desactive',

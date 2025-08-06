@@ -46,7 +46,7 @@ class StoreBoutiqueRequest extends FormRequest
         return [
             'nom' => 'required|string|max:150',
             'slug' => 'required|string|max:160|unique:boutiques,slug',
-            'proprietaire_id' => 'required|uuid|exists:utilisateurs,id',
+            'proprietaire_id' => 'required|uuid|exists:users,id',
             'email_pro' => 'nullable|email|max:190',
             'adresse' => 'nullable|string',
             'statut' => 'required|in:actif,suspendu,desactive',

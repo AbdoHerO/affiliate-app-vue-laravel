@@ -687,5 +687,23 @@
   "admin_boutiques_filter_status_pending": "En Attente",
   "admin_boutiques_filter_category_all": "Toutes les Catégories",
   "admin_boutiques_pagination_info": "Affichage de {from} à {to} sur {total} boutiques",
-  "admin_boutiques_items_per_page": "Éléments par page"
+  "admin_boutiques_items_per_page": "Éléments par page",
+
+  "breadcrumb_home": "Accueil",
+  "breadcrumb_admin": "Administration",
+  "breadcrumb_create": "Créer",
+  "breadcrumb_edit": "Modifier",
+  "breadcrumb_view": "Voir",
+  "common_create": "Créer",
+  "common_edit": "Modifier",
+  "common_view": "Voir",
+  "common_delete": "Supprimer",
+  "common_save": "Enregistrer",
+  "common_cancel": "Annuler",
+  "common_back": "Retour",
+  "common_search": "Rechercher",
+  "common_filter": "Filtrer",
+  "common_reset": "Réinitialiser",
+  "common_loading": "Chargement...",
+  "common_no_data": "Aucune donnée disponible"
 }

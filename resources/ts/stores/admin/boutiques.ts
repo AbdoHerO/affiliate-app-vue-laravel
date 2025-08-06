@@ -113,7 +113,7 @@ export const useBoutiquesStore = defineStore('admin-boutiques', () => {
         }
       })
       
-      const url = `/api/admin/boutiques${searchParams.toString() ? `?${searchParams.toString()}` : ''}`
+      const url = `/admin/boutiques${searchParams.toString() ? `?${searchParams.toString()}` : ''}`
       const { data, error: apiError } = await useApi(url)
 
       if (apiError.value) {
@@ -147,7 +147,7 @@ export const useBoutiquesStore = defineStore('admin-boutiques', () => {
     clearError()
 
     try {
-      const { data, error: apiError } = await useApi(`/api/admin/boutiques/${id}`)
+      const { data, error: apiError } = await useApi(`/admin/boutiques/${id}`)
 
       if (apiError.value) {
         const message = (apiError.value as any).message || 'Error fetching boutique'
@@ -175,7 +175,7 @@ export const useBoutiquesStore = defineStore('admin-boutiques', () => {
     clearError()
 
     try {
-      const { data: responseData, error: apiError } = await useApi('/api/admin/boutiques', {
+      const { data: responseData, error: apiError } = await useApi('/admin/boutiques', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -217,7 +217,7 @@ export const useBoutiquesStore = defineStore('admin-boutiques', () => {
     clearError()
 
     try {
-      const { data: responseData, error: apiError } = await useApi(`/api/admin/boutiques/${id}`, {
+      const { data: responseData, error: apiError } = await useApi(`/admin/boutiques/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -265,7 +265,7 @@ export const useBoutiquesStore = defineStore('admin-boutiques', () => {
     clearError()
 
     try {
-      const { error: apiError } = await useApi(`/api/admin/boutiques/${id}`, {
+      const { error: apiError } = await useApi(`/admin/boutiques/${id}`, {
         method: 'DELETE'
       })
 
