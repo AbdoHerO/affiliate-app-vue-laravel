@@ -34,6 +34,8 @@ declare module 'vue' {
     CardStatisticsHorizontal: typeof import('./resources/ts/@core/components/cards/CardStatisticsHorizontal.vue')['default']
     CardStatisticsVertical: typeof import('./resources/ts/@core/components/cards/CardStatisticsVertical.vue')['default']
     CardStatisticsVerticalSimple: typeof import('./resources/ts/@core/components/CardStatisticsVerticalSimple.vue')['default']
+    CategoryCrudDialog: typeof import('./resources/ts/components/admin/categories/CategoryCrudDialog.vue')['default']
+    CategoryViewDialog: typeof import('./resources/ts/components/admin/categories/CategoryViewDialog.vue')['default']
     ConfirmDialog: typeof import('./resources/ts/components/dialogs/ConfirmDialog.vue')['default']
     ConfirmModal: typeof import('./resources/ts/components/common/ConfirmModal.vue')['default']
     CreateAppDialog: typeof import('./resources/ts/components/dialogs/CreateAppDialog.vue')['default']

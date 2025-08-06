@@ -139,4 +139,41 @@ return [
     'boutique_validation_url_required' => 'L\'URL de la boutique est requise',
     'boutique_validation_email_invalid' => 'Veuillez fournir un email de contact valide',
     'boutique_validation_commission_rate_invalid' => 'Le taux de commission doit être un pourcentage valide',
+
+    // Categories
+    'categories_retrieved_success' => 'Catégories récupérées avec succès',
+    'categories_retrieve_error' => 'Échec de la récupération des catégories',
+    'category_created_success' => 'Catégorie créée avec succès',
+    'category_creation_error' => 'Échec de la création de la catégorie',
+    'category_retrieved_success' => 'Catégorie récupérée avec succès',
+    'category_not_found' => 'Catégorie introuvable',
+    'category_updated_success' => 'Catégorie mise à jour avec succès',
+    'category_update_error' => 'Échec de la mise à jour de la catégorie',
+    'category_deleted_success' => 'Catégorie supprimée avec succès',
+    'category_deletion_error' => 'Échec de la suppression de la catégorie',
+    'category_activated_success' => 'Catégorie activée avec succès',
+    'category_deactivated_success' => 'Catégorie désactivée avec succès',
+    'category_status_toggle_error' => 'Échec du changement de statut de la catégorie',
+    'category_has_products_error' => 'Impossible de supprimer une catégorie avec des produits existants',
+    
+    // Category fields
+    'category_name' => 'Nom de la catégorie',
+    'category_slug' => 'Slug de la catégorie',
+    'category_image' => 'Image de la catégorie',
+    'category_order' => 'Ordre d\'affichage',
+    'category_status' => 'Statut de la catégorie',
+    
+    // Category validation messages
+    'category_name_required' => 'Le nom de la catégorie est obligatoire',
+    'category_name_string' => 'Le nom de la catégorie doit être une chaîne de caractères',
+    'category_name_max' => 'Le nom de la catégorie ne doit pas dépasser 255 caractères',
+    'category_slug_string' => 'Le slug de la catégorie doit être une chaîne de caractères',
+    'category_slug_max' => 'Le slug de la catégorie ne doit pas dépasser 255 caractères',
+    'category_slug_unique' => 'Le slug de la catégorie doit être unique',
+    'category_image_string' => 'L\'image de la catégorie doit être une chaîne de caractères',
+    'category_image_max' => 'L\'URL de l\'image de la catégorie ne doit pas dépasser 500 caractères',
+    'category_image_url' => 'L\'image de la catégorie doit être une URL valide',
+    'category_order_integer' => 'L\'ordre de la catégorie doit être un nombre',
+    'category_order_min' => 'L\'ordre de la catégorie doit être au moins 0',
+    'category_status_boolean' => 'Le statut de la catégorie doit être vrai ou faux',
 ];

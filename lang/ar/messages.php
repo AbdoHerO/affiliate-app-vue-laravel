@@ -92,4 +92,41 @@ return [
     'boutique_validation_url_required' => 'رابط المتجر مطلوب',
     'boutique_validation_email_invalid' => 'يرجى تقديم بريد إلكتروني صالح للتواصل',
     'boutique_validation_commission_rate_invalid' => 'معدل العمولة يجب أن يكون نسبة مئوية صالحة',
+
+    // Categories
+    'categories_retrieved_success' => 'تم استرداد الفئات بنجاح',
+    'categories_retrieve_error' => 'فشل في استرداد الفئات',
+    'category_created_success' => 'تم إنشاء الفئة بنجاح',
+    'category_creation_error' => 'فشل في إنشاء الفئة',
+    'category_retrieved_success' => 'تم استرداد الفئة بنجاح',
+    'category_not_found' => 'الفئة غير موجودة',
+    'category_updated_success' => 'تم تحديث الفئة بنجاح',
+    'category_update_error' => 'فشل في تحديث الفئة',
+    'category_deleted_success' => 'تم حذف الفئة بنجاح',
+    'category_deletion_error' => 'فشل في حذف الفئة',
+    'category_activated_success' => 'تم تفعيل الفئة بنجاح',
+    'category_deactivated_success' => 'تم إلغاء تفعيل الفئة بنجاح',
+    'category_status_toggle_error' => 'فشل في تبديل حالة الفئة',
+    'category_has_products_error' => 'لا يمكن حذف فئة تحتوي على منتجات موجودة',
+    
+    // Category fields
+    'category_name' => 'اسم الفئة',
+    'category_slug' => 'مُعرِّف الفئة',
+    'category_image' => 'صورة الفئة',
+    'category_order' => 'ترتيب العرض',
+    'category_status' => 'حالة الفئة',
+    
+    // Category validation messages
+    'category_name_required' => 'اسم الفئة مطلوب',
+    'category_name_string' => 'اسم الفئة يجب أن يكون نص',
+    'category_name_max' => 'اسم الفئة يجب ألا يتجاوز 255 حرفاً',
+    'category_slug_string' => 'مُعرِّف الفئة يجب أن يكون نص',
+    'category_slug_max' => 'مُعرِّف الفئة يجب ألا يتجاوز 255 حرفاً',
+    'category_slug_unique' => 'مُعرِّف الفئة يجب أن يكون فريداً',
+    'category_image_string' => 'صورة الفئة يجب أن تكون نص',
+    'category_image_max' => 'رابط صورة الفئة يجب ألا يتجاوز 500 حرف',
+    'category_image_url' => 'صورة الفئة يجب أن تكون رابط صالح',
+    'category_order_integer' => 'ترتيب الفئة يجب أن يكون رقم',
+    'category_order_min' => 'ترتيب الفئة يجب أن يكون على الأقل 0',
+    'category_status_boolean' => 'حالة الفئة يجب أن تكون صحيح أو خطأ',
 ];

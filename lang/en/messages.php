@@ -219,4 +219,41 @@ return [
     'boutique_validation_url_required' => 'Boutique URL is required',
     'boutique_validation_email_invalid' => 'Please provide a valid contact email',
     'boutique_validation_commission_rate_invalid' => 'Commission rate must be a valid percentage',
+
+    // Categories
+    'categories_retrieved_success' => 'Categories retrieved successfully',
+    'categories_retrieve_error' => 'Failed to retrieve categories',
+    'category_created_success' => 'Category created successfully',
+    'category_creation_error' => 'Failed to create category',
+    'category_retrieved_success' => 'Category retrieved successfully',
+    'category_not_found' => 'Category not found',
+    'category_updated_success' => 'Category updated successfully',
+    'category_update_error' => 'Failed to update category',
+    'category_deleted_success' => 'Category deleted successfully',
+    'category_deletion_error' => 'Failed to delete category',
+    'category_activated_success' => 'Category activated successfully',
+    'category_deactivated_success' => 'Category deactivated successfully',
+    'category_status_toggle_error' => 'Failed to toggle category status',
+    'category_has_products_error' => 'Cannot delete category with existing products',
+    
+    // Category fields
+    'category_name' => 'Category Name',
+    'category_slug' => 'Category Slug',
+    'category_image' => 'Category Image',
+    'category_order' => 'Display Order',
+    'category_status' => 'Category Status',
+    
+    // Category validation messages
+    'category_name_required' => 'Category name is required',
+    'category_name_string' => 'Category name must be a string',
+    'category_name_max' => 'Category name must not exceed 255 characters',
+    'category_slug_string' => 'Category slug must be a string',
+    'category_slug_max' => 'Category slug must not exceed 255 characters',
+    'category_slug_unique' => 'Category slug must be unique',
+    'category_image_string' => 'Category image must be a string',
+    'category_image_max' => 'Category image URL must not exceed 500 characters',
+    'category_image_url' => 'Category image must be a valid URL',
+    'category_order_integer' => 'Category order must be a number',
+    'category_order_min' => 'Category order must be at least 0',
+    'category_status_boolean' => 'Category status must be true or false',
 ];

@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\RolePermissionController;
 use App\Http\Controllers\Admin\DashboardStatsController;
 use App\Http\Controllers\Admin\KycDocumentController;
 use App\Http\Controllers\Admin\BoutiqueController;
+use App\Http\Controllers\Admin\CategorieController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -80,6 +81,14 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('boutiques/{id}', [BoutiqueController::class, 'show']);
         Route::put('boutiques/{id}', [BoutiqueController::class, 'update']);
         Route::delete('boutiques/{id}', [BoutiqueController::class, 'destroy']);
+
+        // Category Management
+        Route::get('categories', [CategorieController::class, 'index']);
+        Route::post('categories', [CategorieController::class, 'store']);
+        Route::get('categories/{categorie}', [CategorieController::class, 'show']);
+        Route::put('categories/{categorie}', [CategorieController::class, 'update']);
+        Route::delete('categories/{categorie}', [CategorieController::class, 'destroy']);
+        Route::post('categories/{categorie}/toggle-status', [CategorieController::class, 'toggleStatus']);
     });
 
     // Affiliate only routes

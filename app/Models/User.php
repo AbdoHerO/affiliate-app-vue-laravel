@@ -58,6 +58,30 @@ class User extends Authenticatable
     }
 
     /**
+     * Get the name of the password attribute
+     */
+    public function getAuthPasswordName()
+    {
+        return 'mot_de_passe_hash';
+    }
+
+    /**
+     * Get the password attribute (alias for mot_de_passe_hash)
+     */
+    public function getPasswordAttribute()
+    {
+        return $this->mot_de_passe_hash;
+    }
+
+    /**
+     * Set the password attribute (alias for mot_de_passe_hash)
+     */
+    public function setPasswordAttribute($value)
+    {
+        $this->attributes['mot_de_passe_hash'] = $value;
+    }
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
