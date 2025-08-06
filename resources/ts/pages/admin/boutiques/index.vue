@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useBoutiquesStore, type Boutique } from '@/stores/admin/boutiques'
 import Breadcrumbs from '@/components/common/Breadcrumbs.vue'
@@ -11,11 +12,11 @@ definePage({
   meta: {
     requiresAuth: true,
     requiresRole: 'admin',
-    layout: 'default',
   },
 })
 
 // Composables
+const router = useRouter()
 const { t } = useI18n()
 const boutiquesStore = useBoutiquesStore()
 
@@ -36,7 +37,6 @@ const {
   items: boutiques,
   isLoading,
   pagination,
-  hasItems,
   totalItems,
   getStatusBadgeColor
 } = boutiquesStore
@@ -78,7 +78,7 @@ const sortOptions = computed(() => [
 
 const deleteMessage = computed(() => {
   return selectedBoutique.value 
-    ? t('admin.boutiques.delete.message', { name: selectedBoutique.value.nom })
+    ? t('admin_boutiques_delete_confirm', { name: selectedBoutique.value.nom })
     : ''
 })
 
@@ -89,11 +89,10 @@ const fetchData = () => {
 
 const applyFilters = () => {
   boutiquesStore.setFilters({
-    q: searchQuery.value,
+    search: searchQuery.value,
     statut: statusFilter.value,
-    sort: sortBy.value,
-    dir: sortDesc.value ? 'desc' : 'asc',
-    page: 1
+    sort_by: sortBy.value,
+    sort_desc: sortDesc.value,
   })
   fetchData()
 }
@@ -116,76 +115,50 @@ const resetFilters = () => {
   statusFilter.value = ''
   sortBy.value = 'created_at'
   sortDesc.value = true
-  boutiquesStore.resetFilters()
-  fetchData()
+  applyFilters()
 }
 
-const updatePage = (page: number) => {
-  boutiquesStore.setFilters({ page })
-  fetchData()
-}
+// Removed openCreateDialog - using direct navigation instead
 
-const updatePerPage = (perPage: number) => {
-  boutiquesStore.setFilters({ per_page: perPage, page: 1 })
-  fetchData()
-}
-
-const updateSort = ({ sortBy: newSortBy, sortDesc: newSortDesc }: { sortBy: string; sortDesc: boolean }) => {
-  sortBy.value = newSortBy
-  sortDesc.value = newSortDesc
-  boutiquesStore.setFilters({
-    sort: newSortBy,
-    dir: newSortDesc ? 'desc' : 'asc',
-    page: 1
-  })
-  fetchData()
-}
-
-const openCreateDialog = () => {
-  selectedBoutique.value = null
-  crudMode.value = 'create'
-  showCrudDialog.value = true
-}
-
-const viewBoutique = (boutique: Boutique) => {
-  selectedBoutique.value = boutique
-  showViewDialog.value = true
-}
-
-const editBoutique = (boutique: Boutique) => {
+const openEditDialog = (boutique: Boutique) => {
   selectedBoutique.value = boutique
   crudMode.value = 'edit'
   showCrudDialog.value = true
 }
 
-const deleteBoutique = (boutique: Boutique) => {
+const openViewDialog = (boutique: Boutique) => {
+  selectedBoutique.value = boutique
+  showViewDialog.value = true
+}
+
+const openDeleteDialog = (boutique: Boutique) => {
   selectedBoutique.value = boutique
   showDeleteDialog.value = true
 }
 
 const confirmDelete = async () => {
   if (!selectedBoutique.value) return
-
+  
   isDeleting.value = true
   try {
-    await boutiquesStore.destroy(selectedBoutique.value.id)
+    await boutiquesStore.deleteBoutique(selectedBoutique.value.id)
     showDeleteDialog.value = false
     selectedBoutique.value = null
+    fetchData()
   } catch (error) {
-    console.error('Delete failed:', error)
+    console.error('Delete error:', error)
   } finally {
     isDeleting.value = false
   }
 }
 
-const handleSaved = () => {
-  showCrudDialog.value = false
-  selectedBoutique.value = null
-  fetchData()
-}
-
 const getStatusColor = (status: string) => {
-  return getStatusBadgeColor(status)
+  switch (status) {
+    case 'actif': return 'success'
+    case 'suspendu': return 'warning'
+    case 'desactive': return 'error'
+    default: return 'default'
+  }
 }
 
 const getAvatarColor = (name: string) => {
@@ -202,11 +175,6 @@ const getInitials = (name: string) => {
 onMounted(() => {
   fetchData()
 })
-
-// Watchers
-watch([searchQuery], () => {
-  debouncedSearch()
-})
 </script>
 
 <template>
@@ -214,7 +182,7 @@ watch([searchQuery], () => {
     <!-- Page Header & Breadcrumbs -->
     <Breadcrumbs 
       :items="breadcrumbs"
-      :title="$t('admin.boutiques.title')"
+      :title="$t('admin_boutiques_title')"
     />
 
     <!-- Stats Cards Row -->
@@ -224,7 +192,7 @@ watch([searchQuery], () => {
           <VCardText>
             <VIcon icon="tabler-building-store" size="48" class="mb-4 text-primary" />
             <div class="text-h4 font-weight-bold">{{ totalBoutiques }}</div>
-            <div class="text-body-2 text-medium-emphasis">{{ $t('admin.boutiques.stats.total') }}</div>
+            <div class="text-body-2 text-medium-emphasis">{{ $t('admin_boutiques_title') }}</div>
           </VCardText>
         </VCard>
       </VCol>
@@ -233,7 +201,7 @@ watch([searchQuery], () => {
           <VCardText>
             <VIcon icon="tabler-check-circle" size="48" class="mb-4 text-success" />
             <div class="text-h4 font-weight-bold text-success">{{ activeCount }}</div>
-            <div class="text-body-2 text-medium-emphasis">{{ $t('admin.boutiques.stats.active') }}</div>
+            <div class="text-body-2 text-medium-emphasis">{{ $t('admin_boutiques_filter_status_active') }}</div>
           </VCardText>
         </VCard>
       </VCol>
@@ -242,7 +210,7 @@ watch([searchQuery], () => {
           <VCardText>
             <VIcon icon="tabler-pause-circle" size="48" class="mb-4 text-warning" />
             <div class="text-h4 font-weight-bold text-warning">{{ suspendedCount }}</div>
-            <div class="text-body-2 text-medium-emphasis">{{ $t('admin.boutiques.stats.suspended') }}</div>
+            <div class="text-body-2 text-medium-emphasis">{{ $t('admin_boutiques_filter_status_inactive') }}</div>
           </VCardText>
         </VCard>
       </VCol>
@@ -251,7 +219,7 @@ watch([searchQuery], () => {
           <VCardText>
             <VIcon icon="tabler-x-circle" size="48" class="mb-4 text-error" />
             <div class="text-h4 font-weight-bold text-error">{{ deactivatedCount }}</div>
-            <div class="text-body-2 text-medium-emphasis">{{ $t('admin.boutiques.stats.deactivated') }}</div>
+            <div class="text-body-2 text-medium-emphasis">{{ $t('admin_boutiques_filter_status_pending') }}</div>
           </VCardText>
         </VCard>
       </VCol>
@@ -260,13 +228,13 @@ watch([searchQuery], () => {
     <!-- Main Data Table Card -->
     <VCard>
       <VCardTitle class="d-flex align-center justify-space-between flex-wrap gap-4">
-        <span>{{ $t('admin.boutiques.list.title') }}</span>
+        <span>{{ $t('admin_boutiques_list_title') }}</span>
         <VBtn
           color="primary"
           prepend-icon="tabler-plus"
-          @click="openCreateDialog"
+          @click="router.push({ name: 'admin-boutiques-create' })"
         >
-          {{ $t('admin.boutiques.actions.create') }}
+          {{ $t('admin_boutiques_create') }}
         </VBtn>
       </VCardTitle>
 
@@ -276,8 +244,8 @@ watch([searchQuery], () => {
           <VCol cols="12" md="4">
             <VTextField
               v-model="searchQuery"
-              :label="$t('common.search')"
-              :placeholder="$t('admin.boutiques.search_placeholder')"
+              :label="$t('action_search')"
+              :placeholder="$t('admin_boutiques_search_placeholder')"
               prepend-inner-icon="tabler-search"
               clearable
               variant="outlined"
@@ -300,7 +268,7 @@ watch([searchQuery], () => {
             <VSelect
               v-model="sortBy"
               :items="sortOptions"
-              :label="$t('common.sort_by')"
+              :label="$t('admin_boutiques_sort_by')"
               variant="outlined"
               density="compact"
               @update:model-value="applyFilters"
@@ -312,20 +280,21 @@ watch([searchQuery], () => {
               color="secondary"
               @click="resetFilters"
             >
-              {{ $t('common.reset') }}
+              {{ $t('action_reset') }}
             </VBtn>
           </VCol>
         </VRow>
 
         <!-- Data Table -->
-        <VDataTable
-          :items="boutiques"
+        <VDataTableServer
+          v-model:items-per-page="perPage"
+          v-model:page="currentPage"
           :headers="headers"
+          :items="boutiques"
+          :items-length="totalBoutiques"
           :loading="isLoading"
-          :items-per-page="perPage"
-          :page="currentPage"
-          :server-items-length="totalItems"
-          class="elevation-0"
+          item-value="id"
+          class="elevation-1"
         >
           <!-- Status Column -->
           <template #[`item.statut`]="{ item }">
@@ -334,81 +303,87 @@ watch([searchQuery], () => {
               size="small"
               variant="elevated"
             >
-              {{ $t(`admin.boutiques.statuts.${item.statut}`) }}
+              {{ $t(`admin_boutiques_filter_status_${item.statut === 'actif' ? 'active' : item.statut === 'suspendu' ? 'inactive' : 'pending'}`) }}
             </VChip>
           </template>
 
           <!-- Owner Column -->
           <template #[`item.proprietaire`]="{ item }">
             <div class="d-flex align-center gap-3">
-              <VAvatar size="32" :color="getAvatarColor(item.proprietaire.nom_complet)">
-                {{ getInitials(item.proprietaire.nom_complet) }}
+              <VAvatar
+                :color="getAvatarColor(item.proprietaire?.nom_complet || 'Unknown')"
+                size="32"
+              >
+                <span class="text-sm font-weight-medium">
+                  {{ getInitials(item.proprietaire?.nom_complet || 'UK') }}
+                </span>
               </VAvatar>
               <div>
-                <div class="text-body-2 font-weight-medium">{{ item.proprietaire.nom_complet }}</div>
-                <div class="text-caption text-medium-emphasis">{{ item.proprietaire.email }}</div>
+                <div class="text-body-2 font-weight-medium">
+                  {{ item.proprietaire?.nom_complet || 'N/A' }}
+                </div>
+                <div class="text-caption text-medium-emphasis">
+                  {{ item.proprietaire?.email || '' }}
+                </div>
               </div>
             </div>
           </template>
 
           <!-- Commission Column -->
           <template #[`item.commission_par_defaut`]="{ item }">
-            <span class="text-body-2">{{ item.commission_par_defaut }}%</span>
+            <span class="font-weight-medium">{{ item.commission_par_defaut }}%</span>
           </template>
 
           <!-- Actions Column -->
           <template #[`item.actions`]="{ item }">
             <div class="d-flex gap-1">
-              <VTooltip text="View">
-                <template #activator="{ props }">
-                  <VBtn
-                    v-bind="props"
-                    icon="tabler-eye"
-                    variant="text"
-                    size="small"
-                    color="primary"
-                    @click="viewBoutique(item)"
-                  />
-                </template>
-              </VTooltip>
-              
-              <VTooltip text="Edit">
-                <template #activator="{ props }">
-                  <VBtn
-                    v-bind="props"
-                    icon="tabler-edit"
-                    variant="text"
-                    size="small"
-                    color="info"
-                    @click="editBoutique(item)"
-                  />
-                </template>
-              </VTooltip>
-
-              <VTooltip text="Delete">
-                <template #activator="{ props }">
-                  <VBtn
-                    v-bind="props"
-                    icon="tabler-trash"
-                    variant="text"
-                    size="small"
-                    color="error"
-                    @click="deleteBoutique(item)"
-                  />
-                </template>
-              </VTooltip>
+              <VBtn
+                icon="tabler-eye"
+                size="small"
+                variant="text"
+                color="info"
+                @click="openViewDialog(item)"
+              />
+              <VBtn
+                icon="tabler-edit"
+                size="small"
+                variant="text"
+                color="primary"
+                @click="openEditDialog(item)"
+              />
+              <VBtn
+                icon="tabler-trash"
+                size="small"
+                variant="text"
+                color="error"
+                @click="openDeleteDialog(item)"
+              />
             </div>
           </template>
-        </VDataTable>
+
+          <!-- Loading State -->
+          <template #loading>
+            <VSkeletonLoader type="table-row@10" />
+          </template>
+
+          <!-- No Data State -->
+          <template #no-data>
+            <div class="text-center py-8">
+              <VIcon icon="tabler-building-store" size="64" class="mb-4" color="disabled" />
+              <h6 class="text-h6 mb-2">{{ $t('admin_boutiques_no_results') }}</h6>
+              <p class="text-body-2">{{ $t('try_adjusting_search') }}</p>
+            </div>
+          </template>
+        </VDataTableServer>
       </VCardText>
     </VCard>
 
-    <!-- Create/Edit Dialog -->
+    <!-- CRUD Dialog -->
     <BoutiqueCrudDialog
       v-model="showCrudDialog"
-      :boutique="selectedBoutique"
       :mode="crudMode"
-      @saved="handleSaved"
+      :boutique="selectedBoutique"
+      @saved="fetchData"
     />
 
     <!-- View Dialog -->

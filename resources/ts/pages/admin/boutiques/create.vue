@@ -8,7 +8,6 @@ import { useApi } from '@/composables/useApi'
 
 definePage({
   meta: {
-    layout: 'default',
     requiresAuth: true,
     requiresRole: 'admin',
   },
@@ -61,7 +60,7 @@ const loadUsers = async () => {
       showError('Erreur lors du chargement des utilisateurs')
       return
     }
-    users.value = data.value?.data || []
+    users.value = data.value?.users || []
   } catch (err) {
     showError('Erreur lors du chargement des utilisateurs')
   }
@@ -109,9 +108,9 @@ onMounted(() => {
     <!-- Breadcrumbs -->
     <VBreadcrumbs
       :items="[
-        { title: t('boutiques.breadcrumbs.home'), to: '/' },
-        { title: t('boutiques.breadcrumbs.boutiques'), to: { name: 'admin-boutiques' } },
-        { title: t('boutiques.breadcrumbs.create') },
+        { title: t('breadcrumb_home'), to: '/' },
+        { title: t('admin_boutiques_title'), to: '/admin/boutiques' },
+        { title: t('breadcrumb_create') },
       ]"
       class="pa-0 mb-4"
     />
@@ -120,13 +119,13 @@ onMounted(() => {
       <VCol cols="12">
         <VCard>
           <VCardTitle class="d-flex align-center justify-space-between">
-            <span>{{ t('boutiques.create_title') || 'Créer une boutique' }}</span>
+            <span>{{ t('admin_boutiques_create_title') || 'Créer une boutique' }}</span>
             <VBtn
               variant="outlined"
               size="small"
               @click="goBack"
             >
-              {{ t('common.back') || 'Retour' }}
+              {{ t('action_cancel') || 'Retour' }}
             </VBtn>
           </VCardTitle>
           
@@ -137,7 +136,7 @@ onMounted(() => {
                 <VCol cols="12" md="6">
                   <VTextField
                     v-model="form.nom"
-                    :label="t('boutiques.fields.nom') || 'Nom'"
+                    :label="t('admin_boutiques_name') || 'Nom'"
                     :error-messages="errors.nom"
                     variant="outlined"
                     required
@@ -149,7 +148,7 @@ onMounted(() => {
                 <VCol cols="12" md="6">
                   <VTextField
                     v-model="form.slug"
-                    :label="t('boutiques.fields.slug') || 'Slug'"
+                    :label="t('admin_boutiques_slug') || 'Slug'"
                     :error-messages="errors.slug"
                     variant="outlined"
                     hint="URL-friendly version du nom (généré automatiquement)"
@@ -163,7 +162,7 @@ onMounted(() => {
                     :items="users"
                     item-value="id"
                     item-title="nom_complet"
-                    :label="t('boutiques.fields.proprietaire') || 'Propriétaire'"
+                    :label="t('admin_boutiques_owner') || 'Propriétaire'"
                     :error-messages="errors.proprietaire_id"
                     variant="outlined"
                     required
@@ -182,11 +181,11 @@ onMounted(() => {
                   <VSelect
                     v-model="form.statut"
                     :items="[
-                      { value: 'actif', title: t('boutiques.status.actif') || 'Actif' },
-                      { value: 'suspendu', title: t('boutiques.status.suspendu') || 'Suspendu' },
-                      { value: 'desactive', title: t('boutiques.status.desactive') || 'Désactivé' },
+                      { value: 'actif', title: t('admin_boutiques_filter_status_active') || 'Actif' },
+                      { value: 'suspendu', title: t('admin_boutiques_filter_status_inactive') || 'Suspendu' },
+                      { value: 'desactive', title: t('admin_boutiques_filter_status_pending') || 'Désactivé' },
                     ]"
-                    :label="t('boutiques.fields.statut') || 'Statut'"
+                    :label="t('admin_boutiques_status') || 'Statut'"
                     :error-messages="errors.statut"
                     variant="outlined"
                     required
@@ -197,7 +196,7 @@ onMounted(() => {
                 <VCol cols="12" md="6">
                   <VTextField
                     v-model="form.email_pro"
-                    :label="t('boutiques.fields.email_pro') || 'Email professionnel'"
+                    :label="t('admin_boutiques_contact_email') || 'Email professionnel'"
                     :error-messages="errors.email_pro"
                     variant="outlined"
                     type="email"
@@ -208,7 +207,7 @@ onMounted(() => {
                 <VCol cols="12" md="6">
                   <VTextField
                     v-model.number="form.commission_par_defaut"
-                    :label="t('boutiques.fields.commission_par_defaut') || 'Commission par défaut (%)'"
+                    :label="t('admin_boutiques_commission_rate') || 'Commission par défaut (%)'"
                     :error-messages="errors.commission_par_defaut"
                     variant="outlined"
                     type="number"
@@ -222,7 +221,7 @@ onMounted(() => {
                 <VCol cols="12">
                   <VTextarea
                     v-model="form.adresse"
-                    :label="t('boutiques.fields.adresse') || 'Adresse'"
+                    :label="t('admin_boutiques_address') || 'Adresse'"
                     :error-messages="errors.adresse"
                     variant="outlined"
                     rows="3"
