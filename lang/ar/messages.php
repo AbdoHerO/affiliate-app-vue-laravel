@@ -129,4 +129,52 @@ return [
     'category_order_integer' => 'ترتيب الفئة يجب أن يكون رقم',
     'category_order_min' => 'ترتيب الفئة يجب أن يكون على الأقل 0',
     'category_status_boolean' => 'حالة الفئة يجب أن تكون صحيح أو خطأ',
+
+    // إدارة المنتجات
+    'produits' => [
+        'boutique' => 'المتجر',
+        'categorie' => 'الفئة',
+        'titre' => 'عنوان المنتج',
+        'description' => 'الوصف',
+        'prix_achat' => 'سعر الشراء',
+        'prix_vente' => 'سعر البيع',
+        'slug' => 'معرف المنتج',
+        'statut' => 'الحالة',
+        'quantite_min' => 'الكمية الدنيا',
+        'notes_admin' => 'ملاحظات الإدارة',
+    ],
+    
+    'produits_retrieved_successfully' => 'تم استرداد المنتجات بنجاح',
+    'produits_retrieve_error' => 'فشل في استرداد المنتجات',
+    'produit_created_successfully' => 'تم إنشاء المنتج بنجاح',
+    'produit_creation_failed' => 'فشل في إنشاء المنتج',
+    'produit_retrieved_successfully' => 'تم استرداد المنتج بنجاح',
+    'produit_not_found' => 'المنتج غير موجود',
+    'produit_updated_successfully' => 'تم تحديث المنتج بنجاح',
+    'produit_update_failed' => 'فشل في تحديث المنتج',
+    'produit_deleted_successfully' => 'تم حذف المنتج بنجاح',
+    'produit_deletion_failed' => 'فشل في حذف المنتج',
+    'produits_created_successfully' => 'تم إنشاء المنتج بنجاح',
+    'produits_updated_successfully' => 'تم تحديث المنتج بنجاح',
+    'produits_deleted_successfully' => 'تم حذف المنتج بنجاح',
+    'produits_delete_failed_constraints' => 'لا يمكن حذف المنتج بسبب وجود سجلات مرتبطة',
+    'produits_has_related_offers' => 'المنتج لديه عروض مرتبطة',
+    'produits_has_related_stock' => 'المنتج لديه مخزون مرتبط',
+    'produits_has_related_orders' => 'المنتج لديه طلبات مرتبطة',
+
+    // إدارة صور المنتجات
+    'produit_images' => [
+        'url' => 'رابط الصورة',
+        'ordre' => 'ترتيب العرض',
+        'items' => 'عناصر الصورة',
+        'id' => 'معرف الصورة',
+    ],
+    
+    'produit_images_created_successfully' => 'تم إضافة صورة المنتج بنجاح',
+    'produit_images_creation_failed' => 'فشل في إضافة صورة المنتج',
+    'produit_images_deleted_successfully' => 'تم حذف صورة المنتج بنجاح',
+    'produit_images_deletion_failed' => 'فشل في حذف صورة المنتج',
+    'produit_images_sorted_successfully' => 'تم إعادة ترتيب صور المنتج بنجاح',
+    'produit_images_sort_failed' => 'فشل في إعادة ترتيب صور المنتج',
+    'produit_images_not_found' => 'صورة المنتج غير موجودة',
 ];

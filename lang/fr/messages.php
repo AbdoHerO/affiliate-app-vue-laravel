@@ -176,4 +176,52 @@ return [
     'category_order_integer' => 'L\'ordre de la catégorie doit être un nombre',
     'category_order_min' => 'L\'ordre de la catégorie doit être au moins 0',
     'category_status_boolean' => 'Le statut de la catégorie doit être vrai ou faux',
+
+    // Gestion des Produits
+    'produits' => [
+        'boutique' => 'Boutique',
+        'categorie' => 'Catégorie',
+        'titre' => 'Titre du Produit',
+        'description' => 'Description',
+        'prix_achat' => 'Prix d\'Achat',
+        'prix_vente' => 'Prix de Vente',
+        'slug' => 'Slug du Produit',
+        'statut' => 'Statut',
+        'quantite_min' => 'Quantité Minimale',
+        'notes_admin' => 'Notes Admin',
+    ],
+    
+    'produits_retrieved_successfully' => 'Produits récupérés avec succès',
+    'produits_retrieve_error' => 'Échec de la récupération des produits',
+    'produit_created_successfully' => 'Produit créé avec succès',
+    'produit_creation_failed' => 'Échec de la création du produit',
+    'produit_retrieved_successfully' => 'Produit récupéré avec succès',
+    'produit_not_found' => 'Produit non trouvé',
+    'produit_updated_successfully' => 'Produit mis à jour avec succès',
+    'produit_update_failed' => 'Échec de la mise à jour du produit',
+    'produit_deleted_successfully' => 'Produit supprimé avec succès',
+    'produit_deletion_failed' => 'Échec de la suppression du produit',
+    'produits_created_successfully' => 'Produit créé avec succès',
+    'produits_updated_successfully' => 'Produit mis à jour avec succès',
+    'produits_deleted_successfully' => 'Produit supprimé avec succès',
+    'produits_delete_failed_constraints' => 'Impossible de supprimer le produit en raison d\'enregistrements liés existants',
+    'produits_has_related_offers' => 'Le produit a des offres liées',
+    'produits_has_related_stock' => 'Le produit a un stock lié',
+    'produits_has_related_orders' => 'Le produit a des commandes liées',
+
+    // Gestion des Images de Produits
+    'produit_images' => [
+        'url' => 'URL de l\'Image',
+        'ordre' => 'Ordre d\'Affichage',
+        'items' => 'Éléments d\'Image',
+        'id' => 'ID de l\'Image',
+    ],
+    
+    'produit_images_created_successfully' => 'Image de produit ajoutée avec succès',
+    'produit_images_creation_failed' => 'Échec de l\'ajout de l\'image du produit',
+    'produit_images_deleted_successfully' => 'Image de produit supprimée avec succès',
+    'produit_images_deletion_failed' => 'Échec de la suppression de l\'image du produit',
+    'produit_images_sorted_successfully' => 'Images de produit réorganisées avec succès',
+    'produit_images_sort_failed' => 'Échec de la réorganisation des images du produit',
+    'produit_images_not_found' => 'Image de produit non trouvée',
 ];

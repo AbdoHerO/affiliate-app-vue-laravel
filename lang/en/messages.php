@@ -256,4 +256,52 @@ return [
     'category_order_integer' => 'Category order must be a number',
     'category_order_min' => 'Category order must be at least 0',
     'category_status_boolean' => 'Category status must be true or false',
+
+    // Products Management
+    'produits' => [
+        'boutique' => 'Boutique',
+        'categorie' => 'Category',
+        'titre' => 'Product Title',
+        'description' => 'Description',
+        'prix_achat' => 'Purchase Price',
+        'prix_vente' => 'Sale Price',
+        'slug' => 'Product Slug',
+        'statut' => 'Status',
+        'quantite_min' => 'Minimum Quantity',
+        'notes_admin' => 'Admin Notes',
+    ],
+    
+    'produits_retrieved_successfully' => 'Products retrieved successfully',
+    'produits_retrieve_error' => 'Failed to retrieve products',
+    'produit_created_successfully' => 'Product created successfully',
+    'produit_creation_failed' => 'Failed to create product',
+    'produit_retrieved_successfully' => 'Product retrieved successfully',
+    'produit_not_found' => 'Product not found',
+    'produit_updated_successfully' => 'Product updated successfully',
+    'produit_update_failed' => 'Failed to update product',
+    'produit_deleted_successfully' => 'Product deleted successfully',
+    'produit_deletion_failed' => 'Failed to delete product',
+    'produits_created_successfully' => 'Product created successfully',
+    'produits_updated_successfully' => 'Product updated successfully',
+    'produits_deleted_successfully' => 'Product deleted successfully',
+    'produits_delete_failed_constraints' => 'Cannot delete product due to existing related records',
+    'produits_has_related_offers' => 'Product has related offers',
+    'produits_has_related_stock' => 'Product has related stock',
+    'produits_has_related_orders' => 'Product has related orders',
+
+    // Product Images Management
+    'produit_images' => [
+        'url' => 'Image URL',
+        'ordre' => 'Display Order',
+        'items' => 'Image Items',
+        'id' => 'Image ID',
+    ],
+    
+    'produit_images_created_successfully' => 'Product image added successfully',
+    'produit_images_creation_failed' => 'Failed to add product image',
+    'produit_images_deleted_successfully' => 'Product image deleted successfully',
+    'produit_images_deletion_failed' => 'Failed to delete product image',
+    'produit_images_sorted_successfully' => 'Product images reordered successfully',
+    'produit_images_sort_failed' => 'Failed to reorder product images',
+    'produit_images_not_found' => 'Product image not found',
 ];

@@ -10,6 +10,8 @@ use App\Http\Controllers\Admin\DashboardStatsController;
 use App\Http\Controllers\Admin\KycDocumentController;
 use App\Http\Controllers\Admin\BoutiqueController;
 use App\Http\Controllers\Admin\CategorieController;
+use App\Http\Controllers\Admin\ProduitController;
+use App\Http\Controllers\Admin\ProduitImageController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -89,6 +91,19 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::put('categories/{categorie}', [CategorieController::class, 'update']);
         Route::delete('categories/{categorie}', [CategorieController::class, 'destroy']);
         Route::post('categories/{categorie}/toggle-status', [CategorieController::class, 'toggleStatus']);
+
+        // Product Management
+        Route::get('produits', [ProduitController::class, 'index']);
+        Route::post('produits', [ProduitController::class, 'store']);
+        Route::get('produits/{produit}', [ProduitController::class, 'show']);
+        Route::put('produits/{produit}', [ProduitController::class, 'update']);
+        Route::delete('produits/{produit}', [ProduitController::class, 'destroy']);
+
+        // Product Images Management
+        Route::get('produits/{produit}/images', [ProduitImageController::class, 'index']);
+        Route::post('produits/{produit}/images', [ProduitImageController::class, 'store']);
+        Route::put('produits/{produit}/images/sort', [ProduitImageController::class, 'bulkSort']);
+        Route::delete('produits/{produit}/images/{image}', [ProduitImageController::class, 'destroy']);
     });
 
     // Affiliate only routes
