@@ -35,6 +35,37 @@ const isSubmitting = ref(false)
 const isLoading = ref(true)
 const errors = ref<Record<string, string[]>>({})
 const produitId = route.params.id as string
+const currentTab = ref('basic')
+
+// Additional state for comprehensive form
+const productImages = ref<Array<{
+  id?: string
+  url: string
+  alt_text: string
+  ordre: number
+  file?: File
+}>>([])
+
+const productVideos = ref<Array<{
+  id?: string
+  url: string
+  titre: string
+  ordre: number
+}>>([])
+
+const productVariants = ref<Array<{
+  id?: string
+  nom: string
+  valeur: string
+  prix_vente_variante: number | null
+  image_url: string | null
+  sku_variante: string
+  actif: boolean
+}>>([])
+
+const productFeatures = ref<string[]>([''])
+const metaDescription = ref('')
+const metaKeywords = ref('')
 
 const form = ref<ProduitFormData>({
   boutique_id: '',
