@@ -1,0 +1,20 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo "🔍 Vérification de la configuration admin/produits..."
+
+# Vérifier la configuration layout
+npm run test:admin-layout
+
+if [ $? -ne 0 ]; then
+  echo "❌ Erreurs détectées dans la configuration admin/produits"
+  echo "🔧 Corrigez les erreurs avant de commiter"
+  exit 1
+fi
+
+echo "✅ Configuration admin/produits validée"
+
+# Lancer les autres vérifications
+npm run lint
+
+echo "✅ Pre-commit checks passed"

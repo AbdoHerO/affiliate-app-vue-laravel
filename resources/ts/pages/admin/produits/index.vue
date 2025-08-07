@@ -10,11 +10,11 @@ import { useAuthStore } from '@/stores/auth'
 import Breadcrumbs from '@/components/common/Breadcrumbs.vue'
 import ConfirmModal from '@/components/common/ConfirmModal.vue'
 
+// ⚠️ Ne PAS changer la meta layout sous peine de casser la sidebar. Voir ticket #123.
 definePage({
   meta: {
     requiresAuth: true,
     requiresRole: 'admin',
-    layout: 'default',
   },
 })
 

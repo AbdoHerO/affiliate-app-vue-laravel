@@ -10,7 +10,11 @@
     "lint": "eslint . -c .eslintrc.cjs --fix --ext .ts,.js,.cjs,.vue,.tsx,.jsx",
     "build:icons": "tsx resources/ts/plugins/iconify/build-icons.ts",
     "msw:init": "msw init public/ --save",
-    "postinstall": "npm run build:icons && npm run msw:init"
+    "postinstall": "npm run build:icons && npm run msw:init",
+    "test:admin-layout": "node scripts/check-admin-layout.js",
+    "test:produits-nav": "node scripts/test-produits-navigation.js",
+    "test:e2e": "playwright test tests/e2e/admin-produits.spec.ts",
+    "precommit": "npm run test:admin-layout && npm run lint"
   },
   "dependencies": {
     "@casl/ability": "6.7.3",
