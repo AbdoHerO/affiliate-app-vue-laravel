@@ -7,14 +7,15 @@
     >
       <template #item="{ item }">
         <VBreadcrumbsItem
-          v-if="item.to && !item.active"
-          :to="item.to"
+          v-if="item.href && !item.disabled"
+          :href="item.href"
           :title="item.title"
+          @click.prevent="$router.push(item.href)"
         />
         <VBreadcrumbsItem
           v-else
           :title="item.title"
-          :disabled="item.active"
+          :disabled="item.disabled"
         />
       </template>
     </VBreadcrumbs>

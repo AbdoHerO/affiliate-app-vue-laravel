@@ -137,7 +137,14 @@ export const useProduitsStore = defineStore('produits', () => {
       })
 
       // Build URL with query parameters
-      const url = `/admin/produits${searchParams.toString() ? `?${searchParams.toString()}` : ''}`
+      const stringParams: Record<string, string> = {}
+      Object.entries(searchParams).forEach(([key, value]) => {
+        if (value !== null && value !== undefined && value !== '') {
+          stringParams[key] = String(value)
+        }
+      })
+      const queryString = new URLSearchParams(stringParams).toString()
+      const url = `/admin/produits${queryString ? `?${queryString}` : ''}`
       const { data: responseData, error: apiError } = await useApi(url)
 
       if (apiError.value) {
