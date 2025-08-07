@@ -1,84 +1,122 @@
 export interface Produit {
-  id: number
-  boutique_id: number
-  category_id: number
-  name: string
+  id: string
+  boutique_id: string
+  categorie_id: string | null
+  titre: string
+  description: string | null
+  prix_achat: number
+  prix_vente: number
+  prix_affilie: number | null
   slug: string
-  description?: string
-  price_purchase?: number
-  price: number
-  status: 'active' | 'inactive'
-  quantity_min?: number
-  notes?: string
+  actif: boolean
   created_at: string
   updated_at: string
   
   // Relations
   boutique?: {
-    id: number
+    id: string
     nom: string
     slug: string
   }
-  category?: {
-    id: number
+  categorie?: {
+    id: string
     nom: string
     slug: string
   }
   images?: ProduitImage[]
+  videos?: ProduitVideo[]
+  variantes?: ProduitVariante[]
 }
 
 export interface ProduitImage {
-  id: number
-  produit_id: number
-  image_url: string
-  order: number
+  id: string
+  produit_id: string
+  url: string
+  ordre: number
+}
+
+export interface ProduitVideo {
+  id: string
+  produit_id: string
+  url: string
+  titre: string | null
+}
+
+export interface ProduitVariante {
+  id: string
+  produit_id: string
+  nom: string
+  valeur: string
+  prix_vente_variante: number | null
+  image_url: string | null
+  actif: boolean
+}
+
+export interface ProduitRupture {
+  id: string
+  variante_id: string
+  actif: boolean
   created_at: string
-  updated_at: string
 }
 
 export interface CreateProduitForm {
-  boutique_id: string | number
-  category_id: string | number
-  name: string
+  boutique_id: string
+  categorie_id: string | null
+  titre: string
+  description: string | null
+  prix_achat: number
+  prix_vente: number
+  prix_affilie: number | null
   slug?: string
-  description?: string
-  price_purchase?: number | null
-  price: string | number
-  status: 'active' | 'inactive'
-  quantity_min?: number | null
-  notes?: string
+  actif: boolean
 }
 
 export interface UpdateProduitForm {
-  boutique_id: string | number
-  category_id: string | number
-  name: string
+  boutique_id: string
+  categorie_id: string | null
+  titre: string
+  description: string | null
+  prix_achat: number
+  prix_vente: number
+  prix_affilie: number | null
   slug?: string
-  description?: string
-  price_purchase?: number | null
-  price: string | number
-  status: 'active' | 'inactive'
-  quantity_min?: number | null
-  notes?: string
+  actif: boolean
 }
 
 export interface ProduitFilters {
-  search?: string
-  boutique_id?: string | number
-  category_id?: string | number
-  status?: 'active' | 'inactive' | 'all'
-  price_min?: number
-  price_max?: number
+  q?: string
+  boutique_id?: string
+  categorie_id?: string
+  actif?: boolean | string
+  prix_min?: number
+  prix_max?: number
+  sort?: string
+  direction?: string
+  page?: number
+  per_page?: number
 }
 
 export interface ProduitImageForm {
-  image_url: string
-  order?: number
+  url: string
+  ordre?: number
+}
+
+export interface ProduitVideoForm {
+  url: string
+  titre?: string
+}
+
+export interface ProduitVarianteForm {
+  nom: string
+  valeur: string
+  prix_vente_variante?: number | null
+  image_url?: string | null
+  actif: boolean
 }
 
 export interface BulkSortImageForm {
-  id: number
-  order: number
+  id: string
+  ordre: number
 }
 
 export interface PaginatedProduitsResponse {
@@ -93,7 +131,7 @@ export interface PaginatedProduitsResponse {
 
 export interface ProduitsStatsResponse {
   total: number
-  active: number
-  inactive: number
+  actif: number
+  inactif: number
   total_value: number
 }

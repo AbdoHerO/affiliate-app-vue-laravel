@@ -1,344 +1,436 @@
-<template>
-  <div class="container-fluid">
-    <!-- Breadcrumb -->
-    <nav aria-label="breadcrumb" class="mb-4">
-      <ol class="breadcrumb">
-        <li class="breadcrumb-item">
-          <router-link to="/admin" class="text-decoration-none">
-            {{ $t('breadcrumb_home') }}
-          </router-link>
-        </li>
-        <li class="breadcrumb-item">
-          <router-link to="/admin/produits" class="text-decoration-none">
-            {{ $t('admin_produits_title') }}
-          </router-link>
-        </li>
-        <li class="breadcrumb-item active" aria-current="page">
-          {{ $t('admin_produits_create') }}
-        </li>
-      </ol>
-    </nav>
-
-    <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-      <h1 class="h3 mb-0">{{ $t('admin_produits_create') }}</h1>
-      <router-link to="/admin/produits" class="btn btn-secondary">
-        <i class="fas fa-arrow-left me-2"></i>
-        {{ $t('common_back') }}
-      </router-link>
-    </div>
-
-    <!-- Form Card -->
-    <div class="card">
-      <div class="card-header">
-        <h5 class="card-title mb-0">{{ $t('admin_produits_details') }}</h5>
-      </div>
-      <div class="card-body">
-        <form @submit.prevent="handleSubmit" class="needs-validation" novalidate>
-          <div class="row">
-            <!-- Boutique -->
-            <div class="col-md-6 mb-3">
-              <label for="boutique_id" class="form-label">
-                {{ $t('admin_produits_boutique') }} <span class="text-danger">*</span>
-              </label>
-              <select 
-                id="boutique_id" 
-                v-model="form.boutique_id"
-                class="form-select"
-                :class="{ 'is-invalid': errors.boutique_id }"
-                required
-              >
-                <option value="">{{ $t('common_select') }}...</option>
-                <option 
-                  v-for="boutique in boutiques" 
-                  :key="boutique.id" 
-                  :value="boutique.id"
-                >
-                  {{ boutique.nom }}
-                </option>
-              </select>
-              <div v-if="errors.boutique_id" class="invalid-feedback">
-                {{ errors.boutique_id[0] }}
-              </div>
-            </div>
-
-            <!-- Category -->
-            <div class="col-md-6 mb-3">
-              <label for="category_id" class="form-label">
-                {{ $t('admin_produits_category') }} <span class="text-danger">*</span>
-              </label>
-              <select 
-                id="category_id" 
-                v-model="form.category_id"
-                class="form-select"
-                :class="{ 'is-invalid': errors.category_id }"
-                required
-              >
-                <option value="">{{ $t('common_select') }}...</option>
-                <option 
-                  v-for="category in categories" 
-                  :key="category.id" 
-                  :value="category.id"
-                >
-                  {{ category.nom }}
-                </option>
-              </select>
-              <div v-if="errors.category_id" class="invalid-feedback">
-                {{ errors.category_id[0] }}
-              </div>
-            </div>
-
-            <!-- Name -->
-            <div class="col-md-6 mb-3">
-              <label for="name" class="form-label">
-                {{ $t('admin_produits_name') }} <span class="text-danger">*</span>
-              </label>
-              <input 
-                id="name" 
-                v-model="form.name"
-                type="text" 
-                class="form-control"
-                :class="{ 'is-invalid': errors.name }"
-                :placeholder="$t('admin_produits_name')"
-                required
-              >
-              <div v-if="errors.name" class="invalid-feedback">
-                {{ errors.name[0] }}
-              </div>
-            </div>
-
-            <!-- Slug -->
-            <div class="col-md-6 mb-3">
-              <label for="slug" class="form-label">
-                {{ $t('admin_produits_slug') }}
-              </label>
-              <input 
-                id="slug" 
-                v-model="form.slug"
-                type="text" 
-                class="form-control"
-                :class="{ 'is-invalid': errors.slug }"
-                :placeholder="$t('admin_produits_slug')"
-              >
-              <div v-if="errors.slug" class="invalid-feedback">
-                {{ errors.slug[0] }}
-              </div>
-              <div class="form-text">{{ $t('common_slug_auto_generate') }}</div>
-            </div>
-
-            <!-- Description -->
-            <div class="col-12 mb-3">
-              <label for="description" class="form-label">
-                {{ $t('admin_produits_description') }}
-              </label>
-              <textarea 
-                id="description" 
-                v-model="form.description"
-                class="form-control"
-                :class="{ 'is-invalid': errors.description }"
-                :placeholder="$t('admin_produits_description')"
-                rows="3"
-              ></textarea>
-              <div v-if="errors.description" class="invalid-feedback">
-                {{ errors.description[0] }}
-              </div>
-            </div>
-
-            <!-- Purchase Price -->
-            <div class="col-md-6 mb-3">
-              <label for="price_purchase" class="form-label">
-                {{ $t('admin_produits_price_purchase') }}
-              </label>
-              <div class="input-group">
-                <input 
-                  id="price_purchase" 
-                  v-model="form.price_purchase"
-                  type="number" 
-                  step="0.01"
-                  min="0"
-                  class="form-control"
-                  :class="{ 'is-invalid': errors.price_purchase }"
-                  :placeholder="$t('admin_produits_price_purchase')"
-                >
-                <span class="input-group-text">€</span>
-                <div v-if="errors.price_purchase" class="invalid-feedback">
-                  {{ errors.price_purchase[0] }}
-                </div>
-              </div>
-            </div>
-
-            <!-- Sale Price -->
-            <div class="col-md-6 mb-3">
-              <label for="price" class="form-label">
-                {{ $t('admin_produits_price') }} <span class="text-danger">*</span>
-              </label>
-              <div class="input-group">
-                <input 
-                  id="price" 
-                  v-model="form.price"
-                  type="number" 
-                  step="0.01"
-                  min="0"
-                  class="form-control"
-                  :class="{ 'is-invalid': errors.price }"
-                  :placeholder="$t('admin_produits_price')"
-                  required
-                >
-                <span class="input-group-text">€</span>
-                <div v-if="errors.price" class="invalid-feedback">
-                  {{ errors.price[0] }}
-                </div>
-              </div>
-            </div>
-
-            <!-- Status -->
-            <div class="col-md-6 mb-3">
-              <label for="status" class="form-label">
-                {{ $t('admin_produits_status') }} <span class="text-danger">*</span>
-              </label>
-              <select 
-                id="status" 
-                v-model="form.status"
-                class="form-select"
-                :class="{ 'is-invalid': errors.status }"
-                required
-              >
-                <option value="active">{{ $t('common_active') }}</option>
-                <option value="inactive">{{ $t('common_inactive') }}</option>
-              </select>
-              <div v-if="errors.status" class="invalid-feedback">
-                {{ errors.status[0] }}
-              </div>
-            </div>
-
-            <!-- Minimum Quantity -->
-            <div class="col-md-6 mb-3">
-              <label for="quantity_min" class="form-label">
-                {{ $t('admin_produits_quantity_min') }}
-              </label>
-              <input 
-                id="quantity_min" 
-                v-model="form.quantity_min"
-                type="number" 
-                min="0"
-                class="form-control"
-                :class="{ 'is-invalid': errors.quantity_min }"
-                :placeholder="$t('admin_produits_quantity_min')"
-              >
-              <div v-if="errors.quantity_min" class="invalid-feedback">
-                {{ errors.quantity_min[0] }}
-              </div>
-            </div>
-
-            <!-- Admin Notes -->
-            <div class="col-12 mb-3">
-              <label for="notes" class="form-label">
-                {{ $t('admin_produits_notes') }}
-              </label>
-              <textarea 
-                id="notes" 
-                v-model="form.notes"
-                class="form-control"
-                :class="{ 'is-invalid': errors.notes }"
-                :placeholder="$t('admin_produits_notes')"
-                rows="3"
-              ></textarea>
-              <div v-if="errors.notes" class="invalid-feedback">
-                {{ errors.notes[0] }}
-              </div>
-            </div>
-          </div>
-
-          <!-- Submit Buttons -->
-          <div class="d-flex justify-content-end gap-2">
-            <router-link to="/admin/produits" class="btn btn-secondary">
-              {{ $t('common_cancel') }}
-            </router-link>
-            <button 
-              type="submit" 
-              class="btn btn-primary"
-              :disabled="isLoading"
-            >
-              <span v-if="isLoading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-              <i v-else class="fas fa-save me-2"></i>
-              {{ $t('admin_produits_create') }}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { useProduitStore } from '@/stores/admin/produits'
-import { useBoutiqueStore, type Boutique } from '@/stores/admin/boutiques'
-import { useCategoriesStore, type Category } from '@/stores/admin/categories'
-import type { CreateProduitForm } from '@/types/admin/produits'
+import { storeToRefs } from 'pinia'
+import { useProduitsStore, type ProduitFormData } from '@/stores/admin/produits'
+import { useBoutiquesStore } from '@/stores/admin/boutiques'
+import { useCategoriesStore } from '@/stores/admin/categories'
+import Breadcrumbs from '@/components/common/Breadcrumbs.vue'
 
 definePage({
   meta: {
     requiresAuth: true,
     requiresRole: 'admin',
+    layout: 'default',
   },
 })
 
+// Composables
 const router = useRouter()
 const { t } = useI18n()
-const produitStore = useProduitStore()
-const boutiqueStore = useBoutiqueStore()
-const categoryStore = useCategoriesStore()
+const produitsStore = useProduitsStore()
+const boutiquesStore = useBoutiquesStore()
+const categoriesStore = useCategoriesStore()
 
-const isLoading = ref(false)
+// Store state
+const { items: boutiques } = storeToRefs(boutiquesStore)
+const { categories } = storeToRefs(categoriesStore)
+
+// Form state
+const formRef = ref()
+const isSubmitting = ref(false)
 const errors = ref<Record<string, string[]>>({})
 
-const form = reactive<CreateProduitForm>({
+const form = ref<ProduitFormData>({
   boutique_id: '',
-  category_id: '',
-  name: '',
-  slug: '',
+  categorie_id: '',
+  titre: '',
   description: '',
-  price_purchase: null,
-  price: '',
-  status: 'active',
-  quantity_min: null,
-  notes: ''
+  prix_achat: null,
+  prix_vente: null,
+  prix_affilie: null,
+  quantite_min: null,
+  notes_admin: '',
+  actif: true
 })
 
-const boutiques = ref<Boutique[]>([])
-const categories = ref<Category[]>([])
+// Computed
+const breadcrumbs = computed(() => [
+  { title: t('title_admin_dashboard'), to: '/admin' },
+  { title: t('admin_produits_title'), to: '/admin/produits' },
+  { title: t('admin_produits_create'), active: true }
+])
 
-const handleSubmit = async () => {
+// Methods
+const loadFilterOptions = async () => {
   try {
-    isLoading.value = true
-    errors.value = {}
-
-    await produitStore.createProduit(form)
-    
-    router.push('/admin/produits')
-  } catch (error: any) {
-    if (error.response?.status === 422) {
-      errors.value = error.response.data.errors
-    }
-    console.error('Error creating produit:', error)
-  } finally {
-    isLoading.value = false
+    await Promise.all([
+      boutiquesStore.fetchBoutiques(),
+      categoriesStore.fetchCategories()
+    ])
+  } catch (err) {
+    console.error('Error loading filter options:', err)
   }
 }
 
-onMounted(async () => {
+const goBack = () => {
+  router.push({ name: 'admin-produits-index' })
+}
+
+const submit = async () => {
+  if (!formRef.value) return
+
+  const { valid } = await formRef.value.validate()
+  if (!valid) return
+
+  isSubmitting.value = true
+  errors.value = {}
+
   try {
-    // Load boutiques and categories for dropdowns
-    await boutiqueStore.fetchBoutiques()
-    await categoryStore.fetchCategories()
-    
-    boutiques.value = boutiqueStore.boutiques
-    categories.value = categoryStore.categories
-  } catch (error) {
-    console.error('Error loading data:', error)
+    await produitsStore.createProduit(form.value)
+    router.push({ name: 'admin-produits-index' })
+  } catch (err: any) {
+    if (err.errors) {
+      errors.value = err.errors
+    } else {
+      console.error('Error creating product:', err)
+    }
+  } finally {
+    isSubmitting.value = false
   }
+}
+
+// Lifecycle
+onMounted(async () => {
+  await loadFilterOptions()
 })
 </script>
+
+<template>
+  <div>
+    <!-- Breadcrumbs -->
+    <Breadcrumbs :items="breadcrumbs" />
+
+    <!-- Page Header -->
+    <VRow class="mb-6">
+      <VCol cols="12">
+        <div class="d-flex align-center justify-space-between">
+          <div>
+            <h1 class="text-h4 font-weight-bold mb-2">
+              {{ $t('admin_produits_create') }}
+            </h1>
+            <p class="text-body-1 text-medium-emphasis">
+              {{ $t('admin_produits_create_subtitle') }}
+            </p>
+          </div>
+          <VBtn
+            variant="outlined"
+            prepend-icon="tabler-arrow-left"
+            @click="goBack"
+          >
+            {{ $t('common.back') }}
+          </VBtn>
+        </div>
+      </VCol>
+    </VRow>
+
+    <!-- Enhanced Form Layout -->
+    <VRow>
+      <VCol cols="12" lg="8">
+        <!-- Basic Information -->
+        <VCard class="mb-6">
+          <VCardTitle>
+            <VIcon icon="tabler-info-circle" class="me-2" />
+            {{ $t('admin_produits_basic_info') }}
+          </VCardTitle>
+          <VDivider />
+          <VCardText>
+            <VForm ref="formRef" @submit.prevent="submit">
+              <VRow>
+                <!-- Boutique Selection -->
+                <VCol cols="12" md="6">
+                  <VSelect
+                    v-model="form.boutique_id"
+                    :items="boutiques"
+                    item-title="nom"
+                    item-value="id"
+                    :label="$t('admin_produits_boutique')"
+                    :error-messages="errors.boutique_id"
+                    required
+                    variant="outlined"
+                    prepend-inner-icon="tabler-building-store"
+                  />
+                </VCol>
+
+                <!-- Category Selection -->
+                <VCol cols="12" md="6">
+                  <VSelect
+                    v-model="form.categorie_id"
+                    :items="categories"
+                    item-title="nom"
+                    item-value="id"
+                    :label="$t('admin_produits_categorie')"
+                    :error-messages="errors.categorie_id"
+                    variant="outlined"
+                    prepend-inner-icon="tabler-category"
+                  />
+                </VCol>
+
+                <!-- Product Title -->
+                <VCol cols="12">
+                  <VTextField
+                    v-model="form.titre"
+                    :label="$t('admin_produits_titre')"
+                    :placeholder="$t('admin_produits_titre_placeholder')"
+                    :error-messages="errors.titre"
+                    required
+                    variant="outlined"
+                    prepend-inner-icon="tabler-tag"
+                  />
+                </VCol>
+
+                <!-- Product Description -->
+                <VCol cols="12">
+                  <VTextarea
+                    v-model="form.description"
+                    :label="$t('admin_produits_description')"
+                    :placeholder="$t('admin_produits_description_placeholder')"
+                    :error-messages="errors.description"
+                    variant="outlined"
+                    rows="4"
+                    prepend-inner-icon="tabler-file-text"
+                  />
+                </VCol>
+              </VRow>
+            </VForm>
+          </VCardText>
+        </VCard>
+
+        <!-- Pricing Information -->
+        <VCard class="mb-6">
+          <VCardTitle>
+            <VIcon icon="tabler-currency-dollar" class="me-2" />
+            {{ $t('admin_produits_pricing') }}
+          </VCardTitle>
+          <VDivider />
+          <VCardText>
+            <VRow>
+              <!-- Purchase Price -->
+              <VCol cols="12" md="4">
+                <VTextField
+                  v-model.number="form.prix_achat"
+                  :label="$t('admin_produits_prix_achat')"
+                  :placeholder="$t('admin_produits_prix_achat_placeholder')"
+                  :error-messages="errors.prix_achat"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  suffix="DH"
+                  variant="outlined"
+                  prepend-inner-icon="tabler-shopping-cart"
+                />
+              </VCol>
+
+              <!-- Sale Price -->
+              <VCol cols="12" md="4">
+                <VTextField
+                  v-model.number="form.prix_vente"
+                  :label="$t('admin_produits_prix_vente')"
+                  :placeholder="$t('admin_produits_prix_vente_placeholder')"
+                  :error-messages="errors.prix_vente"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  suffix="DH"
+                  variant="outlined"
+                  required
+                  prepend-inner-icon="tabler-tag"
+                />
+              </VCol>
+
+              <!-- Affiliate Price -->
+              <VCol cols="12" md="4">
+                <VTextField
+                  v-model.number="form.prix_affilie"
+                  :label="$t('admin_produits_prix_affilie')"
+                  :placeholder="$t('admin_produits_prix_affilie_placeholder')"
+                  :error-messages="errors.prix_affilie"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  suffix="DH"
+                  variant="outlined"
+                  prepend-inner-icon="tabler-users"
+                />
+              </VCol>
+
+              <!-- Minimum Quantity -->
+              <VCol cols="12" md="6">
+                <VTextField
+                  v-model.number="form.quantite_min"
+                  :label="$t('admin_produits_quantite_min')"
+                  :placeholder="$t('admin_produits_quantite_min_placeholder')"
+                  :error-messages="errors.quantite_min"
+                  type="number"
+                  min="1"
+                  variant="outlined"
+                  prepend-inner-icon="tabler-package"
+                />
+              </VCol>
+            </VRow>
+          </VCardText>
+        </VCard>
+
+        <!-- Admin Notes -->
+        <VCard class="mb-6">
+          <VCardTitle>
+            <VIcon icon="tabler-notes" class="me-2" />
+            {{ $t('admin_produits_notes_admin') }}
+          </VCardTitle>
+          <VDivider />
+          <VCardText>
+            <VTextarea
+              v-model="form.notes_admin"
+              :label="$t('admin_produits_notes_admin')"
+              :placeholder="$t('admin_produits_notes_admin_placeholder')"
+              :error-messages="errors.notes_admin"
+              variant="outlined"
+              rows="3"
+              prepend-inner-icon="tabler-note"
+            />
+          </VCardText>
+        </VCard>
+      </VCol>
+
+      <!-- Sidebar -->
+      <VCol cols="12" lg="4">
+        <!-- Status & Actions -->
+        <VCard class="mb-6">
+          <VCardTitle>
+            <VIcon icon="tabler-settings" class="me-2" />
+            {{ $t('common.status') }}
+          </VCardTitle>
+          <VDivider />
+          <VCardText>
+            <VSwitch
+              v-model="form.actif"
+              :label="$t('admin_produits_actif')"
+              color="primary"
+              inset
+            />
+            <VAlert
+              v-if="form.actif"
+              type="success"
+              variant="tonal"
+              class="mt-4"
+            >
+              {{ $t('admin_produits_active_help') }}
+            </VAlert>
+            <VAlert
+              v-else
+              type="warning"
+              variant="tonal"
+              class="mt-4"
+            >
+              {{ $t('admin_produits_inactive_help') }}
+            </VAlert>
+          </VCardText>
+        </VCard>
+
+        <!-- Product Preview -->
+        <VCard class="mb-6">
+          <VCardTitle>
+            <VIcon icon="tabler-eye" class="me-2" />
+            {{ $t('admin_produits_preview') }}
+          </VCardTitle>
+          <VDivider />
+          <VCardText>
+            <div v-if="form.titre" class="mb-4">
+              <h6 class="text-h6 mb-2">{{ form.titre }}</h6>
+              <p v-if="form.description" class="text-body-2 text-medium-emphasis">
+                {{ form.description.substring(0, 100) }}{{ form.description.length > 100 ? '...' : '' }}
+              </p>
+            </div>
+            <div v-if="form.prix_vente" class="mb-4">
+              <VChip color="primary" variant="tonal">
+                {{ form.prix_vente }} DH
+              </VChip>
+            </div>
+            <VAlert
+              v-if="!form.titre"
+              type="info"
+              variant="tonal"
+            >
+              {{ $t('admin_produits_preview_empty') }}
+            </VAlert>
+          </VCardText>
+        </VCard>
+
+        <!-- Tips & Help -->
+        <VCard class="mb-6">
+          <VCardTitle>
+            <VIcon icon="tabler-bulb" class="me-2" />
+            {{ $t('admin_produits_tips') }}
+          </VCardTitle>
+          <VDivider />
+          <VCardText>
+            <VList density="compact">
+              <VListItem>
+                <VListItemTitle class="text-body-2">
+                  {{ $t('admin_produits_tip_title') }}
+                </VListItemTitle>
+              </VListItem>
+              <VListItem>
+                <VListItemTitle class="text-body-2">
+                  {{ $t('admin_produits_tip_description') }}
+                </VListItemTitle>
+              </VListItem>
+              <VListItem>
+                <VListItemTitle class="text-body-2">
+                  {{ $t('admin_produits_tip_pricing') }}
+                </VListItemTitle>
+              </VListItem>
+              <VListItem>
+                <VListItemTitle class="text-body-2">
+                  {{ $t('admin_produits_tip_images') }}
+                </VListItemTitle>
+              </VListItem>
+            </VList>
+          </VCardText>
+        </VCard>
+
+        <!-- Quick Actions -->
+        <VCard>
+          <VCardTitle>
+            <VIcon icon="tabler-bolt" class="me-2" />
+            {{ $t('common.actions') }}
+          </VCardTitle>
+          <VDivider />
+          <VCardText>
+            <VBtn
+              color="primary"
+              block
+              size="large"
+              :loading="isSubmitting"
+              @click="submit"
+            >
+              <VIcon icon="tabler-plus" class="me-2" />
+              {{ $t('admin_produits_create') }}
+            </VBtn>
+
+            <VBtn
+              variant="outlined"
+              block
+              class="mt-3"
+              @click="goBack"
+            >
+              <VIcon icon="tabler-arrow-left" class="me-2" />
+              {{ $t('common.cancel') }}
+            </VBtn>
+
+            <VDivider class="my-4" />
+
+            <VAlert
+              type="info"
+              variant="tonal"
+              class="text-caption"
+            >
+              {{ $t('admin_produits_create_help') }}
+            </VAlert>
+          </VCardText>
+        </VCard>
+      </VCol>
+    </VRow>
+  </div>
+</template>

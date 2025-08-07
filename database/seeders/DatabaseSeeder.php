@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
             RolePermissionSeeder::class,
             BoutiqueSeeder::class,
             CategorieSeeder::class,
+            ComprehensiveProductSeeder::class,
         ]);
     }
 }

@@ -384,6 +384,8 @@ declare module 'vue' {
     PricingPlanDialog: typeof import('./resources/ts/components/dialogs/PricingPlanDialog.vue')['default']
     ProductDescriptionEditor: typeof import('./resources/ts/@core/components/ProductDescriptionEditor.vue')['default']
     ProductImageGallery: typeof import('./resources/ts/components/admin/ProductImageGallery.vue')['default']
+    ProductVariantManager: typeof import('./resources/ts/components/admin/products/ProductVariantManager.vue')['default']
+    ProductVideoManager: typeof import('./resources/ts/components/admin/products/ProductVideoManager.vue')['default']
     ProfileImageUpload: typeof import('./resources/ts/components/ProfileImageUpload.vue')['default']
     ReferAndEarnDialog: typeof import('./resources/ts/components/dialogs/ReferAndEarnDialog.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']

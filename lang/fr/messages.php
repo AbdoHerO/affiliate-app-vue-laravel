@@ -224,4 +224,87 @@ return [
     'produit_images_sorted_successfully' => 'Images de produit réorganisées avec succès',
     'produit_images_sort_failed' => 'Échec de la réorganisation des images du produit',
     'produit_images_not_found' => 'Image de produit non trouvée',
+
+    // Gestion des vidéos de produit
+    'produit_videos' => [
+        'url' => 'URL de la vidéo',
+        'titre' => 'Titre de la vidéo',
+        'ordre' => 'Ordre d\'affichage',
+    ],
+    
+    'produit_videos_created' => 'Vidéo de produit ajoutée avec succès',
+    'produit_videos_updated' => 'Vidéo de produit mise à jour avec succès',
+    'produit_videos_deleted' => 'Vidéo de produit supprimée avec succès',
+    'produit_videos_order_updated' => 'Ordre des vidéos mis à jour avec succès',
+    'produit_videos_url_required' => 'L\'URL de la vidéo est requise',
+    'produit_videos_url_format' => 'L\'URL de la vidéo doit être une URL valide',
+    'produit_videos_url_max' => 'L\'URL de la vidéo ne peut pas dépasser 255 caractères',
+    'produit_videos_titre_max' => 'Le titre de la vidéo ne peut pas dépasser 255 caractères',
+
+    // Gestion des ruptures de stock
+    'produit_ruptures' => [
+        'variante' => 'Variante du produit',
+        'actif' => 'Statut actif',
+    ],
+    
+    'produit_ruptures_created' => 'Alerte de stock créée avec succès',
+    'produit_ruptures_updated' => 'Alerte de stock mise à jour avec succès',
+    'produit_ruptures_deleted' => 'Alerte de stock supprimée avec succès',
+    'produit_ruptures_resolved' => 'Alerte de stock résolue avec succès',
+    'produit_ruptures_already_exists' => 'Une alerte de stock existe déjà pour cette variante',
+    'produit_ruptures_variante_required' => 'La variante du produit est requise',
+    'produit_ruptures_variante_exists' => 'La variante sélectionnée n\'existe pas',
+    'produit_ruptures_actif_boolean' => 'Le statut actif doit être vrai ou faux',
+
+    // Gestion des variantes de produit
+    'produit_variantes' => [
+        'nom' => 'Nom de la variante',
+        'valeur' => 'Valeur de la variante',
+        'prix_vente_variante' => 'Prix de la variante',
+        'sku_variante' => 'SKU de la variante',
+        'actif' => 'Statut actif',
+    ],
+    
+    'produit_variantes_created' => 'Variante de produit créée avec succès',
+    'produit_variantes_updated' => 'Variante de produit mise à jour avec succès',
+    'produit_variantes_deleted' => 'Variante de produit supprimée avec succès',
+    'produit_variantes_nom_required' => 'Le nom de la variante est requis',
+    'produit_variantes_valeur_required' => 'La valeur de la variante est requise',
+    'produit_variantes_prix_numeric' => 'Le prix de la variante doit être un nombre',
+    'produit_variantes_prix_min' => 'Le prix de la variante ne peut pas être négatif',
+    'produit_variantes_sku_max' => 'Le SKU de la variante ne peut pas dépasser 100 caractères',
+    'produit_variantes_unique_combination' => 'Cette combinaison de variante existe déjà',
+
+    // Gestion des propositions de produit
+    'produit_propositions' => [
+        'type' => 'Type de proposition',
+        'titre' => 'Titre de la proposition',
+        'description' => 'Description',
+        'image_url' => 'URL de l\'image',
+        'statut' => 'Statut',
+        'notes_admin' => 'Notes admin',
+    ],
+    
+    'produit_propositions_created' => 'Proposition de produit créée avec succès',
+    'produit_propositions_updated' => 'Proposition de produit mise à jour avec succès',
+    'produit_propositions_deleted' => 'Proposition de produit supprimée avec succès',
+    'produit_propositions_approved' => 'Proposition de produit approuvée avec succès',
+    'produit_propositions_rejected' => 'Proposition de produit rejetée avec succès',
+
+    // Gestion des avis de produit
+    'avis_produits' => [
+        'note' => 'Note',
+        'commentaire' => 'Commentaire',
+        'statut' => 'Statut',
+        'auteur_type' => 'Type d\'auteur',
+    ],
+    
+    'avis_produits_created' => 'Avis de produit créé avec succès',
+    'avis_produits_updated' => 'Avis de produit mis à jour avec succès',
+    'avis_produits_deleted' => 'Avis de produit supprimé avec succès',
+    'avis_produits_approved' => 'Avis de produit approuvé avec succès',
+    'avis_produits_rejected' => 'Avis de produit rejeté avec succès',
+    'avis_produits_note_required' => 'La note est requise',
+    'avis_produits_note_range' => 'La note doit être entre 1 et 5',
+    'avis_produits_commentaire_max' => 'Le commentaire ne peut pas dépasser 1000 caractères',
 ];

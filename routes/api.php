@@ -12,6 +12,9 @@ use App\Http\Controllers\Admin\BoutiqueController;
 use App\Http\Controllers\Admin\CategorieController;
 use App\Http\Controllers\Admin\ProduitController;
 use App\Http\Controllers\Admin\ProduitImageController;
+use App\Http\Controllers\Admin\ProduitVideoController;
+use App\Http\Controllers\Admin\ProduitVarianteController;
+use App\Http\Controllers\Admin\ProduitRuptureController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -104,6 +107,31 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('produits/{produit}/images', [ProduitImageController::class, 'store']);
         Route::put('produits/{produit}/images/sort', [ProduitImageController::class, 'bulkSort']);
         Route::delete('produits/{produit}/images/{image}', [ProduitImageController::class, 'destroy']);
+
+        // Product Videos Management
+        Route::get('produits/{produit}/videos', [ProduitVideoController::class, 'index']);
+        Route::post('produits/{produit}/videos', [ProduitVideoController::class, 'store']);
+        Route::put('produits/{produit}/videos/{video}', [ProduitVideoController::class, 'update']);
+        Route::put('produits/{produit}/videos/sort', [ProduitVideoController::class, 'bulkSort']);
+        Route::delete('produits/{produit}/videos/{video}', [ProduitVideoController::class, 'destroy']);
+
+        // Product Variants Management
+        Route::get('produits/{produit}/variantes', [ProduitVarianteController::class, 'index']);
+        Route::post('produits/{produit}/variantes', [ProduitVarianteController::class, 'store']);
+        Route::get('produits/{produit}/variantes/{variante}', [ProduitVarianteController::class, 'show']);
+        Route::put('produits/{produit}/variantes/{variante}', [ProduitVarianteController::class, 'update']);
+        Route::delete('produits/{produit}/variantes/{variante}', [ProduitVarianteController::class, 'destroy']);
+
+        // Product Ruptures (Stock Alerts) Management
+        Route::get('produits/{produit}/ruptures', [ProduitRuptureController::class, 'index']);
+        Route::post('produits/{produit}/ruptures', [ProduitRuptureController::class, 'store']);
+        Route::get('produits/{produit}/ruptures/{rupture}', [ProduitRuptureController::class, 'show']);
+        Route::put('produits/{produit}/ruptures/{rupture}', [ProduitRuptureController::class, 'update']);
+        Route::delete('produits/{produit}/ruptures/{rupture}', [ProduitRuptureController::class, 'destroy']);
+        Route::post('produits/{produit}/ruptures/{rupture}/resolve', [ProduitRuptureController::class, 'resolve']);
+        
+        // Global ruptures (all products)
+        Route::get('ruptures/active', [ProduitRuptureController::class, 'getAllActive']);
     });
 
     // Affiliate only routes

@@ -177,4 +177,87 @@ return [
     'produit_images_sorted_successfully' => 'تم إعادة ترتيب صور المنتج بنجاح',
     'produit_images_sort_failed' => 'فشل في إعادة ترتيب صور المنتج',
     'produit_images_not_found' => 'صورة المنتج غير موجودة',
+
+    // إدارة فيديوهات المنتج
+    'produit_videos' => [
+        'url' => 'رابط الفيديو',
+        'titre' => 'عنوان الفيديو',
+        'ordre' => 'ترتيب العرض',
+    ],
+    
+    'produit_videos_created' => 'تم إضافة فيديو المنتج بنجاح',
+    'produit_videos_updated' => 'تم تحديث فيديو المنتج بنجاح',
+    'produit_videos_deleted' => 'تم حذف فيديو المنتج بنجاح',
+    'produit_videos_order_updated' => 'تم تحديث ترتيب الفيديوهات بنجاح',
+    'produit_videos_url_required' => 'رابط الفيديو مطلوب',
+    'produit_videos_url_format' => 'يجب أن يكون رابط الفيديو صالحاً',
+    'produit_videos_url_max' => 'لا يمكن أن يتجاوز رابط الفيديو 255 حرفاً',
+    'produit_videos_titre_max' => 'لا يمكن أن يتجاوز عنوان الفيديو 255 حرفاً',
+
+    // إدارة تنبيهات نفاد المخزون
+    'produit_ruptures' => [
+        'variante' => 'متغير المنتج',
+        'actif' => 'الحالة النشطة',
+    ],
+    
+    'produit_ruptures_created' => 'تم إنشاء تنبيه المخزون بنجاح',
+    'produit_ruptures_updated' => 'تم تحديث تنبيه المخزون بنجاح',
+    'produit_ruptures_deleted' => 'تم حذف تنبيه المخزون بنجاح',
+    'produit_ruptures_resolved' => 'تم حل تنبيه المخزون بنجاح',
+    'produit_ruptures_already_exists' => 'يوجد بالفعل تنبيه مخزون لهذا المتغير',
+    'produit_ruptures_variante_required' => 'متغير المنتج مطلوب',
+    'produit_ruptures_variante_exists' => 'المتغير المحدد غير موجود',
+    'produit_ruptures_actif_boolean' => 'يجب أن تكون الحالة النشطة صحيحة أو خاطئة',
+
+    // إدارة متغيرات المنتج
+    'produit_variantes' => [
+        'nom' => 'اسم المتغير',
+        'valeur' => 'قيمة المتغير',
+        'prix_vente_variante' => 'سعر المتغير',
+        'sku_variante' => 'رمز المتغير',
+        'actif' => 'الحالة النشطة',
+    ],
+    
+    'produit_variantes_created' => 'تم إنشاء متغير المنتج بنجاح',
+    'produit_variantes_updated' => 'تم تحديث متغير المنتج بنجاح',
+    'produit_variantes_deleted' => 'تم حذف متغير المنتج بنجاح',
+    'produit_variantes_nom_required' => 'اسم المتغير مطلوب',
+    'produit_variantes_valeur_required' => 'قيمة المتغير مطلوبة',
+    'produit_variantes_prix_numeric' => 'يجب أن يكون سعر المتغير رقماً',
+    'produit_variantes_prix_min' => 'لا يمكن أن يكون سعر المتغير سالباً',
+    'produit_variantes_sku_max' => 'لا يمكن أن يتجاوز رمز المتغير 100 حرف',
+    'produit_variantes_unique_combination' => 'تركيبة المتغير هذه موجودة بالفعل',
+
+    // إدارة اقتراحات المنتج
+    'produit_propositions' => [
+        'type' => 'نوع الاقتراح',
+        'titre' => 'عنوان الاقتراح',
+        'description' => 'الوصف',
+        'image_url' => 'رابط الصورة',
+        'statut' => 'الحالة',
+        'notes_admin' => 'ملاحظات المدير',
+    ],
+    
+    'produit_propositions_created' => 'تم إنشاء اقتراح المنتج بنجاح',
+    'produit_propositions_updated' => 'تم تحديث اقتراح المنتج بنجاح',
+    'produit_propositions_deleted' => 'تم حذف اقتراح المنتج بنجاح',
+    'produit_propositions_approved' => 'تم الموافقة على اقتراح المنتج بنجاح',
+    'produit_propositions_rejected' => 'تم رفض اقتراح المنتج بنجاح',
+
+    // إدارة تقييمات المنتج
+    'avis_produits' => [
+        'note' => 'التقييم',
+        'commentaire' => 'التعليق',
+        'statut' => 'الحالة',
+        'auteur_type' => 'نوع المؤلف',
+    ],
+    
+    'avis_produits_created' => 'تم إنشاء تقييم المنتج بنجاح',
+    'avis_produits_updated' => 'تم تحديث تقييم المنتج بنجاح',
+    'avis_produits_deleted' => 'تم حذف تقييم المنتج بنجاح',
+    'avis_produits_approved' => 'تم الموافقة على تقييم المنتج بنجاح',
+    'avis_produits_rejected' => 'تم رفض تقييم المنتج بنجاح',
+    'avis_produits_note_required' => 'التقييم مطلوب',
+    'avis_produits_note_range' => 'يجب أن يكون التقييم بين 1 و 5',
+    'avis_produits_commentaire_max' => 'لا يمكن أن يتجاوز التعليق 1000 حرف',
 ];

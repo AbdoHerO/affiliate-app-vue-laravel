@@ -1,301 +1,303 @@
 <template>
-  <div class="container-fluid">
-    <!-- Breadcrumb -->
-    <nav aria-label="breadcrumb" class="mb-4">
-      <ol class="breadcrumb">
-        <li class="breadcrumb-item">
-          <router-link to="/admin" class="text-decoration-none">
-            {{ $t('breadcrumb_home') }}
-          </router-link>
-        </li>
-        <li class="breadcrumb-item">
-          <router-link to="/admin/produits" class="text-decoration-none">
-            {{ $t('admin_produits_title') }}
-          </router-link>
-        </li>
-        <li class="breadcrumb-item active" aria-current="page">
-          {{ $t('admin_produits_view') }}
-        </li>
-      </ol>
-    </nav>
+  <div>
+    <!-- Breadcrumbs -->
+    <VBreadcrumbs
+      :items="[
+        { title: $t('breadcrumb_home'), to: '/' },
+        { title: $t('admin_produits_title'), to: '/admin/produits' },
+        { title: produit?.titre || $t('admin_produits_view') },
+      ]"
+      class="pa-0 mb-4"
+    />
 
     <!-- Loading State -->
-    <div v-if="isLoading" class="text-center py-4">
-      <div class="spinner-border" role="status">
-        <span class="visually-hidden">{{ $t('common_loading') }}...</span>
-      </div>
-    </div>
+    <VRow v-if="isLoading" justify="center">
+      <VCol cols="12" class="text-center">
+        <VProgressCircular indeterminate size="64" />
+        <div class="mt-4">{{ $t('admin_common_loading') }}...</div>
+      </VCol>
+    </VRow>
 
-    <!-- Header -->
-    <div v-else-if="produit" class="d-flex justify-content-between align-items-center mb-4">
-      <div>
-        <h1 class="h3 mb-0">{{ produit.name }}</h1>
-        <div class="text-muted">
-          <span class="badge" :class="produit.status === 'active' ? 'bg-success' : 'bg-secondary'">
-            {{ $t(produit.status === 'active' ? 'common_active' : 'common_inactive') }}
-          </span>
-        </div>
-      </div>
-      <div class="d-flex gap-2">
-        <router-link :to="`/admin/produits/${produit.id}/edit`" class="btn btn-primary">
-          <i class="fas fa-edit me-2"></i>
-          {{ $t('admin_produits_edit') }}
-        </router-link>
-        <button 
-          @click="showDeleteModal = true" 
-          class="btn btn-danger"
-        >
-          <i class="fas fa-trash me-2"></i>
-          {{ $t('admin_produits_delete') }}
-        </button>
-        <router-link to="/admin/produits" class="btn btn-secondary">
-          <i class="fas fa-arrow-left me-2"></i>
-          {{ $t('common_back') }}
-        </router-link>
-      </div>
-    </div>
+    <!-- Main Content -->
+    <VRow v-else-if="produit">
+      <!-- Actions Header -->
+      <VCol cols="12" class="mb-4">
+        <div class="d-flex justify-space-between align-items-center">
+          <div>
+            <h1 class="text-h4">{{ produit.titre }}</h1>
+            <VChip
+              :color="produit.actif ? 'success' : 'default'"
+              variant="flat"
+              size="small"
+              class="mt-2"
+              >
+                {{ produit.actif ? $t('admin_common_active') : $t('admin_common_inactive') }}
+              </VChip>
+            </div>
+            <div class="d-flex ga-2">
+              <VBtn
+                :to="`/admin/produits/${produit.id}/edit`"
+                color="primary"
+                variant="flat"
+                prepend-icon="mdi-pencil"
+              >
+                {{ $t('admin_common_edit') }}
+              </VBtn>
+              <VBtn
+                color="error"
+                variant="outlined"
+                prepend-icon="mdi-delete"
+                @click="showDeleteDialog = true"
+              >
+                {{ $t('admin_common_delete') }}
+              </VBtn>
+              <VBtn
+                to="/admin/produits"
+                variant="outlined"
+                prepend-icon="mdi-arrow-left"
+              >
+                {{ $t('admin_common_back') }}
+              </VBtn>
+            </div>
+          </div>
+        </VCol>
+      </VRow>
 
-    <!-- Tabs -->
-    <div v-if="produit" class="row">
-      <div class="col-12">
-        <ul class="nav nav-tabs" id="produitTabs" role="tablist">
-          <li class="nav-item" role="presentation">
-            <button 
-              class="nav-link active" 
-              id="details-tab" 
-              data-bs-toggle="tab" 
-              data-bs-target="#details" 
-              type="button" 
-              role="tab" 
-              aria-controls="details" 
-              aria-selected="true"
-            >
-              <i class="fas fa-info-circle me-2"></i>
+      <!-- Tabs -->
+      <VRow>
+        <VCol cols="12">
+          <VTabs v-model="activeTab">
+            <VTab value="details">
+              <VIcon start>mdi-information</VIcon>
               {{ $t('admin_produits_details') }}
-            </button>
-          </li>
-          <li class="nav-item" role="presentation">
-            <button 
-              class="nav-link" 
-              id="images-tab" 
-              data-bs-toggle="tab" 
-              data-bs-target="#images" 
-              type="button" 
-              role="tab" 
-              aria-controls="images" 
-              aria-selected="false"
-            >
-              <i class="fas fa-images me-2"></i>
+            </VTab>
+            <VTab value="images">
+              <VIcon start>mdi-image-multiple</VIcon>
               {{ $t('admin_produits_images') }}
-              <span class="badge bg-secondary ms-2">{{ produit.images?.length || 0 }}</span>
-            </button>
-          </li>
-        </ul>
+              <VChip class="ml-2" size="x-small">{{ produit.images?.length || 0 }}</VChip>
+            </VTab>
+          </VTabs>
 
-        <div class="tab-content" id="produitTabsContent">
-          <!-- Details Tab -->
-          <div class="tab-pane fade show active" id="details" role="tabpanel" aria-labelledby="details-tab">
-            <div class="card border-top-0">
-              <div class="card-body">
-                <div class="row">
-                  <!-- Basic Information -->
-                  <div class="col-md-6">
-                    <h5 class="mb-3">{{ $t('common_basic_info') }}</h5>
-                    
-                    <div class="mb-3">
-                      <label class="form-label fw-bold">{{ $t('admin_produits_name') }}:</label>
-                      <p class="mb-0">{{ produit.name }}</p>
-                    </div>
-
-                    <div class="mb-3">
-                      <label class="form-label fw-bold">{{ $t('admin_produits_slug') }}:</label>
-                      <p class="mb-0">
-                        <code>{{ produit.slug }}</code>
-                      </p>
-                    </div>
-
-                    <div class="mb-3">
-                      <label class="form-label fw-bold">{{ $t('admin_produits_boutique') }}:</label>
-                      <p class="mb-0">
-                        <router-link 
-                          :to="`/admin/boutiques/${produit.boutique?.id}`"
-                          class="text-decoration-none"
-                        >
-                          {{ produit.boutique?.nom }}
-                        </router-link>
-                      </p>
-                    </div>
-
-                    <div class="mb-3">
-                      <label class="form-label fw-bold">{{ $t('admin_produits_category') }}:</label>
-                      <p class="mb-0">
-                        <router-link 
-                          :to="`/admin/categories/${produit.category?.id}`"
-                          class="text-decoration-none"
-                        >
-                          {{ produit.category?.nom }}
-                        </router-link>
-                      </p>
-                    </div>
-
-                    <div class="mb-3" v-if="produit.description">
-                      <label class="form-label fw-bold">{{ $t('admin_produits_description') }}:</label>
-                      <p class="mb-0">{{ produit.description }}</p>
-                    </div>
-                  </div>
-
-                  <!-- Pricing & Stock -->
-                  <div class="col-md-6">
-                    <h5 class="mb-3">{{ $t('common_pricing_stock') }}</h5>
-                    
-                    <div class="mb-3" v-if="produit.price_purchase">
-                      <label class="form-label fw-bold">{{ $t('admin_produits_price_purchase') }}:</label>
-                      <p class="mb-0">
-                        <span class="text-success fw-bold">{{ formatPrice(produit.price_purchase) }}</span>
-                      </p>
-                    </div>
-
-                    <div class="mb-3">
-                      <label class="form-label fw-bold">{{ $t('admin_produits_price') }}:</label>
-                      <p class="mb-0">
-                        <span class="text-primary fw-bold fs-5">{{ formatPrice(produit.price) }}</span>
-                      </p>
-                    </div>
-
-                    <div class="mb-3" v-if="produit.quantity_min">
-                      <label class="form-label fw-bold">{{ $t('admin_produits_quantity_min') }}:</label>
-                      <p class="mb-0">{{ produit.quantity_min }}</p>
-                    </div>
-
-                    <div class="mb-3">
-                      <label class="form-label fw-bold">{{ $t('admin_produits_status') }}:</label>
-                      <p class="mb-0">
-                        <span class="badge" :class="produit.status === 'active' ? 'bg-success' : 'bg-secondary'">
-                          {{ $t(produit.status === 'active' ? 'common_active' : 'common_inactive') }}
-                        </span>
-                      </p>
-                    </div>
-
-                    <div class="mb-3" v-if="produit.notes">
-                      <label class="form-label fw-bold">{{ $t('admin_produits_notes') }}:</label>
-                      <p class="mb-0 text-muted">{{ produit.notes }}</p>
-                    </div>
-                  </div>
-
-                  <!-- Metadata -->
-                  <div class="col-12">
-                    <hr>
-                    <h5 class="mb-3">{{ $t('common_metadata') }}</h5>
-                    <div class="row">
-                      <div class="col-md-6">
-                        <div class="mb-3">
-                          <label class="form-label fw-bold">{{ $t('admin_produits_created_at') }}:</label>
-                          <p class="mb-0">{{ formatDate(produit.created_at) }}</p>
-                        </div>
+          <VTabsWindow v-model="activeTab">
+            <!-- Details Tab -->
+            <VTabsWindowItem value="details">
+              <VCard>
+                <VCardTitle>
+                  {{ $t('admin_produits_details') }}
+                </VCardTitle>
+                
+                <VDivider />
+                
+                <VCardText>
+                  <VRow>
+                    <!-- Basic Information -->
+                    <VCol cols="12" md="6">
+                      <h5 class="mb-3">{{ $t('admin_common_basic_info') }}</h5>
+                      
+                      <div class="mb-4">
+                        <VTextField
+                          :label="$t('admin_produits_titre')"
+                          :model-value="produit.titre"
+                          readonly
+                          variant="outlined"
+                        />
                       </div>
-                      <div class="col-md-6">
-                        <div class="mb-3">
-                          <label class="form-label fw-bold">{{ $t('admin_produits_updated_at') }}:</label>
-                          <p class="mb-0">{{ formatDate(produit.updated_at) }}</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
 
-          <!-- Images Tab -->
-          <div class="tab-pane fade" id="images" role="tabpanel" aria-labelledby="images-tab">
-            <div class="card border-top-0">
-              <div class="card-body">
-                <div v-if="produit.images && produit.images.length > 0" class="row">
-                  <div 
-                    v-for="image in produit.images" 
-                    :key="image.id"
-                    class="col-md-3 col-sm-6 mb-4"
-                  >
-                    <div class="card">
-                      <img 
-                        :src="image.image_url" 
-                        :alt="`Product image ${image.order}`"
-                        class="card-img-top"
-                        style="height: 200px; object-fit: cover;"
-                      >
-                      <div class="card-body p-2">
-                        <small class="text-muted">
-                          {{ $t('admin_produits_image_order') }}: {{ image.order }}
-                        </small>
+                      <div class="mb-4">
+                        <VTextField
+                          :label="$t('admin_produits_slug')"
+                          :model-value="produit.slug"
+                          readonly
+                          variant="outlined"
+                        />
                       </div>
-                    </div>
+
+                      <div class="mb-4">
+                        <VTextField
+                          :label="$t('admin_produits_boutique')"
+                          :model-value="produit.boutique?.nom"
+                          readonly
+                          variant="outlined"
+                        />
+                      </div>
+
+                      <div class="mb-4" v-if="produit.categorie">
+                        <VTextField
+                          :label="$t('admin_produits_categorie')"
+                          :model-value="produit.categorie?.nom"
+                          readonly
+                          variant="outlined"
+                        />
+                      </div>
+
+                      <div v-if="produit.description">
+                        <VTextarea
+                          :label="$t('admin_produits_description')"
+                          :model-value="produit.description"
+                          readonly
+                          variant="outlined"
+                          rows="4"
+                        />
+                      </div>
+                    </VCol>
+
+                    <!-- Pricing -->
+                    <VCol cols="12" md="6">
+                      <h5 class="mb-3">{{ $t('admin_produits_pricing') }}</h5>
+                      
+                      <div class="mb-4">
+                        <VTextField
+                          :label="$t('admin_produits_prix_achat')"
+                          :model-value="formatPrice(produit.prix_achat)"
+                          readonly
+                          variant="outlined"
+                        />
+                      </div>
+
+                      <div class="mb-4">
+                        <VTextField
+                          :label="$t('admin_produits_prix_vente')"
+                          :model-value="formatPrice(produit.prix_vente)"
+                          readonly
+                          variant="outlined"
+                          class="text-primary"
+                        />
+                      </div>
+
+                      <div class="mb-4" v-if="produit.prix_affilie">
+                        <VTextField
+                          :label="$t('admin_produits_prix_affilie')"
+                          :model-value="formatPrice(produit.prix_affilie)"
+                          readonly
+                          variant="outlined"
+                        />
+                      </div>
+
+                      <div>
+                        <VSwitch
+                          :label="$t('admin_produits_actif')"
+                          :model-value="produit.actif"
+                          readonly
+                          color="primary"
+                        />
+                      </div>
+                    </VCol>
+
+                    <!-- Metadata -->
+                    <VCol cols="12">
+                      <VDivider class="my-4" />
+                      <h5 class="mb-3">{{ $t('admin_common_metadata') }}</h5>
+                      <VRow>
+                        <VCol cols="12" md="6">
+                          <VTextField
+                            :label="$t('admin_common_created_at')"
+                            :model-value="formatDate(produit.created_at)"
+                            readonly
+                            variant="outlined"
+                          />
+                        </VCol>
+                        <VCol cols="12" md="6">
+                          <VTextField
+                            :label="$t('admin_common_updated_at')"
+                            :model-value="formatDate(produit.updated_at)"
+                            readonly
+                            variant="outlined"
+                          />
+                        </VCol>
+                      </VRow>
+                    </VCol>
+                  </VRow>
+                </VCardText>
+              </VCard>
+            </VTabsWindowItem>
+
+            <!-- Images Tab -->
+            <VTabsWindowItem value="images">
+              <VCard>
+                <VCardTitle>
+                  {{ $t('admin_produits_images') }}
+                </VCardTitle>
+                
+                <VDivider />
+                
+                <VCardText>
+                  <VRow v-if="produit.images && produit.images.length > 0">
+                    <VCol 
+                      v-for="image in produit.images" 
+                      :key="image.id"
+                      cols="12" md="3" sm="6"
+                    >
+                      <VCard>
+                        <VImg
+                          :src="image.url" 
+                          :alt="`Product image ${image.ordre}`"
+                          height="200"
+                          cover
+                        />
+                        <VCardText class="pa-2">
+                          <small class="text-medium-emphasis">
+                            {{ $t('admin_produits_image_order') }}: {{ image.ordre }}
+                          </small>
+                        </VCardText>
+                      </VCard>
+                    </VCol>
+                  </VRow>
+                  <div v-else class="text-center py-8">
+                    <VIcon size="64" color="grey-lighten-1" class="mb-4">mdi-image-multiple</VIcon>
+                    <p class="text-medium-emphasis mb-4">{{ $t('admin_produits_no_images') }}</p>
+                    <VBtn
+                      :to="`/admin/produits/${produit.id}/edit`"
+                      color="primary"
+                      prepend-icon="mdi-plus"
+                    >
+                      {{ $t('admin_produits_upload_image') }}
+                    </VBtn>
                   </div>
-                </div>
-                <div v-else class="text-center py-4">
-                  <i class="fas fa-images fa-3x text-muted mb-3"></i>
-                  <p class="text-muted">{{ $t('admin_produits_no_images') }}</p>
-                  <router-link 
-                    :to="`/admin/produits/${produit.id}/edit`" 
-                    class="btn btn-primary"
-                  >
-                    <i class="fas fa-plus me-2"></i>
-                    {{ $t('admin_produits_upload_image') }}
-                  </router-link>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+                </VCardText>
+              </VCard>
+            </VTabsWindowItem>
+          </VTabsWindow>
+        </VCol>
+      </VRow>
 
     <!-- Error State -->
-    <div v-else class="alert alert-danger">
-      {{ $t('common_error_loading') }}
-    </div>
+    <VRow v-else-if="!isLoading">
+      <VCol cols="12">
+        <VAlert type="error">
+          {{ $t('admin_common_error_loading') }}
+        </VAlert>
+      </VCol>
+    </VRow>
 
-    <!-- Delete Modal -->
-    <div 
-      v-if="showDeleteModal && produit" 
-      class="modal fade show d-block" 
-      tabindex="-1" 
-      style="background-color: rgba(0,0,0,0.5);"
-    >
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">{{ $t('admin_produits_delete_title') }}</h5>
-            <button 
-              @click="showDeleteModal = false" 
-              type="button" 
-              class="btn-close"
-            ></button>
-          </div>
-          <div class="modal-body">
-            <p>{{ $t('admin_produits_delete_confirm', { name: produit.name }) }}</p>
-          </div>
-          <div class="modal-footer">
-            <button 
-              @click="showDeleteModal = false" 
-              type="button" 
-              class="btn btn-secondary"
-            >
-              {{ $t('common_cancel') }}
-            </button>
-            <button 
-              @click="handleDelete" 
-              type="button" 
-              class="btn btn-danger"
-              :disabled="isDeleting"
-            >
-              <span v-if="isDeleting" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-              <i v-else class="fas fa-trash me-2"></i>
-              {{ $t('admin_produits_delete') }}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+    <!-- Delete Dialog -->
+    <VDialog v-model="showDeleteDialog" max-width="500px">
+      <VCard>
+        <VCardTitle>
+          {{ $t('admin_produits_delete_title') }}
+        </VCardTitle>
+        
+        <VCardText>
+          {{ $t('admin_produits_delete_confirm', { name: produit?.titre }) }}
+        </VCardText>
+        
+        <VCardActions>
+          <VSpacer />
+          <VBtn
+            variant="outlined"
+            @click="showDeleteDialog = false"
+          >
+            {{ $t('admin_common_cancel') }}
+          </VBtn>
+          <VBtn
+            color="error"
+            :loading="isDeleting"
+            @click="handleDelete"
+          >
+            {{ $t('admin_common_delete') }}
+          </VBtn>
+        </VCardActions>
+      </VCard>
+    </VDialog>
   </div>
 </template>
 
@@ -303,7 +305,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { useProduitStore } from '@/stores/admin/produits'
+import { useProduitsStore } from '@/stores/admin/produits'
 
 definePage({
   meta: {
@@ -315,18 +317,19 @@ definePage({
 const route = useRoute()
 const router = useRouter()
 const { t } = useI18n()
-const produitStore = useProduitStore()
+const produitsStore = useProduitsStore()
 
 const isLoading = ref(true)
 const isDeleting = ref(false)
-const showDeleteModal = ref(false)
+const showDeleteDialog = ref(false)
+const activeTab = ref('details')
 
-const produit = computed(() => produitStore.currentProduit)
+const produit = computed(() => produitsStore.currentProduit)
 
 const formatPrice = (price: number | string) => {
-  return new Intl.NumberFormat('fr-FR', {
+  return new Intl.NumberFormat('fr-MA', {
     style: 'currency',
-    currency: 'EUR'
+    currency: 'MAD'
   }).format(Number(price))
 }
 
@@ -343,19 +346,19 @@ const formatDate = (date: string) => {
 const handleDelete = async () => {
   try {
     isDeleting.value = true
-    await produitStore.deleteProduit(Number(route.params.id))
-    router.push('/admin/produits')
+    await produitsStore.deleteProduit(route.params.id as string)
+    await router.push('/admin/produits')
   } catch (error) {
     console.error('Error deleting produit:', error)
   } finally {
     isDeleting.value = false
-    showDeleteModal.value = false
+    showDeleteDialog.value = false
   }
 }
 
 onMounted(async () => {
   try {
-    await produitStore.fetchProduit(Number(route.params.id))
+    await produitsStore.fetchProduit(route.params.id as string)
   } catch (error) {
     console.error('Error loading produit:', error)
   } finally {

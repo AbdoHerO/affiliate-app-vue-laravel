@@ -10,21 +10,24 @@ export interface Produit {
   description: string | null
   prix_achat: number
   prix_vente: number
+  prix_affilie: number | null
   slug: string
   actif: boolean
-  quantite_min: number
-  notes_admin: string | null
   created_at: string
   updated_at: string
   boutique?: {
     id: string
     nom: string
+    slug: string
   }
   categorie?: {
     id: string
     nom: string
+    slug: string
   }
   images?: ProduitImage[]
+  videos?: ProduitVideo[]
+  variantes?: ProduitVariante[]
 }
 
 export interface ProduitImage {
@@ -36,17 +39,39 @@ export interface ProduitImage {
   updated_at?: string
 }
 
+export interface ProduitVideo {
+  id: string
+  produit_id: string
+  url: string
+  titre: string | null
+  created_at?: string
+  updated_at?: string
+}
+
+export interface ProduitVariante {
+  id: string
+  produit_id: string
+  nom: string
+  valeur: string
+  prix_vente_variante: number | null
+  image_url: string | null
+  actif: boolean
+  created_at?: string
+  updated_at?: string
+}
+
 export interface ProduitFormData {
   boutique_id: string
   categorie_id: string | null
   titre: string
-  description: string
-  prix_achat: number
-  prix_vente: number
-  slug: string
+  description: string | null
+  prix_achat: number | null
+  prix_vente: number | null
+  prix_affilie: number | null
+  quantite_min: number | null
+  notes_admin: string | null
+  slug?: string
   actif: boolean
-  quantite_min: number
-  notes_admin: string
 }
 
 export interface ProduitFilters {

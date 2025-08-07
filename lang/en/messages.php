@@ -304,4 +304,87 @@ return [
     'produit_images_sorted_successfully' => 'Product images reordered successfully',
     'produit_images_sort_failed' => 'Failed to reorder product images',
     'produit_images_not_found' => 'Product image not found',
+
+    // Product Videos Management
+    'produit_videos' => [
+        'url' => 'Video URL',
+        'titre' => 'Video Title',
+        'ordre' => 'Display Order',
+    ],
+    
+    'produit_videos_created' => 'Product video added successfully',
+    'produit_videos_updated' => 'Product video updated successfully',
+    'produit_videos_deleted' => 'Product video deleted successfully',
+    'produit_videos_order_updated' => 'Video order updated successfully',
+    'produit_videos_url_required' => 'Video URL is required',
+    'produit_videos_url_format' => 'Video URL must be a valid URL',
+    'produit_videos_url_max' => 'Video URL cannot exceed 255 characters',
+    'produit_videos_titre_max' => 'Video title cannot exceed 255 characters',
+
+    // Product Ruptures (Stock Alerts) Management  
+    'produit_ruptures' => [
+        'variante' => 'Product Variant',
+        'actif' => 'Active Status',
+    ],
+    
+    'produit_ruptures_created' => 'Stock alert created successfully',
+    'produit_ruptures_updated' => 'Stock alert updated successfully',
+    'produit_ruptures_deleted' => 'Stock alert deleted successfully',
+    'produit_ruptures_resolved' => 'Stock alert resolved successfully',
+    'produit_ruptures_already_exists' => 'Stock alert already exists for this variant',
+    'produit_ruptures_variante_required' => 'Product variant is required',
+    'produit_ruptures_variante_exists' => 'Selected variant does not exist',
+    'produit_ruptures_actif_boolean' => 'Active status must be true or false',
+
+    // Product Variants Management
+    'produit_variantes' => [
+        'nom' => 'Variant Name',
+        'valeur' => 'Variant Value',
+        'prix_vente_variante' => 'Variant Price',
+        'sku_variante' => 'Variant SKU',
+        'actif' => 'Active Status',
+    ],
+    
+    'produit_variantes_created' => 'Product variant created successfully',
+    'produit_variantes_updated' => 'Product variant updated successfully',
+    'produit_variantes_deleted' => 'Product variant deleted successfully',
+    'produit_variantes_nom_required' => 'Variant name is required',
+    'produit_variantes_valeur_required' => 'Variant value is required',
+    'produit_variantes_prix_numeric' => 'Variant price must be a number',
+    'produit_variantes_prix_min' => 'Variant price cannot be negative',
+    'produit_variantes_sku_max' => 'Variant SKU cannot exceed 100 characters',
+    'produit_variantes_unique_combination' => 'This variant combination already exists',
+
+    // Product Propositions Management
+    'produit_propositions' => [
+        'type' => 'Proposition Type',
+        'titre' => 'Proposition Title',
+        'description' => 'Description',
+        'image_url' => 'Image URL',
+        'statut' => 'Status',
+        'notes_admin' => 'Admin Notes',
+    ],
+    
+    'produit_propositions_created' => 'Product proposition created successfully',
+    'produit_propositions_updated' => 'Product proposition updated successfully',
+    'produit_propositions_deleted' => 'Product proposition deleted successfully',
+    'produit_propositions_approved' => 'Product proposition approved successfully',
+    'produit_propositions_rejected' => 'Product proposition rejected successfully',
+
+    // Product Reviews (Avis) Management
+    'avis_produits' => [
+        'note' => 'Rating',
+        'commentaire' => 'Comment',
+        'statut' => 'Status',
+        'auteur_type' => 'Author Type',
+    ],
+    
+    'avis_produits_created' => 'Product review created successfully',
+    'avis_produits_updated' => 'Product review updated successfully',
+    'avis_produits_deleted' => 'Product review deleted successfully',
+    'avis_produits_approved' => 'Product review approved successfully',
+    'avis_produits_rejected' => 'Product review rejected successfully',
+    'avis_produits_note_required' => 'Rating is required',
+    'avis_produits_note_range' => 'Rating must be between 1 and 5',
+    'avis_produits_commentaire_max' => 'Comment cannot exceed 1000 characters',
 ];
