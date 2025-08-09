@@ -91,7 +91,7 @@ const form = ref<ProduitFormData>({
   prix_achat: null,
   prix_vente: null,
   prix_affilie: null,
-  quantite_min: null,
+  quantite_min: 1,
   notes_admin: '',
   actif: true
 })
@@ -117,6 +117,15 @@ const loadFilterOptions = async () => {
 
 const goBack = () => {
   router.push({ name: 'admin-produits-index' })
+}
+
+// File upload handlers
+const handleImageUploaded = (index: number, data: { url: string, file: File }) => {
+  productImages.value[index].url = data.url
+}
+
+const handleVideoUploaded = (index: number, data: { url: string, file: File }) => {
+  productVideos.value[index].url = data.url
 }
 
 // Helper methods
@@ -205,7 +214,13 @@ const submit = async () => {
   errors.value = {}
 
   try {
-    await produitsStore.createProduit(form.value)
+    // Ensure quantite_min has a default value
+    const formData = { ...form.value }
+    if (!formData.quantite_min || formData.quantite_min < 1) {
+      formData.quantite_min = 1
+    }
+
+    await produitsStore.createProduit(formData)
     router.push({ name: 'admin-produits-index' })
   } catch (err: any) {
     if (err.errors) {
@@ -389,6 +404,20 @@ onMounted(async () => {
                   />
                 </VCol>
 
+                <!-- Minimum Quantity -->
+                <VCol cols="12" md="6">
+                  <VTextField
+                    v-model.number="form.quantite_min"
+                    :label="$t('admin_produits_quantite_min')"
+                    :placeholder="$t('admin_produits_quantite_min_placeholder')"
+                    :error-messages="errors.quantite_min"
+                    type="number"
+                    min="1"
+                    variant="outlined"
+                    prepend-inner-icon="tabler-package"
+                    required
+                  />
+                </VCol>
                 <!-- Status -->
                 <VCol cols="12" md="6">
                   <VSwitch
@@ -434,30 +463,70 @@ onMounted(async () => {
               {{ $t('admin_produits_no_images') }}
             </VAlert>
 
-            <VRow v-for="(image, index) in productImages" :key="index" class="mb-3">
-              <VCol cols="12" md="6">
-                <VTextField
-                  v-model="image.url"
-                  :label="$t('admin_produits_image_url')"
-                  variant="outlined"
-                  prepend-inner-icon="tabler-link"
-                />
-              </VCol>
-              <VCol cols="12" md="4">
-                <VTextField
-                  v-model="image.alt_text"
-                  :label="$t('admin_produits_image_alt')"
-                  variant="outlined"
-                  prepend-inner-icon="tabler-text-caption"
-                />
-              </VCol>
-              <VCol cols="12" md="2">
-                <VBtn
-                  color="error"
-                  variant="outlined"
-                  icon="tabler-trash"
-                  @click="productImages.splice(index, 1)"
-                />
+            <VRow v-for="(image, index) in productImages" :key="index" class="mb-4">
+              <VCol cols="12">
+                <VCard variant="outlined" class="pa-4">
+                  <div class="d-flex justify-space-between align-center mb-3">
+                    <h4 class="text-subtitle-1">{{ $t('admin_produits_image') }} {{ index + 1 }}</h4>
+                    <VBtn
+                      color="error"
+                      variant="text"
+                      size="small"
+                      icon="tabler-trash"
+                      @click="productImages.splice(index, 1)"
+                    />
+                  </div>
+
+                  <VRow>
+                    <VCol cols="12" md="8">
+                      <FileUploader
+                        :url="image.url"
+                        :url-label="$t('admin_produits_image_url')"
+                        :url-placeholder="$t('admin_produits_image_url_placeholder')"
+                        :file-label="$t('admin_produits_upload_image')"
+                        accept="image/*"
+                        :upload-endpoint="'/admin/produits/{id}/images/upload'"
+                        :product-id="'temp'"
+                        @update:url="image.url = $event"
+                        @file-uploaded="handleImageUploaded(index, $event)"
+                      />
+                    </VCol>
+                    <VCol cols="12" md="3">
+                      <VTextField
+                        v-model="image.alt_text"
+                        :label="$t('admin_produits_image_alt')"
+                        variant="outlined"
+                        prepend-inner-icon="tabler-text-caption"
+                        placeholder="Image description"
+                      />
+                    </VCol>
+                    <VCol cols="12" md="1">
+                      <VTextField
+                        v-model.number="image.ordre"
+                        :label="$t('admin_produits_image_order')"
+                        variant="outlined"
+                        type="number"
+                        min="1"
+                        prepend-inner-icon="tabler-sort-ascending"
+                      />
+                    </VCol>
+                  </VRow>
+
+                  <!-- Image Preview -->
+                  <VRow v-if="image.url" class="mt-3">
+                    <VCol cols="12">
+                      <VDivider class="mb-3" />
+                      <p class="text-body-2 mb-2">{{ $t('admin_produits_image_preview') }}:</p>
+                      <VImg
+                        :src="image.url"
+                        :alt="image.alt_text"
+                        max-width="200"
+                        max-height="150"
+                        class="rounded"
+                      />
+                    </VCol>
+                  </VRow>
+                </VCard>
               </VCol>
             </VRow>
           </VCardText>

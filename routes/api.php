@@ -18,6 +18,12 @@ use App\Http\Controllers\Admin\ProduitRuptureController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
+
+// Test route
+Route::get('/test', function () {
+    return response()->json(['message' => 'API working', 'timestamp' => now()]);
+});
+
 // Public authentication routes
 Route::prefix('auth')->group(function () {
     Route::post('login', [AuthController::class, 'login']);
@@ -105,12 +111,14 @@ Route::middleware(['auth:sanctum'])->group(function () {
         // Product Images Management
         Route::get('produits/{produit}/images', [ProduitImageController::class, 'index']);
         Route::post('produits/{produit}/images', [ProduitImageController::class, 'store']);
+        Route::post('produits/{produit}/images/upload', [ProduitImageController::class, 'upload']);
         Route::put('produits/{produit}/images/sort', [ProduitImageController::class, 'bulkSort']);
         Route::delete('produits/{produit}/images/{image}', [ProduitImageController::class, 'destroy']);
 
         // Product Videos Management
         Route::get('produits/{produit}/videos', [ProduitVideoController::class, 'index']);
         Route::post('produits/{produit}/videos', [ProduitVideoController::class, 'store']);
+        Route::post('produits/{produit}/videos/upload', [ProduitVideoController::class, 'upload']);
         Route::put('produits/{produit}/videos/{video}', [ProduitVideoController::class, 'update']);
         Route::put('produits/{produit}/videos/sort', [ProduitVideoController::class, 'bulkSort']);
         Route::delete('produits/{produit}/videos/{video}', [ProduitVideoController::class, 'destroy']);

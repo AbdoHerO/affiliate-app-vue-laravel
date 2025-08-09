@@ -52,6 +52,16 @@ class Produit extends Model
     ];
 
     /**
+     * The attributes that should have default values.
+     *
+     * @var array<string, mixed>
+     */
+    protected $attributes = [
+        'quantite_min' => 1,
+        'actif' => true,
+    ];
+
+    /**
      * Get the boutique that owns the product.
      */
     public function boutique(): BelongsTo

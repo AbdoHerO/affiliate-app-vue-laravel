@@ -1,9 +1,9 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "laravel/laravel",
+    "name": "aarif-style/affiliate-platform",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
-    "keywords": ["laravel", "framework"],
+    "description": "Plateforme d'affiliation COD - Arif Style, solution complète pour la gestion des affiliés et commandes contre remboursement.",
+    "keywords": ["laravel", "vue", "affiliation", "cod", "ecommerce"],
     "license": "MIT",
     "require": {
         "php": "^8.2",

@@ -38,7 +38,7 @@ class UpdateProduitRequest extends FormRequest
                 Rule::unique('produits', 'slug')->ignore($produitId)
             ],
             'actif' => 'required|boolean',
-            'quantite_min' => 'nullable|integer|min:1',
+            'quantite_min' => 'required|integer|min:1',
             'notes_admin' => 'nullable|string',
         ];
     }

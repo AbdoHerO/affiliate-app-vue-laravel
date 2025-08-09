@@ -48,8 +48,8 @@ const debouncedSearch = (value: string) => {
 
 // Computed properties
 const breadcrumbs = computed(() => [
-  { text: t('dashboard'), to: { name: 'admin-dashboard' } },
-  { text: t('admin_categories_title'), active: true }
+  { title: t('title_admin_dashboard'), to: '/admin' },
+  { title: t('admin_categories_title'), active: true }
 ])
 
 const totalCategories = computed(() => categoriesStore.pagination.total)
@@ -185,10 +185,7 @@ onMounted(() => {
 <template>
   <div class="d-flex flex-column gap-6">
     <!-- Page Header & Breadcrumbs -->
-    <Breadcrumbs 
-      :items="breadcrumbs"
-      :title="$t('admin_categories_title')"
-    />
+    <Breadcrumbs :items="breadcrumbs" />
 
     <!-- Stats Cards Row -->
     <VRow>

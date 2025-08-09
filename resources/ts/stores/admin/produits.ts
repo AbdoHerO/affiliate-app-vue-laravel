@@ -76,10 +76,14 @@ export interface ProduitFormData {
 
 export interface ProduitFilters {
   q?: string
+  search?: string
   boutique_id?: string
   categorie_id?: string
   actif?: boolean | string
+  status?: string
   sort?: string
+  sort_by?: string
+  sort_desc?: boolean
   direction?: string
   page?: number
   per_page?: number
@@ -154,8 +158,11 @@ export const useProduitsStore = defineStore('produits', () => {
       }
 
       const response = responseData.value as any
+      console.log('API Response:', response) // Debug log
+
       if (response.success) {
         produits.value = response.data
+        console.log('Products loaded:', produits.value.length) // Debug log
 
         // Update pagination if present
         if (response.meta) {
@@ -215,12 +222,18 @@ export const useProduitsStore = defineStore('produits', () => {
   const createProduit = async (data: ProduitFormData) => {
     loading.value = true
     try {
+      // Ensure quantite_min has a default value
+      const formData = { ...data }
+      if (!formData.quantite_min || formData.quantite_min < 1) {
+        formData.quantite_min = 1
+      }
+
       const { data: responseData, error: apiError } = await useApi('/admin/produits', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(data)
+        body: JSON.stringify(formData)
       })
 
       if (apiError.value) {

@@ -9,14 +9,14 @@ use App\Http\Resources\ProduitResource;
 use App\Models\Produit;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Str;
 
 class ProduitController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request): AnonymousResourceCollection
+    public function index(Request $request): JsonResponse
     {
         $query = Produit::with(['boutique', 'categorie', 'images']);
 
@@ -60,7 +60,24 @@ class ProduitController extends Controller
 
         $produits = $query->paginate($perPage);
 
-        return ProduitResource::collection($produits);
+        return response()->json([
+            'success' => true,
+            'data' => ProduitResource::collection($produits->items()),
+            'meta' => [
+                'current_page' => $produits->currentPage(),
+                'last_page' => $produits->lastPage(),
+                'per_page' => $produits->perPage(),
+                'total' => $produits->total(),
+                'from' => $produits->firstItem(),
+                'to' => $produits->lastItem(),
+            ],
+            'links' => [
+                'first' => $produits->url(1),
+                'last' => $produits->url($produits->lastPage()),
+                'prev' => $produits->previousPageUrl(),
+                'next' => $produits->nextPageUrl(),
+            ]
+        ]);
     }
 
     /**
@@ -69,7 +86,19 @@ class ProduitController extends Controller
     public function store(StoreProduitRequest $request): JsonResponse
     {
         try {
-            $produit = Produit::create($request->validated());
+            $validated = $request->validated();
+
+            // Ensure quantite_min has a default value
+            if (!isset($validated['quantite_min']) || $validated['quantite_min'] === null) {
+                $validated['quantite_min'] = 1;
+            }
+
+            // Generate slug if not provided
+            if (empty($validated['slug'])) {
+                $validated['slug'] = Str::slug($validated['titre']);
+            }
+
+            $produit = Produit::create($validated);
             $produit->load(['boutique', 'categorie', 'images']);
 
             return response()->json([
@@ -104,7 +133,19 @@ class ProduitController extends Controller
     public function update(UpdateProduitRequest $request, Produit $produit): JsonResponse
     {
         try {
-            $produit->update($request->validated());
+            $validated = $request->validated();
+
+            // Ensure quantite_min has a default value
+            if (!isset($validated['quantite_min']) || $validated['quantite_min'] === null) {
+                $validated['quantite_min'] = 1;
+            }
+
+            // Generate slug if not provided or if title changed
+            if (empty($validated['slug']) || ($validated['titre'] !== $produit->titre)) {
+                $validated['slug'] = Str::slug($validated['titre']);
+            }
+
+            $produit->update($validated);
             $produit->load(['boutique', 'categorie', 'images']);
 
             return response()->json([

@@ -41,6 +41,7 @@ export default defineConfig({
     laravel({
       input: ['resources/ts/main.ts'],
       refresh: true,
+      buildDirectory: 'build', // Prevent /build prefix
     }),
     vueJsx(), // Docs: https://github.com/vuetifyjs/vuetify-loader/tree/master/packages/vite-plugin
     vuetify({

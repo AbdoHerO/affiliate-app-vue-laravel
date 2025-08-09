@@ -66,6 +66,56 @@ class ProduitVideoController extends Controller
     }
 
     /**
+     * Upload and store a new video file.
+     */
+    public function upload(Request $request, Produit $produit): JsonResponse
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:mp4,mov,avi,wmv,flv,webm|max:51200', // 50MB max
+            'titre' => 'nullable|string|max:255',
+        ]);
+
+        try {
+            $file = $request->file('file');
+
+            // Create directory path
+            $directory = "products/{$produit->id}/videos";
+
+            // Store the file
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $path = $file->storeAs($directory, $filename, 'public');
+
+            // Generate the full URL
+            $url = asset('storage/' . $path);
+
+            // Get the next order
+            $maxOrder = $produit->videos()->max('ordre') ?? -1;
+            $ordre = $maxOrder + 1;
+
+            // Create the video record
+            $video = ProduitVideo::create([
+                'produit_id' => $produit->id,
+                'url' => $url,
+                'titre' => $request->input('titre', ''),
+                'ordre' => $ordre,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => __('messages.produit_videos.uploaded_successfully'),
+                'data' => $video,
+                'url' => $url,
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => __('messages.produit_videos.upload_failed'),
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
      * Update the specified video.
      */
     public function update(Request $request, Produit $produit, ProduitVideo $video): JsonResponse

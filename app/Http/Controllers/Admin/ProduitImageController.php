@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class ProduitImageController extends Controller
 {
@@ -50,6 +51,56 @@ class ProduitImageController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => __('messages.produit_images.creation_failed'),
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Upload and store a new image file.
+     */
+    public function upload(Request $request, Produit $produit): JsonResponse
+    {
+        $request->validate([
+            'file' => 'required|file|image|mimes:jpeg,png,jpg,gif,webp|max:5120', // 5MB max
+            'alt_text' => 'nullable|string|max:255',
+        ]);
+
+        try {
+            $file = $request->file('file');
+
+            // Create directory path
+            $directory = "products/{$produit->id}/images";
+
+            // Store the file
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $path = $file->storeAs($directory, $filename, 'public');
+
+            // Generate the full URL
+            $url = asset('storage/' . $path);
+
+            // Get the next order
+            $maxOrder = $produit->images()->max('ordre') ?? -1;
+            $ordre = $maxOrder + 1;
+
+            // Create the image record
+            $image = ProduitImage::create([
+                'produit_id' => $produit->id,
+                'url' => $url,
+                'alt_text' => $request->input('alt_text', ''),
+                'ordre' => $ordre,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => __('messages.produit_images.uploaded_successfully'),
+                'data' => new ProduitImageResource($image),
+                'url' => $url,
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => __('messages.produit_images.upload_failed'),
                 'error' => $e->getMessage(),
             ], 500);
         }

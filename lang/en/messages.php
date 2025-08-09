@@ -387,4 +387,43 @@ return [
     'avis_produits_note_required' => 'Rating is required',
     'avis_produits_note_range' => 'Rating must be between 1 and 5',
     'avis_produits_commentaire_max' => 'Comment cannot exceed 1000 characters',
+
+    // Product management
+    'produits' => [
+        'created_successfully' => 'Product created successfully',
+        'updated_successfully' => 'Product updated successfully',
+        'deleted_successfully' => 'Product deleted successfully',
+        'creation_failed' => 'Failed to create product',
+        'update_failed' => 'Failed to update product',
+        'deletion_failed' => 'Failed to delete product',
+        'not_found' => 'Product not found',
+    ],
+
+    'produit_images' => [
+        'created_successfully' => 'Image added successfully',
+        'updated_successfully' => 'Image updated successfully',
+        'deleted_successfully' => 'Image deleted successfully',
+        'uploaded_successfully' => 'Image uploaded successfully',
+        'creation_failed' => 'Failed to add image',
+        'update_failed' => 'Failed to update image',
+        'deletion_failed' => 'Failed to delete image',
+        'upload_failed' => 'Failed to upload image',
+        'sorted_successfully' => 'Images sorted successfully',
+        'sort_failed' => 'Failed to sort images',
+        'not_found' => 'Image not found',
+    ],
+
+    'produit_videos' => [
+        'created_successfully' => 'Video added successfully',
+        'updated_successfully' => 'Video updated successfully',
+        'deleted_successfully' => 'Video deleted successfully',
+        'uploaded_successfully' => 'Video uploaded successfully',
+        'creation_failed' => 'Failed to add video',
+        'update_failed' => 'Failed to update video',
+        'deletion_failed' => 'Failed to delete video',
+        'upload_failed' => 'Failed to upload video',
+        'sorted_successfully' => 'Videos sorted successfully',
+        'sort_failed' => 'Failed to sort videos',
+        'not_found' => 'Video not found',
+    ],
 ];

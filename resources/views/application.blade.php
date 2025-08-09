@@ -4,7 +4,8 @@
   <meta charset="UTF-8" />
   <link rel="icon" href="{{ asset('favicon.ico') }}" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Vuexy - Vuejs Admin Dashboard Template</title>
+  <title>Arif Style - Plateforme d'Affiliation COD</title>
+  <meta name="description" content="Plateforme d'affiliation COD - Arif Style, solution complète pour la gestion des affiliés et commandes contre remboursement" />
   <link rel="stylesheet" type="text/css" href="{{ asset('loader.css') }}" />
   @vite(['resources/ts/main.ts'])
 </head>
@@ -40,6 +41,30 @@
   </div>
   
   <script>
+    console.log('=== BUILD DEBUG ===');
+    console.log('Page loading...');
+    
+    // Check if Vite manifest exists
+    fetch('/build/manifest.json')
+      .then(r => r.json())
+      .then(manifest => {
+        console.log('Manifest loaded:', manifest);
+        console.log('Main entry:', manifest['resources/ts/main.ts']);
+      })
+      .catch(e => console.error('Manifest failed:', e));
+    
+    // Check if main script loads
+    window.addEventListener('load', () => {
+      console.log('Window loaded');
+      setTimeout(() => {
+        console.log('App state after 3s:', {
+          appElement: !!document.getElementById('app'),
+          stillLoading: document.getElementById('app')?.innerHTML?.includes('loading-bg'),
+          scripts: Array.from(document.scripts).map(s => s.src)
+        });
+      }, 3000);
+    });
+
     const loaderColor = localStorage.getItem('vuexy-initial-loader-bg') || '#FFFFFF'
     const primaryColor = localStorage.getItem('vuexy-initial-loader-color') || '#7367F0'
 
@@ -50,6 +75,6 @@
 
     if (primaryColor)
       document.documentElement.style.setProperty('--initial-loader-color', primaryColor)
-    </script>
-  </body>
+  </script>
+</body>
 </html>

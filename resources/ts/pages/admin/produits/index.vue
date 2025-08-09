@@ -113,15 +113,25 @@ const loadProduits = async () => {
       page: pagination.value.current_page,
       per_page: pagination.value.per_page,
       search: searchQuery.value,
-      boutique_id: boutiqueFilter.value,
-      categorie_id: categorieFilter.value,
-      status: statusFilter.value,
+      boutique_id: boutiqueFilter.value || undefined,
+      categorie_id: categorieFilter.value || undefined,
+      status: statusFilter.value || undefined,
       sort_by: sortBy.value,
       sort_desc: sortDesc.value
     })
   } catch (err) {
     console.error('Error loading products:', err)
   }
+}
+
+const handleTableUpdate = (options: any) => {
+  currentPage.value = options.page
+  itemsPerPage.value = options.itemsPerPage
+  if (options.sortBy && options.sortBy.length > 0) {
+    sortBy.value = options.sortBy[0].key
+    sortDesc.value = options.sortBy[0].order === 'desc'
+  }
+  loadProduits()
 }
 
 const loadFilterOptions = async () => {
@@ -342,13 +352,15 @@ onMounted(async () => {
 
     <!-- Data Table -->
     <VCard>
-      <VDataTable
+      <VDataTableServer
         :headers="headers"
         :items="produits"
         :loading="loading"
         :no-data-text="$t('common_no_data')"
         :items-per-page="itemsPerPage"
         :page="currentPage"
+        :items-length="pagination.total"
+        @update:options="handleTableUpdate"
         hide-default-footer
       >
         <template #item.titre="{ item }">
@@ -440,7 +452,7 @@ onMounted(async () => {
             />
           </div>
         </template>
-      </VDataTable>
+      </VDataTableServer>
 
       <!-- Pagination -->
       <VDivider />
