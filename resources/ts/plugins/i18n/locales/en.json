@@ -1194,5 +1194,10 @@
   "common.loading": "Loading...",
   "common.back_to_list": "Back to List",
   "admin_produits_variante_nom": "Variant Name",
-  "admin_produits_variante_valeur": "Variant Value"
+  "admin_produits_variante_valeur": "Variant Value",
+
+  // Latest missing keys
+  "Catalogue de Variantes": "Variant Catalog",
+  "welcome_admin": "Welcome Admin",
+  "user_permissions": "User Permissions"
 }

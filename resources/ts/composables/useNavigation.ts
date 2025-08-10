@@ -91,6 +91,11 @@ export function useNavigation() {
                 title: t('nav_boutiques'),
                 to: 'admin-boutiques',
               },
+              {
+                title: t('nav_variant_catalog'),
+                to: 'admin-variants-attributs',
+                icon: { icon: 'tabler-palette' },
+              },
             ],
           },
           {
