@@ -22,6 +22,7 @@ class ProduitResource extends JsonResource
             'description' => $this->description,
             'prix_achat' => $this->prix_achat,
             'prix_vente' => $this->prix_vente,
+            'prix_affilie' => $this->prix_affilie,
             'slug' => $this->slug,
             'actif' => $this->actif,
             'quantite_min' => $this->quantite_min,

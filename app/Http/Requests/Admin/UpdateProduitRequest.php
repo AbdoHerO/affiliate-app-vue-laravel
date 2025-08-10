@@ -23,7 +23,7 @@ class UpdateProduitRequest extends FormRequest
     public function rules(): array
     {
         $produitId = $this->route('produit');
-        
+
         return [
             'boutique_id' => 'required|uuid|exists:boutiques,id',
             'categorie_id' => 'nullable|uuid|exists:categories,id',
@@ -31,6 +31,7 @@ class UpdateProduitRequest extends FormRequest
             'description' => 'nullable|string',
             'prix_achat' => 'required|numeric|min:0',
             'prix_vente' => 'required|numeric|min:0.01',
+            'prix_affilie' => 'nullable|numeric|min:0',
             'slug' => [
                 'required',
                 'string',

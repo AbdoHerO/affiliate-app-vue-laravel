@@ -28,6 +28,7 @@ class StoreProduitRequest extends FormRequest
             'description' => 'nullable|string',
             'prix_achat' => 'required|numeric|min:0',
             'prix_vente' => 'required|numeric|min:0.01',
+            'prix_affilie' => 'nullable|numeric|min:0',
             'slug' => 'required|string|max:190|unique:produits,slug',
             'actif' => 'required|boolean',
             'quantite_min' => 'nullable|integer|min:1',
