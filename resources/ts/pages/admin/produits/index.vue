@@ -47,11 +47,6 @@ const { categories } = storeToRefs(categoriesStore)
 const showDeleteDialog = ref(false)
 const selectedProduit = ref<Produit | null>(null)
 const isDeleting = ref(false)
-const abortController = ref<AbortController | null>(null)
-
-// Computed properties for pagination
-const currentPage = computed(() => pagination.value.current_page)
-const itemsPerPage = computed(() => pagination.value.per_page)
 
 // Statistics
 const totalProduits = computed(() => pagination.value.total)
@@ -75,23 +70,18 @@ const headers = computed(() => [
 
 const statusOptions = computed(() => [
   { title: t('common.all'), value: '' },
-  { title: t('common.active'), value: 'active' },
-  { title: t('common.inactive'), value: 'inactive' }
+  { title: t('common.active'), value: '1' },
+  { title: t('common.inactive'), value: '0' }
 ])
 
+const perPageOptions = [10, 15, 25, 50, 100]
 
 
-// Debounced search function
+
+// Debounced fetch function
 const debouncedFetch = useDebounceFn(async () => {
-  // Cancel previous request
-  if (abortController.value) {
-    abortController.value.abort()
-  }
-
-  abortController.value = new AbortController()
-
   try {
-    await fetchProduits()
+    await fetchProduits({ ...filters.value })
   } catch (err: any) {
     if (err.name !== 'AbortError') {
       console.error('Error loading products:', err)
@@ -99,19 +89,45 @@ const debouncedFetch = useDebounceFn(async () => {
   }
 }, 300)
 
-// Methods
-const loadProduits = async () => {
-  await debouncedFetch()
-}
+// Single watcher for all filter changes
+watch(filters, () => {
+  debouncedFetch()
+}, { deep: true })
 
+// Methods
 const handleTableUpdate = (options: any) => {
   filters.value.page = options.page
-  filters.value.per_page = options.itemsPerPage
+  filters.value.perPage = options.itemsPerPage
   if (options.sortBy && options.sortBy.length > 0) {
     filters.value.sort = options.sortBy[0].key
-    filters.value.direction = options.sortBy[0].order === 'desc' ? 'desc' : 'asc'
+    filters.value.dir = options.sortBy[0].order === 'desc' ? 'desc' : 'asc'
   }
-  loadProduits()
+}
+
+// Filter change handlers
+const handleSearchChange = (value: string) => {
+  filters.value.q = value
+  filters.value.page = 1
+}
+
+const handleBoutiqueChange = (value: string) => {
+  filters.value.boutique_id = value
+  filters.value.page = 1
+}
+
+const handleCategorieChange = (value: string) => {
+  filters.value.categorie_id = value
+  filters.value.page = 1
+}
+
+const handleStatusChange = (value: string) => {
+  filters.value.actif = value
+  filters.value.page = 1
+}
+
+const handlePerPageChange = (value: number) => {
+  filters.value.perPage = value
+  filters.value.page = 1
 }
 
 const loadFilterOptions = async () => {
@@ -150,7 +166,7 @@ const confirmDelete = async () => {
     await deleteProduit(selectedProduit.value.id)
     showDeleteDialog.value = false
     selectedProduit.value = null
-    await loadProduits() // Reload the list
+    await fetchProduits({ ...filters.value }) // Reload the list
   } catch (err) {
     console.error('Error deleting product:', err)
   } finally {
@@ -175,15 +191,10 @@ const getStatusText = (actif: boolean): string => {
   return actif ? t('common.active') : t('common.inactive')
 }
 
-// Watchers for centralized filters
-watch(filters, () => {
-  loadProduits()
-}, { deep: true })
-
 // Lifecycle
 onMounted(async () => {
   await loadFilterOptions()
-  await loadProduits()
+  await fetchProduits({ ...filters.value })
 })
 </script>
 
@@ -281,6 +292,7 @@ onMounted(async () => {
               :placeholder="$t('admin_produits_search_placeholder')"
               prepend-inner-icon="tabler-search"
               clearable
+              @update:model-value="handleSearchChange"
             />
           </VCol>
           <VCol cols="12" md="2">
@@ -291,6 +303,7 @@ onMounted(async () => {
               item-value="id"
               :label="$t('admin_produits_boutique')"
               clearable
+              @update:model-value="handleBoutiqueChange"
             />
           </VCol>
           <VCol cols="12" md="2">
@@ -301,6 +314,7 @@ onMounted(async () => {
               item-value="id"
               :label="$t('admin_produits_categorie')"
               clearable
+              @update:model-value="handleCategorieChange"
             />
           </VCol>
           <VCol cols="12" md="2">
@@ -311,13 +325,15 @@ onMounted(async () => {
               item-value="value"
               :label="$t('common.status')"
               clearable
+              @update:model-value="handleStatusChange"
             />
           </VCol>
           <VCol cols="12" md="2">
             <VSelect
-              v-model="itemsPerPage"
-              :items="[10, 25, 50, 100]"
+              v-model="filters.perPage"
+              :items="perPageOptions"
               :label="$t('common.items_per_page')"
+              @update:model-value="handlePerPageChange"
             />
           </VCol>
         </VRow>
@@ -331,8 +347,8 @@ onMounted(async () => {
         :items="produits"
         :loading="loading"
         :no-data-text="$t('common_no_data')"
-        :items-per-page="itemsPerPage"
-        :page="currentPage"
+        :items-per-page="filters.perPage"
+        :page="filters.page"
         :items-length="pagination.total"
         @update:options="handleTableUpdate"
         hide-default-footer
@@ -440,7 +456,7 @@ onMounted(async () => {
           </VCol>
           <VCol cols="auto">
             <VPagination
-              v-model="currentPage"
+              v-model="filters.page"
               :length="pagination.last_page"
               :total-visible="5"
             />

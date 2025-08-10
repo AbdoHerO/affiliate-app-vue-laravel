@@ -18,7 +18,7 @@ class ProduitController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $query = Produit::with(['boutique', 'categorie', 'images']);
+        $query = Produit::with(['boutique:id,nom', 'categorie:id,nom', 'images']);
 
         // Search by title or slug
         if ($request->filled('q')) {
@@ -39,26 +39,29 @@ class ProduitController extends Controller
             $query->where('categorie_id', $request->get('categorie_id'));
         }
 
-        // Filter by status
-        if ($request->filled('actif')) {
-            $query->where('actif', $request->boolean('actif'));
+        // Filter by status - handle '1', '0', and empty string
+        if ($request->has('actif') && $request->get('actif') !== '') {
+            $actif = $request->get('actif') === '1';
+            $query->where('actif', $actif);
         }
 
         // Sorting
         $sortBy = $request->get('sort', 'created_at');
-        $sortDirection = $request->get('direction', 'desc');
-        
+        $sortDirection = $request->get('dir', 'desc'); // Changed from 'direction' to 'dir'
+
         $allowedSorts = ['titre', 'prix_vente', 'created_at', 'updated_at'];
         if (in_array($sortBy, $allowedSorts)) {
-            $query->orderBy($sortBy, $sortDirection);
+            $query->orderBy($sortBy, $sortDirection === 'asc' ? 'asc' : 'desc');
         } else {
             $query->orderBy('created_at', 'desc');
         }
 
-        $perPage = $request->get('per_page', 15);
-        $perPage = in_array($perPage, [10, 15, 25, 50]) ? $perPage : 15;
+        // Pagination
+        $perPage = $request->get('perPage', 15);
+        $perPage = in_array((int)$perPage, [10, 15, 25, 50, 100]) ? (int)$perPage : 15;
 
-        $produits = $query->paginate($perPage);
+        $page = $request->get('page', 1);
+        $produits = $query->paginate($perPage, ['*'], 'page', $page);
 
         return response()->json([
             'success' => true,

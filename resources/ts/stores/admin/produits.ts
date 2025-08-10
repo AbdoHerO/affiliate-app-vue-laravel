@@ -107,17 +107,13 @@ export interface ProduitFormData {
 
 export interface ProduitFilters {
   q?: string
-  search?: string
   boutique_id?: string
   categorie_id?: string
-  actif?: boolean | string
-  status?: string
+  actif?: string
   sort?: string
-  sort_by?: string
-  sort_desc?: boolean
-  direction?: string
+  dir?: string
   page?: number
-  per_page?: number
+  perPage?: number
 }
 
 export interface ProduitPagination {
@@ -155,18 +151,27 @@ export const useProduitsStore = defineStore('produits', () => {
     categorie_id: '',
     actif: '',
     sort: 'created_at',
-    direction: 'desc',
+    dir: 'desc',
     page: 1,
-    per_page: 15
+    perPage: 15
   })
+
+  // Request cancellation
+  let abortController: AbortController | null = null
 
   // Actions
   const fetchProduits = async (params: ProduitFilters = {}) => {
+    // Cancel previous request
+    if (abortController) {
+      abortController.abort()
+    }
+    abortController = new AbortController()
+
     loading.value = true
     try {
       // Merge with current filters
       const searchParams = { ...filters, ...params }
-      
+
       // Remove empty values
       Object.keys(searchParams).forEach(key => {
         const value = (searchParams as any)[key]
@@ -184,7 +189,10 @@ export const useProduitsStore = defineStore('produits', () => {
       })
       const queryString = new URLSearchParams(stringParams).toString()
       const url = `/admin/produits${queryString ? `?${queryString}` : ''}`
-      const { data: responseData, error: apiError } = await useApi(url)
+
+      const { data: responseData, error: apiError } = await useApi(url, {
+        signal: abortController.signal
+      })
 
       if (apiError.value) {
         const message = (apiError.value as any).message || 'Error fetching products'
@@ -193,11 +201,9 @@ export const useProduitsStore = defineStore('produits', () => {
       }
 
       const response = responseData.value as any
-      console.log('API Response:', response) // Debug log
 
       if (response.success) {
         produits.value = response.data
-        console.log('Products loaded:', produits.value.length) // Debug log
 
         // Update pagination if present
         if (response.meta) {
@@ -213,9 +219,11 @@ export const useProduitsStore = defineStore('produits', () => {
       } else {
         error.value = response.message
       }
-    } catch (error) {
-      console.error('Failed to fetch produits:', error)
-      throw error
+    } catch (error: any) {
+      if (error.name !== 'AbortError') {
+        console.error('Failed to fetch produits:', error)
+        throw error
+      }
     } finally {
       loading.value = false
     }
