@@ -1049,5 +1049,10 @@
   "common.loading": "Chargement...",
   "common.back_to_list": "Retour à la liste",
   "admin_produits_variante_nom": "Nom de la Variante",
-  "admin_produits_variante_valeur": "Valeur de la Variante"
+  "admin_produits_variante_valeur": "Valeur de la Variante",
+
+  // Latest missing keys
+  "Catalogue de Variantes": "Catalogue de Variantes",
+  "welcome_admin": "Bienvenue Administrateur",
+  "user_permissions": "Permissions Utilisateur"
 }

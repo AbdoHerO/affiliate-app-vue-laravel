@@ -775,5 +775,10 @@
   "common.loading": "جاري التحميل...",
   "common.back_to_list": "العودة إلى القائمة",
   "admin_produits_variante_nom": "اسم المتغير",
-  "admin_produits_variante_valeur": "قيمة المتغير"
+  "admin_produits_variante_valeur": "قيمة المتغير",
+
+  // Latest missing keys
+  "Catalogue de Variantes": "كتالوج المتغيرات",
+  "welcome_admin": "مرحباً بالمدير",
+  "user_permissions": "صلاحيات المستخدم"
 }
