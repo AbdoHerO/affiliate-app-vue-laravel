@@ -175,14 +175,7 @@ class ProduitVarianteController extends Controller
      */
     public function uploadImage(Request $request, Produit $produit, ProduitVariante $variante): JsonResponse
     {
-        Log::info('ProduitVarianteController@uploadImage called', [
-            'produit_id' => $produit->id,
-            'variante_id' => $variante->id,
-            'has_file' => $request->hasFile('file'),
-            'files' => $request->allFiles(),
-            'content_type' => $request->header('Content-Type'),
-            'content_length' => $request->header('Content-Length')
-        ]);
+    // (debug logging removed)
 
         // Ensure variant belongs to the product
         if ($variante->produit_id !== $produit->id) {

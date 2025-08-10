@@ -152,14 +152,7 @@ class ProduitPropositionController extends Controller
      */
     public function uploadImage(Request $request, Produit $produit, ProduitProposition $proposition): JsonResponse
     {
-        Log::info('ProduitPropositionController@uploadImage called', [
-            'produit_id' => $produit->id,
-            'proposition_id' => $proposition->id,
-            'has_file' => $request->hasFile('file'),
-            'files' => $request->allFiles(),
-            'content_type' => $request->header('Content-Type'),
-            'content_length' => $request->header('Content-Length')
-        ]);
+    // (debug logging removed)
 
         // Ensure proposition belongs to the product
         if ($proposition->produit_id !== $produit->id) {

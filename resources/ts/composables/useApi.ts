@@ -31,13 +31,7 @@ export const useApi = createFetch({
       }
 
       if (token) {
-        options.headers = {
-          ...options.headers,
-          Authorization: `Bearer ${token}`,
-        }
-        console.log('🔑 [API Interceptor] Adding auth token to request:', token.substring(0, 10) + '...')
-      } else {
-        console.warn('⚠️ [API Interceptor] No auth token found')
+        options.headers = { ...options.headers, Authorization: `Bearer ${token}` }
       }
 
       // Do NOT force Content-Type when body is FormData
@@ -51,10 +45,7 @@ export const useApi = createFetch({
           const { ['Content-Type']: _removed, ...rest } = options.headers as any
           options.headers = rest
         }
-        // Debug (can be removed later)
-        if (import.meta.env.DEV) {
-          console.debug('📦 [API Interceptor] Detected FormData body, letting browser set multipart boundary')
-        }
+  // (debug removed)
       } else if (!(options.headers as any)['Content-Type']) {
         // Only auto‑set JSON Content-Type when the caller did not specify one and it's not FormData
         options.headers = {
@@ -73,8 +64,7 @@ export const useApi = createFetch({
       const { data, response } = ctx
 
       // Handle authentication errors globally
-      if (response.status === 401) {
-        console.error('🚫 [API Interceptor] 401 Unauthorized - clearing auth and redirecting to login')
+  if (response.status === 401) {
         const authStore = useAuthStore()
         authStore.clearAuth()
 
@@ -87,22 +77,12 @@ export const useApi = createFetch({
 
       // Parse data if it's JSON
       let parsedData = null
-      try {
-        parsedData = destr(data)
-      }
-      catch (error) {
-        console.error('Error parsing response data:', error)
-      }
+  try { parsedData = destr(data) } catch (_) { /* ignore parse errors */ }
 
       return { data: parsedData, response }
     },
     async onFetchError(ctx) {
       const { response } = ctx
-
-      console.error('🚫 [API Interceptor] Fetch error:', {
-        status: response?.status,
-        statusText: response?.statusText,
-      })
 
       // Handle specific error cases
       if (response?.status === 401) {
