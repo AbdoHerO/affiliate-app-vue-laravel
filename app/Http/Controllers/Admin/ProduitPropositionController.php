@@ -58,7 +58,7 @@ class ProduitPropositionController extends Controller
         try {
             $proposition = ProduitProposition::create([
                 'produit_id' => $produit->id,
-                'auteur_id' => auth()->id(),
+                'auteur_id' => $request->user()->id,
                 'titre' => $request->titre,
                 'description' => $request->description,
                 'type' => $request->type,
@@ -145,7 +145,7 @@ class ProduitPropositionController extends Controller
         }
 
         $validator = Validator::make($request->all(), [
-            'file' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048'
+            'file' => 'required|image|mimes:jpg,jpeg,png,webp|max:4096'
         ]);
 
         if ($validator->fails()) {

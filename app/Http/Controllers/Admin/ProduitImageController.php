@@ -150,12 +150,18 @@ class ProduitImageController extends Controller
                 ], 404);
             }
 
+            // Delete the physical file if it's stored locally
+            if ($image->url && str_contains($image->url, '/storage/')) {
+                $filePath = str_replace('/storage/', 'public/', parse_url($image->url, PHP_URL_PATH));
+                Storage::delete($filePath);
+            }
+
             $image->delete();
 
             return response()->json([
                 'success' => true,
                 'message' => __('messages.produit_images.deleted_successfully'),
-            ]);
+            ], 204);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,

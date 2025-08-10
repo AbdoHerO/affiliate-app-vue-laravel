@@ -7,6 +7,7 @@ import { storeToRefs } from 'pinia'
 import { useRouter, useRoute } from 'vue-router'
 import { useNotifications } from '@/composables/useNotifications'
 import { useDebounceFn } from '@vueuse/core'
+import { useApi } from '@/composables/useApi'
 
 interface Props {
   mode: 'create' | 'edit'
@@ -198,6 +199,25 @@ const handleImageUpload = async (files: FileList | File[]) => {
       console.error('Error uploading image:', error)
       showError('Failed to upload image')
     }
+  }
+}
+
+const handleDeleteImage = async (imageId: string) => {
+  if (!localId.value) return
+  try {
+    const { error } = await useApi(`/admin/produits/${localId.value}/images/${imageId}`, {
+      method: 'DELETE'
+    })
+    if (!error.value) {
+      const idx = images.value.findIndex(img => img.id === imageId)
+      if (idx > -1) {
+        images.value.splice(idx, 1)
+        showSuccess('Image deleted successfully')
+      }
+    }
+  } catch (error) {
+    console.error('Error deleting image:', error)
+    showError('Failed to delete image')
   }
 }
 
@@ -658,7 +678,7 @@ onMounted(async () => {
                       size="small"
                       color="error"
                       variant="text"
-                      @click="() => {/* TODO: delete image */}"
+                      @click="handleDeleteImage(img.id)"
                     />
                   </VCardActions>
                 </VCard>
@@ -688,16 +708,35 @@ onMounted(async () => {
               </p>
             </div>
 
-            <VBtnToggle v-model="videoMode" mandatory class="mb-6" color="primary">
-              <VBtn value="url">
-                <VIcon icon="tabler-link" class="me-2" />
-                URL
-              </VBtn>
-              <VBtn value="upload">
-                <VIcon icon="tabler-upload" class="me-2" />
-                Upload
-              </VBtn>
-            </VBtnToggle>
+            <!-- Improved Video Mode Toggle -->
+            <div class="mb-6">
+              <VChipGroup
+                v-model="videoMode"
+                selected-class="text-primary"
+                mandatory
+                class="mb-4"
+              >
+                <VChip
+                  value="url"
+                  size="large"
+                  prepend-icon="tabler-link"
+                  :color="videoMode === 'url' ? 'primary' : 'default'"
+                  :variant="videoMode === 'url' ? 'flat' : 'outlined'"
+                  class="me-2"
+                >
+                  Add by URL
+                </VChip>
+                <VChip
+                  value="upload"
+                  size="large"
+                  prepend-icon="tabler-upload"
+                  :color="videoMode === 'upload' ? 'primary' : 'default'"
+                  :variant="videoMode === 'upload' ? 'flat' : 'outlined'"
+                >
+                  Upload Files
+                </VChip>
+              </VChipGroup>
+            </div>
 
             <div v-if="videoMode === 'url'" class="mb-6">
               <VRow>

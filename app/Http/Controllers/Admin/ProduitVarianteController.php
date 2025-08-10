@@ -182,7 +182,7 @@ class ProduitVarianteController extends Controller
         }
 
         $validator = Validator::make($request->all(), [
-            'file' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048'
+            'file' => 'required|image|mimes:jpg,jpeg,png,webp|max:4096'
         ]);
 
         if ($validator->fails()) {
