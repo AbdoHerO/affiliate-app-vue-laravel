@@ -41,6 +41,8 @@ declare module 'vue-router/auto-routes' {
     'admin-reports-sales': RouteRecordInfo<'admin-reports-sales', '/admin/reports-sales', Record<never, never>, Record<never, never>>,
     'admin-roles': RouteRecordInfo<'admin-roles', '/admin/roles', Record<never, never>, Record<never, never>>,
     'admin-users': RouteRecordInfo<'admin-users', '/admin/users', Record<never, never>, Record<never, never>>,
+    'admin-variants-attributs': RouteRecordInfo<'admin-variants-attributs', '/admin/variants/attributs', Record<never, never>, Record<never, never>>,
+    'admin-variants-attributs-id-valeurs': RouteRecordInfo<'admin-variants-attributs-id-valeurs', '/admin/variants/attributs/:id/valeurs', { id: ParamValue<true> }, { id: ParamValue<false> }>,
     'affiliate-commissions': RouteRecordInfo<'affiliate-commissions', '/affiliate/commissions', Record<never, never>, Record<never, never>>,
     'affiliate-dashboard': RouteRecordInfo<'affiliate-dashboard', '/affiliate/dashboard', Record<never, never>, Record<never, never>>,
     'affiliate-marketing': RouteRecordInfo<'affiliate-marketing', '/affiliate/marketing', Record<never, never>, Record<never, never>>,

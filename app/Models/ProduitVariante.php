@@ -29,6 +29,9 @@ class ProduitVariante extends Model
         'prix_vente_variante',
         'image_url',
         'actif',
+        'attribut_id',
+        'valeur_id',
+        'sku_variante',
     ];
 
     /**
@@ -54,6 +57,22 @@ class ProduitVariante extends Model
     public function produit(): BelongsTo
     {
         return $this->belongsTo(Produit::class, 'produit_id');
+    }
+
+    /**
+     * Get the variant attribute (catalog)
+     */
+    public function attribut(): BelongsTo
+    {
+        return $this->belongsTo(VariantAttribut::class, 'attribut_id');
+    }
+
+    /**
+     * Get the variant value (catalog)
+     */
+    public function valeur(): BelongsTo
+    {
+        return $this->belongsTo(VariantValeur::class, 'valeur_id');
     }
 
     /**

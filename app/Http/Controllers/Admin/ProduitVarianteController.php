@@ -5,6 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Produit;
 use App\Models\ProduitVariante;
+use App\Models\VariantAttribut;
+use App\Models\VariantValeur;
+use App\Http\Resources\ProduitVarianteResource;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Storage;
@@ -19,7 +22,11 @@ class ProduitVarianteController extends Controller
      */
     public function index(Produit $produit): JsonResponse
     {
-        $variantes = $produit->variantes()->orderBy('nom')->orderBy('valeur')->get();
+        $variantes = $produit->variantes()
+            ->with(['attribut', 'valeur'])
+            ->orderBy('nom')
+            ->orderBy('valeur')
+            ->get();
 
         return response()->json([
             'success' => true,
@@ -33,8 +40,8 @@ class ProduitVarianteController extends Controller
     public function store(Request $request, Produit $produit): JsonResponse
     {
         $validator = Validator::make($request->all(), [
-            'nom' => 'required|string|max:255',
-            'valeur' => 'required|string|max:255',
+            'attribut_id' => 'required|exists:variant_attributs,id,actif,1',
+            'valeur_id' => 'required|exists:variant_valeurs,id,actif,1',
             'prix_vente_variante' => 'nullable|numeric|min:0',
             'sku_variante' => 'nullable|string|max:100|unique:produit_variantes,sku_variante',
             'actif' => 'boolean'
@@ -48,25 +55,58 @@ class ProduitVarianteController extends Controller
             ], 422);
         }
 
+        // Validate that the valeur belongs to the attribut
+        $valeur = VariantValeur::where('id', $request->valeur_id)
+            ->where('attribut_id', $request->attribut_id)
+            ->first();
+
+        if (!$valeur) {
+            return response()->json([
+                'success' => false,
+                'message' => 'The selected value does not belong to the selected attribute'
+            ], 422);
+        }
+
+        // Check for duplicate combination
+        $existingVariant = $produit->variantes()
+            ->where('attribut_id', $request->attribut_id)
+            ->where('valeur_id', $request->valeur_id)
+            ->first();
+
+        if ($existingVariant) {
+            return response()->json([
+                'success' => false,
+                'message' => 'This variant combination already exists for this product'
+            ], 409);
+        }
+
         try {
+            // Get the attribute and value for legacy fields
+            $attribut = VariantAttribut::find($request->attribut_id);
+
             $variante = $produit->variantes()->create([
-                'nom' => $request->nom,
-                'valeur' => $request->valeur,
+                'attribut_id' => $request->attribut_id,
+                'valeur_id' => $request->valeur_id,
+                'nom' => $attribut->nom, // Mirror to legacy field
+                'valeur' => $valeur->libelle, // Mirror to legacy field
                 'prix_vente_variante' => $request->prix_vente_variante,
                 'sku_variante' => $request->sku_variante,
                 'actif' => $request->boolean('actif', true)
             ]);
 
+            // Load relationships for response
+            $variante->load(['attribut', 'valeur']);
+
             return response()->json([
                 'success' => true,
-                'message' => __('messages.variant_created_successfully'),
+                'message' => 'Variant created successfully',
                 'data' => $variante
             ], 201);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => __('messages.variant_creation_failed'),
+                'message' => 'Variant creation failed',
                 'error' => $e->getMessage()
             ], 500);
         }
@@ -84,6 +124,9 @@ class ProduitVarianteController extends Controller
                 'message' => 'Variant not found for this product'
             ], 404);
         }
+
+        // Load catalog relationships
+        $variante->load(['attribut', 'valeur']);
 
         return response()->json([
             'success' => true,

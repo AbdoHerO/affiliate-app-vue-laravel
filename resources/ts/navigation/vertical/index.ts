@@ -79,6 +79,11 @@ const adminNavigation = [
         to: '/admin/boutiques',
         icon: { icon: 'tabler-building-store' },
       },
+      {
+        title: 'nav_variant_catalog',
+        to: '/admin/variants/attributs',
+        icon: { icon: 'tabler-palette' },
+      },
     ],
   },
   {

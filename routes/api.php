@@ -16,6 +16,8 @@ use App\Http\Controllers\Admin\ProduitVideoController;
 use App\Http\Controllers\Admin\ProduitVarianteController;
 use App\Http\Controllers\Admin\ProduitPropositionController;
 use App\Http\Controllers\Admin\ProduitRuptureController;
+use App\Http\Controllers\Admin\VariantAttributController;
+use App\Http\Controllers\Admin\VariantValeurController;
 use App\Http\Controllers\Public\ProduitController as PublicProduitController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -156,6 +158,21 @@ Route::middleware(['auth:sanctum'])->group(function () {
         
         // Global ruptures (all products)
         Route::get('ruptures/active', [ProduitRuptureController::class, 'getAllActive']);
+
+        // Variant Catalog Management
+        Route::get('variant-attributs', [VariantAttributController::class, 'index']);
+        Route::post('variant-attributs', [VariantAttributController::class, 'store']);
+        Route::get('variant-attributs/{variantAttribut}', [VariantAttributController::class, 'show']);
+        Route::put('variant-attributs/{variantAttribut}', [VariantAttributController::class, 'update']);
+        Route::delete('variant-attributs/{variantAttribut}', [VariantAttributController::class, 'destroy']);
+        Route::post('variant-attributs/{variantAttribut}/toggle-status', [VariantAttributController::class, 'toggleStatus']);
+
+        // Variant Values Management (nested under attributes)
+        Route::get('variant-attributs/{variantAttribut}/valeurs', [VariantValeurController::class, 'index']);
+        Route::post('variant-attributs/{variantAttribut}/valeurs', [VariantValeurController::class, 'store']);
+        Route::put('variant-attributs/{variantAttribut}/valeurs/{variantValeur}', [VariantValeurController::class, 'update']);
+        Route::delete('variant-attributs/{variantAttribut}/valeurs/{variantValeur}', [VariantValeurController::class, 'destroy']);
+        Route::post('variant-attributs/{variantAttribut}/valeurs/reorder', [VariantValeurController::class, 'reorder']);
     });
 
     // Affiliate only routes

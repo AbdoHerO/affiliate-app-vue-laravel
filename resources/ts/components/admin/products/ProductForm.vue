@@ -93,10 +93,18 @@ const newVideoUrl = ref('')
 
 // Variant form state
 const newVariant = reactive({
+  attribut_id: '',
+  valeur_id: '',
   nom: '',
   valeur: '',
   prix_vente_variante: null as number | null
 })
+
+// Variant catalog state
+const availableAttributes = ref<any[]>([])
+const availableValues = ref<any[]>([])
+const loadingAttributes = ref(false)
+const loadingValues = ref(false)
 
 // Computed
 const readyForMedia = computed(() => !!localId.value)
@@ -334,10 +342,53 @@ const deleteVideo = async (id: string) => {
   }
 }
 
+// VARIANT CATALOG
+const fetchAttributes = async () => {
+  try {
+    loadingAttributes.value = true
+    const { data, error } = await useApi('/admin/variant-attributs?actif=1')
+    if (!error.value && data.value) {
+      const response = data.value as any
+      if (response.success) {
+        availableAttributes.value = response.data
+      }
+    }
+  } catch (err) {
+    console.error('Error fetching variant attributes:', err)
+  } finally {
+    loadingAttributes.value = false
+  }
+}
+
+const fetchValues = async (attributId: string) => {
+  try {
+    loadingValues.value = true
+    const { data, error } = await useApi(`/admin/variant-attributs/${attributId}/valeurs?actif=1`)
+    if (!error.value && data.value) {
+      const response = data.value as any
+      if (response.success) {
+        availableValues.value = response.data
+      }
+    }
+  } catch (err) {
+    console.error('Error fetching variant values:', err)
+  } finally {
+    loadingValues.value = false
+  }
+}
+
+const onAttributeChange = () => {
+  newVariant.valeur_id = ''
+  availableValues.value = []
+  if (newVariant.attribut_id) {
+    fetchValues(newVariant.attribut_id)
+  }
+}
+
 // VARIANTS
 const addVariant = async () => {
-  if (!localId.value || !newVariant.nom || !newVariant.valeur) {
-    console.warn('[ProductForm] Cannot add variant: missing product ID, name, or value')
+  if (!localId.value || !newVariant.attribut_id || !newVariant.valeur_id) {
+    console.warn('[ProductForm] Cannot add variant: missing product ID, attribute, or value')
     return
   }
   console.debug('[ProductForm] [productId] add-variant:', localId.value)
@@ -345,13 +396,25 @@ const addVariant = async () => {
     const { data, error } = await useApi(`/admin/produits/${localId.value}/variantes`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newVariant)
+      body: JSON.stringify({
+        attribut_id: newVariant.attribut_id,
+        valeur_id: newVariant.valeur_id,
+        prix_vente_variante: newVariant.prix_vente_variante,
+        actif: true
+      })
     })
     if (!error.value && data.value) {
       const response = data.value as any
       if (response.success) {
         variantes.value.push(response.data)
-        Object.assign(newVariant, { nom: '', valeur: '', prix_vente_variante: null })
+        Object.assign(newVariant, {
+          attribut_id: '',
+          valeur_id: '',
+          nom: '',
+          valeur: '',
+          prix_vente_variante: null
+        })
+        availableValues.value = []
         showSuccess('Variant added successfully')
       }
     }
@@ -685,6 +748,7 @@ const handleDeleteRupture = async (ruptureId: string) => {
 onMounted(async () => {
   await loadLookups()
   await loadProduct()
+  await fetchAttributes()
 })
 </script>
 
@@ -1029,23 +1093,43 @@ onMounted(async () => {
             </div>
 
             <VCard variant="outlined" class="mb-6">
-              <VCardTitle>Add New Variant</VCardTitle>
+              <VCardTitle class="d-flex justify-space-between align-center">
+                Add New Variant
+                <VBtn
+                  variant="text"
+                  size="small"
+                  color="primary"
+                  prepend-icon="tabler-settings"
+                  to="/admin/variants/attributs"
+                  target="_blank"
+                >
+                  Manage Catalog
+                </VBtn>
+              </VCardTitle>
               <VCardText>
                 <VRow>
                   <VCol cols="12" md="3">
-                    <VTextField
-                      v-model="newVariant.nom"
-                      label="Variant Name"
+                    <VSelect
+                      v-model="newVariant.attribut_id"
+                      label="Attribute"
                       variant="outlined"
-                      placeholder="e.g., Size, Color"
+                      :items="availableAttributes"
+                      item-title="nom"
+                      item-value="id"
+                      placeholder="Select attribute"
+                      @update:model-value="onAttributeChange"
                     />
                   </VCol>
                   <VCol cols="12" md="3">
-                    <VTextField
-                      v-model="newVariant.valeur"
-                      label="Variant Value"
+                    <VSelect
+                      v-model="newVariant.valeur_id"
+                      label="Value"
                       variant="outlined"
-                      placeholder="e.g., Large, Red"
+                      :items="availableValues"
+                      item-title="libelle"
+                      item-value="id"
+                      placeholder="Select value"
+                      :disabled="!newVariant.attribut_id"
                     />
                   </VCol>
                   <VCol cols="12" md="3">
@@ -1063,6 +1147,7 @@ onMounted(async () => {
                     <VBtn
                       color="primary"
                       block
+                      :disabled="!newVariant.attribut_id || !newVariant.valeur_id"
                       @click="addVariant"
                     >
                       Add Variant
@@ -1076,7 +1161,7 @@ onMounted(async () => {
               <h4 class="text-subtitle-1 mb-4">Product Variants</h4>
               <VDataTable
                 :headers="[
-                  { title: 'Name', key: 'nom' },
+                  { title: 'Attribute', key: 'attribut' },
                   { title: 'Value', key: 'valeur' },
                   { title: 'Price', key: 'prix_vente_variante' },
                   { title: 'Image', key: 'image', sortable: false },
@@ -1085,6 +1170,26 @@ onMounted(async () => {
                 :items="variantes"
                 class="elevation-1"
               >
+                <template #item.attribut="{ item }">
+                  <div>
+                    <div class="font-weight-medium">
+                      {{ (item as any).attribut?.nom || item.nom }}
+                    </div>
+                    <div v-if="(item as any).attribut" class="text-caption text-medium-emphasis">
+                      {{ (item as any).attribut.code }}
+                    </div>
+                  </div>
+                </template>
+                <template #item.valeur="{ item }">
+                  <div>
+                    <div class="font-weight-medium">
+                      {{ (item as any).valeur?.libelle || item.valeur }}
+                    </div>
+                    <div v-if="(item as any).valeur" class="text-caption text-medium-emphasis">
+                      {{ (item as any).valeur.code }}
+                    </div>
+                  </div>
+                </template>
                 <template #item.prix_vente_variante="{ item }">
                   {{ item.prix_vente_variante ? `${item.prix_vente_variante} MAD` : 'Default' }}
                 </template>
