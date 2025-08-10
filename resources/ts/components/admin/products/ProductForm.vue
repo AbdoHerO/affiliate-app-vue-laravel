@@ -6,6 +6,7 @@ import { useCategoriesStore } from '@/stores/admin/categories'
 import { storeToRefs } from 'pinia'
 import { useRouter, useRoute } from 'vue-router'
 import { useNotifications } from '@/composables/useNotifications'
+import { useFormErrors } from '@/composables/useFormErrors'
 import { useDebounceFn } from '@vueuse/core'
 import { useApi } from '@/composables/useApi'
 
@@ -33,7 +34,7 @@ const emit = defineEmits(['created', 'updated'])
 
 const router = useRouter()
 const route = useRoute()
-const { showSuccess, showError } = useNotifications()
+const { showSuccess, showError, snackbar } = useNotifications()
 
 const produitsStore = useProduitsStore()
 const boutiquesStore = useBoutiquesStore()
@@ -62,6 +63,9 @@ const form = ref<ProduitFormData>({
   notes_admin: '',
   actif: true,
 })
+
+// Form errors handling
+const { errors: productErrors, set: setProductErrors, clear: clearProductErrors } = useFormErrors<typeof form.value>()
 
 // Propositions state
 const propositions = ref<ProduitProposition[]>([])
@@ -180,20 +184,29 @@ const saveProduct = async () => {
       // Update URL without remounting component
       router.replace(`/admin/produits/${created.id}/edit?tab=images`)
 
+      clearProductErrors()
       showSuccess('Product created successfully')
     } else if (localId.value) {
       // Update existing product
       console.debug('[ProductForm] Updating product with ID:', localId.value)
       const updated = await produitsStore.updateProduit(localId.value, form.value)
       emit('updated', updated)
+      clearProductErrors()
       showSuccess('Product updated successfully')
     } else {
       console.error('[ProductForm] Invalid state: create mode but no localId and no create action')
       showError('Invalid form state')
     }
-  } catch (error) {
-    showError('Failed to save product')
-    console.error('Error saving product:', error)
+  } catch (error: any) {
+    // Handle validation errors and other API errors
+    if (error.errors) {
+      setProductErrors(error.errors)
+      showError(error.message || 'Validation failed')
+      console.error('Product validation error:', error)
+    } else {
+      showError(error.message || 'Failed to save product')
+      console.error('Error saving product:', error)
+    }
   } finally {
     saving.value = false
   }
@@ -231,20 +244,25 @@ const handleImageUpload = async (files: FileList | File[]) => {
     const fd = new FormData()
     fd.append('file', file)
     try {
-      const { data, error } = await useApi(`/admin/produits/${localId.value}/images/upload`, {
+      const { data, error: apiError } = await useApi(`/admin/produits/${localId.value}/images/upload`, {
         method: 'POST',
         body: fd
       })
-      if (!error.value && data.value) {
+
+      if (apiError.value) {
+        console.error('Image upload error details:', apiError.value)
+        showError(apiError.value.message || 'Failed to upload image')
+        console.error('Image upload error:', apiError.value)
+      } else if (data.value) {
         const response = data.value as any
         if (response.success) {
           images.value.push(response.data)
           console.debug('[ProductForm] Image uploaded successfully, total images:', images.value.length)
         }
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error uploading image:', error)
-      showError('Failed to upload image')
+      showError(error.message || 'Failed to upload image')
     }
   }
 }
@@ -252,19 +270,23 @@ const handleImageUpload = async (files: FileList | File[]) => {
 const handleDeleteImage = async (imageId: string) => {
   if (!localId.value) return
   try {
-    const { error } = await useApi(`/admin/produits/${localId.value}/images/${imageId}`, {
+    const { error: apiError } = await useApi(`/admin/produits/${localId.value}/images/${imageId}`, {
       method: 'DELETE'
     })
-    if (!error.value) {
+
+    if (apiError.value) {
+      showError(apiError.value.message || 'Failed to delete image')
+      console.error('Delete image error:', apiError.value)
+    } else {
       const idx = images.value.findIndex(img => img.id === imageId)
       if (idx > -1) {
         images.value.splice(idx, 1)
         showSuccess('Image deleted successfully')
       }
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error deleting image:', error)
-    showError('Failed to delete image')
+    showError(error.message || 'Failed to delete image')
   }
 }
 
@@ -276,12 +298,16 @@ const handleAddVideoUrl = async () => {
   }
   console.debug('[ProductForm] [productId] add-video-url:', localId.value)
   try {
-    const { data, error } = await useApi(`/admin/produits/${localId.value}/videos`, {
+    const { data, error: apiError } = await useApi(`/admin/produits/${localId.value}/videos`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ url: newVideoUrl.value, titre: newVideoTitle.value })
     })
-    if (!error.value && data.value) {
+
+    if (apiError.value) {
+      showError(apiError.value.message || 'Failed to add video')
+      console.error('Add video URL error:', apiError.value)
+    } else if (data.value) {
       const response = data.value as any
       if (response.success) {
         videos.value.push(response.data)
@@ -290,9 +316,9 @@ const handleAddVideoUrl = async () => {
         showSuccess('Video added successfully')
       }
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error adding video URL:', error)
-    showError('Failed to add video')
+    showError(error.message || 'Failed to add video')
   }
 }
 const handleAddVideoUpload = async (files: FileList | File[]) => {
@@ -306,39 +332,47 @@ const handleAddVideoUpload = async (files: FileList | File[]) => {
     const fd = new FormData()
     fd.append('file', file)
     try {
-      const { data, error } = await useApi(`/admin/produits/${localId.value}/videos/upload`, {
+      const { data, error: apiError } = await useApi(`/admin/produits/${localId.value}/videos/upload`, {
         method: 'POST',
         body: fd
       })
-      if (!error.value && data.value) {
+
+      if (apiError.value) {
+        showError(apiError.value.message || 'Failed to upload video')
+        console.error('Video upload error:', apiError.value)
+      } else if (data.value) {
         const response = data.value as any
         if (response.success) {
           videos.value.push(response.data)
           showSuccess('Video uploaded successfully')
         }
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error uploading video:', error)
-      showError('Failed to upload video')
+      showError(error.message || 'Failed to upload video')
     }
   }
 }
 const deleteVideo = async (id: string) => {
   if (!localId.value) return
   try {
-    const { data, error } = await useApi(`/admin/produits/${localId.value}/videos/${id}`, {
+    const { error: apiError } = await useApi(`/admin/produits/${localId.value}/videos/${id}`, {
       method: 'DELETE'
     })
-    if (!error.value) {
+
+    if (apiError.value) {
+      showError(apiError.value.message || 'Failed to delete video')
+      console.error('Delete video error:', apiError.value)
+    } else {
       const idx = videos.value.findIndex(v => v.id === id)
       if (idx > -1) {
         videos.value.splice(idx, 1)
         showSuccess('Video deleted successfully')
       }
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error deleting video:', error)
-    showError('Failed to delete video')
+    showError(error.message || 'Failed to delete video')
   }
 }
 
@@ -393,7 +427,7 @@ const addVariant = async () => {
   }
   console.debug('[ProductForm] [productId] add-variant:', localId.value)
   try {
-    const { data, error } = await useApi(`/admin/produits/${localId.value}/variantes`, {
+    const { data, error: apiError } = await useApi(`/admin/produits/${localId.value}/variantes`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -403,7 +437,11 @@ const addVariant = async () => {
         actif: true
       })
     })
-    if (!error.value && data.value) {
+
+    if (apiError.value) {
+      showError(apiError.value.message || 'Failed to add variant')
+      console.error('Add variant error:', apiError.value)
+    } else if (data.value) {
       const response = data.value as any
       if (response.success) {
         variantes.value.push(response.data)
@@ -418,27 +456,31 @@ const addVariant = async () => {
         showSuccess('Variant added successfully')
       }
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error adding variant:', error)
-    showError('Failed to add variant')
+    showError(error.message || 'Failed to add variant')
   }
 }
 const deleteVariant = async (id: string) => {
   if (!localId.value) return
   try {
-    const { error } = await useApi(`/admin/produits/${localId.value}/variantes/${id}`, {
+    const { error: apiError } = await useApi(`/admin/produits/${localId.value}/variantes/${id}`, {
       method: 'DELETE'
     })
-    if (!error.value) {
+
+    if (apiError.value) {
+      showError(apiError.value.message || 'Failed to delete variant')
+      console.error('Delete variant error:', apiError.value)
+    } else {
       const idx = variantes.value.findIndex(v => v.id === id)
       if (idx > -1) {
         variantes.value.splice(idx, 1)
         showSuccess('Variant deleted successfully')
       }
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error deleting variant:', error)
-    showError('Failed to delete variant')
+    showError(error.message || 'Failed to delete variant')
   }
 }
 const uploadVariantImage = async (id: string, file: File) => {
@@ -482,12 +524,16 @@ const uploadVariantImage = async (id: string, file: File) => {
 const addProposition = async (propositionData: { titre: string; description: string; type: string }) => {
   if (!localId.value) return
   try {
-    const { data, error } = await useApi(`/admin/produits/${localId.value}/propositions`, {
+    const { data, error: apiError } = await useApi(`/admin/produits/${localId.value}/propositions`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(propositionData)
     })
-    if (!error.value && data.value) {
+
+    if (apiError.value) {
+      showError(apiError.value.message || 'Failed to add proposition')
+      console.error('Add proposition error:', apiError.value)
+    } else if (data.value) {
       const response = data.value as any
       if (response.success) {
         propositions.value.push(response.data)
@@ -495,9 +541,9 @@ const addProposition = async (propositionData: { titre: string; description: str
         return response.data
       }
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error adding proposition:', error)
-    showError('Failed to add proposition')
+    showError(error.message || 'Failed to add proposition')
   }
 }
 
@@ -666,25 +712,23 @@ const handleAddRupture = async () => {
   })
 
   try {
-    const { data, error } = await useApi(`/admin/produits/${localId.value}/ruptures`, {
+    const { data, error: apiError } = await useApi(`/admin/produits/${localId.value}/ruptures`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(newRupture)
     })
 
-    if (error.value) {
-      const errorData = error.value as any
-      if (errorData.status === 422 && errorData.data?.errors) {
-        // Handle validation errors
-        Object.keys(errorData.data.errors).forEach(key => {
+    if (apiError.value) {
+      // Handle validation errors using the normalized error format
+      if (apiError.value.errors) {
+        Object.keys(apiError.value.errors).forEach(key => {
           if (key in ruptureValidationErrors) {
-            ruptureValidationErrors[key as keyof typeof ruptureValidationErrors] = errorData.data.errors[key]
+            ruptureValidationErrors[key as keyof typeof ruptureValidationErrors] = apiError.value.errors[key]
           }
         })
-        showError(errorData.data.message || 'Validation failed')
-      } else {
-        showError('Failed to report stock issue')
       }
+      showError(apiError.value.message || 'Failed to report stock issue')
+      console.error('Add rupture error:', apiError.value)
       return
     }
 
@@ -696,9 +740,9 @@ const handleAddRupture = async () => {
         showSuccess('Stock issue reported successfully')
       }
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error adding rupture:', error)
-    showError('Failed to report stock issue')
+    showError(error.message || 'Failed to report stock issue')
   }
 }
 
@@ -823,6 +867,7 @@ onMounted(async () => {
                   label="Boutique"
                   variant="outlined"
                   required
+                  :error-messages="productErrors.boutique_id"
                 />
               </VCol>
               <VCol cols="12" md="6">
@@ -834,6 +879,7 @@ onMounted(async () => {
                   label="Categorie"
                   variant="outlined"
                   clearable
+                  :error-messages="productErrors.categorie_id"
                 />
               </VCol>
               <VCol cols="12">
@@ -842,6 +888,7 @@ onMounted(async () => {
                   label="Product Title"
                   variant="outlined"
                   required
+                  :error-messages="productErrors.titre"
                 />
               </VCol>
               <VCol cols="12">
@@ -850,6 +897,7 @@ onMounted(async () => {
                   label="Description"
                   variant="outlined"
                   rows="4"
+                  :error-messages="productErrors.description"
                 />
               </VCol>
               <VCol cols="12" md="4">
@@ -860,6 +908,7 @@ onMounted(async () => {
                   variant="outlined"
                   step="0.01"
                   suffix="MAD"
+                  :error-messages="productErrors.prix_achat"
                 />
               </VCol>
               <VCol cols="12" md="4">
@@ -871,6 +920,7 @@ onMounted(async () => {
                   step="0.01"
                   suffix="MAD"
                   required
+                  :error-messages="productErrors.prix_vente"
                 />
               </VCol>
               <VCol cols="12" md="4">
@@ -881,6 +931,7 @@ onMounted(async () => {
                   variant="outlined"
                   step="0.01"
                   suffix="MAD"
+                  :error-messages="productErrors.prix_affilie"
                 />
               </VCol>
               <VCol cols="12" md="6">
@@ -890,6 +941,7 @@ onMounted(async () => {
                   type="number"
                   variant="outlined"
                   min="1"
+                  :error-messages="productErrors.quantite_min"
                 />
               </VCol>
               <VCol cols="12" md="6">
@@ -905,6 +957,7 @@ onMounted(async () => {
                   label="Admin Notes"
                   variant="outlined"
                   rows="3"
+                  :error-messages="productErrors.notes_admin"
                 />
               </VCol>
             </VRow>
@@ -1547,6 +1600,16 @@ onMounted(async () => {
         </VBtn>
       </VCardActions>
     </VCard>
+
+    <!-- Success/Error Snackbar -->
+    <VSnackbar
+      v-model="snackbar.show"
+      :color="snackbar.color"
+      :timeout="snackbar.timeout"
+      location="top end"
+    >
+      {{ snackbar.message }}
+    </VSnackbar>
   </div>
 </template>
 

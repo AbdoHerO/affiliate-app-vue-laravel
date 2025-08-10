@@ -12,6 +12,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 
 class ProduitImageController extends Controller
 {
@@ -61,10 +62,24 @@ class ProduitImageController extends Controller
      */
     public function upload(Request $request, Produit $produit): JsonResponse
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'file' => 'required|file|image|mimes:jpeg,png,jpg,gif,webp|max:5120', // 5MB max
             'alt_text' => 'nullable|string|max:255',
+        ], [
+            'file.required' => __('validation.required', ['attribute' => __('validation.attributes.file')]),
+            'file.file' => __('validation.file', ['attribute' => __('validation.attributes.file')]),
+            'file.image' => __('validation.image', ['attribute' => __('validation.attributes.file')]),
+            'file.mimes' => __('validation.mimes', ['attribute' => __('validation.attributes.file'), 'values' => 'jpeg, png, jpg, gif, webp']),
+            'file.max' => __('validation.max.file', ['attribute' => __('validation.attributes.file'), 'max' => 5120]),
         ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => __('messages.validation_failed'),
+                'errors' => $validator->errors()
+            ], 422);
+        }
 
         try {
             $file = $request->file('file');

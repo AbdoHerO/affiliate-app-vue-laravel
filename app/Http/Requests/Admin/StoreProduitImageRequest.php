@@ -57,19 +57,19 @@ class StoreProduitImageRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'url.required' => __('messages.validation.required', ['attribute' => __('messages.produit_images.url')]),
-            'url.string' => __('messages.validation.string', ['attribute' => __('messages.produit_images.url')]),
-            'url.max' => __('messages.validation.max.string', ['attribute' => __('messages.produit_images.url'), 'max' => 500]),
-            'ordre.integer' => __('messages.validation.integer', ['attribute' => __('messages.produit_images.ordre')]),
-            'ordre.min' => __('messages.validation.min.numeric', ['attribute' => __('messages.produit_images.ordre'), 'min' => 0]),
-            'items.required' => __('messages.validation.required', ['attribute' => __('messages.produit_images.items')]),
-            'items.array' => __('messages.validation.array', ['attribute' => __('messages.produit_images.items')]),
-            'items.*.id.required' => __('messages.validation.required', ['attribute' => __('messages.produit_images.id')]),
-            'items.*.id.uuid' => __('messages.validation.uuid', ['attribute' => __('messages.produit_images.id')]),
-            'items.*.id.exists' => __('messages.validation.exists', ['attribute' => __('messages.produit_images.id')]),
-            'items.*.ordre.required' => __('messages.validation.required', ['attribute' => __('messages.produit_images.ordre')]),
-            'items.*.ordre.integer' => __('messages.validation.integer', ['attribute' => __('messages.produit_images.ordre')]),
-            'items.*.ordre.min' => __('messages.validation.min.numeric', ['attribute' => __('messages.produit_images.ordre'), 'min' => 0]),
+            'url.required' => __('validation.required', ['attribute' => 'URL']),
+            'url.string' => __('validation.string', ['attribute' => 'URL']),
+            'url.max' => __('validation.max', ['attribute' => 'URL', 'max' => 500]),
+            'ordre.integer' => __('validation.integer', ['attribute' => 'ordre']),
+            'ordre.min' => __('validation.min', ['attribute' => 'ordre', 'min' => 0]),
+            'items.required' => __('validation.required', ['attribute' => 'éléments']),
+            'items.array' => __('validation.array', ['attribute' => 'éléments']),
+            'items.*.id.required' => __('validation.required', ['attribute' => 'ID']),
+            'items.*.id.uuid' => __('validation.uuid', ['attribute' => 'ID']),
+            'items.*.id.exists' => __('validation.exists', ['attribute' => 'ID']),
+            'items.*.ordre.required' => __('validation.required', ['attribute' => 'ordre']),
+            'items.*.ordre.integer' => __('validation.integer', ['attribute' => 'ordre']),
+            'items.*.ordre.min' => __('validation.min', ['attribute' => 'ordre', 'min' => 0]),
         ];
     }
 }
