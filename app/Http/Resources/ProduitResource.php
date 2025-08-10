@@ -63,7 +63,7 @@ class ProduitResource extends JsonResource
                         'description' => $proposition->description,
                         'type' => $proposition->type,
                         'statut' => $proposition->statut,
-                        'image_url' => $proposition->image_url,
+                        'image_url' => $proposition->image_url ? $proposition->getFullImageUrl() : null,
                         'auteur' => $proposition->relationLoaded('auteur') ? [
                             'id' => $proposition->auteur->id,
                             'nom_complet' => $proposition->auteur->nom_complet,

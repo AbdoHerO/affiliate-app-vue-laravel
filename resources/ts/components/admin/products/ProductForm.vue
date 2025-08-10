@@ -131,6 +131,7 @@ const loadProduct = async () => {
           actif: p.actif,
         }
         localId.value = p.id
+        console.debug('[ProductForm] Edit mode - variants loaded:', variantes.value.map(v => ({ id: v.id, nom: v.nom, valeur: v.valeur, image_url: v.image_url })))
         await loadPropositions()
         await loadRuptures()
       }
@@ -162,6 +163,7 @@ const saveProduct = async () => {
       // Fetch full product data with relations
       await produitsStore.fetchProduit(created.id)
       console.debug('[ProductForm] Fetched product data, images:', images.value.length, 'videos:', videos.value.length, 'variants:', variantes.value.length)
+      console.debug('[ProductForm] Variants with images:', variantes.value.map(v => ({ id: v.id, nom: v.nom, valeur: v.valeur, image_url: v.image_url })))
 
       // Switch to edit mode but stay on same component
       emit('created', created)
@@ -378,10 +380,10 @@ const deleteVariant = async (id: string) => {
 }
 const uploadVariantImage = async (id: string, file: File) => {
   if (!localId.value || !file) {
-    console.warn('[ProductForm] Cannot upload variant image: missing product ID or file')
+    console.warn('[ProductForm] Cannot upload variant image: missing product ID or file', { localId: localId.value, file })
     return
   }
-  console.debug('[ProductForm] [productId] upload-variant-image:', localId.value, id)
+  console.debug('[ProductForm] [productId] upload-variant-image:', localId.value, id, 'file:', file.name, 'size:', file.size)
   const fd = new FormData()
   fd.append('file', file)
   try {
@@ -389,6 +391,7 @@ const uploadVariantImage = async (id: string, file: File) => {
       method: 'POST',
       body: fd
     })
+    console.debug('[ProductForm] Upload response:', { data: data.value, error: error.value })
     if (!error.value && data.value) {
       const response = data.value as any
       if (response.success) {
@@ -398,7 +401,13 @@ const uploadVariantImage = async (id: string, file: File) => {
           console.debug('[ProductForm] Variant image updated:', variant.image_url)
           showSuccess('Variant image uploaded successfully')
         }
+      } else {
+        console.error('[ProductForm] Upload failed:', response.message)
+        showError(response.message || 'Failed to upload variant image')
       }
+    } else {
+      console.error('[ProductForm] API error:', error.value)
+      showError('Failed to upload variant image')
     }
   } catch (error) {
     console.error('Error uploading variant image:', error)
@@ -475,10 +484,10 @@ const deleteProposition = async (propositionId: string) => {
 
 const uploadPropositionImage = async (propositionId: string, file: File) => {
   if (!localId.value || !file) {
-    console.warn('[ProductForm] Cannot upload proposition image: missing product ID or file')
+    console.warn('[ProductForm] Cannot upload proposition image: missing product ID or file', { localId: localId.value, file })
     return
   }
-  console.debug('[ProductForm] [productId] upload-proposition-image:', localId.value, propositionId)
+  console.debug('[ProductForm] [productId] upload-proposition-image:', localId.value, propositionId, 'file:', file.name, 'size:', file.size)
   const fd = new FormData()
   fd.append('file', file)
   try {
@@ -486,6 +495,7 @@ const uploadPropositionImage = async (propositionId: string, file: File) => {
       method: 'POST',
       body: fd
     })
+    console.debug('[ProductForm] Proposition upload response:', { data: data.value, error: error.value })
     if (!error.value && data.value) {
       const response = data.value as any
       if (response.success) {
@@ -495,7 +505,13 @@ const uploadPropositionImage = async (propositionId: string, file: File) => {
           console.debug('[ProductForm] Proposition image updated:', proposition.image_url)
           showSuccess('Proposition image uploaded successfully')
         }
+      } else {
+        console.error('[ProductForm] Proposition upload failed:', response.message)
+        showError(response.message || 'Failed to upload proposition image')
       }
+    } else {
+      console.error('[ProductForm] Proposition API error:', error.value)
+      showError('Failed to upload proposition image')
     }
   } catch (error) {
     console.error('Error uploading proposition image:', error)
@@ -1081,13 +1097,15 @@ onMounted(async () => {
                       height="40"
                       cover
                       class="rounded"
+                      :alt="`Variant ${item.nom} ${item.valeur}`"
                     />
+                    <span v-else class="text-caption text-medium-emphasis">No image</span>
                     <VFileInput
                       density="compact"
                       hide-details
                       accept="image/*"
                       variant="plain"
-                      @change="(e: any) => uploadVariantImage(item.id, e.target?.files?.[0])"
+                      @change="(e: any) => e.target?.files?.[0] && uploadVariantImage(item.id, e.target.files[0])"
                     />
                   </div>
                 </template>
@@ -1207,7 +1225,14 @@ onMounted(async () => {
                             :src="proposition.image_url"
                             height="100"
                             class="rounded"
+                            :alt="`Proposition ${proposition.titre || 'image'}`"
+                            cover
                           />
+                        </div>
+                        <div v-else class="mt-2">
+                          <VAlert type="info" variant="tonal" density="compact">
+                            No image uploaded
+                          </VAlert>
                         </div>
                       </VCardText>
                       <VCardActions>

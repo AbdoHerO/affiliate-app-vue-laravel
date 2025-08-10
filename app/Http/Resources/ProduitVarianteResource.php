@@ -21,7 +21,7 @@ class ProduitVarianteResource extends JsonResource
             'valeur' => $this->valeur,
             'prix_vente_variante' => $this->prix_vente_variante,
             'sku_variante' => $this->sku_variante,
-            'image_url' => $this->image_url,
+            'image_url' => $this->image_url ? $this->getFullImageUrl() : null,
             'actif' => $this->actif,
             'created_at' => $this->when($this->created_at, $this->created_at),
             'updated_at' => $this->when($this->updated_at, $this->updated_at),

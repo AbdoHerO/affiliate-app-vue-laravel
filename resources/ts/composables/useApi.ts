@@ -41,12 +41,30 @@ export const useApi = createFetch({
       }
 
       // Do NOT force Content-Type when body is FormData
-      const isFormData = options.body instanceof FormData
-      if (!isFormData && !(options.headers as any)['Content-Type']) {
+      const body: any = (options as any).body
+      const isFormData = typeof FormData !== 'undefined' && body instanceof FormData
+        || (body && typeof body === 'object' && typeof body.append === 'function' && typeof body.get === 'function' && (body[Symbol.toStringTag] === 'FormData' || Object.prototype.toString.call(body) === '[object FormData]'))
+
+      if (isFormData) {
+        // Ensure we didn't accidentally set a JSON content type earlier
+        if ((options.headers as any)['Content-Type']) {
+          const { ['Content-Type']: _removed, ...rest } = options.headers as any
+          options.headers = rest
+        }
+        // Debug (can be removed later)
+        if (import.meta.env.DEV) {
+          console.debug('📦 [API Interceptor] Detected FormData body, letting browser set multipart boundary')
+        }
+      } else if (!(options.headers as any)['Content-Type']) {
+        // Only auto‑set JSON Content-Type when the caller did not specify one and it's not FormData
         options.headers = {
           ...options.headers,
           'Content-Type': 'application/json',
         }
+      } else if ((options.headers as any)['Content-Type'] === 'application/json' && body instanceof FormData) {
+        // Fallback safeguard (shouldn't happen if detection worked)
+        const { ['Content-Type']: _removed, ...rest } = options.headers as any
+        options.headers = rest
       }
 
       return { options }

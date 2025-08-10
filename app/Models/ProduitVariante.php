@@ -103,4 +103,26 @@ class ProduitVariante extends Model
     {
         return $this->hasMany(CommandeArticle::class, 'variante_id');
     }
+
+    /**
+     * Get the full image URL with proper encoding.
+     */
+    public function getFullImageUrl(): ?string
+    {
+        if (!$this->image_url) {
+            return null;
+        }
+
+        // If already a full URL, return as is
+        if (str_starts_with($this->image_url, 'http')) {
+            return $this->image_url;
+        }
+
+        // Convert relative URL to full URL with proper encoding
+        $parts = explode('/', $this->image_url);
+        $encodedParts = array_map('rawurlencode', $parts);
+        $encodedUrl = implode('/', $encodedParts);
+
+        return url($encodedUrl);
+    }
 }

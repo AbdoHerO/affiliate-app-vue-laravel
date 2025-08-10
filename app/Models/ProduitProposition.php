@@ -24,8 +24,10 @@ class ProduitProposition extends Model
     protected $fillable = [
         'produit_id',
         'auteur_id',
+        'titre',
         'type',
         'description',
+        'image_url',
         'statut',
     ];
 
@@ -59,5 +61,27 @@ class ProduitProposition extends Model
     public function auteur(): BelongsTo
     {
         return $this->belongsTo(User::class, 'auteur_id');
+    }
+
+    /**
+     * Get the full image URL with proper encoding.
+     */
+    public function getFullImageUrl(): ?string
+    {
+        if (!$this->image_url) {
+            return null;
+        }
+
+        // If already a full URL, return as is
+        if (str_starts_with($this->image_url, 'http')) {
+            return $this->image_url;
+        }
+
+        // Convert relative URL to full URL with proper encoding
+        $parts = explode('/', $this->image_url);
+        $encodedParts = array_map('rawurlencode', $parts);
+        $encodedUrl = implode('/', $encodedParts);
+
+        return url($encodedUrl);
     }
 }

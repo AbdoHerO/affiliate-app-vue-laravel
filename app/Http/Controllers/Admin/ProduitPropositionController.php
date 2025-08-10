@@ -9,6 +9,8 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class ProduitPropositionController extends Controller
 {
@@ -70,7 +72,21 @@ class ProduitPropositionController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Proposition created successfully',
-                'data' => $proposition
+                'data' => [
+                    'id' => $proposition->id,
+                    'titre' => $proposition->titre,
+                    'description' => $proposition->description,
+                    'type' => $proposition->type,
+                    'statut' => $proposition->statut,
+                    'image_url' => $proposition->image_url,
+                    'auteur' => $proposition->auteur ? [
+                        'id' => $proposition->auteur->id,
+                        'nom_complet' => $proposition->auteur->nom_complet,
+                        'email' => $proposition->auteur->email,
+                    ] : null,
+                    'created_at' => $proposition->created_at,
+                    'updated_at' => $proposition->updated_at,
+                ]
             ], 201);
         } catch (\Exception $e) {
             return response()->json([
@@ -136,6 +152,15 @@ class ProduitPropositionController extends Controller
      */
     public function uploadImage(Request $request, Produit $produit, ProduitProposition $proposition): JsonResponse
     {
+        Log::info('ProduitPropositionController@uploadImage called', [
+            'produit_id' => $produit->id,
+            'proposition_id' => $proposition->id,
+            'has_file' => $request->hasFile('file'),
+            'files' => $request->allFiles(),
+            'content_type' => $request->header('Content-Type'),
+            'content_length' => $request->header('Content-Length')
+        ]);
+
         // Ensure proposition belongs to the product
         if ($proposition->produit_id !== $produit->id) {
             return response()->json([
@@ -158,19 +183,58 @@ class ProduitPropositionController extends Controller
 
         try {
             $file = $request->file('file');
-            $filename = time() . '_' . $file->getClientOriginalName();
-            $path = $file->storeAs('public/products/' . $produit->id . '/propositions', $filename);
-            $url = Storage::url($path);
+
+            if (!$file) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No file received'
+                ], 400);
+            }
+
+            $originalName = $file->getClientOriginalName();
+            $extension = $file->getClientOriginalExtension();
+            $filename = time() . '_' . Str::slug(pathinfo($originalName, PATHINFO_FILENAME)) . '.' . $extension;
+
+            // Use the public disk (no leading public/ in the relative path when specifying disk)
+            $directory = 'products/' . $produit->id . '/propositions';
+            if (!Storage::disk('public')->exists($directory)) {
+                Storage::disk('public')->makeDirectory($directory);
+            }
+
+            $path = $file->storeAs($directory, $filename, 'public');
+
+            if (!$path) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to store file'
+                ], 500);
+            }
+
+            $url = asset('storage/' . $path);
 
             // Update proposition with image URL
             $proposition->update(['image_url' => $url]);
+
+            // Reload the proposition with author relationship
+            $proposition->load('auteur:id,nom_complet,email');
 
             return response()->json([
                 'success' => true,
                 'message' => 'Proposition image uploaded successfully',
                 'data' => [
-                    'image_url' => $url,
-                    'proposition' => $proposition
+                    'id' => $proposition->id,
+                    'titre' => $proposition->titre,
+                    'description' => $proposition->description,
+                    'type' => $proposition->type,
+                    'statut' => $proposition->statut,
+                    'image_url' => $proposition->image_url,
+                    'auteur' => $proposition->auteur ? [
+                        'id' => $proposition->auteur->id,
+                        'nom_complet' => $proposition->auteur->nom_complet,
+                        'email' => $proposition->auteur->email,
+                    ] : null,
+                    'created_at' => $proposition->created_at,
+                    'updated_at' => $proposition->updated_at,
                 ]
             ]);
 
