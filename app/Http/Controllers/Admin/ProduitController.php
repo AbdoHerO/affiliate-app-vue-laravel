@@ -131,6 +131,12 @@ class ProduitController extends Controller
             },
             'variantes' => function ($query) {
                 $query->orderBy('nom', 'asc')->orderBy('valeur', 'asc');
+            },
+            'propositions' => function ($query) {
+                $query->with('auteur:id,nom_complet,email')->orderBy('created_at', 'desc');
+            },
+            'ruptures' => function ($query) {
+                $query->orderBy('started_at', 'desc');
             }
         ]);
 

@@ -9,41 +9,41 @@ use App\Http\Resources\ProduitRuptureResource;
 use App\Models\Produit;
 use App\Models\ProduitVariante;
 use App\Models\ProduitRupture;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class ProduitRuptureController extends Controller
 {
-    use AuthorizesRequests;
     /**
      * Display a listing of ruptures for a specific product.
      */
     public function index(Request $request, Produit $produit): JsonResponse
     {
-        $this->authorize('view', $produit);
-
-        $query = $produit->variantes()
-            ->with(['ruptures' => function ($query) {
-                $query->where('actif', true);
-            }])
-            ->has('ruptures');
+        // Get all ruptures for this product
+        $query = $produit->ruptures();
 
         // Filter by active status
-        if ($request->has('actif')) {
-            $query->whereHas('ruptures', function ($q) use ($request) {
-                $q->where('actif', $request->boolean('actif'));
-            });
+        if ($request->has('active')) {
+            $query->where('active', $request->boolean('active'));
         }
 
-        $variantes = $query->get();
-
-        $ruptures = $variantes->flatMap(function ($variante) {
-            return $variante->ruptures;
-        });
+        $ruptures = $query->orderBy('started_at', 'desc')->get();
 
         return response()->json([
-            'data' => ProduitRuptureResource::collection($ruptures),
+            'success' => true,
+            'data' => $ruptures->map(function ($rupture) {
+                return [
+                    'id' => $rupture->id,
+                    'variante_id' => $rupture->variante_id,
+                    'motif' => $rupture->motif,
+                    'started_at' => $rupture->started_at,
+                    'expected_restock_at' => $rupture->expected_restock_at,
+                    'active' => $rupture->active,
+                    'resolved_at' => $rupture->resolved_at,
+                    'created_at' => $rupture->created_at,
+                    'updated_at' => $rupture->updated_at,
+                ];
+            }),
             'total' => $ruptures->count()
         ]);
     }
@@ -53,32 +53,67 @@ class ProduitRuptureController extends Controller
      */
     public function store(StoreProduitRuptureRequest $request, Produit $produit): JsonResponse
     {
-        $this->authorize('update', $produit);
+        try {
+            $validated = $request->validated();
 
-        $variante = ProduitVariante::where('id', $request->variante_id)
-            ->where('produit_id', $produit->id)
-            ->firstOrFail();
+            // If variante_id is provided, validate it belongs to this product
+            if (!empty($validated['variante_id'])) {
+                $variante = ProduitVariante::where('id', $validated['variante_id'])
+                    ->where('produit_id', $produit->id)
+                    ->first();
 
-        // Check if rupture already exists for this variant
-        $existingRupture = ProduitRupture::where('variante_id', $variante->id)
-            ->where('actif', true)
-            ->first();
+                if (!$variante) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Variant not found for this product'
+                    ], 404);
+                }
 
-        if ($existingRupture) {
+                // Check if rupture already exists for this variant
+                $existingRupture = ProduitRupture::where('variante_id', $variante->id)
+                    ->where('active', true)
+                    ->first();
+
+                if ($existingRupture) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Active rupture already exists for this variant'
+                    ], 422);
+                }
+            }
+
+            $rupture = ProduitRupture::create([
+                'produit_id' => $produit->id,
+                'variante_id' => $validated['variante_id'] ?? null,
+                'motif' => $validated['motif'],
+                'started_at' => $validated['started_at'],
+                'expected_restock_at' => $validated['expected_restock_at'] ?? null,
+                'active' => true,
+            ]);
+
             return response()->json([
-                'message' => __('messages.produit_ruptures.already_exists')
-            ], 422);
+                'success' => true,
+                'message' => 'Stock issue reported successfully',
+                'data' => [
+                    'id' => $rupture->id,
+                    'variante_id' => $rupture->variante_id,
+                    'motif' => $rupture->motif,
+                    'started_at' => $rupture->started_at,
+                    'expected_restock_at' => $rupture->expected_restock_at,
+                    'active' => $rupture->active,
+                    'resolved_at' => $rupture->resolved_at,
+                    'created_at' => $rupture->created_at,
+                    'updated_at' => $rupture->updated_at,
+                ]
+            ], 201);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to create stock issue',
+                'error' => $e->getMessage()
+            ], 500);
         }
-
-        $rupture = ProduitRupture::create([
-            'variante_id' => $variante->id,
-            'actif' => true,
-        ]);
-
-        return response()->json([
-            'message' => __('messages.produit_ruptures.created'),
-            'data' => new ProduitRuptureResource($rupture->load('variante.produit'))
-        ], 201);
     }
 
     /**
@@ -86,14 +121,23 @@ class ProduitRuptureController extends Controller
      */
     public function show(Produit $produit, ProduitRupture $rupture): JsonResponse
     {
-        $this->authorize('view', $produit);
-
-        if ($rupture->variante->produit_id !== $produit->id) {
+        if ($rupture->produit_id !== $produit->id) {
             abort(404);
         }
 
         return response()->json([
-            'data' => new ProduitRuptureResource($rupture->load('variante.produit'))
+            'success' => true,
+            'data' => [
+                'id' => $rupture->id,
+                'variante_id' => $rupture->variante_id,
+                'motif' => $rupture->motif,
+                'started_at' => $rupture->started_at,
+                'expected_restock_at' => $rupture->expected_restock_at,
+                'active' => $rupture->active,
+                'resolved_at' => $rupture->resolved_at,
+                'created_at' => $rupture->created_at,
+                'updated_at' => $rupture->updated_at,
+            ]
         ]);
     }
 
@@ -102,17 +146,26 @@ class ProduitRuptureController extends Controller
      */
     public function update(UpdateProduitRuptureRequest $request, Produit $produit, ProduitRupture $rupture): JsonResponse
     {
-        $this->authorize('update', $produit);
-
-        if ($rupture->variante->produit_id !== $produit->id) {
+        if ($rupture->produit_id !== $produit->id) {
             abort(404);
         }
 
         $rupture->update($request->validated());
 
         return response()->json([
-            'message' => __('messages.produit_ruptures.updated'),
-            'data' => new ProduitRuptureResource($rupture->load('variante.produit'))
+            'success' => true,
+            'message' => 'Stock issue updated successfully',
+            'data' => [
+                'id' => $rupture->id,
+                'variante_id' => $rupture->variante_id,
+                'motif' => $rupture->motif,
+                'started_at' => $rupture->started_at,
+                'expected_restock_at' => $rupture->expected_restock_at,
+                'active' => $rupture->active,
+                'resolved_at' => $rupture->resolved_at,
+                'created_at' => $rupture->created_at,
+                'updated_at' => $rupture->updated_at,
+            ]
         ]);
     }
 
@@ -121,16 +174,15 @@ class ProduitRuptureController extends Controller
      */
     public function destroy(Produit $produit, ProduitRupture $rupture): JsonResponse
     {
-        $this->authorize('update', $produit);
-
-        if ($rupture->variante->produit_id !== $produit->id) {
+        if ($rupture->produit_id !== $produit->id) {
             abort(404);
         }
 
         $rupture->delete();
 
         return response()->json([
-            'message' => __('messages.produit_ruptures.deleted')
+            'success' => true,
+            'message' => 'Stock issue deleted successfully'
         ]);
     }
 
@@ -139,17 +191,29 @@ class ProduitRuptureController extends Controller
      */
     public function resolve(Produit $produit, ProduitRupture $rupture): JsonResponse
     {
-        $this->authorize('update', $produit);
-
-        if ($rupture->variante->produit_id !== $produit->id) {
+        if ($rupture->produit_id !== $produit->id) {
             abort(404);
         }
 
-        $rupture->update(['actif' => false]);
+        $rupture->update([
+            'active' => false,
+            'resolved_at' => now()
+        ]);
 
         return response()->json([
-            'message' => __('messages.produit_ruptures.resolved'),
-            'data' => new ProduitRuptureResource($rupture->load('variante.produit'))
+            'success' => true,
+            'message' => 'Stock issue resolved successfully',
+            'data' => [
+                'id' => $rupture->id,
+                'variante_id' => $rupture->variante_id,
+                'motif' => $rupture->motif,
+                'started_at' => $rupture->started_at,
+                'expected_restock_at' => $rupture->expected_restock_at,
+                'active' => $rupture->active,
+                'resolved_at' => $rupture->resolved_at,
+                'created_at' => $rupture->created_at,
+                'updated_at' => $rupture->updated_at,
+            ]
         ]);
     }
 

@@ -22,8 +22,13 @@ class ProduitRupture extends Model
      * @var array<int, string>
      */
     protected $fillable = [
+        'produit_id',
         'variante_id',
-        'actif',
+        'motif',
+        'started_at',
+        'expected_restock_at',
+        'active',
+        'resolved_at',
     ];
 
     /**
@@ -32,16 +37,19 @@ class ProduitRupture extends Model
      * @var array<string, string>
      */
     protected $casts = [
-        'actif' => 'boolean',
-        'created_at' => 'datetime',
+        'active' => 'boolean',
+        'started_at' => 'datetime',
+        'expected_restock_at' => 'datetime',
+        'resolved_at' => 'datetime',
     ];
 
     /**
-     * Indicates if the model should be timestamped.
-     *
-     * @var bool
+     * Get the product for this rupture.
      */
-    public $timestamps = false;
+    public function produit(): BelongsTo
+    {
+        return $this->belongsTo(Produit::class, 'produit_id');
+    }
 
     /**
      * Get the product variant for this outage.

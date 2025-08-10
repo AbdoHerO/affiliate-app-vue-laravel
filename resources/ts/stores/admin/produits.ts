@@ -60,6 +60,37 @@ export interface ProduitVariante {
   updated_at?: string
 }
 
+export interface ProduitProposition {
+  id: string
+  produit_id: string
+  auteur_id: string
+  titre: string
+  description: string
+  type: string
+  statut: string
+  image_url?: string
+  auteur?: {
+    id: string
+    nom_complet: string
+    email: string
+  }
+  created_at?: string
+  updated_at?: string
+}
+
+export interface ProduitRupture {
+  id: string
+  produit_id: string
+  variante_id?: string
+  motif: string
+  started_at: string
+  expected_restock_at?: string
+  active: boolean
+  resolved_at?: string
+  created_at?: string
+  updated_at?: string
+}
+
 export interface ProduitFormData {
   boutique_id: string
   categorie_id: string | null
@@ -105,6 +136,8 @@ export const useProduitsStore = defineStore('produits', () => {
   const images = ref<ProduitImage[]>([])
   const videos = ref<ProduitVideo[]>([])
   const variantes = ref<ProduitVariante[]>([])
+  const propositions = ref<ProduitProposition[]>([])
+  const ruptures = ref<ProduitRupture[]>([])
   const loading = ref(false)
   const error = ref<string | null>(null)
   const pagination = reactive<ProduitPagination>({
@@ -212,6 +245,12 @@ export const useProduitsStore = defineStore('produits', () => {
         }
         if (response.data.variantes) {
           variantes.value = response.data.variantes
+        }
+        if (response.data.propositions) {
+          propositions.value = response.data.propositions
+        }
+        if (response.data.ruptures) {
+          ruptures.value = response.data.ruptures
         }
 
         return response.data
@@ -688,6 +727,8 @@ export const useProduitsStore = defineStore('produits', () => {
     images,
     videos,
     variantes,
+    propositions,
+    ruptures,
     loading,
     error,
     pagination,

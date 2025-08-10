@@ -148,4 +148,12 @@ class Produit extends Model
     {
         return $this->hasMany(AvisProduit::class, 'produit_id');
     }
+
+    /**
+     * Get the ruptures for this product.
+     */
+    public function ruptures(): HasMany
+    {
+        return $this->hasMany(ProduitRupture::class, 'produit_id');
+    }
 }

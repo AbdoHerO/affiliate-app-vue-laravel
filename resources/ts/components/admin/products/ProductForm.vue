@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, watch, onMounted, computed, reactive } from 'vue'
-import { useProduitsStore, type Produit, type ProduitFormData } from '@/stores/admin/produits'
+import { useProduitsStore, type Produit, type ProduitFormData, type ProduitRupture } from '@/stores/admin/produits'
 import { useBoutiquesStore } from '@/stores/admin/boutiques'
 import { useCategoriesStore } from '@/stores/admin/categories'
 import { storeToRefs } from 'pinia'
@@ -71,6 +71,15 @@ const newProposition = reactive({
   type: ''
 })
 
+// Ruptures state
+const ruptures = ref<ProduitRupture[]>([])
+const newRupture = reactive({
+  variante_id: null as string | null,
+  motif: '',
+  started_at: '',
+  expected_restock_at: ''
+})
+
 // Video form state
 const videoMode = ref<'url' | 'upload'>('url')
 const newVideoTitle = ref('')
@@ -117,6 +126,7 @@ const loadProduct = async () => {
         }
         localId.value = p.id
         await loadPropositions()
+        await loadRuptures()
       }
     } catch (error) {
       showError('Failed to load product')
@@ -135,7 +145,9 @@ const saveProduct = async () => {
     if (props.mode === 'create') {
       const created = await produitsStore.createProduit(form.value)
       localId.value = created.id
+      console.debug('[ProductForm] Created product with ID:', created.id)
       await produitsStore.fetchProduit(created.id)
+      console.debug('[ProductForm] Fetched product data, images:', images.value.length, 'videos:', videos.value.length, 'variants:', variantes.value.length)
       emit('created', created)
       activeTab.value = 'images'
       router.replace({
@@ -180,6 +192,7 @@ const loadPropositions = async () => {
 // IMAGE upload handlers (upload-only)
 const handleImageUpload = async (files: FileList | File[]) => {
   if (!localId.value) return
+  console.debug('[ProductForm] Uploading images for product ID:', localId.value)
   const fileList = Array.from(files)
   for (const file of fileList) {
     const fd = new FormData()
@@ -193,6 +206,7 @@ const handleImageUpload = async (files: FileList | File[]) => {
         const response = data.value as any
         if (response.success) {
           images.value.push(response.data)
+          console.debug('[ProductForm] Image uploaded successfully, total images:', images.value.length)
         }
       }
     } catch (error) {
@@ -479,6 +493,86 @@ const getPropositionStatusColor = (statut: string) => {
   }
 }
 
+// Ruptures methods
+const loadRuptures = async () => {
+  if (!localId.value) return
+  try {
+    const { data, error } = await useApi(`/admin/produits/${localId.value}/ruptures`)
+    if (!error.value && data.value) {
+      const response = data.value as any
+      if (response.success) {
+        ruptures.value = response.data
+      }
+    }
+  } catch (error) {
+    console.error('Error loading ruptures:', error)
+  }
+}
+
+const handleAddRupture = async () => {
+  if (!localId.value || !newRupture.motif || !newRupture.started_at) return
+  try {
+    const { data, error } = await useApi(`/admin/produits/${localId.value}/ruptures`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newRupture)
+    })
+    if (!error.value && data.value) {
+      const response = data.value as any
+      if (response.success) {
+        ruptures.value.push(response.data)
+        Object.assign(newRupture, { variante_id: null, motif: '', started_at: '', expected_restock_at: '' })
+        showSuccess('Stock issue reported successfully')
+      }
+    }
+  } catch (error) {
+    console.error('Error adding rupture:', error)
+    showError('Failed to report stock issue')
+  }
+}
+
+const handleResolveRupture = async (ruptureId: string) => {
+  if (!localId.value) return
+  try {
+    const { data, error } = await useApi(`/admin/produits/${localId.value}/ruptures/${ruptureId}/resolve`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    })
+    if (!error.value && data.value) {
+      const response = data.value as any
+      if (response.success) {
+        const idx = ruptures.value.findIndex(r => r.id === ruptureId)
+        if (idx > -1) {
+          ruptures.value[idx] = response.data
+        }
+        showSuccess('Stock issue resolved successfully')
+      }
+    }
+  } catch (error) {
+    console.error('Error resolving rupture:', error)
+    showError('Failed to resolve stock issue')
+  }
+}
+
+const handleDeleteRupture = async (ruptureId: string) => {
+  if (!localId.value) return
+  try {
+    const { error } = await useApi(`/admin/produits/${localId.value}/ruptures/${ruptureId}`, {
+      method: 'DELETE'
+    })
+    if (!error.value) {
+      const idx = ruptures.value.findIndex(r => r.id === ruptureId)
+      if (idx > -1) {
+        ruptures.value.splice(idx, 1)
+        showSuccess('Stock issue deleted successfully')
+      }
+    }
+  } catch (error) {
+    console.error('Error deleting rupture:', error)
+    showError('Failed to delete stock issue')
+  }
+}
+
 // Lifecycle
 onMounted(async () => {
   await loadLookups()
@@ -535,6 +629,10 @@ onMounted(async () => {
         <VTab :disabled="!readyForMedia" value="propositions">
           <VIcon icon="tabler-list-details" class="me-2" />
           Propositions
+        </VTab>
+        <VTab :disabled="!readyForMedia" value="ruptures">
+          <VIcon icon="tabler-alert-triangle" class="me-2" />
+          Stock Issues
         </VTab>
       </VTabs>
 
@@ -1049,6 +1147,148 @@ onMounted(async () => {
             <!-- Empty State -->
             <VAlert v-else type="info" variant="tonal">
               No propositions created yet. Add propositions to create compelling selling points for your product.
+            </VAlert>
+          </div>
+        </VTabsWindowItem>
+
+        <!-- Ruptures Tab -->
+        <VTabsWindowItem value="ruptures">
+          <div v-if="!readyForMedia" class="text-center py-12">
+            <VIcon icon="tabler-alert-triangle-off" size="64" color="grey-lighten-1" class="mb-4" />
+            <h3 class="text-h6 mb-2">Save Product First</h3>
+            <p class="text-body-2 text-medium-emphasis">
+              You need to save the product details before managing stock issues.
+            </p>
+          </div>
+          <div v-else>
+            <div class="mb-6">
+              <h3 class="text-h6 mb-2">Stock Issues (Ruptures)</h3>
+              <p class="text-body-2 text-medium-emphasis">
+                Manage stock shortages and expected restock dates for this product.
+              </p>
+            </div>
+
+            <!-- Add New Rupture Form -->
+            <VCard class="mb-6">
+              <VCardTitle>Report Stock Issue</VCardTitle>
+              <VCardText>
+                <VForm @submit.prevent="handleAddRupture">
+                  <VRow>
+                    <VCol cols="12" md="6">
+                      <VSelect
+                        v-model="newRupture.variante_id"
+                        :items="[{ title: 'All variants', value: null }, ...variantes.map(v => ({ title: `${v.nom}: ${v.valeur}`, value: v.id }))]"
+                        label="Variant (Optional)"
+                        variant="outlined"
+                        clearable
+                      />
+                    </VCol>
+                    <VCol cols="12" md="6">
+                      <VTextField
+                        v-model="newRupture.motif"
+                        label="Reason"
+                        variant="outlined"
+                        placeholder="e.g., Supplier delay, High demand"
+                        required
+                      />
+                    </VCol>
+                    <VCol cols="12" md="6">
+                      <VTextField
+                        v-model="newRupture.started_at"
+                        label="Started At"
+                        type="datetime-local"
+                        variant="outlined"
+                        required
+                      />
+                    </VCol>
+                    <VCol cols="12" md="6">
+                      <VTextField
+                        v-model="newRupture.expected_restock_at"
+                        label="Expected Restock (Optional)"
+                        type="datetime-local"
+                        variant="outlined"
+                      />
+                    </VCol>
+                    <VCol cols="12">
+                      <VBtn
+                        type="submit"
+                        color="primary"
+                        :disabled="!newRupture.motif || !newRupture.started_at"
+                      >
+                        Report Issue
+                      </VBtn>
+                    </VCol>
+                  </VRow>
+                </VForm>
+              </VCardText>
+            </VCard>
+
+            <!-- Ruptures List -->
+            <VCard v-if="ruptures.length > 0">
+              <VCardTitle>Current Stock Issues</VCardTitle>
+              <VCardText>
+                <VDataTable
+                  :items="ruptures"
+                  :headers="[
+                    { title: 'Variant', key: 'variante_id' },
+                    { title: 'Reason', key: 'motif' },
+                    { title: 'Started', key: 'started_at' },
+                    { title: 'Expected Restock', key: 'expected_restock_at' },
+                    { title: 'Status', key: 'active' },
+                    { title: 'Actions', key: 'actions', sortable: false }
+                  ]"
+                  class="elevation-1"
+                >
+                  <template #item.variante_id="{ item }">
+                    <span v-if="item.variante_id">
+                      {{ variantes.find(v => v.id === item.variante_id)?.nom }}: {{ variantes.find(v => v.id === item.variante_id)?.valeur }}
+                    </span>
+                    <span v-else class="text-medium-emphasis">All variants</span>
+                  </template>
+                  <template #item.started_at="{ item }">
+                    {{ new Date(item.started_at).toLocaleDateString() }}
+                  </template>
+                  <template #item.expected_restock_at="{ item }">
+                    <span v-if="item.expected_restock_at">
+                      {{ new Date(item.expected_restock_at).toLocaleDateString() }}
+                    </span>
+                    <span v-else class="text-medium-emphasis">Not set</span>
+                  </template>
+                  <template #item.active="{ item }">
+                    <VChip
+                      :color="item.active ? 'error' : 'success'"
+                      size="small"
+                    >
+                      {{ item.active ? 'Active' : 'Resolved' }}
+                    </VChip>
+                  </template>
+                  <template #item.actions="{ item }">
+                    <VBtn
+                      v-if="item.active"
+                      size="small"
+                      color="success"
+                      variant="outlined"
+                      @click="handleResolveRupture(item.id)"
+                    >
+                      Resolve
+                    </VBtn>
+                    <VBtn
+                      size="small"
+                      color="error"
+                      variant="outlined"
+                      class="ml-2"
+                      @click="handleDeleteRupture(item.id)"
+                    >
+                      Delete
+                    </VBtn>
+                  </template>
+                </VDataTable>
+              </VCardText>
+            </VCard>
+
+            <!-- Empty State -->
+            <VAlert v-else type="info" variant="tonal">
+              No stock issues reported yet. Report issues when products are out of stock or delayed.
             </VAlert>
           </div>
         </VTabsWindowItem>

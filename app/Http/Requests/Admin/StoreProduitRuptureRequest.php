@@ -22,7 +22,10 @@ class StoreProduitRuptureRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'variante_id' => 'required|exists:produit_variantes,id',
+            'variante_id' => 'nullable|exists:produit_variantes,id',
+            'motif' => 'required|string|max:255',
+            'started_at' => 'required|date',
+            'expected_restock_at' => 'nullable|date|after:started_at',
         ];
     }
 
@@ -34,7 +37,10 @@ class StoreProduitRuptureRequest extends FormRequest
     public function attributes(): array
     {
         return [
-            'variante_id' => __('messages.produit_ruptures.variante'),
+            'variante_id' => 'Variant',
+            'motif' => 'Reason',
+            'started_at' => 'Started At',
+            'expected_restock_at' => 'Expected Restock',
         ];
     }
 
@@ -46,8 +52,13 @@ class StoreProduitRuptureRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'variante_id.required' => __('messages.produit_ruptures.variante_required'),
-            'variante_id.exists' => __('messages.produit_ruptures.variante_exists'),
+            'variante_id.exists' => 'The selected variant is invalid.',
+            'motif.required' => 'The reason field is required.',
+            'motif.max' => 'The reason may not be greater than 255 characters.',
+            'started_at.required' => 'The started at field is required.',
+            'started_at.date' => 'The started at must be a valid date.',
+            'expected_restock_at.date' => 'The expected restock must be a valid date.',
+            'expected_restock_at.after' => 'The expected restock must be after the started date.',
         ];
     }
 }

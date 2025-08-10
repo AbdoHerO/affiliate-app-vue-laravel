@@ -52,6 +52,46 @@ class ProduitResource extends JsonResource
 
             // Variants
             'variantes' => ProduitVarianteResource::collection($this->whenLoaded('variantes')),
+
+            // Propositions
+            'propositions' => $this->whenLoaded('propositions', function () {
+                return $this->propositions->map(function ($proposition) {
+                    return [
+                        'id' => $proposition->id,
+                        'titre' => $proposition->titre,
+                        'description' => $proposition->description,
+                        'type' => $proposition->type,
+                        'statut' => $proposition->statut,
+                        'image_url' => $proposition->image_url,
+                        'auteur' => $proposition->whenLoaded('auteur', function () use ($proposition) {
+                            return [
+                                'id' => $proposition->auteur->id,
+                                'nom_complet' => $proposition->auteur->nom_complet,
+                                'email' => $proposition->auteur->email,
+                            ];
+                        }),
+                        'created_at' => $proposition->created_at,
+                        'updated_at' => $proposition->updated_at,
+                    ];
+                });
+            }),
+
+            // Ruptures
+            'ruptures' => $this->whenLoaded('ruptures', function () {
+                return $this->ruptures->map(function ($rupture) {
+                    return [
+                        'id' => $rupture->id,
+                        'variante_id' => $rupture->variante_id,
+                        'motif' => $rupture->motif,
+                        'started_at' => $rupture->started_at,
+                        'expected_restock_at' => $rupture->expected_restock_at,
+                        'active' => $rupture->active,
+                        'resolved_at' => $rupture->resolved_at,
+                        'created_at' => $rupture->created_at,
+                        'updated_at' => $rupture->updated_at,
+                    ];
+                });
+            }),
         ];
     }
 }
