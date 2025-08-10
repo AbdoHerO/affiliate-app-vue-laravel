@@ -154,6 +154,26 @@ const handleView = (produit: Produit) => {
   router.push(`/admin/produits/${produit.id}`)
 }
 
+const handleShare = async (produit: Produit) => {
+  try {
+    const publicUrl = `${window.location.origin}/p/${produit.slug}`
+
+    // Copy to clipboard
+    await navigator.clipboard.writeText(publicUrl)
+
+    // Show success message (you could use a toast notification here)
+    console.log('Share link copied to clipboard:', publicUrl)
+
+    // Optionally open in new tab
+    window.open(publicUrl, '_blank')
+  } catch (error) {
+    console.error('Failed to copy share link:', error)
+    // Fallback: just open the link
+    const publicUrl = `${window.location.origin}/p/${produit.slug}`
+    window.open(publicUrl, '_blank')
+  }
+}
+
 const handleDelete = (produit: Produit) => {
   selectedProduit.value = produit
   showDeleteDialog.value = true
@@ -433,6 +453,13 @@ onMounted(async () => {
               size="small"
               variant="text"
               @click="handleEdit(item)"
+            />
+            <VBtn
+              icon="tabler-share"
+              size="small"
+              variant="text"
+              color="primary"
+              @click="handleShare(item)"
             />
             <VBtn
               icon="tabler-trash"

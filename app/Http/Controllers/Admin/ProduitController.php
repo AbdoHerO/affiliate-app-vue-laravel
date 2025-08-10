@@ -237,4 +237,28 @@ class ProduitController extends Controller
 
         return $constraints;
     }
+
+    /**
+     * Generate a shareable public link for the product
+     */
+    public function share(Produit $produit): JsonResponse
+    {
+        try {
+            $publicUrl = url("/p/{$produit->slug}");
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'url' => $publicUrl,
+                    'slug' => $produit->slug,
+                    'titre' => $produit->titre
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error generating share link: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

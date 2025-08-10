@@ -66,12 +66,16 @@ declare module 'vue' {
     ProductVariantManager: typeof import('./resources/ts/components/admin/products/ProductVariantManager.vue')['default']
     ProductVideoManager: typeof import('./resources/ts/components/admin/products/ProductVideoManager.vue')['default']
     ProfileImageUpload: typeof import('./resources/ts/components/ProfileImageUpload.vue')['default']
+    PropositionCards: typeof import('./resources/ts/components/public/PropositionCards.vue')['default']
+    PublicImageGallery: typeof import('./resources/ts/components/public/PublicImageGallery.vue')['default']
+    PublicVideoGallery: typeof import('./resources/ts/components/public/PublicVideoGallery.vue')['default']
     ReferAndEarnDialog: typeof import('./resources/ts/components/dialogs/ReferAndEarnDialog.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     ScrollToTop: typeof import('./resources/ts/@core/components/ScrollToTop.vue')['default']
     ShareProjectDialog: typeof import('./resources/ts/components/dialogs/ShareProjectDialog.vue')['default']
     Shortcuts: typeof import('./resources/ts/@core/components/Shortcuts.vue')['default']
+    StockIssues: typeof import('./resources/ts/components/public/StockIssues.vue')['default']
     TablePagination: typeof import('./resources/ts/@core/components/TablePagination.vue')['default']
     TheCustomizer: typeof import('./resources/ts/@core/components/TheCustomizer.vue')['default']
     ThemeSwitcher: typeof import('./resources/ts/@core/components/ThemeSwitcher.vue')['default']
@@ -79,5 +83,6 @@ declare module 'vue' {
     TwoFactorAuthDialog: typeof import('./resources/ts/components/dialogs/TwoFactorAuthDialog.vue')['default']
     UserInfoEditDialog: typeof import('./resources/ts/components/dialogs/UserInfoEditDialog.vue')['default']
     UserUpgradePlanDialog: typeof import('./resources/ts/components/dialogs/UserUpgradePlanDialog.vue')['default']
+    VariantChips: typeof import('./resources/ts/components/public/VariantChips.vue')['default']
   }
 }

@@ -16,6 +16,7 @@ use App\Http\Controllers\Admin\ProduitVideoController;
 use App\Http\Controllers\Admin\ProduitVarianteController;
 use App\Http\Controllers\Admin\ProduitPropositionController;
 use App\Http\Controllers\Admin\ProduitRuptureController;
+use App\Http\Controllers\Public\ProduitController as PublicProduitController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -23,6 +24,11 @@ use Illuminate\Support\Facades\Route;
 // Test route
 Route::get('/test', function () {
     return response()->json(['message' => 'API working', 'timestamp' => now()]);
+});
+
+// Public routes (no authentication required)
+Route::prefix('public')->group(function () {
+    Route::get('produits/{slugOrId}', [PublicProduitController::class, 'show']);
 });
 
 // Public authentication routes
@@ -108,6 +114,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('produits/{produit}', [ProduitController::class, 'show']);
         Route::put('produits/{produit}', [ProduitController::class, 'update']);
         Route::delete('produits/{produit}', [ProduitController::class, 'destroy']);
+        Route::post('produits/{produit}/share', [ProduitController::class, 'share']);
 
         // Product Images Management
         Route::get('produits/{produit}/images', [ProduitImageController::class, 'index']);
