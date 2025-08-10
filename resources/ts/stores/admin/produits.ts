@@ -103,6 +103,8 @@ export const useProduitsStore = defineStore('produits', () => {
   const produits = ref<Produit[]>([])
   const currentProduit = ref<Produit | null>(null)
   const images = ref<ProduitImage[]>([])
+  const videos = ref<ProduitVideo[]>([])
+  const variantes = ref<ProduitVariante[]>([])
   const loading = ref(false)
   const error = ref<string | null>(null)
   const pagination = reactive<ProduitPagination>({
@@ -201,9 +203,15 @@ export const useProduitsStore = defineStore('produits', () => {
       if (response.success) {
         currentProduit.value = response.data
 
-        // Set images if included
+        // Set relations if included
         if (response.data.images) {
           images.value = response.data.images
+        }
+        if (response.data.videos) {
+          videos.value = response.data.videos
+        }
+        if (response.data.variantes) {
+          variantes.value = response.data.variantes
         }
 
         return response.data
@@ -464,6 +472,8 @@ export const useProduitsStore = defineStore('produits', () => {
   const clearCurrentProduit = () => {
     currentProduit.value = null
     images.value = []
+    videos.value = []
+    variantes.value = []
   }
 
   const resetFilters = () => {
@@ -479,11 +489,205 @@ export const useProduitsStore = defineStore('produits', () => {
     })
   }
 
+  // Upload methods
+  const uploadImages = async (productId: string, files: File[]) => {
+    try {
+      const uploadPromises = files.map(async (file) => {
+        const formData = new FormData()
+        formData.append('file', file)
+
+        const { data } = await useApi(`/admin/produits/${productId}/images/upload`, {
+          method: 'POST',
+          body: formData,
+          headers: {
+            'Accept': 'application/json'
+          }
+        })
+
+        const response = data.value as any
+        if (response.success) {
+          images.value.push(response.data)
+          return response.data
+        }
+        throw new Error(response.message || 'Upload failed')
+      })
+
+      return await Promise.all(uploadPromises)
+    } catch (error) {
+      console.error('Error uploading images:', error)
+      throw error
+    }
+  }
+
+  const addVideoUrl = async (productId: string, videoData: { url: string; titre?: string }) => {
+    try {
+      const { data } = await useApi(`/admin/produits/${productId}/videos`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(videoData)
+      })
+
+      const response = data.value as any
+      if (response.success) {
+        videos.value.push(response.data)
+        return response.data
+      }
+      throw new Error(response.message || 'Failed to add video')
+    } catch (error) {
+      console.error('Error adding video URL:', error)
+      throw error
+    }
+  }
+
+  const uploadVideos = async (productId: string, files: File[]) => {
+    try {
+      const uploadPromises = files.map(async (file) => {
+        const formData = new FormData()
+        formData.append('file', file)
+
+        const { data } = await useApi(`/admin/produits/${productId}/videos/upload`, {
+          method: 'POST',
+          body: formData,
+          headers: {
+            'Accept': 'application/json'
+          }
+        })
+
+        const response = data.value as any
+        if (response.success) {
+          videos.value.push(response.data)
+          return response.data
+        }
+        throw new Error(response.message || 'Upload failed')
+      })
+
+      return await Promise.all(uploadPromises)
+    } catch (error) {
+      console.error('Error uploading videos:', error)
+      throw error
+    }
+  }
+
+  const deleteVideo = async (productId: string, videoId: string) => {
+    try {
+      const { data } = await useApi(`/admin/produits/${productId}/videos/${videoId}`, {
+        method: 'DELETE'
+      })
+
+      const response = data.value as any
+      if (response.success) {
+        const index = videos.value.findIndex(v => v.id === videoId)
+        if (index !== -1) {
+          videos.value.splice(index, 1)
+        }
+        return true
+      }
+      throw new Error(response.message || 'Failed to delete video')
+    } catch (error) {
+      console.error('Error deleting video:', error)
+      throw error
+    }
+  }
+
+  const createVariant = async (productId: string, variantData: any) => {
+    try {
+      const { data } = await useApi(`/admin/produits/${productId}/variantes`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(variantData)
+      })
+
+      const response = data.value as any
+      if (response.success) {
+        variantes.value.push(response.data)
+        return response.data
+      }
+      throw new Error(response.message || 'Failed to create variant')
+    } catch (error) {
+      console.error('Error creating variant:', error)
+      throw error
+    }
+  }
+
+  const updateVariant = async (productId: string, variantId: string, variantData: any) => {
+    try {
+      const { data } = await useApi(`/admin/produits/${productId}/variantes/${variantId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(variantData)
+      })
+
+      const response = data.value as any
+      if (response.success) {
+        const index = variantes.value.findIndex(v => v.id === variantId)
+        if (index !== -1) {
+          variantes.value[index] = response.data
+        }
+        return response.data
+      }
+      throw new Error(response.message || 'Failed to update variant')
+    } catch (error) {
+      console.error('Error updating variant:', error)
+      throw error
+    }
+  }
+
+  const deleteVariant = async (productId: string, variantId: string) => {
+    try {
+      const { data } = await useApi(`/admin/produits/${productId}/variantes/${variantId}`, {
+        method: 'DELETE'
+      })
+
+      const response = data.value as any
+      if (response.success) {
+        const index = variantes.value.findIndex(v => v.id === variantId)
+        if (index !== -1) {
+          variantes.value.splice(index, 1)
+        }
+        return true
+      }
+      throw new Error(response.message || 'Failed to delete variant')
+    } catch (error) {
+      console.error('Error deleting variant:', error)
+      throw error
+    }
+  }
+
+  const uploadVariantImage = async (productId: string, variantId: string, file: File) => {
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+
+      const { data } = await useApi(`/admin/produits/${productId}/variantes/${variantId}/image`, {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'Accept': 'application/json'
+        }
+      })
+
+      const response = data.value as any
+      if (response.success) {
+        const index = variantes.value.findIndex(v => v.id === variantId)
+        if (index !== -1) {
+          variantes.value[index] = { ...variantes.value[index], image_url: response.data.image_url }
+        }
+        return response.data
+      }
+      throw new Error(response.message || 'Failed to upload variant image')
+    } catch (error) {
+      console.error('Error uploading variant image:', error)
+      throw error
+    }
+  }
+
   return {
     // State
     produits,
     currentProduit,
     images,
+    videos,
+    variantes,
     loading,
     error,
     pagination,
@@ -500,6 +704,16 @@ export const useProduitsStore = defineStore('produits', () => {
     sortImages,
     deleteImage,
     clearCurrentProduit,
-    resetFilters
+    resetFilters,
+
+    // Upload methods
+    uploadImages,
+    addVideoUrl,
+    uploadVideos,
+    deleteVideo,
+    createVariant,
+    updateVariant,
+    deleteVariant,
+    uploadVariantImage
   }
 })

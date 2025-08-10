@@ -98,14 +98,51 @@
 
         <VCardText>
           <VForm ref="formRef" @submit.prevent="saveVideo">
-            <VTextField
-              v-model="videoForm.url"
-              :label="$t('admin_produits_video_url')"
-              :placeholder="$t('admin_produits_video_url_placeholder')"
-              :error-messages="errors.url"
-              required
-              class="mb-4"
-            />
+            <!-- Video Type Toggle -->
+            <div class="mb-4">
+              <VLabel class="mb-2">{{ $t('admin_produits_video_type') }}</VLabel>
+              <VBtnToggle
+                v-model="videoForm.inputType"
+                color="primary"
+                variant="outlined"
+                divided
+                mandatory
+                class="mb-4"
+              >
+                <VBtn value="url">
+                  <VIcon icon="tabler-link" class="me-2" />
+                  {{ $t('admin_produits_video_url') }}
+                </VBtn>
+                <VBtn value="upload">
+                  <VIcon icon="tabler-upload" class="me-2" />
+                  {{ $t('admin_produits_video_upload') }}
+                </VBtn>
+              </VBtnToggle>
+            </div>
+
+            <!-- URL Input -->
+            <div v-if="videoForm.inputType === 'url'">
+              <VTextField
+                v-model="videoForm.url"
+                :label="$t('admin_produits_video_url')"
+                :placeholder="$t('admin_produits_video_url_placeholder')"
+                :error-messages="errors.url"
+                required
+                class="mb-4"
+              />
+            </div>
+
+            <!-- Upload Input -->
+            <div v-else-if="videoForm.inputType === 'upload'">
+              <VFileInput
+                v-model="videoForm.file"
+                :label="$t('admin_produits_video_upload')"
+                accept="video/*"
+                :error-messages="errors.file"
+                required
+                class="mb-4"
+              />
+            </div>
 
             <VTextField
               v-model="videoForm.titre"
@@ -222,7 +259,9 @@ const formRef = ref()
 const videoForm = reactive({
   url: '',
   titre: '',
-  ordre: 0
+  ordre: 0,
+  inputType: 'url' as 'url' | 'upload',
+  file: null as File[] | null
 })
 
 const errors = ref<Record<string, string[]>>({})
@@ -259,6 +298,8 @@ const editVideo = (video: Video) => {
   videoForm.url = video.url
   videoForm.titre = video.titre || ''
   videoForm.ordre = video.ordre
+  videoForm.inputType = 'url' // Always default to URL for existing videos
+  videoForm.file = null
   showAddDialog.value = true
 }
 
@@ -272,16 +313,41 @@ const saveVideo = async () => {
   isLoading.value = true
 
   try {
-    const endpoint = editingVideo.value 
-      ? `/admin/produits/${props.productId}/videos/${editingVideo.value.id}`
-      : `/admin/produits/${props.productId}/videos`
-    
-    const method = editingVideo.value ? 'PUT' : 'POST'
+    let endpoint: string
+    let method: string
+    let body: any
+    let headers: any = {}
+
+    if (videoForm.inputType === 'upload' && videoForm.file && videoForm.file.length > 0) {
+      // Handle file upload
+      endpoint = `/admin/produits/${props.productId}/videos/upload`
+      method = 'POST'
+
+      const formData = new FormData()
+      formData.append('file', videoForm.file[0])
+      formData.append('titre', videoForm.titre)
+      formData.append('ordre', videoForm.ordre.toString())
+
+      body = formData
+    } else {
+      // Handle URL input
+      endpoint = editingVideo.value
+        ? `/admin/produits/${props.productId}/videos/${editingVideo.value.id}`
+        : `/admin/produits/${props.productId}/videos`
+
+      method = editingVideo.value ? 'PUT' : 'POST'
+      headers['Content-Type'] = 'application/json'
+      body = JSON.stringify({
+        url: videoForm.url,
+        titre: videoForm.titre,
+        ordre: videoForm.ordre
+      })
+    }
 
     const { data, error } = await useApi(endpoint, {
       method,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(videoForm)
+      headers,
+      body
     })
 
     if (error.value) {
@@ -353,6 +419,8 @@ const closeDialog = () => {
   videoForm.url = ''
   videoForm.titre = ''
   videoForm.ordre = 0
+  videoForm.inputType = 'url'
+  videoForm.file = null
   errors.value = {}
 }
 </script>

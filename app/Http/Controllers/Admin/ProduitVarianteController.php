@@ -7,6 +7,7 @@ use App\Models\Produit;
 use App\Models\ProduitVariante;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
 class ProduitVarianteController extends Controller
@@ -162,6 +163,58 @@ class ProduitVarianteController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => __('messages.variant_deletion_failed'),
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Upload image for the specified variant.
+     */
+    public function uploadImage(Request $request, Produit $produit, ProduitVariante $variante): JsonResponse
+    {
+        // Ensure variant belongs to the product
+        if ($variante->produit_id !== $produit->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Variant not found for this product'
+            ], 404);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'file' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            $file = $request->file('file');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $path = $file->storeAs('public/products/' . $produit->id . '/variants', $filename);
+            $url = Storage::url($path);
+
+            // Update variant with image URL
+            $variante->update(['image_url' => $url]);
+
+            return response()->json([
+                'success' => true,
+                'message' => __('messages.variant_image_uploaded_successfully'),
+                'data' => [
+                    'image_url' => $url,
+                    'variant' => $variante
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => __('messages.variant_image_upload_failed'),
                 'error' => $e->getMessage()
             ], 500);
         }

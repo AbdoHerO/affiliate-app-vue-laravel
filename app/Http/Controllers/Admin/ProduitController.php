@@ -120,9 +120,19 @@ class ProduitController extends Controller
      */
     public function show(Produit $produit): ProduitResource
     {
-        $produit->load(['boutique', 'categorie', 'images' => function ($query) {
-            $query->orderBy('ordre', 'asc');
-        }]);
+        $produit->load([
+            'boutique',
+            'categorie',
+            'images' => function ($query) {
+                $query->orderBy('ordre', 'asc');
+            },
+            'videos' => function ($query) {
+                $query->orderBy('ordre', 'asc');
+            },
+            'variantes' => function ($query) {
+                $query->orderBy('nom', 'asc')->orderBy('valeur', 'asc');
+            }
+        ]);
 
         return new ProduitResource($produit);
     }

@@ -25,6 +25,7 @@ class ProduitVideo extends Model
         'produit_id',
         'url',
         'titre',
+        'ordre',
     ];
 
     /**

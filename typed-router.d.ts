@@ -36,7 +36,7 @@ declare module 'vue-router/auto-routes' {
     'admin-produits': RouteRecordInfo<'admin-produits', '/admin/produits', Record<never, never>, Record<never, never>>,
     'admin-produits-id': RouteRecordInfo<'admin-produits-id', '/admin/produits/:id', { id: ParamValue<true> }, { id: ParamValue<false> }>,
     'admin-produits-id-edit': RouteRecordInfo<'admin-produits-id-edit', '/admin/produits/:id/edit', { id: ParamValue<true> }, { id: ParamValue<false> }>,
-    'admin-produits-create': RouteRecordInfo<'admin-produits-create', '/admin/produits/create', Record<never, never>, Record<never, never>>,
+    'admin-produits-create': RouteRecordInfo<'admin-produits-create', '/admin/produits/Create', Record<never, never>, Record<never, never>>,
     'admin-reports-affiliates': RouteRecordInfo<'admin-reports-affiliates', '/admin/reports-affiliates', Record<never, never>, Record<never, never>>,
     'admin-reports-sales': RouteRecordInfo<'admin-reports-sales', '/admin/reports-sales', Record<never, never>, Record<never, never>>,
     'admin-roles': RouteRecordInfo<'admin-roles', '/admin/roles', Record<never, never>, Record<never, never>>,

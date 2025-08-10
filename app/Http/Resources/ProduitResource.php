@@ -46,6 +46,12 @@ class ProduitResource extends JsonResource
             
             // Images
             'images' => ProduitImageResource::collection($this->whenLoaded('images')),
+
+            // Videos
+            'videos' => ProduitVideoResource::collection($this->whenLoaded('videos')),
+
+            // Variants
+            'variantes' => ProduitVarianteResource::collection($this->whenLoaded('variantes')),
         ];
     }
 }

@@ -47,6 +47,13 @@
             <span v-else class="text-medium-emphasis">-</span>
           </template>
 
+          <template #item.image_url="{ item }">
+            <VAvatar v-if="item.image_url" size="40" class="rounded">
+              <VImg :src="item.image_url" />
+            </VAvatar>
+            <VIcon v-else icon="tabler-photo-off" color="grey-lighten-1" />
+          </template>
+
           <template #item.actif="{ item }">
             <VChip
               :color="item.actif ? 'success' : 'error'"
@@ -143,11 +150,35 @@
             </VRow>
 
             <VRow>
-              <VCol cols="12">
+              <VCol cols="12" md="6">
                 <VSwitch
                   v-model="variantForm.actif"
                   :label="$t('admin_produits_variant_active')"
                   color="primary"
+                />
+              </VCol>
+              <VCol cols="12" md="6">
+                <VFileInput
+                  v-model="variantForm.imageFile"
+                  :label="$t('admin_produits_variant_image')"
+                  accept="image/*"
+                  :error-messages="errors.image_url"
+                  prepend-inner-icon="tabler-photo"
+                  clearable
+                  @change="handleImageUpload"
+                />
+              </VCol>
+            </VRow>
+
+            <!-- Current Image Preview -->
+            <VRow v-if="variantForm.image_url || imagePreview">
+              <VCol cols="12">
+                <VLabel class="mb-2">{{ $t('admin_produits_variant_image_preview') }}</VLabel>
+                <VImg
+                  :src="imagePreview || variantForm.image_url"
+                  max-width="150"
+                  max-height="150"
+                  class="rounded"
                 />
               </VCol>
             </VRow>
@@ -210,6 +241,7 @@ interface Variant {
   valeur: string
   prix_vente_variante?: number
   sku_variante?: string
+  image_url?: string
   actif: boolean
 }
 
@@ -242,10 +274,13 @@ const variantForm = reactive({
   valeur: '',
   prix_vente_variante: null as number | null,
   sku_variante: '',
+  image_url: '',
+  imageFile: null as File[] | null,
   actif: true
 })
 
 const errors = ref<Record<string, string[]>>({})
+const imagePreview = ref<string | null>(null)
 
 // Computed
 const headers = computed(() => [
@@ -253,6 +288,7 @@ const headers = computed(() => [
   { title: t('admin_produits_variant_value'), key: 'valeur', sortable: true },
   { title: t('admin_produits_variant_price'), key: 'prix_vente_variante', sortable: true },
   { title: t('admin_produits_variant_sku'), key: 'sku_variante', sortable: true },
+  { title: t('admin_produits_variant_image'), key: 'image_url', sortable: false },
   { title: t('common.status'), key: 'actif', sortable: true },
   { title: t('common.actions'), key: 'actions', sortable: false, width: 100 }
 ])
@@ -275,13 +311,29 @@ const formatPrice = (price: number): string => {
   }).format(price)
 }
 
+const handleImageUpload = (files: File[] | null) => {
+  if (files && files.length > 0) {
+    const file = files[0]
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      imagePreview.value = e.target?.result as string
+    }
+    reader.readAsDataURL(file)
+  } else {
+    imagePreview.value = null
+  }
+}
+
 const editVariant = (variant: Variant) => {
   editingVariant.value = variant
   variantForm.nom = variant.nom
   variantForm.valeur = variant.valeur
   variantForm.prix_vente_variante = variant.prix_vente_variante || null
   variantForm.sku_variante = variant.sku_variante || ''
+  variantForm.image_url = variant.image_url || ''
+  variantForm.imageFile = null
   variantForm.actif = variant.actif
+  imagePreview.value = null
   showAddDialog.value = true
 }
 
@@ -295,16 +347,35 @@ const saveVariant = async () => {
   isLoading.value = true
 
   try {
-    const endpoint = editingVariant.value 
+    let endpoint: string
+    let method: string
+    let body: any
+    let headers: any = {}
+
+    // First save the variant data
+    endpoint = editingVariant.value
       ? `/admin/produits/${props.productId}/variantes/${editingVariant.value.id}`
       : `/admin/produits/${props.productId}/variantes`
-    
-    const method = editingVariant.value ? 'PUT' : 'POST'
+
+    method = editingVariant.value ? 'PUT' : 'POST'
+    headers['Content-Type'] = 'application/json'
+
+    // Prepare variant data without the file
+    const variantData = {
+      nom: variantForm.nom,
+      valeur: variantForm.valeur,
+      prix_vente_variante: variantForm.prix_vente_variante,
+      sku_variante: variantForm.sku_variante,
+      image_url: variantForm.image_url,
+      actif: variantForm.actif
+    }
+
+    body = JSON.stringify(variantData)
 
     const { data, error } = await useApi(endpoint, {
       method,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(variantForm)
+      headers,
+      body
     })
 
     if (error.value) {
@@ -319,16 +390,42 @@ const saveVariant = async () => {
 
     const response = data.value as any
     if (response.success) {
+      const savedVariant = response.data
+
+      // Handle image upload if there's a file
+      if (variantForm.imageFile && variantForm.imageFile.length > 0) {
+        try {
+          const imageFormData = new FormData()
+          imageFormData.append('file', variantForm.imageFile[0])
+
+          const imageEndpoint = `/admin/produits/${props.productId}/variantes/${savedVariant.id}/image`
+          const { data: imageData, error: imageError } = await useApi(imageEndpoint, {
+            method: 'POST',
+            body: imageFormData
+          })
+
+          if (!imageError.value && imageData.value) {
+            const imageResponse = imageData.value as any
+            if (imageResponse.success) {
+              savedVariant.image_url = imageResponse.data.image_url
+            }
+          }
+        } catch (imageErr) {
+          console.error('Error uploading variant image:', imageErr)
+          // Don't fail the whole operation for image upload errors
+        }
+      }
+
       if (editingVariant.value) {
         // Update existing variant
         const index = variants.value.findIndex(v => v.id === editingVariant.value!.id)
         if (index !== -1) {
-          variants.value[index] = response.data
+          variants.value[index] = savedVariant
         }
         showSuccess(t('admin_produits_variant_updated'))
       } else {
         // Add new variant
-        variants.value.push(response.data)
+        variants.value.push(savedVariant)
         showSuccess(t('admin_produits_variant_added'))
       }
       closeDialog()
@@ -377,7 +474,10 @@ const closeDialog = () => {
   variantForm.valeur = ''
   variantForm.prix_vente_variante = null
   variantForm.sku_variante = ''
+  variantForm.image_url = ''
+  variantForm.imageFile = null
   variantForm.actif = true
+  imagePreview.value = null
   errors.value = {}
 }
 </script>

@@ -102,6 +102,14 @@ class Produit extends Model
     }
 
     /**
+     * Get the propositions for this product.
+     */
+    public function propositions(): HasMany
+    {
+        return $this->hasMany(ProduitProposition::class, 'produit_id');
+    }
+
+    /**
      * Get the offers for this product.
      */
     public function offres(): HasMany
@@ -139,13 +147,5 @@ class Produit extends Model
     public function avis(): HasMany
     {
         return $this->hasMany(AvisProduit::class, 'produit_id');
-    }
-
-    /**
-     * Get the propositions for this product.
-     */
-    public function propositions(): HasMany
-    {
-        return $this->hasMany(ProduitProposition::class, 'produit_id');
     }
 }

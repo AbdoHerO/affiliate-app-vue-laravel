@@ -6,7 +6,8 @@ import { storeToRefs } from 'pinia'
 import { useProduitsStore, type Produit } from '@/stores/admin/produits'
 import { useBoutiquesStore } from '@/stores/admin/boutiques'
 import { useCategoriesStore } from '@/stores/admin/categories'
-import { useAuthStore } from '@/stores/auth'
+
+import { useDebounceFn } from '@vueuse/core'
 import Breadcrumbs from '@/components/common/Breadcrumbs.vue'
 import ConfirmModal from '@/components/common/ConfirmModal.vue'
 
@@ -21,7 +22,7 @@ definePage({
 // Composables
 const router = useRouter()
 const { t } = useI18n()
-const authStore = useAuthStore()
+
 const produitsStore = useProduitsStore()
 const boutiquesStore = useBoutiquesStore()
 const categoriesStore = useCategoriesStore()
@@ -42,34 +43,15 @@ const {
 const { items: boutiques } = storeToRefs(boutiquesStore)
 const { categories } = storeToRefs(categoriesStore)
 
-// Reactive state
-const searchQuery = ref('')
-const boutiqueFilter = ref<string | null>(null)
-const categorieFilter = ref<string | null>(null)
-const statusFilter = ref('')
-const sortBy = ref('created_at')
-const sortDesc = ref(true)
+// Local state
 const showDeleteDialog = ref(false)
 const selectedProduit = ref<Produit | null>(null)
 const isDeleting = ref(false)
+const abortController = ref<AbortController | null>(null)
 
-// Computed properties with setters for v-model
-const currentPage = computed({
-  get: () => pagination.value.current_page,
-  set: (value: number) => {
-    pagination.value.current_page = value
-    loadProduits()
-  }
-})
-
-const itemsPerPage = computed({
-  get: () => pagination.value.per_page,
-  set: (value: number) => {
-    pagination.value.per_page = value
-    pagination.value.current_page = 1
-    loadProduits()
-  }
-})
+// Computed properties for pagination
+const currentPage = computed(() => pagination.value.current_page)
+const itemsPerPage = computed(() => pagination.value.per_page)
 
 // Statistics
 const totalProduits = computed(() => pagination.value.total)
@@ -97,39 +79,37 @@ const statusOptions = computed(() => [
   { title: t('common.inactive'), value: 'inactive' }
 ])
 
-// Debounced search
-let searchTimeout: NodeJS.Timeout | null = null
-const debouncedSearch = (value: string) => {
-  if (searchTimeout) clearTimeout(searchTimeout)
-  searchTimeout = setTimeout(() => {
-    searchQuery.value = value
-  }, 300)
-}
+
+
+// Debounced search function
+const debouncedFetch = useDebounceFn(async () => {
+  // Cancel previous request
+  if (abortController.value) {
+    abortController.value.abort()
+  }
+
+  abortController.value = new AbortController()
+
+  try {
+    await fetchProduits()
+  } catch (err: any) {
+    if (err.name !== 'AbortError') {
+      console.error('Error loading products:', err)
+    }
+  }
+}, 300)
 
 // Methods
 const loadProduits = async () => {
-  try {
-    await fetchProduits({
-      page: pagination.value.current_page,
-      per_page: pagination.value.per_page,
-      search: searchQuery.value,
-      boutique_id: boutiqueFilter.value || undefined,
-      categorie_id: categorieFilter.value || undefined,
-      status: statusFilter.value || undefined,
-      sort_by: sortBy.value,
-      sort_desc: sortDesc.value
-    })
-  } catch (err) {
-    console.error('Error loading products:', err)
-  }
+  await debouncedFetch()
 }
 
 const handleTableUpdate = (options: any) => {
-  currentPage.value = options.page
-  itemsPerPage.value = options.itemsPerPage
+  filters.value.page = options.page
+  filters.value.per_page = options.itemsPerPage
   if (options.sortBy && options.sortBy.length > 0) {
-    sortBy.value = options.sortBy[0].key
-    sortDesc.value = options.sortBy[0].order === 'desc'
+    filters.value.sort = options.sortBy[0].key
+    filters.value.direction = options.sortBy[0].order === 'desc' ? 'desc' : 'asc'
   }
   loadProduits()
 }
@@ -150,11 +130,11 @@ const handleCreate = () => {
 }
 
 const handleEdit = (produit: Produit) => {
-  router.push({ name: 'admin-produits-edit', params: { id: produit.id } })
+  router.push({ name: 'admin-produits-id-edit', params: { id: produit.id } })
 }
 
 const handleView = (produit: Produit) => {
-  router.push({ name: 'admin-produits-show', params: { id: produit.id } })
+  router.push({ name: 'admin-produits-id', params: { id: produit.id } })
 }
 
 const handleDelete = (produit: Produit) => {
@@ -195,15 +175,10 @@ const getStatusText = (actif: boolean): string => {
   return actif ? t('common.active') : t('common.inactive')
 }
 
-// Watchers
-watch([searchQuery, boutiqueFilter, categorieFilter, statusFilter], () => {
-  pagination.value.current_page = 1
+// Watchers for centralized filters
+watch(filters, () => {
   loadProduits()
-})
-
-watch([sortBy, sortDesc], () => {
-  loadProduits()
-})
+}, { deep: true })
 
 // Lifecycle
 onMounted(async () => {
@@ -301,17 +276,16 @@ onMounted(async () => {
         <VRow>
           <VCol cols="12" md="4">
             <VTextField
-              :model-value="searchQuery"
+              v-model="filters.q"
               :label="$t('common.search')"
               :placeholder="$t('admin_produits_search_placeholder')"
               prepend-inner-icon="tabler-search"
               clearable
-              @update:model-value="debouncedSearch"
             />
           </VCol>
           <VCol cols="12" md="2">
             <VSelect
-              v-model="boutiqueFilter"
+              v-model="filters.boutique_id"
               :items="boutiques"
               item-title="nom"
               item-value="id"
@@ -321,7 +295,7 @@ onMounted(async () => {
           </VCol>
           <VCol cols="12" md="2">
             <VSelect
-              v-model="categorieFilter"
+              v-model="filters.categorie_id"
               :items="categories"
               item-title="nom"
               item-value="id"
@@ -331,7 +305,7 @@ onMounted(async () => {
           </VCol>
           <VCol cols="12" md="2">
             <VSelect
-              v-model="statusFilter"
+              v-model="filters.actif"
               :items="statusOptions"
               item-title="title"
               item-value="value"

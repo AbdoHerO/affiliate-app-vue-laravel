@@ -42,18 +42,18 @@ const loadProduit = async () => {
     produit.value = await produitsStore.fetchProduit(produitId)
   } catch (err) {
     console.error('Error loading product:', err)
-    router.push({ name: 'admin-produits-index' })
+    router.push({ name: 'admin-produits' })
   } finally {
     isLoading.value = false
   }
 }
 
 const goBack = () => {
-  router.push({ name: 'admin-produits-index' })
+  router.push({ name: 'admin-produits' })
 }
 
 const handleEdit = () => {
-  router.push({ name: 'admin-produits-edit', params: { id: produitId } })
+  router.push({ name: 'admin-produits-id-edit', params: { id: produitId } })
 }
 
 const formatPrice = (price: number | null): string => {

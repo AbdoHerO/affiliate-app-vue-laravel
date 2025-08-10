@@ -14,6 +14,7 @@ use App\Http\Controllers\Admin\ProduitController;
 use App\Http\Controllers\Admin\ProduitImageController;
 use App\Http\Controllers\Admin\ProduitVideoController;
 use App\Http\Controllers\Admin\ProduitVarianteController;
+use App\Http\Controllers\Admin\ProduitPropositionController;
 use App\Http\Controllers\Admin\ProduitRuptureController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -128,7 +129,15 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('produits/{produit}/variantes', [ProduitVarianteController::class, 'store']);
         Route::get('produits/{produit}/variantes/{variante}', [ProduitVarianteController::class, 'show']);
         Route::put('produits/{produit}/variantes/{variante}', [ProduitVarianteController::class, 'update']);
+        Route::post('produits/{produit}/variantes/{variante}/image', [ProduitVarianteController::class, 'uploadImage']);
         Route::delete('produits/{produit}/variantes/{variante}', [ProduitVarianteController::class, 'destroy']);
+
+        // Product Propositions Management
+        Route::get('produits/{produit}/propositions', [ProduitPropositionController::class, 'index']);
+        Route::post('produits/{produit}/propositions', [ProduitPropositionController::class, 'store']);
+        Route::put('produits/{produit}/propositions/{proposition}', [ProduitPropositionController::class, 'update']);
+        Route::post('produits/{produit}/propositions/{proposition}/image', [ProduitPropositionController::class, 'uploadImage']);
+        Route::delete('produits/{produit}/propositions/{proposition}', [ProduitPropositionController::class, 'destroy']);
 
         // Product Ruptures (Stock Alerts) Management
         Route::get('produits/{produit}/ruptures', [ProduitRuptureController::class, 'index']);
