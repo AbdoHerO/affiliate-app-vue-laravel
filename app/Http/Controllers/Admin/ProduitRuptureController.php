@@ -56,6 +56,20 @@ class ProduitRuptureController extends Controller
         try {
             $validated = $request->validated();
 
+            // Check if product has variants
+            $hasVariants = $produit->variantes()->exists();
+
+            // If product has variants, variante_id should be required
+            if ($hasVariants && empty($validated['variante_id'])) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Variant selection is required when product has variants',
+                    'errors' => [
+                        'variante_id' => ['Variant selection is required when product has variants']
+                    ]
+                ], 422);
+            }
+
             // If variante_id is provided, validate it belongs to this product
             if (!empty($validated['variante_id'])) {
                 $variante = ProduitVariante::where('id', $validated['variante_id'])
@@ -78,6 +92,19 @@ class ProduitRuptureController extends Controller
                     return response()->json([
                         'success' => false,
                         'message' => 'Active rupture already exists for this variant'
+                    ], 422);
+                }
+            } else {
+                // Check if product-level rupture already exists
+                $existingRupture = ProduitRupture::where('produit_id', $produit->id)
+                    ->whereNull('variante_id')
+                    ->where('active', true)
+                    ->first();
+
+                if ($existingRupture) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Active product-level rupture already exists'
                     ], 422);
                 }
             }

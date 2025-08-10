@@ -224,6 +224,7 @@ export const useProduitsStore = defineStore('produits', () => {
   const fetchProduit = async (id: string) => {
     loading.value = true
     try {
+      console.debug('[Store] Fetching product with ID:', id)
       const { data: responseData, error: apiError } = await useApi(`/admin/produits/${id}`)
 
       if (apiError.value) {
@@ -235,6 +236,14 @@ export const useProduitsStore = defineStore('produits', () => {
       const response = responseData.value as any
       if (response.success) {
         currentProduit.value = response.data
+        console.debug('[Store] Product fetched successfully:', {
+          id: response.data.id,
+          images: response.data.images?.length || 0,
+          videos: response.data.videos?.length || 0,
+          variantes: response.data.variantes?.length || 0,
+          propositions: response.data.propositions?.length || 0,
+          ruptures: response.data.ruptures?.length || 0
+        })
 
         // Set relations if included
         if (response.data.images) {
@@ -275,6 +284,8 @@ export const useProduitsStore = defineStore('produits', () => {
         formData.quantite_min = 1
       }
 
+      console.debug('[Store] Creating product with data:', formData)
+
       const { data: responseData, error: apiError } = await useApi('/admin/produits', {
         method: 'POST',
         headers: {
@@ -291,6 +302,9 @@ export const useProduitsStore = defineStore('produits', () => {
 
       const response = responseData.value as any
       if (response.success) {
+        console.debug('[Store] Product created successfully with ID:', response.data.id)
+        // Set as current product immediately
+        currentProduit.value = response.data
         // Add to local state
         produits.value.unshift(response.data)
         return response.data

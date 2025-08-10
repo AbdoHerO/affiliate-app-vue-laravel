@@ -22,10 +22,10 @@ class StoreProduitRuptureRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'variante_id' => 'nullable|exists:produit_variantes,id',
-            'motif' => 'required|string|max:255',
+            'variante_id' => 'nullable|uuid|exists:produit_variantes,id',
+            'motif' => 'required|string|max:500',
             'started_at' => 'required|date',
-            'expected_restock_at' => 'nullable|date|after:started_at',
+            'expected_restock_at' => 'nullable|date|after_or_equal:started_at',
         ];
     }
 

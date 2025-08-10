@@ -79,6 +79,12 @@ const newRupture = reactive({
   started_at: '',
   expected_restock_at: ''
 })
+const ruptureValidationErrors = reactive({
+  variante_id: [] as string[],
+  motif: [] as string[],
+  started_at: [] as string[],
+  expected_restock_at: [] as string[]
+})
 
 // Video form state
 const videoMode = ref<'url' | 'upload'>('url')
@@ -138,28 +144,46 @@ const loadProduct = async () => {
 }
 
 const saveProduct = async () => {
-  if (saving.value) return
+  // Prevent double-click/double-submit
+  if (saving.value) {
+    console.debug('[ProductForm] Save already in progress, ignoring')
+    return
+  }
 
   saving.value = true
   try {
-    if (props.mode === 'create') {
+    if (props.mode === 'create' && !localId.value) {
+      // Create new product
+      console.debug('[ProductForm] Creating new product')
       const created = await produitsStore.createProduit(form.value)
       localId.value = created.id
       console.debug('[ProductForm] Created product with ID:', created.id)
+
+      // Fetch full product data with relations
       await produitsStore.fetchProduit(created.id)
       console.debug('[ProductForm] Fetched product data, images:', images.value.length, 'videos:', videos.value.length, 'variants:', variantes.value.length)
+
+      // Switch to edit mode but stay on same component
       emit('created', created)
       activeTab.value = 'images'
+
+      // Update URL without remounting component
       router.replace({
         name: 'admin-produits-id-edit',
         params: { id: created.id },
         query: { tab: 'images' }
       })
+
       showSuccess('Product created successfully')
     } else if (localId.value) {
+      // Update existing product
+      console.debug('[ProductForm] Updating product with ID:', localId.value)
       const updated = await produitsStore.updateProduit(localId.value, form.value)
       emit('updated', updated)
       showSuccess('Product updated successfully')
+    } else {
+      console.error('[ProductForm] Invalid state: create mode but no localId and no create action')
+      showError('Invalid form state')
     }
   } catch (error) {
     showError('Failed to save product')
@@ -191,8 +215,11 @@ const loadPropositions = async () => {
 
 // IMAGE upload handlers (upload-only)
 const handleImageUpload = async (files: FileList | File[]) => {
-  if (!localId.value) return
-  console.debug('[ProductForm] Uploading images for product ID:', localId.value)
+  if (!localId.value) {
+    console.warn('[ProductForm] Cannot upload images: no product ID')
+    return
+  }
+  console.debug('[ProductForm] [productId] add-image:', localId.value)
   const fileList = Array.from(files)
   for (const file of fileList) {
     const fd = new FormData()
@@ -237,7 +264,11 @@ const handleDeleteImage = async (imageId: string) => {
 
 // VIDEO handlers (URL or upload)
 const handleAddVideoUrl = async () => {
-  if (!localId.value || !newVideoUrl.value) return
+  if (!localId.value || !newVideoUrl.value) {
+    console.warn('[ProductForm] Cannot add video URL: missing product ID or URL')
+    return
+  }
+  console.debug('[ProductForm] [productId] add-video-url:', localId.value)
   try {
     const { data, error } = await useApi(`/admin/produits/${localId.value}/videos`, {
       method: 'POST',
@@ -259,7 +290,11 @@ const handleAddVideoUrl = async () => {
   }
 }
 const handleAddVideoUpload = async (files: FileList | File[]) => {
-  if (!localId.value) return
+  if (!localId.value) {
+    console.warn('[ProductForm] Cannot upload videos: no product ID')
+    return
+  }
+  console.debug('[ProductForm] [productId] add-video-upload:', localId.value)
   const fileList = Array.from(files)
   for (const file of fileList) {
     const fd = new FormData()
@@ -303,7 +338,11 @@ const deleteVideo = async (id: string) => {
 
 // VARIANTS
 const addVariant = async () => {
-  if (!localId.value || !newVariant.nom || !newVariant.valeur) return
+  if (!localId.value || !newVariant.nom || !newVariant.valeur) {
+    console.warn('[ProductForm] Cannot add variant: missing product ID, name, or value')
+    return
+  }
+  console.debug('[ProductForm] [productId] add-variant:', localId.value)
   try {
     const { data, error } = await useApi(`/admin/produits/${localId.value}/variantes`, {
       method: 'POST',
@@ -342,7 +381,11 @@ const deleteVariant = async (id: string) => {
   }
 }
 const uploadVariantImage = async (id: string, file: File) => {
-  if (!localId.value || !file) return
+  if (!localId.value || !file) {
+    console.warn('[ProductForm] Cannot upload variant image: missing product ID or file')
+    return
+  }
+  console.debug('[ProductForm] [productId] upload-variant-image:', localId.value, id)
   const fd = new FormData()
   fd.append('file', file)
   try {
@@ -356,6 +399,7 @@ const uploadVariantImage = async (id: string, file: File) => {
         const variant: any = variantes.value.find(v => v.id === id)
         if (variant) {
           variant.image_url = response.data.image_url
+          console.debug('[ProductForm] Variant image updated:', variant.image_url)
           showSuccess('Variant image uploaded successfully')
         }
       }
@@ -434,7 +478,11 @@ const deleteProposition = async (propositionId: string) => {
 }
 
 const uploadPropositionImage = async (propositionId: string, file: File) => {
-  if (!localId.value || !file) return
+  if (!localId.value || !file) {
+    console.warn('[ProductForm] Cannot upload proposition image: missing product ID or file')
+    return
+  }
+  console.debug('[ProductForm] [productId] upload-proposition-image:', localId.value, propositionId)
   const fd = new FormData()
   fd.append('file', file)
   try {
@@ -448,6 +496,7 @@ const uploadPropositionImage = async (propositionId: string, file: File) => {
         const proposition = propositions.value.find(p => p.id === propositionId)
         if (proposition) {
           proposition.image_url = response.data.image_url
+          console.debug('[ProductForm] Proposition image updated:', proposition.image_url)
           showSuccess('Proposition image uploaded successfully')
         }
       }
@@ -510,14 +559,61 @@ const loadRuptures = async () => {
 }
 
 const handleAddRupture = async () => {
-  if (!localId.value || !newRupture.motif || !newRupture.started_at) return
+  if (!localId.value) {
+    console.warn('[ProductForm] Cannot add rupture: no product ID')
+    return
+  }
+
+  // Clear previous validation errors
+  Object.keys(ruptureValidationErrors).forEach(key => {
+    ruptureValidationErrors[key as keyof typeof ruptureValidationErrors] = []
+  })
+
+  // Client-side validation
+  if (!newRupture.motif) {
+    ruptureValidationErrors.motif = ['Reason is required']
+    return
+  }
+  if (!newRupture.started_at) {
+    ruptureValidationErrors.started_at = ['Started date is required']
+    return
+  }
+
+  // Check if variant is required (when product has variants)
+  if (variantes.value.length > 0 && !newRupture.variante_id) {
+    ruptureValidationErrors.variante_id = ['Variant selection is required when product has variants']
+    return
+  }
+
+  console.debug('[ProductForm] [productId] add-rupture:', localId.value, {
+    hasVariants: variantes.value.length > 0,
+    selectedVariant: newRupture.variante_id
+  })
+
   try {
     const { data, error } = await useApi(`/admin/produits/${localId.value}/ruptures`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(newRupture)
     })
-    if (!error.value && data.value) {
+
+    if (error.value) {
+      const errorData = error.value as any
+      if (errorData.status === 422 && errorData.data?.errors) {
+        // Handle validation errors
+        Object.keys(errorData.data.errors).forEach(key => {
+          if (key in ruptureValidationErrors) {
+            ruptureValidationErrors[key as keyof typeof ruptureValidationErrors] = errorData.data.errors[key]
+          }
+        })
+        showError(errorData.data.message || 'Validation failed')
+      } else {
+        showError('Failed to report stock issue')
+      }
+      return
+    }
+
+    if (data.value) {
       const response = data.value as any
       if (response.success) {
         ruptures.value.push(response.data)
@@ -1174,14 +1270,23 @@ onMounted(async () => {
               <VCardText>
                 <VForm @submit.prevent="handleAddRupture">
                   <VRow>
-                    <VCol cols="12" md="6">
+                    <VCol cols="12" md="6" v-if="variantes.length > 0">
                       <VSelect
                         v-model="newRupture.variante_id"
-                        :items="[{ title: 'All variants', value: null }, ...variantes.map(v => ({ title: `${v.nom}: ${v.valeur}`, value: v.id }))]"
-                        label="Variant (Optional)"
+                        :items="[
+                          { title: 'Product-level issue (all variants)', value: null },
+                          ...variantes.map(v => ({ title: `${v.nom}: ${v.valeur}`, value: v.id }))
+                        ]"
+                        :label="variantes.length > 0 ? 'Variant (Required)' : 'Variant (Optional)'"
                         variant="outlined"
-                        clearable
+                        :required="variantes.length > 0"
+                        :error-messages="ruptureValidationErrors.variante_id"
                       />
+                    </VCol>
+                    <VCol cols="12" md="6" v-else>
+                      <VAlert type="info" variant="tonal" class="mb-0">
+                        This product has no variants. The stock issue will apply to the entire product.
+                      </VAlert>
                     </VCol>
                     <VCol cols="12" md="6">
                       <VTextField
