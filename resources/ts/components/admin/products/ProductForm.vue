@@ -168,11 +168,7 @@ const saveProduct = async () => {
       activeTab.value = 'images'
 
       // Update URL without remounting component
-      router.replace({
-        name: 'admin-produits-id-edit',
-        params: { id: created.id },
-        query: { tab: 'images' }
-      })
+      router.replace(`/admin/produits/${created.id}/edit?tab=images`)
 
       showSuccess('Product created successfully')
     } else if (localId.value) {

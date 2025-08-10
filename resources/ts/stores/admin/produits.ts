@@ -242,38 +242,43 @@ export const useProduitsStore = defineStore('produits', () => {
       }
 
       const response = responseData.value as any
-      if (response.success) {
-        currentProduit.value = response.data
+
+      // Handle both wrapped and direct responses
+      const productData = response.success ? response.data : response.data || response
+
+      if (productData && productData.id) {
+        currentProduit.value = productData
         console.debug('[Store] Product fetched successfully:', {
-          id: response.data.id,
-          images: response.data.images?.length || 0,
-          videos: response.data.videos?.length || 0,
-          variantes: response.data.variantes?.length || 0,
-          propositions: response.data.propositions?.length || 0,
-          ruptures: response.data.ruptures?.length || 0
+          id: productData.id,
+          images: productData.images?.length || 0,
+          videos: productData.videos?.length || 0,
+          variantes: productData.variantes?.length || 0,
+          propositions: productData.propositions?.length || 0,
+          ruptures: productData.ruptures?.length || 0
         })
 
         // Set relations if included
-        if (response.data.images) {
-          images.value = response.data.images
+        if (productData.images) {
+          images.value = productData.images
         }
-        if (response.data.videos) {
-          videos.value = response.data.videos
+        if (productData.videos) {
+          videos.value = productData.videos
         }
-        if (response.data.variantes) {
-          variantes.value = response.data.variantes
+        if (productData.variantes) {
+          variantes.value = productData.variantes
         }
-        if (response.data.propositions) {
-          propositions.value = response.data.propositions
+        if (productData.propositions) {
+          propositions.value = productData.propositions
         }
-        if (response.data.ruptures) {
-          ruptures.value = response.data.ruptures
+        if (productData.ruptures) {
+          ruptures.value = productData.ruptures
         }
 
-        return response.data
+        return productData
       } else {
-        error.value = response.message
-        throw new Error(response.message)
+        const errorMessage = response.message || 'Invalid product data received'
+        error.value = errorMessage
+        throw new Error(errorMessage)
       }
     } catch (error) {
       console.error('Failed to fetch produit:', error)

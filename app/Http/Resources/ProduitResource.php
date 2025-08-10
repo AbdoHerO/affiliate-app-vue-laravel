@@ -63,13 +63,11 @@ class ProduitResource extends JsonResource
                         'type' => $proposition->type,
                         'statut' => $proposition->statut,
                         'image_url' => $proposition->image_url,
-                        'auteur' => $proposition->whenLoaded('auteur', function () use ($proposition) {
-                            return [
-                                'id' => $proposition->auteur->id,
-                                'nom_complet' => $proposition->auteur->nom_complet,
-                                'email' => $proposition->auteur->email,
-                            ];
-                        }),
+                        'auteur' => $proposition->relationLoaded('auteur') ? [
+                            'id' => $proposition->auteur->id,
+                            'nom_complet' => $proposition->auteur->nom_complet,
+                            'email' => $proposition->auteur->email,
+                        ] : null,
                         'created_at' => $proposition->created_at,
                         'updated_at' => $proposition->updated_at,
                     ];

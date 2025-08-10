@@ -142,15 +142,16 @@ const loadFilterOptions = async () => {
 }
 
 const handleCreate = () => {
-  router.push({ name: 'admin-produits-create' })
+  router.push('/admin/produits/create')
 }
 
 const handleEdit = (produit: Produit) => {
-  router.push({ name: 'admin-produits-id-edit', params: { id: produit.id } })
+  console.log('[List] Navigating to edit page for product:', produit.id)
+  router.push(`/admin/produits/${produit.id}/edit`)
 }
 
 const handleView = (produit: Produit) => {
-  router.push({ name: 'admin-produits-id', params: { id: produit.id } })
+  router.push(`/admin/produits/${produit.id}`)
 }
 
 const handleDelete = (produit: Produit) => {
