@@ -721,5 +721,59 @@
   "common.upload": "رفع",
   "common.change": "تغيير",
   "common.remove": "إزالة",
-  "common_uploading": "جاري الرفع"
+  "common_uploading": "جاري الرفع",
+
+  // ===========================================
+  // MISSING TRANSLATION KEYS FROM CONSOLE WARNINGS
+  // ===========================================
+
+  // Direct French text keys (Arabic translations)
+  "Tableau de Bord": "لوحة التحكم",
+  "Gestion des Utilisateurs": "إدارة المستخدمين",
+  "Tous les Utilisateurs": "جميع المستخدمين",
+  "Rôles et Permissions": "الأدوار والصلاحيات",
+  "Documents KYC": "وثائق التحقق",
+  "Gestion des Affiliés": "إدارة الشركاء",
+  "Tous les Affiliés": "جميع الشركاء",
+  "Niveaux d'Affiliation": "مستويات الشراكة",
+  "Gestion des Commandes": "إدارة الطلبات",
+  "Toutes les Commandes": "جميع الطلبات",
+  "Conflits de Commandes": "تضارب الطلبات",
+  "Gestion des Produits": "إدارة المنتجات",
+  "Produits": "المنتجات",
+  "Catégories": "الفئات",
+  "Boutiques": "المتاجر",
+  "Gestion Financière": "الإدارة المالية",
+  "Paiements": "المدفوعات",
+  "Rapports et Analyses": "التقارير والتحليلات",
+  "Rapports de Ventes": "تقارير المبيعات",
+  "Performance des Affiliés": "أداء الشركاء",
+  "Profil": "الملف الشخصي",
+
+  // Missing common.* keys
+  "common.search": "بحث",
+  "common.all": "الكل",
+  "common.active": "نشط",
+  "common.inactive": "غير نشط",
+  "common.status": "الحالة",
+  "common.items_per_page": "العناصر في كل صفحة",
+  "common.actions": "الإجراءات",
+  "common.showing": "عرض",
+  "common.to": "إلى",
+  "common.of": "من",
+  "common.results": "نتائج",
+
+  // Missing data availability key
+  "Aucune donnée disponible": "لا توجد بيانات متاحة",
+
+  // Missing $vuetify keys
+  "$vuetify.dataIterator.loadingText": "جاري تحميل العناصر...",
+
+  // Additional missing keys from console warnings
+  "common.back": "رجوع",
+  "common.edit": "تعديل",
+  "common.loading": "جاري التحميل...",
+  "common.back_to_list": "العودة إلى القائمة",
+  "admin_produits_variante_nom": "اسم المتغير",
+  "admin_produits_variante_valeur": "قيمة المتغير"
 }

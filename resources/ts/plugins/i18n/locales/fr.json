@@ -994,5 +994,59 @@
   "common.upload": "Télécharger",
   "common.change": "Changer",
   "common.remove": "Supprimer",
-  "common_uploading": "Téléchargement"
+  "common_uploading": "Téléchargement",
+
+  // ===========================================
+  // MISSING TRANSLATION KEYS FROM CONSOLE WARNINGS
+  // ===========================================
+
+  // Direct French text keys (used as translation keys with exact spacing)
+  "Tableau de Bord": "Tableau de Bord",
+  "Gestion des Utilisateurs": "Gestion des Utilisateurs",
+  "Tous les Utilisateurs": "Tous les Utilisateurs",
+  "Rôles et Permissions": "Rôles et Permissions",
+  "Documents KYC": "Documents KYC",
+  "Gestion des Affiliés": "Gestion des Affiliés",
+  "Tous les Affiliés": "Tous les Affiliés",
+  "Niveaux d'Affiliation": "Niveaux d'Affiliation",
+  "Gestion des Commandes": "Gestion des Commandes",
+  "Toutes les Commandes": "Toutes les Commandes",
+  "Conflits de Commandes": "Conflits de Commandes",
+  "Gestion des Produits": "Gestion des Produits",
+  "Produits": "Produits",
+  "Catégories": "Catégories",
+  "Boutiques": "Boutiques",
+  "Gestion Financière": "Gestion Financière",
+  "Paiements": "Paiements",
+  "Rapports et Analyses": "Rapports et Analyses",
+  "Rapports de Ventes": "Rapports de Ventes",
+  "Performance des Affiliés": "Performance des Affiliés",
+  "Profil": "Profil",
+
+  // Missing common.* keys
+  "common.search": "Rechercher",
+  "common.all": "Tous",
+  "common.active": "Actif",
+  "common.inactive": "Inactif",
+  "common.status": "Statut",
+  "common.items_per_page": "Éléments par page",
+  "common.actions": "Actions",
+  "common.showing": "Affichage de",
+  "common.to": "à",
+  "common.of": "sur",
+  "common.results": "résultats",
+
+  // Missing data availability key
+  "Aucune donnée disponible": "Aucune donnée disponible",
+
+  // Missing $vuetify keys
+  "$vuetify.dataIterator.loadingText": "Chargement des éléments...",
+
+  // Additional missing keys from console warnings
+  "common.back": "Retour",
+  "common.edit": "Modifier",
+  "common.loading": "Chargement...",
+  "common.back_to_list": "Retour à la liste",
+  "admin_produits_variante_nom": "Nom de la Variante",
+  "admin_produits_variante_valeur": "Valeur de la Variante"
 }

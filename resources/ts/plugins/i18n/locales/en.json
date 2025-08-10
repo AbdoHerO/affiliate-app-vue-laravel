@@ -1139,6 +1139,59 @@
   "common.upload": "Upload",
   "common.change": "Change",
   "common.remove": "Remove",
-  "common_uploading": "Uploading"
-  
+  "common_uploading": "Uploading",
+
+  // ===========================================
+  // MISSING TRANSLATION KEYS FROM CONSOLE WARNINGS
+  // ===========================================
+
+  // Direct French text keys (English translations)
+  "Tableau de Bord": "Dashboard",
+  "Gestion des Utilisateurs": "User Management",
+  "Tous les Utilisateurs": "All Users",
+  "Rôles et Permissions": "Roles & Permissions",
+  "Documents KYC": "KYC Documents",
+  "Gestion des Affiliés": "Affiliate Management",
+  "Tous les Affiliés": "All Affiliates",
+  "Niveaux d'Affiliation": "Affiliate Tiers",
+  "Gestion des Commandes": "Order Management",
+  "Toutes les Commandes": "All Orders",
+  "Conflits de Commandes": "Order Conflicts",
+  "Gestion des Produits": "Product Management",
+  "Produits": "Products",
+  "Catégories": "Categories",
+  "Boutiques": "Boutiques",
+  "Gestion Financière": "Financial Management",
+  "Paiements": "Payments",
+  "Rapports et Analyses": "Reports & Analytics",
+  "Rapports de Ventes": "Sales Reports",
+  "Performance des Affiliés": "Affiliate Performance",
+  "Profil": "Profile",
+
+  // Missing common.* keys
+  "common.search": "Search",
+  "common.all": "All",
+  "common.active": "Active",
+  "common.inactive": "Inactive",
+  "common.status": "Status",
+  "common.items_per_page": "Items per page",
+  "common.actions": "Actions",
+  "common.showing": "Showing",
+  "common.to": "to",
+  "common.of": "of",
+  "common.results": "results",
+
+  // Missing data availability key
+  "Aucune donnée disponible": "No data available",
+
+  // Missing $vuetify keys
+  "$vuetify.dataIterator.loadingText": "Loading items...",
+
+  // Additional missing keys from console warnings
+  "common.back": "Back",
+  "common.edit": "Edit",
+  "common.loading": "Loading...",
+  "common.back_to_list": "Back to List",
+  "admin_produits_variante_nom": "Variant Name",
+  "admin_produits_variante_valeur": "Variant Value"
 }
