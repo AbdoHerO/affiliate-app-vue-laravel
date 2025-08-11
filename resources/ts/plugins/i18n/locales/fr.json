@@ -395,6 +395,8 @@
   "failed_to_create_user": "Échec de la création de l'utilisateur",
   "failed_to_update_user": "Échec de la mise à jour de l'utilisateur",
   "failed_to_delete_user": "Échec de la suppression de l'utilisateur",
+  "user_has_related_data": "Impossible de supprimer cet utilisateur car il a des données liées",
+  "user_constraint_error": "Cet utilisateur ne peut pas être supprimé en raison de contraintes de données",
 
   "role_management": "Gestion des Rôles et Permissions",
   "manage_roles_permissions": "Gérer les rôles et permissions du système",

@@ -459,6 +459,8 @@
   "failed_to_create_user": "Failed to create user",
   "failed_to_update_user": "Failed to update user",
   "failed_to_delete_user": "Failed to delete user",
+  "user_has_related_data": "Cannot delete this user because they have related data",
+  "user_constraint_error": "This user cannot be deleted due to data constraints",
   "user_status_updated_successfully": "User status updated successfully",
 
   "role_management": "Role & Permission Management",

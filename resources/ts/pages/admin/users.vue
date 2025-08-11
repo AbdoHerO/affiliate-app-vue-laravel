@@ -306,14 +306,38 @@ const deleteUser = async (user: User) => {
     })
 
     if (apiError.value) {
-      showError(apiError.value.message || t('failed_to_delete_user'))
+      // Handle foreign key constraint errors specifically
+      if (apiError.value.message && (
+          apiError.value.message.includes('foreign key constraint') ||
+          apiError.value.message.includes('Integrity constraint violation') ||
+          apiError.value.message.includes('1451')
+        )) {
+        showError(
+          `Impossible de supprimer l'utilisateur "${user.nom_complet}" car il a des données liées (avis, commandes, etc.). ` +
+          `Veuillez d'abord supprimer ou réassigner ses données.`
+        )
+      } else {
+        showError(apiError.value.message || t('failed_to_delete_user'))
+      }
       console.error('Delete user error:', apiError.value)
     } else if (data.value) {
       await fetchUsers(pagination.value.current_page)
       showSuccess(t('user_deleted_successfully', { name: user.nom_complet }))
     }
   } catch (err: any) {
-    showError(err.message || t('failed_to_delete_user'))
+    // Handle network/unexpected errors
+    if (err.message && (
+        err.message.includes('foreign key') ||
+        err.message.includes('constraint') ||
+        err.message.includes('1451')
+      )) {
+      showError(
+        `Impossible de supprimer l'utilisateur "${user.nom_complet}" en raison de relations de données. ` +
+        `Veuillez contacter un administrateur.`
+      )
+    } else {
+      showError(err.message || t('failed_to_delete_user'))
+    }
     console.error('Delete user error:', err)
   }
 }
