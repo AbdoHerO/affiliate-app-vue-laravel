@@ -5,9 +5,9 @@ import { storeToRefs } from 'pinia'
 import { useCategoriesStore, type Category } from '@/stores/admin/categories'
 import { useAuthStore } from '@/stores/auth'
 import Breadcrumbs from '@/components/common/Breadcrumbs.vue'
-import ConfirmModal from '@/components/common/ConfirmModal.vue'
 import CategoryCrudDialog from '@/components/admin/categories/CategoryCrudDialog.vue'
 import CategoryViewDialog from '@/components/admin/categories/CategoryViewDialog.vue'
+import { useQuickConfirm } from '@/composables/useConfirmAction'
 
 definePage({
   meta: {
@@ -21,6 +21,7 @@ definePage({
 const { t } = useI18n()
 const authStore = useAuthStore()
 const categoriesStore = useCategoriesStore()
+const { confirmDelete } = useQuickConfirm()
 
 // Turn reactive state into refs
 const { categories, loading } = storeToRefs(categoriesStore)
@@ -32,7 +33,6 @@ const sortBy = ref('ordre')
 const sortDesc = ref(false)
 const showCrudDialog = ref(false)
 const showViewDialog = ref(false)
-const showDeleteDialog = ref(false)
 const selectedCategory = ref<Category | null>(null)
 const crudMode = ref<'create' | 'edit'>('create')
 const isDeleting = ref(false)
@@ -78,11 +78,7 @@ const sortOptions = computed(() => [
   { title: t('common_created_at'), value: 'created_at' }
 ])
 
-const deleteMessage = computed(() => 
-  selectedCategory.value 
-    ? t('admin_categories_delete_confirm', { name: selectedCategory.value.nom })
-    : ''
-)
+
 
 // Methods
 const fetchCategories = async () => {
@@ -124,19 +120,15 @@ const viewCategory = (category: Category) => {
   showViewDialog.value = true
 }
 
-const deleteCategory = (category: Category) => {
-  selectedCategory.value = category
-  showDeleteDialog.value = true
-}
-
-const confirmDelete = async () => {
-  if (!selectedCategory.value) return
+const deleteCategoryAction = async (category: Category) => {
+  // Show confirm dialog before deleting
+  const confirmed = await confirmDelete(t('category'), category.nom)
+  if (!confirmed) return
 
   isDeleting.value = true
   try {
-    await categoriesStore.deleteCategory(selectedCategory.value.id)
-    showDeleteDialog.value = false
-    selectedCategory.value = null
+    await categoriesStore.deleteCategory(category.id)
+    fetchCategories()
   } catch (error) {
     console.error('Delete failed:', error)
   } finally {
@@ -396,7 +388,7 @@ onMounted(() => {
                     variant="text"
                     size="small"
                     color="error"
-                    @click="deleteCategory(item)"
+                    @click="deleteCategoryAction(item)"
                   />
                 </template>
               </VTooltip>
@@ -420,13 +412,6 @@ onMounted(() => {
       :category="selectedCategory"
     />
 
-    <!-- Delete Confirmation -->
-    <ConfirmModal
-      v-model="showDeleteDialog"
-      :title="$t('admin_categories_delete_title')"
-      :message="deleteMessage"
-      :loading="isDeleting"
-      @confirm="confirmDelete"
-    />
+
   </div>
 </template>

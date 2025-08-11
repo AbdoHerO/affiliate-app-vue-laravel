@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue'
 import { useAuth } from '@/composables/useAuth'
 import { useI18n } from 'vue-i18n'
 import { useNotifications } from '@/composables/useNotifications'
+import { useQuickConfirm } from '@/composables/useConfirmAction'
 import { useApi } from '@/composables/useApi'
 import { useFormErrors } from '@/composables/useFormErrors'
 
@@ -15,7 +16,8 @@ definePage({
 
 const { hasPermission } = useAuth()
 const { t } = useI18n()
-const { showSuccess, showError, showConfirm, snackbar, confirmDialog } = useNotifications()
+const { showSuccess, showError, snackbar } = useNotifications()
+const { confirmCreate, confirmUpdate, confirmDelete } = useQuickConfirm()
 
 // Data
 const roles = ref<any[]>([])
@@ -91,6 +93,10 @@ const fetchPermissions = async () => {
 }
 
 const createRole = async () => {
+  // Show confirm dialog before creating
+  const confirmed = await confirmCreate(t('role'))
+  if (!confirmed) return
+
   try {
     loading.value = true
 
@@ -128,6 +134,10 @@ const createRole = async () => {
 const updateRole = async () => {
   if (!selectedRole.value) return
 
+  // Show confirm dialog before updating
+  const confirmed = await confirmUpdate(t('role'), selectedRole.value.name)
+  if (!confirmed) return
+
   try {
     loading.value = true
 
@@ -162,38 +172,40 @@ const updateRole = async () => {
 }
 
 // Delete role
-const deleteRole = (role: any) => {
-  showConfirm(
-    t('confirm_delete'),
-    t('confirm_delete_role', { name: role.name }),
-    async () => {
-      try {
-        loading.value = true
+const deleteRole = async (role: any) => {
+  // Show confirm dialog before deleting
+  const confirmed = await confirmDelete(t('role'), role.name)
+  if (!confirmed) return
 
-        const { data, error: apiError } = await useApi<any>(`/admin/roles/${role.id}`, {
-          method: 'DELETE',
-        })
+  try {
+    loading.value = true
 
-        if (apiError.value) {
-          let errorMessage = apiError.value.message || t('failed_to_delete_role')
-          showError(errorMessage)
-          console.error('Delete role error:', apiError.value)
-        } else if (data.value) {
-          await fetchRoles()
-          showSuccess(t('role_deleted_successfully', { name: role.name }))
-        }
-      } catch (err: any) {
-        showError(err.message || t('failed_to_delete_role'))
-        console.error('Delete role error:', err)
-      } finally {
-        loading.value = false
-      }
+    const { data, error: apiError } = await useApi<any>(`/admin/roles/${role.id}`, {
+      method: 'DELETE',
+    })
+
+    if (apiError.value) {
+      let errorMessage = apiError.value.message || t('failed_to_delete_role')
+      showError(errorMessage)
+      console.error('Delete role error:', apiError.value)
+    } else if (data.value) {
+      await fetchRoles()
+      showSuccess(t('role_deleted_successfully', { name: role.name }))
     }
-  )
+  } catch (err: any) {
+    showError(err.message || t('failed_to_delete_role'))
+    console.error('Delete role error:', err)
+  } finally {
+    loading.value = false
+  }
 }
 
 // Create permission
 const createPermission = async () => {
+  // Show confirm dialog before creating
+  const confirmed = await confirmCreate(t('permission'))
+  if (!confirmed) return
+
   try {
     loading.value = true
 
@@ -227,34 +239,32 @@ const createPermission = async () => {
 }
 
 // Delete permission
-const deletePermission = (permission: any) => {
-  showConfirm(
-    t('confirm_delete'),
-    t('confirm_delete_permission', { name: permission.name }),
-    async () => {
-      try {
-        loading.value = true
+const deletePermission = async (permission: any) => {
+  // Show confirm dialog before deleting
+  const confirmed = await confirmDelete(t('permission'), permission.name)
+  if (!confirmed) return
 
-        const { data, error: apiError } = await useApi<any>(`/admin/permissions/${permission.id}`, {
-          method: 'DELETE',
-        })
+  try {
+    loading.value = true
 
-        if (apiError.value) {
-          let errorMessage = apiError.value.message || t('failed_to_delete_permission')
-          showError(errorMessage)
-          console.error('Delete permission error:', apiError.value)
-        } else if (data.value) {
-          await fetchPermissions()
-          showSuccess(t('permission_deleted_successfully', { name: permission.name }))
-        }
-      } catch (err: any) {
-        showError(err.message || t('failed_to_delete_permission'))
-        console.error('Delete permission error:', err)
-      } finally {
-        loading.value = false
-      }
+    const { data, error: apiError } = await useApi<any>(`/admin/permissions/${permission.id}`, {
+      method: 'DELETE',
+    })
+
+    if (apiError.value) {
+      let errorMessage = apiError.value.message || t('failed_to_delete_permission')
+      showError(errorMessage)
+      console.error('Delete permission error:', apiError.value)
+    } else if (data.value) {
+      await fetchPermissions()
+      showSuccess(t('permission_deleted_successfully', { name: permission.name }))
     }
-  )
+  } catch (err: any) {
+    showError(err.message || t('failed_to_delete_permission'))
+    console.error('Delete permission error:', err)
+  } finally {
+    loading.value = false
+  }
 }
 
 // Form helpers
@@ -466,8 +476,8 @@ onMounted(async () => {
         </VCardText>
         <VCardActions>
           <VSpacer />
-          <VBtn variant="outlined" @click="showCreateRoleDialog = false">Cancel</VBtn>
-          <VBtn color="primary" @click="createRole">Create Role</VBtn>
+          <VBtn variant="outlined" type="button" @click="showCreateRoleDialog = false">Cancel</VBtn>
+          <VBtn color="primary" type="button" :loading="loading" @click="createRole">Create Role</VBtn>
         </VCardActions>
       </VCard>
     </VDialog>
@@ -502,8 +512,8 @@ onMounted(async () => {
         </VCardText>
         <VCardActions>
           <VSpacer />
-          <VBtn variant="outlined" @click="showEditRoleDialog = false">Cancel</VBtn>
-          <VBtn color="primary" @click="updateRole">Update Role</VBtn>
+          <VBtn variant="outlined" type="button" @click="showEditRoleDialog = false">Cancel</VBtn>
+          <VBtn color="primary" type="button" :loading="loading" @click="updateRole">Update Role</VBtn>
         </VCardActions>
       </VCard>
     </VDialog>
@@ -525,8 +535,8 @@ onMounted(async () => {
         </VCardText>
         <VCardActions>
           <VSpacer />
-          <VBtn variant="outlined" @click="showCreatePermissionDialog = false">Cancel</VBtn>
-          <VBtn color="primary" @click="createPermission">Create Permission</VBtn>
+          <VBtn variant="outlined" type="button" @click="showCreatePermissionDialog = false">Cancel</VBtn>
+          <VBtn color="primary" type="button" :loading="loading" @click="createPermission">Create Permission</VBtn>
         </VCardActions>
       </VCard>
     </VDialog>
@@ -541,33 +551,6 @@ onMounted(async () => {
       {{ snackbar.message }}
     </VSnackbar>
 
-    <!-- Confirmation Dialog -->
-    <VDialog v-model="confirmDialog.show" max-width="500">
-      <VCard class="text-center px-10 py-6">
-        <VCardText>
-          <VBtn
-            icon
-            variant="outlined"
-            color="warning"
-            class="my-4"
-            style="block-size: 88px; inline-size: 88px; pointer-events: none;"
-          >
-            <span class="text-5xl">!</span>
-          </VBtn>
-          <h6 class="text-lg font-weight-medium">
-            {{ confirmDialog.title }}
-          </h6>
-          <p class="mt-2">{{ confirmDialog.message }}</p>
-        </VCardText>
-        <VCardText class="d-flex align-center justify-center gap-2">
-          <VBtn variant="elevated" @click="confirmDialog.onConfirm">
-            {{ confirmDialog.confirmText }}
-          </VBtn>
-          <VBtn color="secondary" variant="tonal" @click="confirmDialog.onCancel">
-            {{ confirmDialog.cancelText }}
-          </VBtn>
-        </VCardText>
-      </VCard>
-    </VDialog>
+
   </div>
 </template>

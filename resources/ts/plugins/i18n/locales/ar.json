@@ -704,6 +704,8 @@
   "common_delete": "حذف",
   "common.save": "حفظ",
   "common.cancel": "إلغاء",
+  "common.create": "إنشاء",
+  "common.delete": "حذف",
   "common_back": "رجوع",
   "common_search": "بحث",
   "common_filter": "تصفية",
@@ -715,11 +717,38 @@
   "common.updated_at": "تاريخ التحديث",
   "common.close": "إغلاق" ,
   "common.confirm": "تأكيد",
+  "common.are_you_sure": "هل أنت متأكد؟",
+  "common.delete_all": "حذف الكل",
   "common.sort.created_desc": "الأحدث أولاً",
   "common.sort.name_asc": "الاسم (أ-ي)",
   "common.sort.status": "الحالة",
   "common.upload": "رفع",
   "common.change": "تغيير",
+
+  // ===========================================
+  // CONFIRM DIALOG MESSAGES
+  // ===========================================
+  "confirm.create_title": "إنشاء عنصر",
+  "confirm.create_text": "هل تريد إنشاء هذا {entity}؟",
+  "confirm.update_title": "حفظ التغييرات",
+  "confirm.update_text": "هل تريد حفظ التغييرات على هذا {entity}؟",
+  "confirm.update_text_with_name": "هل تريد حفظ التغييرات على {entity} '{name}'؟",
+  "confirm.delete_title": "حذف العنصر",
+  "confirm.delete_text": "هل تريد حذف هذا {entity}؟ لا يمكن التراجع عن هذا الإجراء.",
+  "confirm.delete_text_with_name": "هل تريد حذف {entity} '{name}'؟ لا يمكن التراجع عن هذا الإجراء.",
+  "confirm.bulk_delete_title": "حذف متعدد",
+  "confirm.bulk_delete_text": "هل تريد حذف {count} {entity}؟ لا يمكن التراجع عن هذا الإجراء.",
+
+  // Entity names for confirm dialogs
+  "user": "مستخدم",
+  "role": "دور",
+  "permission": "صلاحية",
+  "category": "فئة",
+  "product": "منتج",
+  "boutique": "متجر",
+  "document": "وثيقة",
+  "attribut": "خاصية",
+  "valeur": "قيمة",
   "common.remove": "إزالة",
   "common_uploading": "جاري الرفع",
 

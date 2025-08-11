@@ -6,9 +6,10 @@ import { storeToRefs } from 'pinia'
 import { useBoutiquesStore, type Boutique } from '@/stores/admin/boutiques'
 import { useAuthStore } from '@/stores/auth'
 import Breadcrumbs from '@/components/common/Breadcrumbs.vue'
-import ConfirmModal from '@/components/common/ConfirmModal.vue'
 import BoutiqueCrudDialog from '@/components/admin/boutiques/BoutiqueCrudDialog.vue'
 import BoutiqueViewDialog from '@/components/admin/boutiques/BoutiqueViewDialog.vue'
+import ConfirmActionDialog from '@/components/common/ConfirmActionDialog.vue'
+import { useQuickConfirm } from '@/composables/useConfirmAction'
 
 definePage({
   meta: {
@@ -22,6 +23,19 @@ const router = useRouter()
 const { t } = useI18n()
 const authStore = useAuthStore()
 const boutiquesStore = useBoutiquesStore()
+const {
+  confirmDelete,
+  isDialogVisible: isConfirmDialogVisible,
+  isLoading: isConfirmLoading,
+  dialogTitle,
+  dialogText,
+  dialogIcon,
+  dialogColor,
+  confirmButtonText,
+  cancelButtonText,
+  handleConfirm,
+  handleCancel
+} = useQuickConfirm()
 
 // Keep functions on the store instance
 const { fetchBoutiques, setFilters, destroy } = boutiquesStore
@@ -41,7 +55,6 @@ const sortBy = ref('created_at')
 const sortDesc = ref(true)
 const showCrudDialog = ref(false)
 const showViewDialog = ref(false)
-const showDeleteDialog = ref(false)
 const selectedBoutique = ref<Boutique | null>(null)
 const crudMode = ref<'create' | 'edit'>('create')
 const isDeleting = ref(false)
@@ -94,11 +107,7 @@ const sortOptions = computed(() => [
   { title: t('common.sort.status'), value: 'statut' }
 ])
 
-const deleteMessage = computed(() => {
-  return selectedBoutique.value 
-    ? t('admin_boutiques_delete_confirm', { name: selectedBoutique.value.nom })
-    : ''
-})
+
 
 // Methods
 const fetchData = () => {
@@ -150,19 +159,14 @@ const openViewDialog = (boutique: Boutique) => {
   showViewDialog.value = true
 }
 
-const openDeleteDialog = (boutique: Boutique) => {
-  selectedBoutique.value = boutique
-  showDeleteDialog.value = true
-}
-
-const confirmDelete = async () => {
-  if (!selectedBoutique.value) return
+const deleteBoutique = async (boutique: Boutique) => {
+  // Show confirm dialog before deleting
+  const confirmed = await confirmDelete(t('boutique'), boutique.nom)
+  if (!confirmed) return
 
   isDeleting.value = true
   try {
-    await destroy(selectedBoutique.value.id)
-    showDeleteDialog.value = false
-    selectedBoutique.value = null
+    await destroy(boutique.id)
     fetchData()
   } catch (error) {
     console.error('Delete error:', error)
@@ -386,7 +390,7 @@ onMounted(() => {
                 size="small"
                 variant="text"
                 color="error"
-                @click="openDeleteDialog(item)"
+                @click="deleteBoutique(item)"
               />
             </div>
           </template>
@@ -422,13 +426,19 @@ onMounted(() => {
       :boutique="selectedBoutique"
     />
 
-    <!-- Delete Confirmation -->
-    <ConfirmModal
-      v-model="showDeleteDialog"
-      :title="$t('admin_boutiques_delete_title')"
-      :message="deleteMessage"
-      :loading="isDeleting"
-      @confirm="confirmDelete"
+    <!-- Confirm Dialog -->
+    <ConfirmActionDialog
+      :is-dialog-visible="isConfirmDialogVisible"
+      :is-loading="isConfirmLoading"
+      :dialog-title="dialogTitle"
+      :dialog-text="dialogText"
+      :dialog-icon="dialogIcon"
+      :dialog-color="dialogColor"
+      :confirm-button-text="confirmButtonText"
+      :cancel-button-text="cancelButtonText"
+      @confirm="handleConfirm"
+      @cancel="handleCancel"
     />
+
   </div>
 </template>

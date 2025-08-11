@@ -3,6 +3,8 @@ import { ref, watch, onMounted } from 'vue'
 import { useAuth } from '@/composables/useAuth'
 import { useI18n } from 'vue-i18n'
 import { useNotifications } from '@/composables/useNotifications'
+import { useQuickConfirm } from '@/composables/useConfirmAction'
+import ConfirmActionDialog from '@/components/common/ConfirmActionDialog.vue'
 import { useApi } from '@/composables/useApi'
 import { useFormErrors } from '@/composables/useFormErrors'
 import ProfileImageUpload from '@/components/ProfileImageUpload.vue'
@@ -17,7 +19,22 @@ definePage({
 
 const { hasPermission } = useAuth()
 const { t } = useI18n()
-const { showSuccess, showError, showConfirm, snackbar, confirmDialog } = useNotifications()
+const { showSuccess, showError, snackbar } = useNotifications()
+const {
+  confirmCreate,
+  confirmUpdate,
+  confirmDelete,
+  isDialogVisible: isConfirmDialogVisible,
+  isLoading: isConfirmLoading,
+  dialogTitle,
+  dialogText,
+  dialogIcon,
+  dialogColor,
+  confirmButtonText,
+  cancelButtonText,
+  handleConfirm,
+  handleCancel
+} = useQuickConfirm()
 
 
 
@@ -167,10 +184,12 @@ const fetchRoles = async () => {
 }
 
 const createUser = async () => {
+  // Show confirm dialog before creating
+  const confirmed = await confirmCreate(t('user'))
+  if (!confirmed) return
+
   try {
     loading.value = true
-
-
 
     const { data, error: apiError } = await useApi<any>('/admin/users', {
       method: 'POST',
@@ -212,10 +231,12 @@ const createUser = async () => {
 const updateUser = async () => {
   if (!selectedUser.value) return
 
+  // Show confirm dialog before updating
+  const confirmed = await confirmUpdate(t('user'), selectedUser.value.nom_complet)
+  if (!confirmed) return
+
   try {
     loading.value = true
-
-
 
     const payload: any = {
       nom_complet: userForm.value.nom_complet,
@@ -274,29 +295,27 @@ const toggleUserStatus = async (user: User) => {
   }
 }
 
-const deleteUser = (user: User) => {
-  showConfirm(
-    t('confirm_delete'),
-    t('confirm_delete_user', { name: user.nom_complet }),
-    async () => {
-      try {
-        const { data, error: apiError } = await useApi<any>(`/admin/users/${user.id}`, {
-          method: 'DELETE',
-        })
+const deleteUser = async (user: User) => {
+  // Show confirm dialog before deleting
+  const confirmed = await confirmDelete(t('user'), user.nom_complet)
+  if (!confirmed) return
 
-        if (apiError.value) {
-          showError(apiError.value.message || t('failed_to_delete_user'))
-          console.error('Delete user error:', apiError.value)
-        } else if (data.value) {
-          await fetchUsers(pagination.value.current_page)
-          showSuccess(t('user_deleted_successfully', { name: user.nom_complet }))
-        }
-      } catch (err: any) {
-        showError(err.message || t('failed_to_delete_user'))
-        console.error('Delete user error:', err)
-      }
-    },
-  )
+  try {
+    const { data, error: apiError } = await useApi<any>(`/admin/users/${user.id}`, {
+      method: 'DELETE',
+    })
+
+    if (apiError.value) {
+      showError(apiError.value.message || t('failed_to_delete_user'))
+      console.error('Delete user error:', apiError.value)
+    } else if (data.value) {
+      await fetchUsers(pagination.value.current_page)
+      showSuccess(t('user_deleted_successfully', { name: user.nom_complet }))
+    }
+  } catch (err: any) {
+    showError(err.message || t('failed_to_delete_user'))
+    console.error('Delete user error:', err)
+  }
 }
 
 // Form helpers
@@ -532,8 +551,8 @@ watch(
         </VCardText>
         <VCardActions>
           <VSpacer />
-          <VBtn variant="outlined" @click="showCreateDialog = false">{{ t('cancel') }}</VBtn>
-          <VBtn color="primary" @click="createUser">{{ t('create_user') }}</VBtn>
+          <VBtn variant="outlined" type="button" @click="showCreateDialog = false">{{ t('cancel') }}</VBtn>
+          <VBtn color="primary" type="button" :loading="loading" @click="createUser">{{ t('create_user') }}</VBtn>
         </VCardActions>
       </VCard>
     </VDialog>
@@ -561,8 +580,8 @@ watch(
         </VCardText>
         <VCardActions>
           <VSpacer />
-          <VBtn variant="outlined" @click="showEditDialog = false">{{ t('cancel') }}</VBtn>
-          <VBtn color="primary" @click="updateUser">{{ t('update_user') }}</VBtn>
+          <VBtn variant="outlined" type="button" @click="showEditDialog = false">{{ t('cancel') }}</VBtn>
+          <VBtn color="primary" type="button" :loading="loading" @click="updateUser">{{ t('update_user') }}</VBtn>
         </VCardActions>
       </VCard>
     </VDialog>
@@ -577,33 +596,19 @@ watch(
       {{ snackbar.message }}
     </VSnackbar>
 
-    <!-- Confirmation Dialog -->
-    <VDialog v-model="confirmDialog.show" max-width="500">
-      <VCard class="text-center px-10 py-6">
-        <VCardText>
-          <VBtn
-            icon
-            variant="outlined"
-            color="warning"
-            class="my-4"
-            style="block-size: 88px; inline-size: 88px; pointer-events: none;"
-          >
-            <span class="text-5xl">!</span>
-          </VBtn>
-          <h6 class="text-lg font-weight-medium">
-            {{ confirmDialog.title }}
-          </h6>
-          <p class="mt-2">{{ confirmDialog.message }}</p>
-        </VCardText>
-        <VCardText class="d-flex align-center justify-center gap-2">
-          <VBtn variant="elevated" @click="confirmDialog.onConfirm">
-            {{ confirmDialog.confirmText }}
-          </VBtn>
-          <VBtn color="secondary" variant="tonal" @click="confirmDialog.onCancel">
-            {{ confirmDialog.cancelText }}
-          </VBtn>
-        </VCardText>
-      </VCard>
-    </VDialog>
+    <!-- Confirm Dialog -->
+    <ConfirmActionDialog
+      :is-dialog-visible="isConfirmDialogVisible"
+      :is-loading="isConfirmLoading"
+      :dialog-title="dialogTitle"
+      :dialog-text="dialogText"
+      :dialog-icon="dialogIcon"
+      :dialog-color="dialogColor"
+      :confirm-button-text="confirmButtonText"
+      :cancel-button-text="cancelButtonText"
+      @confirm="handleConfirm"
+      @cancel="handleCancel"
+    />
+
   </div>
 </template>

@@ -1123,6 +1123,8 @@
   "common_delete": "Delete",
   "common.save": "Save",
   "common.cancel": "Cancel",
+  "common.create": "Create",
+  "common.delete": "Delete",
   "common_back": "Back",
   "common_search": "Search",
   "common_filter": "Filter",
@@ -1134,11 +1136,38 @@
   "common.updated_at": "Updated at",
   "common.close": "Close",
   "common.confirm": "Confirm",
+  "common.are_you_sure": "Are you sure?",
+  "common.delete_all": "Delete All",
   "common.sort.created_desc": "Newest first",
   "common.sort.name_asc": "Name (A–Z)",
   "common.sort.status": "Status",
   "common.upload": "Upload",
   "common.change": "Change",
+
+  // ===========================================
+  // CONFIRM DIALOG MESSAGES
+  // ===========================================
+  "confirm.create_title": "Create Item",
+  "confirm.create_text": "Do you want to create this {entity}?",
+  "confirm.update_title": "Save Changes",
+  "confirm.update_text": "Do you want to save changes to this {entity}?",
+  "confirm.update_text_with_name": "Do you want to save changes to {entity} '{name}'?",
+  "confirm.delete_title": "Delete Item",
+  "confirm.delete_text": "Do you want to delete this {entity}? This action cannot be undone.",
+  "confirm.delete_text_with_name": "Do you want to delete {entity} '{name}'? This action cannot be undone.",
+  "confirm.bulk_delete_title": "Bulk Delete",
+  "confirm.bulk_delete_text": "Do you want to delete {count} {entity}? This action cannot be undone.",
+
+  // Entity names for confirm dialogs
+  "user": "user",
+  "role": "role",
+  "permission": "permission",
+  "category": "category",
+  "product": "product",
+  "boutique": "boutique",
+  "document": "document",
+  "attribut": "attribute",
+  "valeur": "value",
   "common.remove": "Remove",
   "common_uploading": "Uploading",
 

@@ -122,6 +122,7 @@
         </VBtn>
         <VBtn
           color="primary"
+          type="button"
           :loading="isSaving"
           @click="save"
         >
@@ -136,6 +137,7 @@
 import { computed, ref, watch, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useBoutiquesStore, type Boutique, type BoutiqueFormData } from '@/stores/admin/boutiques'
+import { useQuickConfirm } from '@/composables/useConfirmAction'
 
 interface Props {
   modelValue: boolean
@@ -151,6 +153,7 @@ const emit = defineEmits<{
 
 const { t } = useI18n()
 const boutiquesStore = useBoutiquesStore()
+const { confirmCreate, confirmUpdate } = useQuickConfirm()
 const form = ref<any>(null)
 
 // State
@@ -279,6 +282,12 @@ const validate = () => {
 const save = async () => {
   if (!validate()) return
 
+  // Show confirm dialog before saving
+  const confirmed = isEditMode.value && props.boutique
+    ? await confirmUpdate(t('boutique'), props.boutique.nom)
+    : await confirmCreate(t('boutique'))
+  if (!confirmed) return
+
   isSaving.value = true
   try {
     if (isEditMode.value && props.boutique) {
@@ -286,12 +295,12 @@ const save = async () => {
     } else {
       await boutiquesStore.create(formData.value)
     }
-    
+
     emit('saved')
     close()
   } catch (error: any) {
     console.error('Save failed:', error)
-    
+
     // Handle validation errors from backend
     if (error.status === 422 && error.data?.errors) {
       errors.value = error.data.errors

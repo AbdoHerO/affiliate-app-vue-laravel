@@ -5,8 +5,10 @@ import { useBoutiquesStore } from '@/stores/admin/boutiques'
 import { useCategoriesStore } from '@/stores/admin/categories'
 import { storeToRefs } from 'pinia'
 import { useRouter, useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useNotifications } from '@/composables/useNotifications'
 import { useFormErrors } from '@/composables/useFormErrors'
+import { useQuickConfirm } from '@/composables/useConfirmAction'
 import { useDebounceFn } from '@vueuse/core'
 import { useApi } from '@/composables/useApi'
 
@@ -34,7 +36,9 @@ const emit = defineEmits(['created', 'updated'])
 
 const router = useRouter()
 const route = useRoute()
+const { t } = useI18n()
 const { showSuccess, showError, snackbar } = useNotifications()
+const { confirmCreate, confirmUpdate } = useQuickConfirm()
 
 const produitsStore = useProduitsStore()
 const boutiquesStore = useBoutiquesStore()
@@ -162,6 +166,12 @@ const saveProduct = async () => {
     console.debug('[ProductForm] Save already in progress, ignoring')
     return
   }
+
+  // Show confirm dialog before saving
+  const confirmed = props.mode === 'create' && !localId.value
+    ? await confirmCreate(t('product'))
+    : await confirmUpdate(t('product'), form.value.titre)
+  if (!confirmed) return
 
   saving.value = true
   try {
@@ -1593,6 +1603,7 @@ onMounted(async () => {
         <VBtn
           color="primary"
           size="large"
+          type="button"
           :loading="saving"
           @click="saveProduct"
         >

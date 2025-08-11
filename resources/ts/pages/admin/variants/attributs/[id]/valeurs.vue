@@ -2,6 +2,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useApi } from '@/composables/useApi'
+import { useQuickConfirm } from '@/composables/useConfirmAction'
 
 // Page meta
 definePage({
@@ -31,6 +32,7 @@ interface VariantValeur {
 
 // Composables
 const route = useRoute()
+const { confirmCreate, confirmUpdate, confirmDelete } = useQuickConfirm()
 const router = useRouter()
 
 // State
@@ -40,7 +42,6 @@ const loading = ref(false)
 const searchQuery = ref('')
 const showCreateDialog = ref(false)
 const showEditDialog = ref(false)
-const showDeleteDialog = ref(false)
 const selectedValeur = ref<VariantValeur | null>(null)
 const isDeleting = ref(false)
 
@@ -125,12 +126,35 @@ const handleEdit = (valeur: VariantValeur) => {
   showEditDialog.value = true
 }
 
-const handleDelete = (valeur: VariantValeur) => {
-  selectedValeur.value = valeur
-  showDeleteDialog.value = true
+const handleDelete = async (valeur: VariantValeur) => {
+  // Show confirm dialog before deleting
+  const confirmed = await confirmDelete('valeur', valeur.libelle)
+  if (!confirmed) return
+
+  try {
+    isDeleting.value = true
+    const { data, error } = await useApi(`/admin/variant-attributs/${attributId.value}/valeurs/${valeur.id}`, {
+      method: 'DELETE'
+    })
+
+    if (!error.value && data.value) {
+      const response = data.value as any
+      if (response.success) {
+        valeurs.value = valeurs.value.filter(v => v.id !== valeur.id)
+      }
+    }
+  } catch (err) {
+    console.error('Error deleting variant value:', err)
+  } finally {
+    isDeleting.value = false
+  }
 }
 
 const submitCreate = async () => {
+  // Show confirm dialog before creating
+  const confirmed = await confirmCreate('valeur')
+  if (!confirmed) return
+
   try {
     formErrors.value = {}
     const { data, error } = await useApi(`/admin/variant-attributs/${attributId.value}/valeurs`, {
@@ -158,7 +182,11 @@ const submitCreate = async () => {
 
 const submitEdit = async () => {
   if (!selectedValeur.value) return
-  
+
+  // Show confirm dialog before updating
+  const confirmed = await confirmUpdate('valeur', selectedValeur.value.libelle)
+  if (!confirmed) return
+
   try {
     formErrors.value = {}
     const { data, error } = await useApi(`/admin/variant-attributs/${attributId.value}/valeurs/${selectedValeur.value.id}`, {
@@ -187,28 +215,7 @@ const submitEdit = async () => {
   }
 }
 
-const confirmDelete = async () => {
-  if (!selectedValeur.value) return
-  
-  try {
-    isDeleting.value = true
-    const { data, error } = await useApi(`/admin/variant-attributs/${attributId.value}/valeurs/${selectedValeur.value.id}`, {
-      method: 'DELETE'
-    })
-    
-    if (!error.value && data.value) {
-      const response = data.value as any
-      if (response.success) {
-        valeurs.value = valeurs.value.filter(v => v.id !== selectedValeur.value!.id)
-        showDeleteDialog.value = false
-      }
-    }
-  } catch (err) {
-    console.error('Error deleting variant value:', err)
-  } finally {
-    isDeleting.value = false
-  }
-}
+
 
 const goBack = () => {
   router.push('/admin/variants/attributs')
@@ -387,8 +394,8 @@ onMounted(() => {
         </VCardText>
         <VCardActions>
           <VSpacer />
-          <VBtn @click="showCreateDialog = false">Cancel</VBtn>
-          <VBtn color="primary" @click="submitCreate">Create</VBtn>
+          <VBtn type="button" @click="showCreateDialog = false">Cancel</VBtn>
+          <VBtn color="primary" type="button" @click="submitCreate">Create</VBtn>
         </VCardActions>
       </VCard>
     </VDialog>
@@ -434,33 +441,13 @@ onMounted(() => {
         </VCardText>
         <VCardActions>
           <VSpacer />
-          <VBtn @click="showEditDialog = false">Cancel</VBtn>
-          <VBtn color="primary" @click="submitEdit">Update</VBtn>
+          <VBtn type="button" @click="showEditDialog = false">Cancel</VBtn>
+          <VBtn color="primary" type="button" @click="submitEdit">Update</VBtn>
         </VCardActions>
       </VCard>
     </VDialog>
 
-    <!-- Delete Dialog -->
-    <VDialog v-model="showDeleteDialog" max-width="400">
-      <VCard>
-        <VCardTitle>Delete Value</VCardTitle>
-        <VCardText>
-          Are you sure you want to delete the value "{{ selectedValeur?.libelle }}"?
-          This action cannot be undone.
-        </VCardText>
-        <VCardActions>
-          <VSpacer />
-          <VBtn @click="showDeleteDialog = false">Cancel</VBtn>
-          <VBtn
-            color="error"
-            :loading="isDeleting"
-            @click="confirmDelete"
-          >
-            Delete
-          </VBtn>
-        </VCardActions>
-      </VCard>
-    </VDialog>
+
   </div>
 </template>
 

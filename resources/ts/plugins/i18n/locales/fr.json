@@ -978,6 +978,8 @@
   "common_delete": "Supprimer",
   "common.save": "Enregistrer",
   "common.cancel": "Annuler",
+  "common.create": "Créer",
+  "common.delete": "Supprimer",
   "common_back": "Retour",
   "common_search": "Rechercher",
   "common_filter": "Filtrer",
@@ -989,6 +991,8 @@
   "common.updated_at": "Mis à jour le",
   "common.close": "fermer",
   "common.confirm": "Confirmer",
+  "common.are_you_sure": "Êtes-vous sûr ?",
+  "common.delete_all": "Tout supprimer",
   "common.sort.created_desc": "Plus récent d'abord",
   "common.sort.name_asc": "Nom (A-Z)",
   "common.sort.status": "Statut",
@@ -996,6 +1000,31 @@
   "common.change": "Changer",
   "common.remove": "Supprimer",
   "common_uploading": "Téléchargement",
+
+  // ===========================================
+  // CONFIRM DIALOG MESSAGES
+  // ===========================================
+  "confirm.create_title": "Créer un élément",
+  "confirm.create_text": "Voulez-vous créer ce {entity} ?",
+  "confirm.update_title": "Sauvegarder les modifications",
+  "confirm.update_text": "Voulez-vous sauvegarder les modifications de ce {entity} ?",
+  "confirm.update_text_with_name": "Voulez-vous sauvegarder les modifications de {entity} '{name}' ?",
+  "confirm.delete_title": "Supprimer l'élément",
+  "confirm.delete_text": "Voulez-vous supprimer ce {entity} ? Cette action ne peut pas être annulée.",
+  "confirm.delete_text_with_name": "Voulez-vous supprimer {entity} '{name}' ? Cette action ne peut pas être annulée.",
+  "confirm.bulk_delete_title": "Suppression en masse",
+  "confirm.bulk_delete_text": "Voulez-vous supprimer {count} {entity} ? Cette action ne peut pas être annulée.",
+
+  // Entity names for confirm dialogs
+  "user": "utilisateur",
+  "role": "rôle",
+  "permission": "permission",
+  "category": "catégorie",
+  "product": "produit",
+  "boutique": "boutique",
+  "document": "document",
+  "attribut": "attribut",
+  "valeur": "valeur",
 
   // ===========================================
   // MISSING TRANSLATION KEYS FROM CONSOLE WARNINGS

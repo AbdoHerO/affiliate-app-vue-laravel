@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useBoutiquesStore, type BoutiqueFormData } from '@/stores/admin/boutiques'
 import { useNotifications } from '@/composables/useNotifications'
+import { useQuickConfirm } from '@/composables/useConfirmAction'
 import { useApi } from '@/composables/useApi'
 
 definePage({
@@ -17,6 +18,7 @@ const { t } = useI18n()
 const router = useRouter()
 const boutiquesStore = useBoutiquesStore()
 const { showError } = useNotifications()
+const { confirmCreate } = useQuickConfirm()
 
 // Form state
 const form = ref<BoutiqueFormData>({
@@ -70,8 +72,12 @@ const loadUsers = async () => {
 const handleSubmit = async () => {
   if (!validateForm()) return
 
+  // Show confirm dialog before creating
+  const confirmed = await confirmCreate(t('boutique'))
+  if (!confirmed) return
+
   isLoading.value = true
-  
+
   try {
     await boutiquesStore.create(form.value)
     router.push({ name: 'admin-boutiques' })
@@ -239,9 +245,10 @@ onMounted(() => {
                     {{ t('common.cancel') || 'Annuler' }}
                   </VBtn>
                   <VBtn
-                    type="submit"
+                    type="button"
                     color="primary"
                     :loading="isLoading"
+                    @click="handleSubmit"
                   >
                     {{ t('common.save') || 'Créer' }}
                   </VBtn>

@@ -2,6 +2,7 @@
 import { computed, nextTick, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useCategoriesStore, type Category, type CategoryFormData } from '@/stores/admin/categories'
+import { useQuickConfirm } from '@/composables/useConfirmAction'
 import CategoryImageUpload from './CategoryImageUpload.vue'
 
 interface Props {
@@ -21,6 +22,7 @@ const emit = defineEmits<Emits>()
 // Composables
 const { t } = useI18n()
 const categoriesStore = useCategoriesStore()
+const { confirmCreate, confirmUpdate } = useQuickConfirm()
 
 // Form state
 const form = ref<CategoryFormData>({
@@ -116,19 +118,25 @@ const loadCategoryData = () => {
 
 const submitForm = async () => {
   if (!formRef.value) return
-  
+
   const { valid } = await formRef.value.validate()
   if (!valid) return
 
+  // Show confirm dialog before submitting
+  const confirmed = props.mode === 'create'
+    ? await confirmCreate(t('category'))
+    : await confirmUpdate(t('category'), props.category?.nom)
+  if (!confirmed) return
+
   isSubmitting.value = true
-  
+
   try {
     if (props.mode === 'create') {
       await categoriesStore.createCategory(form.value)
     } else if (props.category) {
       await categoriesStore.updateCategory(props.category.id, form.value)
     }
-    
+
     emit('saved')
     isOpen.value = false
   } catch (error) {
@@ -277,6 +285,7 @@ watch(() => form.value.nom, (newNom) => {
         </VBtn>
         <VBtn
           color="primary"
+          type="button"
           :loading="isSubmitting"
           @click="submitForm"
         >

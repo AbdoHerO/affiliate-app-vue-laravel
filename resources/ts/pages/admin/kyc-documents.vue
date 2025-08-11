@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n'
 import { useAuth } from '@/composables/useAuth'
 import { useApi } from '@/composables/useApi'
 import { useNotifications } from '@/composables/useNotifications'
+import { useQuickConfirm } from '@/composables/useConfirmAction'
 import { normalizeFromResponse } from '@/services/ErrorService'
 
 definePage({
@@ -15,7 +16,8 @@ definePage({
 
 const { t } = useI18n()
 const { hasPermission } = useAuth()
-const { showSuccess, showError, showConfirm, snackbar, confirmDialog } = useNotifications()
+const { showSuccess, showError, snackbar } = useNotifications()
+const { confirmUpdate, confirmDelete } = useQuickConfirm()
 
 // Types
 type KycDocument = {
@@ -314,6 +316,10 @@ const openReviewDialog = (document: KycDocument) => {
 const reviewDocument = async () => {
   if (!selectedDocument.value) return
 
+  // Show confirm dialog before updating
+  const confirmed = await confirmUpdate(t('document'), `${getTypeLabel(selectedDocument.value.type_doc)} - ${selectedDocument.value.utilisateur.nom_complet}`)
+  if (!confirmed) return
+
   try {
     loading.value = true
 
@@ -430,33 +436,31 @@ const viewDocument = (doc: KycDocument) => {
   window.open(viewUrl, '_blank')
 }
 
-const deleteDocument = (document: KycDocument) => {
-  showConfirm(
-    t('confirm_delete'),
-    t('confirm_delete_document_desc', { type: getTypeLabel(document.type_doc), user: document.utilisateur.nom_complet }),
-    async () => {
-      try {
-        loading.value = true
+const deleteDocument = async (document: KycDocument) => {
+  // Show confirm dialog before deleting
+  const confirmed = await confirmDelete(t('document'), `${getTypeLabel(document.type_doc)} - ${document.utilisateur.nom_complet}`)
+  if (!confirmed) return
 
-        const { data, error: apiError } = await useApi<any>(`/admin/kyc-documents/${document.id}`, {
-          method: 'DELETE',
-        })
+  try {
+    loading.value = true
 
-        if (apiError.value) {
-          showError(apiError.value.message)
-          console.error('Delete document error:', apiError.value)
-        } else if (data.value) {
-          await fetchDocuments()
-          showSuccess(t('document_deleted_successfully'))
-        }
-      } catch (err: any) {
-        showError(err.message || t('failed_to_delete_document'))
-        console.error('Delete document error:', err)
-      } finally {
-        loading.value = false
-      }
+    const { data, error: apiError } = await useApi<any>(`/admin/kyc-documents/${document.id}`, {
+      method: 'DELETE',
+    })
+
+    if (apiError.value) {
+      showError(apiError.value.message)
+      console.error('Delete document error:', apiError.value)
+    } else if (data.value) {
+      await fetchDocuments()
+      showSuccess(t('document_deleted_successfully'))
     }
-  )
+  } catch (err: any) {
+    showError(err.message || t('failed_to_delete_document'))
+    console.error('Delete document error:', err)
+  } finally {
+    loading.value = false
+  }
 }
 
 // Form helpers
@@ -757,38 +761,9 @@ onMounted(async () => {
         </VCardText>
         <VCardActions>
           <VSpacer />
-          <VBtn variant="outlined" @click="showReviewDialog = false">{{ t('cancel') }}</VBtn>
-          <VBtn color="primary" @click="reviewDocument" :loading="loading">{{ t('save') }}</VBtn>
+          <VBtn variant="outlined" type="button" @click="showReviewDialog = false">{{ t('cancel') }}</VBtn>
+          <VBtn color="primary" type="button" :loading="loading" @click="reviewDocument">{{ t('save') }}</VBtn>
         </VCardActions>
-      </VCard>
-    </VDialog>
-
-    <!-- Confirmation Dialog -->
-    <VDialog v-model="confirmDialog.show" max-width="500">
-      <VCard class="text-center px-10 py-6">
-        <VCardText>
-          <VBtn
-            icon
-            variant="outlined"
-            color="warning"
-            class="my-4"
-            style="block-size: 88px; inline-size: 88px; pointer-events: none;"
-          >
-            <span class="text-5xl">!</span>
-          </VBtn>
-          <h6 class="text-lg font-weight-medium">
-            {{ confirmDialog.title }}
-          </h6>
-          <p class="mt-2">{{ confirmDialog.message }}</p>
-        </VCardText>
-        <VCardText class="d-flex align-center justify-center gap-2">
-          <VBtn variant="elevated" @click="confirmDialog.onConfirm">
-            {{ confirmDialog.confirmText }}
-          </VBtn>
-          <VBtn color="secondary" variant="tonal" @click="confirmDialog.onCancel">
-            {{ confirmDialog.cancelText }}
-          </VBtn>
-        </VCardText>
       </VCard>
     </VDialog>
 
@@ -801,20 +776,5 @@ onMounted(async () => {
     >
       {{ snackbar.message }}
     </VSnackbar>
-
-    <!-- Confirmation Dialog -->
-    <VDialog v-model="confirmDialog.show" max-width="500">
-      <VCard class="text-center px-10 py-6">
-        <VCardText>
-          <VIcon icon="tabler-help" size="50" class="text-warning mb-4" />
-          <h6 class="text-h6 mb-4">{{ confirmDialog.title }}</h6>
-          <p class="text-body-1 mb-6">{{ confirmDialog.message }}</p>
-          <div class="d-flex gap-4 justify-center">
-            <VBtn color="error" @click="confirmDialog.onConfirm">{{ confirmDialog.confirmText }}</VBtn>
-            <VBtn variant="outlined" @click="confirmDialog.onCancel">{{ confirmDialog.cancelText }}</VBtn>
-          </div>
-        </VCardText>
-      </VCard>
-    </VDialog>
   </div>
 </template>

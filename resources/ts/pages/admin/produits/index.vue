@@ -9,7 +9,7 @@ import { useCategoriesStore } from '@/stores/admin/categories'
 
 import { useDebounceFn } from '@vueuse/core'
 import Breadcrumbs from '@/components/common/Breadcrumbs.vue'
-import ConfirmModal from '@/components/common/ConfirmModal.vue'
+import { useQuickConfirm } from '@/composables/useConfirmAction'
 
 // ⚠️ Ne PAS changer la meta layout sous peine de casser la sidebar. Voir ticket #123.
 definePage({
@@ -22,6 +22,7 @@ definePage({
 // Composables
 const router = useRouter()
 const { t } = useI18n()
+const { confirmDelete } = useQuickConfirm()
 
 const produitsStore = useProduitsStore()
 const boutiquesStore = useBoutiquesStore()
@@ -44,8 +45,6 @@ const { items: boutiques } = storeToRefs(boutiquesStore)
 const { categories } = storeToRefs(categoriesStore)
 
 // Local state
-const showDeleteDialog = ref(false)
-const selectedProduit = ref<Produit | null>(null)
 const isDeleting = ref(false)
 
 // Statistics
@@ -174,19 +173,14 @@ const handleShare = async (produit: Produit) => {
   }
 }
 
-const handleDelete = (produit: Produit) => {
-  selectedProduit.value = produit
-  showDeleteDialog.value = true
-}
-
-const confirmDelete = async () => {
-  if (!selectedProduit.value) return
+const handleDelete = async (produit: Produit) => {
+  // Show confirm dialog before deleting
+  const confirmed = await confirmDelete(t('product'), produit.titre)
+  if (!confirmed) return
 
   isDeleting.value = true
   try {
-    await deleteProduit(selectedProduit.value.id)
-    showDeleteDialog.value = false
-    selectedProduit.value = null
+    await deleteProduit(produit.id)
     await fetchProduits({ ...filters.value }) // Reload the list
   } catch (err) {
     console.error('Error deleting product:', err)
@@ -493,13 +487,6 @@ onMounted(async () => {
       </VCardText>
     </VCard>
 
-    <!-- Delete Confirmation Dialog -->
-    <ConfirmModal
-      v-model="showDeleteDialog"
-      :title="$t('admin_produits_delete_title')"
-      :message="$t('admin_produits_delete_message')"
-      :loading="isDeleting"
-      @confirm="confirmDelete"
-    />
+
   </div>
 </template>
