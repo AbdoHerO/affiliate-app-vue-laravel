@@ -46,7 +46,7 @@ class Categorie extends Model
      *
      * @var bool
      */
-    public $timestamps = true;
+    public $timestamps = false;
 
     /**
      * Get the products for this category.

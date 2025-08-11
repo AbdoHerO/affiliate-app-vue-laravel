@@ -235,8 +235,11 @@ class ComprehensiveProductSeeder extends Seeder
             if (!empty($createdVariants)) {
                 foreach (array_slice($createdVariants, 0, rand(1, 2)) as $variant) {
                     ProduitRupture::create([
+                        'produit_id' => $produit->id,
                         'variante_id' => $variant->id,
-                        'actif' => true,
+                        'motif' => 'Stock shortage detected',
+                        'started_at' => now(),
+                        'active' => true,
                     ]);
                 }
             }

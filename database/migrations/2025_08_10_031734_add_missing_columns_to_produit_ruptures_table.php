@@ -13,9 +13,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('produit_ruptures', function (Blueprint $table) {
-            // Check if columns exist before adding them
+            // Add produit_id column first if it doesn't exist
+            if (!Schema::hasColumn('produit_ruptures', 'produit_id')) {
+                $table->foreignUuid('produit_id')->nullable()->after('variante_id')->constrained('produits')->cascadeOnDelete();
+            }
+
+            // Check if other columns exist before adding them
             if (!Schema::hasColumn('produit_ruptures', 'motif')) {
-                $table->string('motif')->default('Stock shortage')->after('variante_id');
+                $table->string('motif')->default('Stock shortage')->after('produit_id');
             }
             if (!Schema::hasColumn('produit_ruptures', 'started_at')) {
                 $table->timestampTz('started_at')->default(now())->after('motif');
@@ -40,20 +45,6 @@ return new class extends Migration
         ');
 
         Schema::table('produit_ruptures', function (Blueprint $table) {
-            // Add foreign key constraint if it doesn't exist
-            $foreignKeys = collect(DB::select("
-                SELECT CONSTRAINT_NAME
-                FROM information_schema.KEY_COLUMN_USAGE
-                WHERE TABLE_SCHEMA = DATABASE()
-                AND TABLE_NAME = 'produit_ruptures'
-                AND CONSTRAINT_NAME LIKE '%foreign%'
-                AND REFERENCED_TABLE_NAME = 'produits'
-            "))->pluck('CONSTRAINT_NAME');
-
-            if ($foreignKeys->isEmpty()) {
-                $table->foreign('produit_id')->references('id')->on('produits')->cascadeOnDelete();
-            }
-
             // Rename actif to active for consistency if column exists
             if (Schema::hasColumn('produit_ruptures', 'actif') && !Schema::hasColumn('produit_ruptures', 'active')) {
                 $table->renameColumn('actif', 'active');
@@ -67,19 +58,23 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('produit_ruptures', function (Blueprint $table) {
-            // Remove added columns
-            $table->dropForeign(['produit_id']);
-            $table->dropColumn([
-                'produit_id',
-                'motif',
-                'started_at',
-                'expected_restock_at',
-                'resolved_at',
-                'updated_at'
-            ]);
+            // Rename back to actif first
+            if (Schema::hasColumn('produit_ruptures', 'active')) {
+                $table->renameColumn('active', 'actif');
+            }
 
-            // Rename back to actif
-            $table->renameColumn('active', 'actif');
+            // Remove added columns
+            if (Schema::hasColumn('produit_ruptures', 'produit_id')) {
+                $table->dropForeign(['produit_id']);
+                $table->dropColumn('produit_id');
+            }
+
+            $columnsToRemove = ['motif', 'started_at', 'expected_restock_at', 'resolved_at', 'updated_at'];
+            foreach ($columnsToRemove as $column) {
+                if (Schema::hasColumn('produit_ruptures', $column)) {
+                    $table->dropColumn($column);
+                }
+            }
         });
     }
 };
