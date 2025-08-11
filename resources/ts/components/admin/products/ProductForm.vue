@@ -119,6 +119,19 @@ const readyForMedia = computed(() => !!localId.value)
 const isEditMode = computed(() => props.mode === 'edit')
 const pageTitle = computed(() => isEditMode.value ? 'Edit Product' : 'Create Product')
 
+// Helper function to get variant display name
+const getVariantDisplayName = (variantId: string | null | undefined) => {
+  console.debug('[ProductForm] getVariantDisplayName called with:', variantId)
+  console.debug('[ProductForm] Available variants:', variantes.value)
+
+  if (!variantId) return 'All variants'
+  const variant = variantes.value.find(v => v.id === variantId)
+  console.debug('[ProductForm] Found variant:', variant)
+
+  if (!variant) return 'Unknown variant'
+  return `${variant.nom || 'Unknown'}: ${variant.valeur || 'Unknown'}`
+}
+
 // Methods
 const loadLookups = async () => {
   await Promise.all([
@@ -715,6 +728,7 @@ const loadRuptures = async () => {
     if (!error.value && data.value) {
       const response = data.value as any
       if (response.success) {
+        console.debug('[ProductForm] Loaded ruptures:', response.data)
         ruptures.value = response.data
       }
     }
@@ -783,6 +797,7 @@ const handleAddRupture = async () => {
     if (data.value) {
       const response = data.value as any
       if (response.success) {
+        console.debug('[ProductForm] Added rupture response:', response.data)
         ruptures.value.push(response.data)
         Object.assign(newRupture, { variante_id: null, motif: '', started_at: '', expected_restock_at: '' })
         showSuccess('Stock issue reported successfully')
@@ -1507,7 +1522,13 @@ onMounted(async () => {
                         v-model="newRupture.variante_id"
                         :items="[
                           { title: 'Product-level issue (all variants)', value: null },
-                          ...variantes.map(v => ({ title: `${v.nom}: ${v.valeur}`, value: v.id }))
+                          ...variantes.map(v => {
+                            console.debug('[ProductForm] Variant for select:', v)
+                            return {
+                              title: `${v.nom || 'Unknown'}: ${v.valeur || 'Unknown'}`,
+                              value: v.id
+                            }
+                          })
                         ]"
                         :label="variantes.length > 0 ? 'Variant (Required)' : 'Variant (Optional)'"
                         variant="outlined"
@@ -1577,10 +1598,9 @@ onMounted(async () => {
                   class="elevation-1"
                 >
                   <template #item.variante_id="{ item }">
-                    <span v-if="item.variante_id">
-                      {{ variantes.find(v => v.id === item.variante_id)?.nom }}: {{ variantes.find(v => v.id === item.variante_id)?.valeur }}
+                    <span :class="item.variante_id ? '' : 'text-medium-emphasis'">
+                      {{ getVariantDisplayName(item.variante_id) }}
                     </span>
-                    <span v-else class="text-medium-emphasis">All variants</span>
                   </template>
                   <template #item.started_at="{ item }">
                     {{ new Date(item.started_at).toLocaleDateString() }}
