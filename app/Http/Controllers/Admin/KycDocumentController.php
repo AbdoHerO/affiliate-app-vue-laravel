@@ -24,6 +24,21 @@ class KycDocumentController extends Controller
 
         $query = KycDocument::with('utilisateur:id,nom_complet,email');
 
+        // Handle soft delete filtering
+        $includeDeleted = $request->get('include_deleted', 'active'); // active, trashed, all
+        switch ($includeDeleted) {
+            case 'trashed':
+                $query->onlyTrashed();
+                break;
+            case 'all':
+                $query->withTrashed();
+                break;
+            case 'active':
+            default:
+                // Default behavior - only active (non-deleted) records
+                break;
+        }
+
         // Apply filters
         if ($request->has('user_id') && $request->user_id) {
             $query->where('utilisateur_id', $request->user_id);
@@ -155,7 +170,7 @@ class KycDocumentController extends Controller
     }
 
     /**
-     * Remove the specified KYC document.
+     * Soft delete the specified KYC document.
      */
     public function destroy(Request $request, string $id)
     {
@@ -165,6 +180,58 @@ class KycDocumentController extends Controller
         }
 
         $document = KycDocument::findOrFail($id);
+        $userId = $document->utilisateur_id;
+        $document->delete(); // This will now be a soft delete
+
+        // Update user KYC status after soft deletion
+        $this->updateUserKycStatus($userId);
+
+        return response()->json([
+            'message' => __('messages.document_deleted_successfully')
+        ]);
+    }
+
+    /**
+     * Restore a soft deleted KYC document.
+     */
+    public function restore(Request $request, string $id)
+    {
+        // Check admin permission
+        if (!$request->user()->hasRole('admin')) {
+            return response()->json(['message' => __('messages.access_denied')], Response::HTTP_FORBIDDEN);
+        }
+
+        $document = KycDocument::withTrashed()->findOrFail($id);
+
+        if (!$document->trashed()) {
+            return response()->json([
+                'message' => __('messages.document_not_deleted')
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        $userId = $document->utilisateur_id;
+        $document->restore();
+
+        // Update user KYC status after restoration
+        $this->updateUserKycStatus($userId);
+
+        return response()->json([
+            'message' => __('messages.document_restored_successfully'),
+            'data' => $document
+        ]);
+    }
+
+    /**
+     * Permanently delete the specified KYC document.
+     */
+    public function forceDelete(Request $request, string $id)
+    {
+        // Check admin permission
+        if (!$request->user()->hasRole('admin')) {
+            return response()->json(['message' => __('messages.access_denied')], Response::HTTP_FORBIDDEN);
+        }
+
+        $document = KycDocument::withTrashed()->findOrFail($id);
 
         // Delete the file from storage
         if (Storage::disk('public')->exists($document->url_fichier)) {
@@ -172,13 +239,13 @@ class KycDocumentController extends Controller
         }
 
         $userId = $document->utilisateur_id;
-        $document->delete();
+        $document->forceDelete();
 
-        // Update user KYC status after deletion
+        // Update user KYC status after permanent deletion
         $this->updateUserKycStatus($userId);
 
         return response()->json([
-            'message' => __('messages.document_deleted_successfully')
+            'message' => __('messages.document_permanently_deleted')
         ]);
     }
 

@@ -91,6 +91,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('kyc-documents/{id}', [KycDocumentController::class, 'show']);
         Route::put('kyc-documents/{id}', [KycDocumentController::class, 'update']);
         Route::delete('kyc-documents/{id}', [KycDocumentController::class, 'destroy']);
+        Route::post('kyc-documents/{id}/restore', [KycDocumentController::class, 'restore']);
+        Route::delete('kyc-documents/{id}/force', [KycDocumentController::class, 'forceDelete']);
         Route::get('kyc-documents/{id}/download', [KycDocumentController::class, 'download']);
         Route::get('kyc-documents/{id}/view', [KycDocumentController::class, 'view']);
 
@@ -103,6 +105,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('boutiques/{id}', [BoutiqueController::class, 'show']);
         Route::put('boutiques/{id}', [BoutiqueController::class, 'update']);
         Route::delete('boutiques/{id}', [BoutiqueController::class, 'destroy']);
+        Route::post('boutiques/{id}/restore', [BoutiqueController::class, 'restore']);
+        Route::delete('boutiques/{id}/force', [BoutiqueController::class, 'forceDelete']);
 
         // Category Management
         Route::get('categories', [CategorieController::class, 'index']);
@@ -110,6 +114,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('categories/{categorie}', [CategorieController::class, 'show']);
         Route::put('categories/{categorie}', [CategorieController::class, 'update']);
         Route::delete('categories/{categorie}', [CategorieController::class, 'destroy']);
+        Route::post('categories/{id}/restore', [CategorieController::class, 'restore']);
+        Route::delete('categories/{id}/force', [CategorieController::class, 'forceDelete']);
         Route::post('categories/{categorie}/toggle-status', [CategorieController::class, 'toggleStatus']);
 
         // Product Management
@@ -169,6 +175,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('variant-attributs/{variantAttribut}', [VariantAttributController::class, 'show']);
         Route::put('variant-attributs/{variantAttribut}', [VariantAttributController::class, 'update']);
         Route::delete('variant-attributs/{variantAttribut}', [VariantAttributController::class, 'destroy']);
+        Route::post('variant-attributs/{id}/restore', [VariantAttributController::class, 'restore']);
+        Route::delete('variant-attributs/{id}/force', [VariantAttributController::class, 'forceDelete']);
         Route::post('variant-attributs/{variantAttribut}/toggle-status', [VariantAttributController::class, 'toggleStatus']);
 
         // Variant Values Management (nested under attributes)

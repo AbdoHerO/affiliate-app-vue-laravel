@@ -18,6 +18,21 @@ class VariantAttributController extends Controller
         try {
             $query = VariantAttribut::query();
 
+            // Handle soft delete filtering
+            $includeDeleted = $request->get('include_deleted', 'active'); // active, trashed, all
+            switch ($includeDeleted) {
+                case 'trashed':
+                    $query->onlyTrashed();
+                    break;
+                case 'all':
+                    $query->withTrashed();
+                    break;
+                case 'active':
+                default:
+                    // Default behavior - only active (non-deleted) records
+                    break;
+            }
+
             // Search by code or nom
             if ($request->filled('q')) {
                 $search = $request->get('q');
@@ -160,20 +175,12 @@ class VariantAttributController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Soft delete the specified resource.
      */
     public function destroy(VariantAttribut $variantAttribut): JsonResponse
     {
         try {
-            // Check if attribute has values
-            if ($variantAttribut->valeurs()->exists()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Cannot delete attribute that has values'
-                ], 409);
-            }
-
-            $variantAttribut->delete();
+            $variantAttribut->delete(); // This will now be a soft delete
 
             return response()->json([
                 'success' => true,
@@ -183,6 +190,66 @@ class VariantAttributController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Error deleting variant attribute'
+            ], 500);
+        }
+    }
+
+    /**
+     * Restore a soft deleted variant attribute.
+     */
+    public function restore(string $id): JsonResponse
+    {
+        try {
+            $variantAttribut = VariantAttribut::withTrashed()->findOrFail($id);
+
+            if (!$variantAttribut->trashed()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Variant attribute is not deleted'
+                ], 400);
+            }
+
+            $variantAttribut->restore();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Variant attribute restored successfully',
+                'data' => $variantAttribut
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error restoring variant attribute'
+            ], 500);
+        }
+    }
+
+    /**
+     * Permanently delete the specified resource.
+     */
+    public function forceDelete(string $id): JsonResponse
+    {
+        try {
+            $variantAttribut = VariantAttribut::withTrashed()->findOrFail($id);
+
+            // Check if attribute has values before permanent deletion
+            if ($variantAttribut->valeurs()->exists()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Cannot permanently delete attribute that has values'
+                ], 409);
+            }
+
+            $variantAttribut->forceDelete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Variant attribute permanently deleted'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error permanently deleting variant attribute'
             ], 500);
         }
     }

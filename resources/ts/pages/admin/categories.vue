@@ -8,6 +8,9 @@ import Breadcrumbs from '@/components/common/Breadcrumbs.vue'
 import CategoryCrudDialog from '@/components/admin/categories/CategoryCrudDialog.vue'
 import CategoryViewDialog from '@/components/admin/categories/CategoryViewDialog.vue'
 import { useQuickConfirm } from '@/composables/useConfirmAction'
+import { useCategorySoftDelete } from '@/composables/useSoftDelete'
+import SoftDeleteFilter from '@/components/common/SoftDeleteFilter.vue'
+import SoftDeleteActions from '@/components/common/SoftDeleteActions.vue'
 
 definePage({
   meta: {
@@ -22,6 +25,18 @@ const { t } = useI18n()
 const authStore = useAuthStore()
 const categoriesStore = useCategoriesStore()
 const { confirmDelete } = useQuickConfirm()
+
+// Soft delete functionality
+const {
+  filter: softDeleteFilter,
+  getQueryParams: getSoftDeleteQueryParams,
+  isSoftDeleted,
+  getStatusColor: getSoftDeleteStatusColor,
+  getStatusText: getSoftDeleteStatusText
+} = useCategorySoftDelete(
+  () => fetchCategories(), // onSuccess
+  (error) => console.error('Soft delete error:', error) // onError
+)
 
 // Turn reactive state into refs
 const { categories, loading } = storeToRefs(categoriesStore)
@@ -62,6 +77,7 @@ const headers = computed(() => [
   { title: t('admin_categories_name'), key: 'nom', sortable: true },
   { title: t('admin_categories_slug'), key: 'slug' },
   { title: t('admin_categories_status'), key: 'actif', align: 'center' as const, width: 120 },
+  { title: t('record_status'), key: 'record_status', align: 'center' as const, width: 120 },
   { title: t('common_actions'), key: 'actions', align: 'center' as const, width: 120, sortable: false }
 ])
 
@@ -87,7 +103,8 @@ const fetchCategories = async () => {
     status: statusFilter.value || undefined,
     sort_by: sortBy.value,
     sort_direction: sortDesc.value ? 'desc' : 'asc',
-    per_page: 15
+    per_page: 15,
+    ...getSoftDeleteQueryParams() // Add soft delete filter
   })
 }
 
@@ -243,7 +260,7 @@ onMounted(() => {
       <VCardText>
         <!-- Filters Row -->
         <VRow class="mb-6">
-          <VCol cols="12" md="4">
+          <VCol cols="12" md="3">
             <VTextField
               :label="$t('common_search')"
               prepend-inner-icon="tabler-search"
@@ -253,7 +270,7 @@ onMounted(() => {
               @input="debouncedSearch"
             />
           </VCol>
-          <VCol cols="12" md="3">
+          <VCol cols="12" md="2">
             <VSelect
               v-model="statusFilter"
               :items="statusOptions"
@@ -261,6 +278,12 @@ onMounted(() => {
               variant="outlined"
               density="compact"
               clearable
+              @update:model-value="applyFilters"
+            />
+          </VCol>
+          <VCol cols="12" md="2">
+            <SoftDeleteFilter
+              v-model="softDeleteFilter"
               @update:model-value="applyFilters"
             />
           </VCol>
@@ -351,48 +374,30 @@ onMounted(() => {
             </VTooltip>
           </template>
 
+          <!-- Record Status Column -->
+          <template #[`item.record_status`]="{ item }">
+            <VChip
+              :color="getSoftDeleteStatusColor(item)"
+              size="small"
+              variant="elevated"
+            >
+              {{ getSoftDeleteStatusText(item) }}
+            </VChip>
+          </template>
+
           <!-- Actions Column -->
           <template #[`item.actions`]="{ item }">
-            <div class="d-flex gap-1">
-              <VTooltip text="View">
-                <template #activator="{ props }">
-                  <VBtn
-                    v-bind="props"
-                    icon="tabler-eye"
-                    variant="text"
-                    size="small"
-                    color="primary"
-                    @click="viewCategory(item)"
-                  />
-                </template>
-              </VTooltip>
-              
-              <VTooltip text="Edit">
-                <template #activator="{ props }">
-                  <VBtn
-                    v-bind="props"
-                    icon="tabler-edit"
-                    variant="text"
-                    size="small"
-                    color="info"
-                    @click="editCategory(item)"
-                  />
-                </template>
-              </VTooltip>
-
-              <VTooltip text="Delete">
-                <template #activator="{ props }">
-                  <VBtn
-                    v-bind="props"
-                    icon="tabler-trash"
-                    variant="text"
-                    size="small"
-                    color="error"
-                    @click="deleteCategoryAction(item)"
-                  />
-                </template>
-              </VTooltip>
-            </div>
+            <SoftDeleteActions
+              :item="item"
+              entity-name="category"
+              api-endpoint="/admin/categories"
+              item-name-field="nom"
+              @deleted="fetchCategories"
+              @restored="fetchCategories"
+              @permanently-deleted="fetchCategories"
+              @edit="editCategory"
+              @view="viewCategory"
+            />
           </template>
         </VDataTable>
       </VCardText>

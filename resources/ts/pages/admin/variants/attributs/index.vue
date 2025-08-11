@@ -3,6 +3,9 @@ import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useApi } from '@/composables/useApi'
 import { useQuickConfirm } from '@/composables/useConfirmAction'
+import { useSoftDelete } from '@/composables/useSoftDelete'
+import SoftDeleteFilter from '@/components/common/SoftDeleteFilter.vue'
+import SoftDeleteActions from '@/components/common/SoftDeleteActions.vue'
 
 // Page meta
 definePage({
@@ -20,11 +23,26 @@ interface VariantAttribut {
   nom: string
   actif: boolean
   created_at: string
+  deleted_at?: string
 }
 
 // Composables
 const router = useRouter()
 const { confirmCreate, confirmUpdate, confirmDelete } = useQuickConfirm()
+
+// Soft delete functionality
+const {
+  filter: softDeleteFilter,
+  getQueryParams: getSoftDeleteQueryParams,
+  isSoftDeleted,
+  getStatusColor: getSoftDeleteStatusColor,
+  getStatusText: getSoftDeleteStatusText
+} = useSoftDelete({
+  entityName: 'variant attribute',
+  apiEndpoint: '/admin/variant-attributs',
+  onSuccess: () => fetchAttributs(),
+  onError: (error) => console.error('Soft delete error:', error)
+})
 
 // State
 const attributs = ref<VariantAttribut[]>([])
@@ -59,8 +77,13 @@ const filteredAttributs = computed(() => {
 const fetchAttributs = async () => {
   try {
     loading.value = true
-    const { data, error } = await useApi('/admin/variant-attributs')
-    
+
+    // Build query parameters with soft delete filter
+    const params = new URLSearchParams(getSoftDeleteQueryParams())
+    const url = `/admin/variant-attributs?${params.toString()}`
+
+    const { data, error } = await useApi(url)
+
     if (!error.value && data.value) {
       const response = data.value as any
       if (response.success) {
@@ -246,17 +269,27 @@ onMounted(() => {
       </VBtn>
     </div>
 
-    <!-- Search -->
+    <!-- Search and Filters -->
     <VCard class="mb-6">
       <VCardText>
-        <VTextField
-          v-model="searchQuery"
-          placeholder="Search attributes..."
-          prepend-inner-icon="tabler-search"
-          clearable
-          variant="outlined"
-          density="compact"
-        />
+        <VRow>
+          <VCol cols="12" md="8">
+            <VTextField
+              v-model="searchQuery"
+              placeholder="Search attributes..."
+              prepend-inner-icon="tabler-search"
+              clearable
+              variant="outlined"
+              density="compact"
+            />
+          </VCol>
+          <VCol cols="12" md="4">
+            <SoftDeleteFilter
+              v-model="softDeleteFilter"
+              @update:model-value="fetchAttributs"
+            />
+          </VCol>
+        </VRow>
       </VCardText>
     </VCard>
 
@@ -295,13 +328,22 @@ onMounted(() => {
                     <h4 class="text-h6 font-weight-bold">{{ attribut.nom }}</h4>
                     <p class="text-caption text-medium-emphasis">{{ attribut.code }}</p>
                   </div>
-                  <VChip
-                    :color="attribut.actif ? 'success' : 'error'"
-                    size="small"
-                    variant="flat"
-                  >
-                    {{ attribut.actif ? 'Active' : 'Inactive' }}
-                  </VChip>
+                  <div class="d-flex flex-column gap-1">
+                    <VChip
+                      :color="attribut.actif ? 'success' : 'error'"
+                      size="small"
+                      variant="flat"
+                    >
+                      {{ attribut.actif ? 'Active' : 'Inactive' }}
+                    </VChip>
+                    <VChip
+                      :color="getSoftDeleteStatusColor(attribut)"
+                      size="small"
+                      variant="elevated"
+                    >
+                      {{ getSoftDeleteStatusText(attribut) }}
+                    </VChip>
+                  </div>
                 </div>
               </VCardText>
               
@@ -314,27 +356,18 @@ onMounted(() => {
                 >
                   Manage Values
                 </VBtn>
-                
+
                 <VSpacer />
-                
-                <VBtn
-                  icon="tabler-edit"
-                  size="small"
-                  variant="text"
-                  @click="handleEdit(attribut)"
-                />
-                <VBtn
-                  :icon="attribut.actif ? 'tabler-eye-off' : 'tabler-eye'"
-                  size="small"
-                  variant="text"
-                  @click="toggleStatus(attribut)"
-                />
-                <VBtn
-                  icon="tabler-trash"
-                  size="small"
-                  variant="text"
-                  color="error"
-                  @click="handleDelete(attribut)"
+
+                <SoftDeleteActions
+                  :item="attribut"
+                  entity-name="variant attribute"
+                  api-endpoint="/admin/variant-attributs"
+                  item-name-field="nom"
+                  @deleted="fetchAttributs"
+                  @restored="fetchAttributs"
+                  @permanently-deleted="fetchAttributs"
+                  @edit="handleEdit"
                 />
               </VCardActions>
             </VCard>

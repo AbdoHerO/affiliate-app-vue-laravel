@@ -20,6 +20,21 @@ class CategorieController extends Controller
         try {
             $query = Categorie::query();
 
+            // Handle soft delete filtering
+            $includeDeleted = $request->get('include_deleted', 'active'); // active, trashed, all
+            switch ($includeDeleted) {
+                case 'trashed':
+                    $query->onlyTrashed();
+                    break;
+                case 'all':
+                    $query->withTrashed();
+                    break;
+                case 'active':
+                default:
+                    // Default behavior - only active (non-deleted) records
+                    break;
+            }
+
             // Search by name
             if ($request->filled('search')) {
                 $search = $request->get('search');
@@ -150,22 +165,13 @@ class CategorieController extends Controller
     }
 
     /**
-     * Remove the specified category from storage.
+     * Soft delete the specified category.
      */
     public function destroy(string $id): JsonResponse
     {
         try {
             $categorie = Categorie::findOrFail($id);
-
-            // Check if category has products
-            if ($categorie->produits()->count() > 0) {
-                return response()->json([
-                    'success' => false,
-                    'message' => __('messages.category_has_products_error')
-                ], 422);
-            }
-
-            $categorie->delete();
+            $categorie->delete(); // This will now be a soft delete
 
             return response()->json([
                 'success' => true,
@@ -176,6 +182,70 @@ class CategorieController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => __('messages.category_deletion_error'),
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Restore a soft deleted category.
+     */
+    public function restore(string $id): JsonResponse
+    {
+        try {
+            $categorie = Categorie::withTrashed()->findOrFail($id);
+
+            if (!$categorie->trashed()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('messages.category_not_deleted')
+                ], 400);
+            }
+
+            $categorie->restore();
+
+            return response()->json([
+                'success' => true,
+                'message' => __('messages.category_restored_success'),
+                'data' => $categorie
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => __('messages.category_restore_error'),
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Permanently delete the specified category.
+     */
+    public function forceDelete(string $id): JsonResponse
+    {
+        try {
+            $categorie = Categorie::withTrashed()->findOrFail($id);
+
+            // Check if category has products before permanent deletion
+            if ($categorie->produits()->count() > 0) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('messages.category_has_products_error')
+                ], 422);
+            }
+
+            $categorie->forceDelete();
+
+            return response()->json([
+                'success' => true,
+                'message' => __('messages.category_permanently_deleted')
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => __('messages.category_permanent_deletion_error'),
                 'error' => $e->getMessage()
             ], 500);
         }

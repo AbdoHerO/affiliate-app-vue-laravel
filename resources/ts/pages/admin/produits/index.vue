@@ -10,6 +10,9 @@ import { useCategoriesStore } from '@/stores/admin/categories'
 import { useDebounceFn } from '@vueuse/core'
 import Breadcrumbs from '@/components/common/Breadcrumbs.vue'
 import { useQuickConfirm } from '@/composables/useConfirmAction'
+import { useProductSoftDelete } from '@/composables/useSoftDelete'
+import SoftDeleteFilter from '@/components/common/SoftDeleteFilter.vue'
+import SoftDeleteActions from '@/components/common/SoftDeleteActions.vue'
 
 // ⚠️ Ne PAS changer la meta layout sous peine de casser la sidebar. Voir ticket #123.
 definePage({
@@ -23,6 +26,18 @@ definePage({
 const router = useRouter()
 const { t } = useI18n()
 const { confirmDelete } = useQuickConfirm()
+
+// Soft delete functionality
+const {
+  filter: softDeleteFilter,
+  getQueryParams: getSoftDeleteQueryParams,
+  isSoftDeleted,
+  getStatusColor: getSoftDeleteStatusColor,
+  getStatusText: getSoftDeleteStatusText
+} = useProductSoftDelete(
+  () => fetchProduits(), // onSuccess
+  (error) => console.error('Soft delete error:', error) // onError
+)
 
 const produitsStore = useProduitsStore()
 const boutiquesStore = useBoutiquesStore()
@@ -64,6 +79,7 @@ const headers = computed(() => [
   { title: t('admin_produits_prix_vente'), key: 'prix_vente', sortable: true, align: 'end' as const },
   { title: t('admin_produits_prix_affilie'), key: 'prix_affilie', sortable: true, align: 'end' as const },
   { title: t('common.status'), key: 'actif', sortable: true },
+  { title: t('record_status'), key: 'record_status', sortable: false },
   { title: t('common.actions'), key: 'actions', sortable: false, width: 120 }
 ])
 
@@ -126,6 +142,12 @@ const handleStatusChange = (value: string) => {
 
 const handlePerPageChange = (value: number) => {
   filters.value.perPage = value
+  filters.value.page = 1
+}
+
+const handleSoftDeleteChange = () => {
+  // Add soft delete parameters to filters
+  Object.assign(filters.value, getSoftDeleteQueryParams())
   filters.value.page = 1
 }
 
@@ -300,7 +322,7 @@ onMounted(async () => {
     <VCard class="mb-6">
       <VCardText>
         <VRow>
-          <VCol cols="12" md="4">
+          <VCol cols="12" md="3">
             <VTextField
               v-model="filters.q"
               :label="$t('common.search')"
@@ -332,7 +354,7 @@ onMounted(async () => {
               @update:model-value="handleCategorieChange"
             />
           </VCol>
-          <VCol cols="12" md="2">
+          <VCol cols="12" md="1">
             <VSelect
               v-model="filters.actif"
               :items="statusOptions"
@@ -341,6 +363,12 @@ onMounted(async () => {
               :label="$t('common.status')"
               clearable
               @update:model-value="handleStatusChange"
+            />
+          </VCol>
+          <VCol cols="12" md="2">
+            <SoftDeleteFilter
+              v-model="softDeleteFilter"
+              @update:model-value="handleSoftDeleteChange"
             />
           </VCol>
           <VCol cols="12" md="2">
@@ -434,6 +462,16 @@ onMounted(async () => {
           </VChip>
         </template>
 
+        <template #item.record_status="{ item }">
+          <VChip
+            :color="getSoftDeleteStatusColor(item)"
+            size="small"
+            variant="elevated"
+          >
+            {{ getSoftDeleteStatusText(item) }}
+          </VChip>
+        </template>
+
         <template #item.actions="{ item }">
           <div class="d-flex gap-1">
             <VBtn
@@ -455,12 +493,16 @@ onMounted(async () => {
               color="primary"
               @click="handleShare(item)"
             />
-            <VBtn
-              icon="tabler-trash"
-              size="small"
-              variant="text"
-              color="error"
-              @click="handleDelete(item)"
+            <SoftDeleteActions
+              :item="item"
+              entity-name="product"
+              api-endpoint="/admin/produits"
+              item-name-field="titre"
+              @deleted="fetchProduits"
+              @restored="fetchProduits"
+              @permanently-deleted="fetchProduits"
+              :show-edit="false"
+              :show-view="false"
             />
           </div>
         </template>

@@ -6,6 +6,9 @@ import { useApi } from '@/composables/useApi'
 import { useNotifications } from '@/composables/useNotifications'
 import { useQuickConfirm } from '@/composables/useConfirmAction'
 import { normalizeFromResponse } from '@/services/ErrorService'
+import { useSoftDelete } from '@/composables/useSoftDelete'
+import SoftDeleteFilter from '@/components/common/SoftDeleteFilter.vue'
+import SoftDeleteActions from '@/components/common/SoftDeleteActions.vue'
 
 definePage({
   meta: {
@@ -18,6 +21,20 @@ const { t } = useI18n()
 const { hasPermission } = useAuth()
 const { showSuccess, showError, snackbar } = useNotifications()
 const { confirmUpdate, confirmDelete } = useQuickConfirm()
+
+// Soft delete functionality
+const {
+  filter: softDeleteFilter,
+  getQueryParams: getSoftDeleteQueryParams,
+  isSoftDeleted,
+  getStatusColor: getSoftDeleteStatusColor,
+  getStatusText: getSoftDeleteStatusText
+} = useSoftDelete({
+  entityName: 'document',
+  apiEndpoint: '/admin/kyc-documents',
+  onSuccess: () => fetchDocuments(),
+  onError: (error) => console.error('Soft delete error:', error)
+})
 
 // Types
 type KycDocument = {
@@ -34,6 +51,7 @@ type KycDocument = {
   }
   created_at: string
   updated_at: string
+  deleted_at?: string
 }
 
 // State
@@ -194,6 +212,7 @@ const fetchDocuments = async (page = 1) => {
     const params = new URLSearchParams({
       page: page.toString(),
       per_page: pagination.value.per_page.toString(),
+      ...getSoftDeleteQueryParams() // Add soft delete filter
     })
 
     if (filters.value.search) params.set('search', filters.value.search)
@@ -541,7 +560,7 @@ onMounted(async () => {
     <VCard class="mb-6">
       <VCardText>
         <VRow>
-          <VCol cols="12" md="3">
+          <VCol cols="12" md="2">
             <VTextField
               v-model="filters.search"
               :label="t('search')"
@@ -551,7 +570,7 @@ onMounted(async () => {
               @input="fetchDocuments(1)"
             />
           </VCol>
-          <VCol cols="12" md="3">
+          <VCol cols="12" md="2">
             <VSelect
               v-model="filters.type_doc"
               :items="documentTypes"
@@ -569,7 +588,13 @@ onMounted(async () => {
               @update:model-value="fetchDocuments(1)"
             />
           </VCol>
-          <VCol cols="12" md="3">
+          <VCol cols="12" md="2">
+            <SoftDeleteFilter
+              v-model="softDeleteFilter"
+              @update:model-value="fetchDocuments(1)"
+            />
+          </VCol>
+          <VCol cols="12" md="2">
             <VSelect
               v-model="filters.user_id"
               :items="users"
@@ -602,6 +627,7 @@ onMounted(async () => {
               <th>{{ t('user') }}</th>
               <th>{{ t('document_type') }}</th>
               <th>{{ t('status') }}</th>
+              <th>{{ t('record_status') }}</th>
               <th>{{ t('uploaded') }}</th>
               <th>{{ t('actions') }}</th>
             </tr>
@@ -630,6 +656,15 @@ onMounted(async () => {
                   {{ document.motif_refus }}
                 </div>
               </td>
+              <td>
+                <VChip
+                  :color="getSoftDeleteStatusColor(document)"
+                  size="small"
+                  variant="elevated"
+                >
+                  {{ getSoftDeleteStatusText(document) }}
+                </VChip>
+              </td>
               <td>{{ new Date(document.created_at).toLocaleDateString() }}</td>
               <td>
                 <div class="d-flex gap-2">
@@ -645,10 +680,17 @@ onMounted(async () => {
                     <VIcon icon="tabler-edit" />
                     <VTooltip activator="parent">{{ t('review') }}</VTooltip>
                   </VBtn>
-                  <VBtn icon size="small" color="error" variant="text" @click="deleteDocument(document)">
-                    <VIcon icon="tabler-trash" />
-                    <VTooltip activator="parent">{{ t('delete') }}</VTooltip>
-                  </VBtn>
+                  <SoftDeleteActions
+                    :item="document"
+                    entity-name="document"
+                    api-endpoint="/admin/kyc-documents"
+                    item-name-field="type_doc"
+                    :show-edit="false"
+                    :show-view="false"
+                    @deleted="fetchDocuments"
+                    @restored="fetchDocuments"
+                    @permanently-deleted="fetchDocuments"
+                  />
                 </div>
               </td>
             </tr>

@@ -10,6 +10,9 @@ import BoutiqueCrudDialog from '@/components/admin/boutiques/BoutiqueCrudDialog.
 import BoutiqueViewDialog from '@/components/admin/boutiques/BoutiqueViewDialog.vue'
 import ConfirmActionDialog from '@/components/common/ConfirmActionDialog.vue'
 import { useQuickConfirm } from '@/composables/useConfirmAction'
+import { useBoutiqueSoftDelete } from '@/composables/useSoftDelete'
+import SoftDeleteFilter from '@/components/common/SoftDeleteFilter.vue'
+import SoftDeleteActions from '@/components/common/SoftDeleteActions.vue'
 
 definePage({
   meta: {
@@ -36,6 +39,18 @@ const {
   handleConfirm,
   handleCancel
 } = useQuickConfirm()
+
+// Soft delete functionality
+const {
+  filter: softDeleteFilter,
+  getQueryParams: getSoftDeleteQueryParams,
+  isSoftDeleted,
+  getStatusColor: getSoftDeleteStatusColor,
+  getStatusText: getSoftDeleteStatusText
+} = useBoutiqueSoftDelete(
+  () => fetchData(), // onSuccess
+  (error) => console.error('Soft delete error:', error) // onError
+)
 
 // Keep functions on the store instance
 const { fetchBoutiques, setFilters, destroy } = boutiquesStore
@@ -90,6 +105,7 @@ const headers = computed(() => [
   { title: t('admin_boutiques_name'), key: 'nom', sortable: true },
   { title: t('form_name'), key: 'slug', sortable: true },
   { title: t('admin_boutiques_status'), key: 'statut', sortable: true },
+  { title: t('record_status'), key: 'record_status', sortable: false },
   { title: t('user_name'), key: 'proprietaire', sortable: false },
   { title: t('admin_boutiques_commission_rate'), key: 'commission_par_defaut', sortable: true },
   { title: t('table_actions'), key: 'actions', sortable: false }
@@ -121,6 +137,7 @@ const applyFilters = () => {
     sort: sortBy.value,
     dir: sortDesc.value ? 'desc' : 'asc',
     page: 1,
+    ...getSoftDeleteQueryParams() // Add soft delete filter
   })
   fetchData()
 }
@@ -275,7 +292,7 @@ onMounted(() => {
       <!-- Filters Row -->
       <VCardText>
         <VRow class="mb-4">
-          <VCol cols="12" md="4">
+          <VCol cols="12" md="3">
             <VTextField
               v-model="searchQuery"
               :label="$t('action_search')"
@@ -287,7 +304,7 @@ onMounted(() => {
               @input="debouncedSearch"
             />
           </VCol>
-          <VCol cols="12" md="3">
+          <VCol cols="12" md="2">
             <VSelect
               v-model="statusFilter"
               :items="statusOptions"
@@ -295,6 +312,12 @@ onMounted(() => {
               variant="outlined"
               density="compact"
               clearable
+              @update:model-value="applyFilters"
+            />
+          </VCol>
+          <VCol cols="12" md="2">
+            <SoftDeleteFilter
+              v-model="softDeleteFilter"
               @update:model-value="applyFilters"
             />
           </VCol>
@@ -341,6 +364,17 @@ onMounted(() => {
             </VChip>
           </template>
 
+          <!-- Record Status Column -->
+          <template #[`item.record_status`]="{ item }">
+            <VChip
+              :color="getSoftDeleteStatusColor(item)"
+              size="small"
+              variant="elevated"
+            >
+              {{ getSoftDeleteStatusText(item) }}
+            </VChip>
+          </template>
+
           <!-- Owner Column -->
           <template #[`item.proprietaire`]="{ item }">
             <div class="d-flex align-center gap-3">
@@ -370,29 +404,17 @@ onMounted(() => {
 
           <!-- Actions Column -->
           <template #[`item.actions`]="{ item }">
-            <div class="d-flex gap-1">
-              <VBtn
-                icon="tabler-eye"
-                size="small"
-                variant="text"
-                color="info"
-                @click="openViewDialog(item)"
-              />
-              <VBtn
-                icon="tabler-edit"
-                size="small"
-                variant="text"
-                color="primary"
-                @click="openEditDialog(item)"
-              />
-              <VBtn
-                icon="tabler-trash"
-                size="small"
-                variant="text"
-                color="error"
-                @click="deleteBoutique(item)"
-              />
-            </div>
+            <SoftDeleteActions
+              :item="item"
+              entity-name="boutique"
+              api-endpoint="/admin/boutiques"
+              item-name-field="nom"
+              @deleted="fetchData"
+              @restored="fetchData"
+              @permanently-deleted="fetchData"
+              @edit="openEditDialog"
+              @view="openViewDialog"
+            />
           </template>
 
           <!-- Loading State -->

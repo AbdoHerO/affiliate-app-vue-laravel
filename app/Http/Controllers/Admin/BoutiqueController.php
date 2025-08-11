@@ -20,6 +20,21 @@ class BoutiqueController extends Controller
     {
         $query = Boutique::with('proprietaire:id,nom_complet,email');
 
+        // Handle soft delete filtering
+        $includeDeleted = $request->get('include_deleted', 'active'); // active, trashed, all
+        switch ($includeDeleted) {
+            case 'trashed':
+                $query->onlyTrashed();
+                break;
+            case 'all':
+                $query->withTrashed();
+                break;
+            case 'active':
+            default:
+                // Default behavior - only active (non-deleted) records
+                break;
+        }
+
         // Search functionality
         if ($request->filled('q')) {
             $search = $request->q;
@@ -134,26 +149,13 @@ class BoutiqueController extends Controller
     }
 
     /**
-     * Remove the specified boutique
+     * Soft delete the specified boutique
      */
     public function destroy(string $id)
     {
         try {
             $boutique = Boutique::findOrFail($id);
-            
-            // Check for related records that might prevent deletion
-            $hasProducts = $boutique->produits()->exists();
-            $hasOrders = $boutique->commandes()->exists();
-            
-            if ($hasProducts || $hasOrders) {
-                return response()->json([
-                    'success' => false,
-                    'message' => __('messages.cannot_delete_boutique_with_orders'),
-                    'reason' => $hasProducts ? 'products' : 'orders'
-                ], Response::HTTP_CONFLICT);
-            }
-            
-            $boutique->delete();
+            $boutique->delete(); // This will now be a soft delete
 
             return response()->json([
                 'success' => true,
@@ -165,6 +167,72 @@ class BoutiqueController extends Controller
                 'message' => __('messages.server_error'),
                 'error' => $e->getMessage()
             ], Response::HTTP_CONFLICT);
+        }
+    }
+
+    /**
+     * Restore a soft deleted boutique
+     */
+    public function restore(string $id)
+    {
+        try {
+            $boutique = Boutique::withTrashed()->findOrFail($id);
+
+            if (!$boutique->trashed()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('messages.boutique_not_deleted')
+                ], Response::HTTP_BAD_REQUEST);
+            }
+
+            $boutique->restore();
+
+            return response()->json([
+                'success' => true,
+                'message' => __('messages.boutique_restored_successfully'),
+                'data' => new BoutiqueResource($boutique)
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => __('messages.server_error'),
+                'error' => $e->getMessage()
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * Permanently delete the specified boutique
+     */
+    public function forceDelete(string $id)
+    {
+        try {
+            $boutique = Boutique::withTrashed()->findOrFail($id);
+
+            // Check for related records that might prevent permanent deletion
+            $hasProducts = $boutique->produits()->exists();
+            $hasOrders = $boutique->commandes()->exists();
+
+            if ($hasProducts || $hasOrders) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('messages.cannot_permanently_delete_boutique_with_orders'),
+                    'reason' => $hasProducts ? 'products' : 'orders'
+                ], Response::HTTP_CONFLICT);
+            }
+
+            $boutique->forceDelete();
+
+            return response()->json([
+                'success' => true,
+                'message' => __('messages.boutique_permanently_deleted')
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => __('messages.server_error'),
+                'error' => $e->getMessage()
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
