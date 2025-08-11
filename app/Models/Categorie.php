@@ -6,10 +6,11 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Categorie extends Model
 {
-    use HasFactory, HasUuids;
+    use HasFactory, HasUuids, SoftDeletes;
 
     /**
      * The table associated with the model.
@@ -37,6 +38,7 @@ class Categorie extends Model
     protected $casts = [
         'ordre' => 'integer',
         'actif' => 'boolean',
+        'deleted_at' => 'datetime',
     ];
 
     /**
@@ -44,7 +46,7 @@ class Categorie extends Model
      *
      * @var bool
      */
-    public $timestamps = false;
+    public $timestamps = true;
 
     /**
      * Get the products for this category.

@@ -391,6 +391,8 @@
   "user_created_successfully": "Utilisateur {name} créé avec succès!",
   "user_updated_successfully": "Utilisateur {name} mis à jour avec succès!",
   "user_deleted_successfully": "Utilisateur {name} supprimé avec succès!",
+  "user_restored_successfully": "Utilisateur {name} restauré avec succès!",
+  "user_permanently_deleted": "Utilisateur {name} supprimé définitivement!",
   "failed_to_load_users": "Échec du chargement des utilisateurs",
   "failed_to_create_user": "Échec de la création de l'utilisateur",
   "failed_to_update_user": "Échec de la mise à jour de l'utilisateur",
@@ -1014,6 +1016,12 @@
   "confirm.delete_title": "Supprimer l'élément",
   "confirm.delete_text": "Voulez-vous supprimer ce {entity} ? Cette action ne peut pas être annulée.",
   "confirm.delete_text_with_name": "Voulez-vous supprimer {entity} '{name}' ? Cette action ne peut pas être annulée.",
+  "confirm.restore_title": "Restaurer l'élément",
+  "confirm.restore_text": "Voulez-vous restaurer ce {entity} ?",
+  "confirm.restore_text_with_name": "Voulez-vous restaurer {entity} '{name}' ?",
+  "confirm.permanent_delete_title": "Suppression définitive",
+  "confirm.permanent_delete_text": "Voulez-vous supprimer définitivement ce {entity} ? Cette action ne peut pas être annulée.",
+  "confirm.permanent_delete_text_with_name": "Voulez-vous supprimer définitivement {entity} '{name}' ? Cette action ne peut pas être annulée.",
   "confirm.bulk_delete_title": "Suppression en masse",
   "confirm.bulk_delete_text": "Voulez-vous supprimer {count} {entity} ? Cette action ne peut pas être annulée.",
 
@@ -1065,7 +1073,13 @@
   "common.all": "Tous",
   "common.active": "Actif",
   "common.inactive": "Inactif",
+  "common.trashed": "Supprimé",
+  "common.deleted": "Supprimé",
+  "common.restore": "Restaurer",
+  "common.permanent_delete": "Supprimer définitivement",
+  "common.filter_by_status": "Filtrer par statut",
   "common.status": "Statut",
+  "record_status": "État de l'enregistrement",
   "common.items_per_page": "Éléments par page",
   "common.actions": "Actions",
   "common.showing": "Affichage de",
@@ -1089,6 +1103,20 @@
 
   // Latest missing keys
   "Catalogue de Variantes": "Catalogue de Variantes",
+
+  // Soft delete messages
+  "messages.delete_failed": "Échec de la suppression de {entity}",
+  "messages.restore_failed": "Échec de la restauration de {entity}",
+  "messages.permanent_delete_failed": "Échec de la suppression définitive de {entity}",
+  "messages.item_deleted_successfully": "{entity} '{name}' supprimé avec succès",
+  "messages.item_restored_successfully": "{entity} '{name}' restauré avec succès",
+  "messages.item_permanently_deleted": "{entity} '{name}' supprimé définitivement",
+  "messages.entity_deleted_successfully": "{entity} supprimé avec succès",
+  "messages.entity_restored_successfully": "{entity} restauré avec succès",
+  "messages.entity_permanently_deleted": "{entity} supprimé définitivement",
+  "messages.user_not_deleted": "L'utilisateur n'est pas supprimé",
+  "messages.user_permanently_deleted": "Utilisateur supprimé définitivement",
+  "messages.user_restored_successfully": "Utilisateur restauré avec succès",
   "welcome_admin": "Bienvenue Administrateur",
   "user_permissions": "Permissions Utilisateur"
 }

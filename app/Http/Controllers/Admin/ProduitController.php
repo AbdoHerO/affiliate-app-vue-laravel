@@ -20,6 +20,21 @@ class ProduitController extends Controller
     {
         $query = Produit::with(['boutique:id,nom', 'categorie:id,nom', 'images']);
 
+        // Handle soft delete filtering
+        $includeDeleted = $request->get('include_deleted', 'active'); // active, trashed, all
+        switch ($includeDeleted) {
+            case 'trashed':
+                $query->onlyTrashed();
+                break;
+            case 'all':
+                $query->withTrashed();
+                break;
+            case 'active':
+            default:
+                // Default behavior - only active (non-deleted) records
+                break;
+        }
+
         // Search by title or slug
         if ($request->filled('q')) {
             $search = $request->get('q');
@@ -182,23 +197,12 @@ class ProduitController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Soft delete the specified resource.
      */
     public function destroy(Produit $produit): JsonResponse
     {
         try {
-            // Check for related records that would prevent deletion
-            $constraints = $this->checkDeleteConstraints($produit);
-            
-            if (!empty($constraints)) {
-                return response()->json([
-                    'success' => false,
-                    'message' => __('messages.produits.delete_failed_constraints'),
-                    'constraints' => $constraints,
-                ], 409);
-            }
-
-            $produit->delete();
+            $produit->delete(); // This will now be a soft delete
 
             return response()->json([
                 'success' => true,
@@ -208,6 +212,72 @@ class ProduitController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => __('messages.produits.deletion_failed'),
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Restore a soft deleted product.
+     */
+    public function restore(string $id): JsonResponse
+    {
+        try {
+            $produit = Produit::withTrashed()->findOrFail($id);
+
+            if (!$produit->trashed()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('messages.produits.not_deleted'),
+                ], 400);
+            }
+
+            $produit->restore();
+            $produit->load(['boutique', 'categorie', 'images']);
+
+            return response()->json([
+                'success' => true,
+                'message' => __('messages.produits.restored_successfully'),
+                'data' => new ProduitResource($produit),
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => __('messages.produits.restore_failed'),
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Permanently delete the specified resource.
+     */
+    public function forceDelete(string $id): JsonResponse
+    {
+        try {
+            $produit = Produit::withTrashed()->findOrFail($id);
+
+            // Check for related records that would prevent permanent deletion
+            $constraints = $this->checkDeleteConstraints($produit);
+
+            if (!empty($constraints)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('messages.produits.permanent_delete_failed_constraints'),
+                    'constraints' => $constraints,
+                ], 409);
+            }
+
+            $produit->forceDelete();
+
+            return response()->json([
+                'success' => true,
+                'message' => __('messages.produits.permanently_deleted'),
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => __('messages.produits.permanent_deletion_failed'),
                 'error' => $e->getMessage(),
             ], 500);
         }

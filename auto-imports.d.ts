@@ -35,6 +35,7 @@ declare global {
   const createReactiveFn: typeof import('@vueuse/core')['createReactiveFn']
   const createReusableTemplate: typeof import('@vueuse/core')['createReusableTemplate']
   const createSharedComposable: typeof import('@vueuse/core')['createSharedComposable']
+  const createSoftDeleteComposable: typeof import('./resources/ts/composables/useSoftDelete')['createSoftDeleteComposable']
   const createTemplatePromise: typeof import('@vueuse/core')['createTemplatePromise']
   const createUnrefFn: typeof import('@vueuse/core')['createUnrefFn']
   const createUrl: typeof import('./resources/ts/@core/composable/createUrl')['createUrl']
@@ -186,10 +187,12 @@ declare global {
   const useBase64: typeof import('@vueuse/core')['useBase64']
   const useBattery: typeof import('@vueuse/core')['useBattery']
   const useBluetooth: typeof import('@vueuse/core')['useBluetooth']
+  const useBoutiqueSoftDelete: typeof import('./resources/ts/composables/useSoftDelete')['useBoutiqueSoftDelete']
   const useBreakpoints: typeof import('@vueuse/core')['useBreakpoints']
   const useBroadcastChannel: typeof import('@vueuse/core')['useBroadcastChannel']
   const useBrowserLocation: typeof import('@vueuse/core')['useBrowserLocation']
   const useCached: typeof import('@vueuse/core')['useCached']
+  const useCategorySoftDelete: typeof import('./resources/ts/composables/useSoftDelete')['useCategorySoftDelete']
   const useCeil: typeof import('@vueuse/math')['useCeil']
   const useClamp: typeof import('@vueuse/math')['useClamp']
   const useClipboard: typeof import('@vueuse/core')['useClipboard']
@@ -292,6 +295,7 @@ declare global {
   const usePreferredLanguages: typeof import('@vueuse/core')['usePreferredLanguages']
   const usePreferredReducedMotion: typeof import('@vueuse/core')['usePreferredReducedMotion']
   const usePrevious: typeof import('@vueuse/core')['usePrevious']
+  const useProductSoftDelete: typeof import('./resources/ts/composables/useSoftDelete')['useProductSoftDelete']
   const useProjection: typeof import('@vueuse/math')['useProjection']
   const useQuickConfirm: typeof import('./resources/ts/composables/useConfirmAction')['useQuickConfirm']
   const useRafFn: typeof import('@vueuse/core')['useRafFn']
@@ -310,6 +314,7 @@ declare global {
   const useShare: typeof import('@vueuse/core')['useShare']
   const useSkins: typeof import('./resources/ts/@core/composable/useSkins')['useSkins']
   const useSlots: typeof import('vue')['useSlots']
+  const useSoftDelete: typeof import('./resources/ts/composables/useSoftDelete')['useSoftDelete']
   const useSorted: typeof import('@vueuse/core')['useSorted']
   const useSpeechRecognition: typeof import('@vueuse/core')['useSpeechRecognition']
   const useSpeechSynthesis: typeof import('@vueuse/core')['useSpeechSynthesis']
@@ -342,6 +347,7 @@ declare global {
   const useTrunc: typeof import('@vueuse/math')['useTrunc']
   const useUrlSearchParams: typeof import('@vueuse/core')['useUrlSearchParams']
   const useUserMedia: typeof import('@vueuse/core')['useUserMedia']
+  const useUserSoftDelete: typeof import('./resources/ts/composables/useSoftDelete')['useUserSoftDelete']
   const useVModel: typeof import('@vueuse/core')['useVModel']
   const useVModels: typeof import('@vueuse/core')['useVModels']
   const useVibrate: typeof import('@vueuse/core')['useVibrate']
@@ -412,6 +418,7 @@ declare module 'vue' {
     readonly createReactiveFn: UnwrapRef<typeof import('@vueuse/core')['createReactiveFn']>
     readonly createReusableTemplate: UnwrapRef<typeof import('@vueuse/core')['createReusableTemplate']>
     readonly createSharedComposable: UnwrapRef<typeof import('@vueuse/core')['createSharedComposable']>
+    readonly createSoftDeleteComposable: UnwrapRef<typeof import('./resources/ts/composables/useSoftDelete')['createSoftDeleteComposable']>
     readonly createTemplatePromise: UnwrapRef<typeof import('@vueuse/core')['createTemplatePromise']>
     readonly createUnrefFn: UnwrapRef<typeof import('@vueuse/core')['createUnrefFn']>
     readonly createUrl: UnwrapRef<typeof import('./resources/ts/@core/composable/createUrl')['createUrl']>
@@ -559,10 +566,12 @@ declare module 'vue' {
     readonly useBase64: UnwrapRef<typeof import('@vueuse/core')['useBase64']>
     readonly useBattery: UnwrapRef<typeof import('@vueuse/core')['useBattery']>
     readonly useBluetooth: UnwrapRef<typeof import('@vueuse/core')['useBluetooth']>
+    readonly useBoutiqueSoftDelete: UnwrapRef<typeof import('./resources/ts/composables/useSoftDelete')['useBoutiqueSoftDelete']>
     readonly useBreakpoints: UnwrapRef<typeof import('@vueuse/core')['useBreakpoints']>
     readonly useBroadcastChannel: UnwrapRef<typeof import('@vueuse/core')['useBroadcastChannel']>
     readonly useBrowserLocation: UnwrapRef<typeof import('@vueuse/core')['useBrowserLocation']>
     readonly useCached: UnwrapRef<typeof import('@vueuse/core')['useCached']>
+    readonly useCategorySoftDelete: UnwrapRef<typeof import('./resources/ts/composables/useSoftDelete')['useCategorySoftDelete']>
     readonly useCeil: UnwrapRef<typeof import('@vueuse/math')['useCeil']>
     readonly useClamp: UnwrapRef<typeof import('@vueuse/math')['useClamp']>
     readonly useClipboard: UnwrapRef<typeof import('@vueuse/core')['useClipboard']>
@@ -663,6 +672,7 @@ declare module 'vue' {
     readonly usePreferredLanguages: UnwrapRef<typeof import('@vueuse/core')['usePreferredLanguages']>
     readonly usePreferredReducedMotion: UnwrapRef<typeof import('@vueuse/core')['usePreferredReducedMotion']>
     readonly usePrevious: UnwrapRef<typeof import('@vueuse/core')['usePrevious']>
+    readonly useProductSoftDelete: UnwrapRef<typeof import('./resources/ts/composables/useSoftDelete')['useProductSoftDelete']>
     readonly useProjection: UnwrapRef<typeof import('@vueuse/math')['useProjection']>
     readonly useQuickConfirm: UnwrapRef<typeof import('./resources/ts/composables/useConfirmAction')['useQuickConfirm']>
     readonly useRafFn: UnwrapRef<typeof import('@vueuse/core')['useRafFn']>
@@ -681,6 +691,7 @@ declare module 'vue' {
     readonly useShare: UnwrapRef<typeof import('@vueuse/core')['useShare']>
     readonly useSkins: UnwrapRef<typeof import('./resources/ts/@core/composable/useSkins')['useSkins']>
     readonly useSlots: UnwrapRef<typeof import('vue')['useSlots']>
+    readonly useSoftDelete: UnwrapRef<typeof import('./resources/ts/composables/useSoftDelete')['useSoftDelete']>
     readonly useSorted: UnwrapRef<typeof import('@vueuse/core')['useSorted']>
     readonly useSpeechRecognition: UnwrapRef<typeof import('@vueuse/core')['useSpeechRecognition']>
     readonly useSpeechSynthesis: UnwrapRef<typeof import('@vueuse/core')['useSpeechSynthesis']>
@@ -711,6 +722,7 @@ declare module 'vue' {
     readonly useTrunc: UnwrapRef<typeof import('@vueuse/math')['useTrunc']>
     readonly useUrlSearchParams: UnwrapRef<typeof import('@vueuse/core')['useUrlSearchParams']>
     readonly useUserMedia: UnwrapRef<typeof import('@vueuse/core')['useUserMedia']>
+    readonly useUserSoftDelete: UnwrapRef<typeof import('./resources/ts/composables/useSoftDelete')['useUserSoftDelete']>
     readonly useVModel: UnwrapRef<typeof import('@vueuse/core')['useVModel']>
     readonly useVModels: UnwrapRef<typeof import('@vueuse/core')['useVModels']>
     readonly useVibrate: UnwrapRef<typeof import('@vueuse/core')['useVibrate']>

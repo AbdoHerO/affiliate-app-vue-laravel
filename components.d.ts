@@ -77,6 +77,8 @@ declare module 'vue' {
     ScrollToTop: typeof import('./resources/ts/@core/components/ScrollToTop.vue')['default']
     ShareProjectDialog: typeof import('./resources/ts/components/dialogs/ShareProjectDialog.vue')['default']
     Shortcuts: typeof import('./resources/ts/@core/components/Shortcuts.vue')['default']
+    SoftDeleteActions: typeof import('./resources/ts/components/common/SoftDeleteActions.vue')['default']
+    SoftDeleteFilter: typeof import('./resources/ts/components/common/SoftDeleteFilter.vue')['default']
     StockIssues: typeof import('./resources/ts/components/public/StockIssues.vue')['default']
     TablePagination: typeof import('./resources/ts/@core/components/TablePagination.vue')['default']
     TheCustomizer: typeof import('./resources/ts/@core/components/TheCustomizer.vue')['default']

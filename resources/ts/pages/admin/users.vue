@@ -9,6 +9,9 @@ import { useApi } from '@/composables/useApi'
 import { useFormErrors } from '@/composables/useFormErrors'
 import ProfileImageUpload from '@/components/ProfileImageUpload.vue'
 import { getAvatarUrl } from '@/utils/imageUtils'
+import { useUserSoftDelete } from '@/composables/useSoftDelete'
+import SoftDeleteFilter from '@/components/common/SoftDeleteFilter.vue'
+import SoftDeleteActions from '@/components/common/SoftDeleteActions.vue'
 
 definePage({
   meta: {
@@ -36,7 +39,17 @@ const {
   handleCancel
 } = useQuickConfirm()
 
-
+// Soft delete functionality
+const {
+  filter: softDeleteFilter,
+  getQueryParams,
+  isSoftDeleted,
+  getStatusColor,
+  getStatusText
+} = useUserSoftDelete(
+  () => fetchUsers(pagination.value.current_page), // onSuccess
+  (error) => console.error('Soft delete error:', error) // onError
+)
 
 type User = {
   id: string
@@ -52,6 +65,7 @@ type User = {
   remember_token?: string
   created_at: string
   updated_at?: string
+  deleted_at?: string
 }
 
 // Data
@@ -120,6 +134,7 @@ const fetchUsers = async (page = 1) => {
     const params = new URLSearchParams({
       page: page.toString(),
       per_page: pagination.value.per_page.toString(),
+      ...getQueryParams() // Add soft delete filter
     })
 
     if (filters.value.search) params.set('search', filters.value.search)
@@ -153,6 +168,7 @@ const fetchUsers = async (page = 1) => {
         kyc_statut: user.kyc_statut,
         created_at: user.created_at,
         updated_at: user.updated_at,
+        deleted_at: user.deleted_at,
       }))
 
       pagination.value = data.value.pagination
@@ -392,6 +408,14 @@ watch(
   },
   { deep: true },
 )
+
+// Watch soft delete filter
+watch(
+  softDeleteFilter,
+  () => {
+    fetchUsers(1)
+  }
+)
 </script>
 
 <template>
@@ -420,7 +444,7 @@ watch(
     <VCard class="mb-6">
       <VCardText>
         <VRow>
-          <VCol cols="12" md="4">
+          <VCol cols="12" md="3">
             <VTextField
               v-model="filters.search"
               :placeholder="t('search_users')"
@@ -428,14 +452,14 @@ watch(
               clearable
             />
           </VCol>
-          <VCol cols="12" md="3">
+          <VCol cols="12" md="2">
             <VSelect
               v-model="filters.role"
               :items="[{ title: 'All Roles', value: '' }, ...roles]"
               placeholder="Filter by role"
             />
           </VCol>
-          <VCol cols="12" md="3">
+          <VCol cols="12" md="2">
             <VSelect
               v-model="filters.statut"
               :items="statusOptions"
@@ -443,6 +467,12 @@ watch(
             />
           </VCol>
           <VCol cols="12" md="2">
+            <SoftDeleteFilter
+              v-model="softDeleteFilter"
+              @update:model-value="fetchUsers(1)"
+            />
+          </VCol>
+          <VCol cols="12" md="3">
             <VBtn block variant="outlined" @click="clearFilters">
               {{ t('clear') }}
             </VBtn>
@@ -463,6 +493,7 @@ watch(
               <th>{{ t('phone') }}</th>
               <th>{{ t('role') }}</th>
               <th>{{ t('status') }}</th>
+              <th>{{ t('record_status') }}</th>
               <th>{{ t('kyc_status') }}</th>
               <th>{{ t('created') }}</th>
               <th>{{ t('actions') }}</th>
@@ -497,6 +528,15 @@ watch(
               </td>
               <td>
                 <VChip
+                  :color="getStatusColor(user)"
+                  size="small"
+                  variant="elevated"
+                >
+                  {{ getStatusText(user) }}
+                </VChip>
+              </td>
+              <td>
+                <VChip
                   :color="user.kyc_statut === 'valide' ? 'success' : user.kyc_statut === 'refuse' ? 'error' : 'warning'"
                   size="small"
                 >
@@ -505,23 +545,16 @@ watch(
               </td>
               <td>{{ new Date(user.created_at).toLocaleDateString() }}</td>
               <td>
-                <div class="d-flex gap-2">
-                  <VBtn icon size="small" color="primary" variant="text" @click="openEditDialog(user)">
-                    <VIcon icon="tabler-edit" />
-                  </VBtn>
-                  <VBtn
-                    icon
-                    size="small"
-                    :color="user.statut === 'actif' ? 'warning' : 'success'"
-                    variant="text"
-                    @click="toggleUserStatus(user)"
-                  >
-                    <VIcon :icon="user.statut === 'actif' ? 'tabler-user-off' : 'tabler-user-check'" />
-                  </VBtn>
-                  <VBtn icon size="small" color="error" variant="text" @click="deleteUser(user)">
-                    <VIcon icon="tabler-trash" />
-                  </VBtn>
-                </div>
+                <SoftDeleteActions
+                  :item="user"
+                  entity-name="user"
+                  api-endpoint="/admin/users"
+                  item-name-field="nom_complet"
+                  @deleted="fetchUsers(pagination.current_page)"
+                  @restored="fetchUsers(pagination.current_page)"
+                  @permanently-deleted="fetchUsers(pagination.current_page)"
+                  @edit="openEditDialog"
+                />
               </td>
             </tr>
           </tbody>

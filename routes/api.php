@@ -69,6 +69,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('users/{id}', [UserManagementController::class, 'show']);
         Route::put('users/{id}', [UserManagementController::class, 'update']);
         Route::delete('users/{id}', [UserManagementController::class, 'destroy']);
+        Route::post('users/{id}/restore', [UserManagementController::class, 'restore']);
+        Route::delete('users/{id}/force', [UserManagementController::class, 'forceDelete']);
         Route::post('users/{id}/toggle-status', [UserManagementController::class, 'toggleStatus']);
         Route::get('users/roles/list', [UserManagementController::class, 'getRoles']);
 
@@ -116,6 +118,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('produits/{produit}', [ProduitController::class, 'show']);
         Route::put('produits/{produit}', [ProduitController::class, 'update']);
         Route::delete('produits/{produit}', [ProduitController::class, 'destroy']);
+        Route::post('produits/{id}/restore', [ProduitController::class, 'restore']);
+        Route::delete('produits/{id}/force', [ProduitController::class, 'forceDelete']);
         Route::post('produits/{produit}/share', [ProduitController::class, 'share']);
 
         // Product Images Management

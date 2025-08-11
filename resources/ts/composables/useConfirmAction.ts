@@ -29,6 +29,8 @@ export interface ConfirmPresets {
   create: (entity: string) => ConfirmPreset
   update: (entity: string, name?: string) => ConfirmPreset
   delete: (entity: string, name?: string) => ConfirmPreset
+  restore: (entity: string, name?: string) => ConfirmPreset
+  permanentDelete: (entity: string, name?: string) => ConfirmPreset
   bulkDelete: (entity: string, count: number) => ConfirmPreset
 }
 
@@ -106,13 +108,37 @@ export function useConfirmAction() {
     
     delete: (entity: string, name?: string) => ({
       title: t('confirm.delete_title'),
-      text: name 
+      text: name
         ? t('confirm.delete_text_with_name', { entity, name })
         : t('confirm.delete_text', { entity }),
       type: 'danger',
       confirmText: t('common.delete'),
       cancelText: t('common.cancel'),
       icon: 'tabler-trash',
+      color: 'error'
+    }),
+
+    restore: (entity: string, name?: string) => ({
+      title: t('confirm.restore_title'),
+      text: name
+        ? t('confirm.restore_text_with_name', { entity, name })
+        : t('confirm.restore_text', { entity }),
+      type: 'success',
+      confirmText: t('common.restore'),
+      cancelText: t('common.cancel'),
+      icon: 'tabler-restore',
+      color: 'success'
+    }),
+
+    permanentDelete: (entity: string, name?: string) => ({
+      title: t('confirm.permanent_delete_title'),
+      text: name
+        ? t('confirm.permanent_delete_text_with_name', { entity, name })
+        : t('confirm.permanent_delete_text', { entity }),
+      type: 'danger',
+      confirmText: t('common.permanent_delete'),
+      cancelText: t('common.cancel'),
+      icon: 'tabler-trash-x',
       color: 'error'
     }),
     
@@ -226,12 +252,16 @@ export function useQuickConfirm() {
   const confirmCreate = (entity: string) => confirmAction.confirm(confirmAction.presets.create(entity))
   const confirmUpdate = (entity: string, name?: string) => confirmAction.confirm(confirmAction.presets.update(entity, name))
   const confirmDelete = (entity: string, name?: string) => confirmAction.confirm(confirmAction.presets.delete(entity, name))
+  const confirmRestore = (entity: string, name?: string) => confirmAction.confirm(confirmAction.presets.restore(entity, name))
+  const confirmPermanentDelete = (entity: string, name?: string) => confirmAction.confirm(confirmAction.presets.permanentDelete(entity, name))
   const confirmBulkDelete = (entity: string, count: number) => confirmAction.confirm(confirmAction.presets.bulkDelete(entity, count))
 
   return {
     confirmCreate,
     confirmUpdate,
     confirmDelete,
+    confirmRestore,
+    confirmPermanentDelete,
     confirmBulkDelete,
     confirm: confirmAction.confirm,
     // Dialog reactive refs (no need to destructure to keep reactivity)

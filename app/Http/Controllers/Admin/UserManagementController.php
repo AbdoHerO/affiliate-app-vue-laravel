@@ -24,6 +24,21 @@ class UserManagementController extends Controller
 
         $query = User::with('roles');
 
+        // Handle soft delete filtering
+        $includeDeleted = $request->get('include_deleted', 'active'); // active, trashed, all
+        switch ($includeDeleted) {
+            case 'trashed':
+                $query->onlyTrashed();
+                break;
+            case 'all':
+                $query->withTrashed();
+                break;
+            case 'active':
+            default:
+                // Default behavior - only active (non-deleted) records
+                break;
+        }
+
         // Search functionality
         if ($request->has('search')) {
             $search = $request->search;
@@ -215,7 +230,7 @@ class UserManagementController extends Controller
     }
 
     /**
-     * Remove the specified user
+     * Soft delete the specified user
      */
     public function destroy(Request $request, $id)
     {
@@ -233,10 +248,61 @@ class UserManagementController extends Controller
             ], Response::HTTP_FORBIDDEN);
         }
 
-        $user->delete();
+        $user->delete(); // This will now be a soft delete
 
         return response()->json([
             'message' => __('messages.user_deleted_successfully')
+        ]);
+    }
+
+    /**
+     * Restore a soft deleted user
+     */
+    public function restore(Request $request, $id)
+    {
+        // Check admin permission
+        if (!$request->user()->hasRole('admin')) {
+            return response()->json(['message' => __('messages.access_denied')], Response::HTTP_FORBIDDEN);
+        }
+
+        $user = User::withTrashed()->findOrFail($id);
+
+        if (!$user->trashed()) {
+            return response()->json([
+                'message' => __('messages.user_not_deleted')
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        $user->restore();
+
+        return response()->json([
+            'message' => __('messages.user_restored_successfully')
+        ]);
+    }
+
+    /**
+     * Permanently delete a user
+     */
+    public function forceDelete(Request $request, $id)
+    {
+        // Check admin permission
+        if (!$request->user()->hasRole('admin')) {
+            return response()->json(['message' => __('messages.access_denied')], Response::HTTP_FORBIDDEN);
+        }
+
+        $user = User::withTrashed()->findOrFail($id);
+
+        // Prevent admin from permanently deleting themselves
+        if ($user->id === $request->user()->id) {
+            return response()->json([
+                'message' => __('messages.cannot_delete_own_account')
+            ], Response::HTTP_FORBIDDEN);
+        }
+
+        $user->forceDelete();
+
+        return response()->json([
+            'message' => __('messages.user_permanently_deleted')
         ]);
     }
 
