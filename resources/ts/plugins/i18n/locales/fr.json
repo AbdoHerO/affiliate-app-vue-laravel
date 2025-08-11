@@ -1025,6 +1025,11 @@
   "document": "document",
   "attribut": "attribut",
   "valeur": "valeur",
+  "image": "image",
+  "vidéo": "vidéo",
+  "variante": "variante",
+  "proposition": "proposition",
+  "rupture de stock": "rupture de stock",
 
   // ===========================================
   // MISSING TRANSLATION KEYS FROM CONSOLE WARNINGS

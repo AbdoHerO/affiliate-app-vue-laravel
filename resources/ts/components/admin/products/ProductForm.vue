@@ -38,7 +38,7 @@ const router = useRouter()
 const route = useRoute()
 const { t } = useI18n()
 const { showSuccess, showError, snackbar } = useNotifications()
-const { confirmCreate, confirmUpdate } = useQuickConfirm()
+const { confirmCreate, confirmUpdate, confirmDelete } = useQuickConfirm()
 
 const produitsStore = useProduitsStore()
 const boutiquesStore = useBoutiquesStore()
@@ -279,6 +279,11 @@ const handleImageUpload = async (files: FileList | File[]) => {
 
 const handleDeleteImage = async (imageId: string) => {
   if (!localId.value) return
+
+  // Show confirm dialog before deleting
+  const confirmed = await confirmDelete('image', 'cette image')
+  if (!confirmed) return
+
   try {
     const { error: apiError } = await useApi(`/admin/produits/${localId.value}/images/${imageId}`, {
       method: 'DELETE'
@@ -306,6 +311,11 @@ const handleAddVideoUrl = async () => {
     console.warn('[ProductForm] Cannot add video URL: missing product ID or URL')
     return
   }
+
+  // Show confirm dialog before adding
+  const confirmed = await confirmCreate('vidéo')
+  if (!confirmed) return
+
   console.debug('[ProductForm] [productId] add-video-url:', localId.value)
   try {
     const { data, error: apiError } = await useApi(`/admin/produits/${localId.value}/videos`, {
@@ -365,6 +375,11 @@ const handleAddVideoUpload = async (files: FileList | File[]) => {
 }
 const deleteVideo = async (id: string) => {
   if (!localId.value) return
+
+  // Show confirm dialog before deleting
+  const confirmed = await confirmDelete('vidéo', 'cette vidéo')
+  if (!confirmed) return
+
   try {
     const { error: apiError } = await useApi(`/admin/produits/${localId.value}/videos/${id}`, {
       method: 'DELETE'
@@ -435,6 +450,11 @@ const addVariant = async () => {
     console.warn('[ProductForm] Cannot add variant: missing product ID, attribute, or value')
     return
   }
+
+  // Show confirm dialog before adding
+  const confirmed = await confirmCreate('variante')
+  if (!confirmed) return
+
   console.debug('[ProductForm] [productId] add-variant:', localId.value)
   try {
     const { data, error: apiError } = await useApi(`/admin/produits/${localId.value}/variantes`, {
@@ -473,6 +493,11 @@ const addVariant = async () => {
 }
 const deleteVariant = async (id: string) => {
   if (!localId.value) return
+
+  // Show confirm dialog before deleting
+  const confirmed = await confirmDelete('variante', 'cette variante')
+  if (!confirmed) return
+
   try {
     const { error: apiError } = await useApi(`/admin/produits/${localId.value}/variantes/${id}`, {
       method: 'DELETE'
@@ -641,6 +666,11 @@ const uploadPropositionImage = async (propositionId: string, file: File) => {
 // Proposition handlers
 const handleAddProposition = async () => {
   if (!newProposition.titre || !newProposition.description || !newProposition.type) return
+
+  // Show confirm dialog before adding
+  const confirmed = await confirmCreate('proposition')
+  if (!confirmed) return
+
   const result = await addProposition(newProposition)
   if (result) {
     Object.assign(newProposition, { titre: '', description: '', type: '' })
@@ -648,6 +678,10 @@ const handleAddProposition = async () => {
 }
 
 const handleDeleteProposition = async (propositionId: string) => {
+  // Show confirm dialog before deleting
+  const confirmed = await confirmDelete('proposition', 'cette proposition')
+  if (!confirmed) return
+
   await deleteProposition(propositionId)
 }
 
@@ -694,6 +728,10 @@ const handleAddRupture = async () => {
     console.warn('[ProductForm] Cannot add rupture: no product ID')
     return
   }
+
+  // Show confirm dialog before adding
+  const confirmed = await confirmCreate('rupture de stock')
+  if (!confirmed) return
 
   // Clear previous validation errors
   Object.keys(ruptureValidationErrors).forEach(key => {
@@ -781,6 +819,11 @@ const handleResolveRupture = async (ruptureId: string) => {
 
 const handleDeleteRupture = async (ruptureId: string) => {
   if (!localId.value) return
+
+  // Show confirm dialog before deleting
+  const confirmed = await confirmDelete('rupture de stock', 'cette rupture de stock')
+  if (!confirmed) return
+
   try {
     const { error } = await useApi(`/admin/produits/${localId.value}/ruptures/${ruptureId}`, {
       method: 'DELETE'

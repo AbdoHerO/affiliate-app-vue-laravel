@@ -749,6 +749,11 @@
   "document": "وثيقة",
   "attribut": "خاصية",
   "valeur": "قيمة",
+  "image": "صورة",
+  "vidéo": "فيديو",
+  "variante": "متغير",
+  "proposition": "اقتراح",
+  "rupture de stock": "نفاد المخزون",
   "common.remove": "إزالة",
   "common_uploading": "جاري الرفع",
 

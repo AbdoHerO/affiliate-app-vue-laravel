@@ -1168,6 +1168,11 @@
   "document": "document",
   "attribut": "attribute",
   "valeur": "value",
+  "image": "image",
+  "vidéo": "video",
+  "variante": "variant",
+  "proposition": "proposition",
+  "rupture de stock": "stock issue",
   "common.remove": "Remove",
   "common_uploading": "Uploading",
 
