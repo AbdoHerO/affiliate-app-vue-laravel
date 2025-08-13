@@ -16,6 +16,12 @@ use App\Http\Controllers\Admin\ProduitVideoController;
 use App\Http\Controllers\Admin\ProduitVarianteController;
 use App\Http\Controllers\Admin\ProduitPropositionController;
 use App\Http\Controllers\Admin\ProduitRuptureController;
+use App\Http\Controllers\Admin\PreordersController;
+use App\Http\Controllers\Admin\OzonExpressController;
+use App\Http\Controllers\Admin\CitiesController;
+use App\Http\Controllers\Admin\ShippingOrdersController;
+use App\Http\Controllers\Admin\AffiliatesController;
+use App\Http\Controllers\Admin\UsersApprovalController;
 use App\Http\Controllers\Admin\VariantAttributController;
 use App\Http\Controllers\Admin\VariantValeurController;
 use App\Http\Controllers\Public\ProduitController as PublicProduitController;
@@ -185,6 +191,41 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::put('variant-attributs/{variantAttribut}/valeurs/{variantValeur}', [VariantValeurController::class, 'update']);
         Route::delete('variant-attributs/{variantAttribut}/valeurs/{variantValeur}', [VariantValeurController::class, 'destroy']);
         Route::post('variant-attributs/{variantAttribut}/valeurs/reorder', [VariantValeurController::class, 'reorder']);
+
+        // Pre-Orders Management (internal orders not yet shipped)
+        Route::get('preorders', [PreordersController::class, 'index']);
+        Route::get('preorders/{id}', [PreordersController::class, 'show']);
+        Route::put('preorders/{id}', [PreordersController::class, 'update']);
+        Route::post('preorders/{id}/confirm', [PreordersController::class, 'confirm']);
+
+        // OzonExpress Shipping Integration
+        Route::post('shipping/ozon/parcels', [OzonExpressController::class, 'addParcel']);
+        Route::post('shipping/ozon/tracking', [OzonExpressController::class, 'tracking']);
+        Route::post('shipping/ozon/parcel-info', [OzonExpressController::class, 'parcelInfo']);
+        Route::post('shipping/ozon/delivery-notes', [OzonExpressController::class, 'createDeliveryNote']);
+        Route::post('shipping/ozon/delivery-notes/add', [OzonExpressController::class, 'addParcelsToDeliveryNote']);
+        Route::post('shipping/ozon/delivery-notes/save', [OzonExpressController::class, 'saveDeliveryNote']);
+        Route::get('shipping/ozon/cities', [CitiesController::class, 'index']);
+
+        // Shipping Orders Management (orders with parcels)
+        Route::get('shipping/orders', [ShippingOrdersController::class, 'index']);
+        Route::get('shipping/orders/{id}', [ShippingOrdersController::class, 'show']);
+
+        // Users Approval Queue (replaces Affiliates Management)
+        Route::get('users/approval-queue', [UsersApprovalController::class, 'index']);
+        Route::get('users/approval-queue/stats', [UsersApprovalController::class, 'getStats']);
+        Route::post('users/{id}/approve', [UsersApprovalController::class, 'approve']);
+        Route::post('users/{id}/refuse', [UsersApprovalController::class, 'refuse']);
+        Route::post('users/{id}/resend-verification', [UsersApprovalController::class, 'resendVerification']);
+
+        // Legacy Affiliates Management (keep for now)
+        Route::get('affiliates', [AffiliatesController::class, 'index']);
+        Route::get('affiliates/{id}', [AffiliatesController::class, 'show']);
+        Route::put('affiliates/{id}', [AffiliatesController::class, 'update']);
+        Route::post('affiliates/{id}/toggle-block', [AffiliatesController::class, 'toggleBlock']);
+        Route::post('affiliates/{id}/change-tier', [AffiliatesController::class, 'changeTier']);
+        Route::get('affiliates/{id}/performance', [AffiliatesController::class, 'getPerformance']);
+        Route::get('affiliate-tiers', [AffiliatesController::class, 'getTiers']);
     });
 
     // Affiliate only routes

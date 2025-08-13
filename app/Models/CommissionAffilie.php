@@ -24,7 +24,8 @@ class CommissionAffilie extends Model
      */
     protected $fillable = [
         'commande_article_id',
-        'affilie_id',
+        'user_id', // Changed from affilie_id to user_id
+        'affilie_id', // Keep temporarily for rollback safety
         'type',
         'montant',
         'statut',
@@ -51,7 +52,16 @@ class CommissionAffilie extends Model
     }
 
     /**
-     * Get the affiliate for this commission.
+     * Get the affiliate user for this commission.
+     */
+    public function affiliate(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    /**
+     * Get the affiliate profile for this commission (legacy).
+     * @deprecated Use affiliate() instead
      */
     public function affilie(): BelongsTo
     {

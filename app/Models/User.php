@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -13,7 +13,7 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable, HasApiTokens, HasRoles, HasUuids, SoftDeletes;
@@ -38,6 +38,8 @@ class User extends Authenticatable
         'statut',
         'email_verifie',
         'kyc_statut',
+        'approval_status',
+        'refusal_reason',
     ];
 
     /**
@@ -191,5 +193,60 @@ class User extends Authenticatable
     public function parrain(): HasOne
     {
         return $this->hasOne(ParrainageAffilie::class, 'filleul_id');
+    }
+
+    /**
+     * Get the orders for this user (as affiliate).
+     */
+    public function commandes(): HasMany
+    {
+        return $this->hasMany(Commande::class, 'user_id');
+    }
+
+    /**
+     * Get the commissions for this user (as affiliate).
+     */
+    public function commissions(): HasMany
+    {
+        return $this->hasMany(CommissionAffilie::class, 'user_id');
+    }
+
+    // Scopes for affiliate approval queue
+    public function scopeAffiliates($query)
+    {
+        return $query->role('affiliate');
+    }
+
+    public function scopePendingApproval($query)
+    {
+        return $query->where('approval_status', 'pending_approval');
+    }
+
+    public function scopeApproved($query)
+    {
+        return $query->where('approval_status', 'approved');
+    }
+
+    public function scopeRefused($query)
+    {
+        return $query->where('approval_status', 'refused');
+    }
+
+    public function scopeEmailNotVerified($query)
+    {
+        return $query->whereNull('email_verified_at');
+    }
+
+    public function scopeEmailVerified($query)
+    {
+        return $query->whereNotNull('email_verified_at');
+    }
+
+    /**
+     * Check if user is an approved affiliate.
+     */
+    public function isApprovedAffiliate(): bool
+    {
+        return $this->hasRole('affiliate') && $this->approval_status === 'approved';
     }
 }

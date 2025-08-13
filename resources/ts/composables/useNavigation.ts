@@ -66,8 +66,14 @@ export function useNavigation() {
             icon: { icon: 'tabler-shopping-cart' },
             children: [
               {
-                title: t('nav_all_orders'),
-                to: 'admin-orders',
+                title: 'Pré-commandes',
+                to: 'admin.orders.pre.index',
+                icon: { icon: 'tabler-package' },
+              },
+              {
+                title: 'Expéditions',
+                to: 'admin.orders.ship.index',
+                icon: { icon: 'tabler-truck' },
               },
               {
                 title: t('nav_order_conflicts'),

@@ -17,6 +17,11 @@ class GammeAffilie extends Model
     protected $table = 'gammes_affilies';
 
     /**
+     * Indicates if the model should be timestamped.
+     */
+    public $timestamps = false;
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var array<int, string>

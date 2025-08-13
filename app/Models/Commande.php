@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Commande extends Model
 {
@@ -24,7 +25,8 @@ class Commande extends Model
      */
     protected $fillable = [
         'boutique_id',
-        'affilie_id',
+        'user_id', // Changed from affilie_id to user_id
+        'affilie_id', // Keep temporarily for rollback safety
         'client_id',
         'adresse_id',
         'offre_id',
@@ -58,7 +60,16 @@ class Commande extends Model
     }
 
     /**
-     * Get the affiliate for this order.
+     * Get the affiliate user for this order.
+     */
+    public function affiliate(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    /**
+     * Get the affiliate profile for this order (legacy).
+     * @deprecated Use affiliate() instead
      */
     public function affilie(): BelongsTo
     {
@@ -135,5 +146,13 @@ class Commande extends Model
     public function importCommandes(): HasMany
     {
         return $this->hasMany(ImportCommande::class, 'commande_id');
+    }
+
+    /**
+     * Get the shipping parcel for this order.
+     */
+    public function shippingParcel(): HasOne
+    {
+        return $this->hasOne(ShippingParcel::class, 'commande_id');
     }
 }
