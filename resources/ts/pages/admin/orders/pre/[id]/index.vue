@@ -212,7 +212,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div>
+  <div class="d-flex flex-column gap-6">
     <!-- Loading State -->
     <div v-if="isLoading" class="text-center py-8">
       <VProgressCircular

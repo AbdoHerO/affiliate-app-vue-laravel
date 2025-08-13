@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
-import { useRouter } from 'vue-router'
 import { useUsersApprovalStore } from '@/stores/admin/usersApproval'
 import { useConfirmAction } from '@/composables/useConfirmAction'
 import { useNotifications } from '@/composables/useNotifications'
@@ -9,7 +8,6 @@ definePage({
   meta: {
     requiresAuth: true,
     requiresRole: 'admin',
-    layout: 'default',
   },
 })
 
@@ -220,7 +218,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div>
+  <div class="d-flex flex-column gap-6">
     <!-- Page Header -->
     <div class="d-flex justify-space-between align-center mb-6">
       <div>

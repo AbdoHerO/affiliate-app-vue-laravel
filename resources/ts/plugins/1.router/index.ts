@@ -2,20 +2,8 @@ import { setupLayouts } from 'virtual:meta-layouts'
 import type { App } from 'vue'
 
 import type { RouteRecordRaw } from 'vue-router/auto'
-
 import { createRouter, createWebHistory } from 'vue-router/auto'
 import { setupRouterGuards } from '@/plugins/router/guards'
-
-function recursiveLayouts(route: RouteRecordRaw): RouteRecordRaw {
-  if (route.children) {
-    for (let i = 0; i < route.children.length; i++)
-      route.children[i] = recursiveLayouts(route.children[i])
-
-    return route
-  }
-
-  return setupLayouts([route])[0]
-}
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -25,9 +13,10 @@ const router = createRouter({
 
     return { top: 0 }
   },
-  extendRoutes: pages => [
-    ...[...pages].map(route => recursiveLayouts(route)),
-  ],
+  // IMPORTANT: Apply layouts to the entire routes array, not only leaf nodes.
+  // This ensures parent index routes that have children (e.g., /admin/affiliates, /admin/orders/pre)
+  // are also wrapped with the default layout and show the sidebar/header.
+  extendRoutes: routes => setupLayouts(routes as unknown as RouteRecordRaw[]),
 })
 
 // Setup route guards

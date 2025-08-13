@@ -171,7 +171,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div>
+  <div class="d-flex flex-column gap-6">
     <!-- Page Header -->
     <div class="d-flex justify-space-between align-center mb-6">
       <div>
