@@ -4,12 +4,13 @@ import { useRoute, useRouter } from 'vue-router'
 import { usePreordersStore } from '@/stores/admin/preorders'
 import { useShippingStore } from '@/stores/admin/shipping'
 import { useConfirmAction } from '@/composables/useConfirmAction'
-import { useToast } from '@/composables/useToast'
+import { useNotifications } from '@/composables/useNotifications'
 
 definePage({
   meta: {
     requiresAuth: true,
     requiresRole: 'admin',
+    layout: 'default',
   },
 })
 
@@ -17,8 +18,8 @@ const route = useRoute()
 const router = useRouter()
 const preordersStore = usePreordersStore()
 const shippingStore = useShippingStore()
-const { confirmAction } = useConfirmAction()
-const { showToast } = useToast()
+const { confirm } = useConfirmAction()
+const { showSuccess, showError } = useNotifications()
 
 // Local state
 const activeTab = ref('client')
@@ -80,10 +81,10 @@ const saveChanges = async () => {
   isSaving.value = true
   try {
     await preordersStore.updatePreorder(preorder.value.id, formData.value)
-    showToast('Commande mise à jour avec succès', 'success')
+    showSuccess('Commande mise à jour avec succès')
     isEditing.value = false
   } catch (error: any) {
-    showToast(error.message || 'Erreur lors de la mise à jour', 'error')
+    showError(error.message || 'Erreur lors de la mise à jour')
   } finally {
     isSaving.value = false
   }
@@ -92,19 +93,19 @@ const saveChanges = async () => {
 const confirmOrder = async () => {
   if (!preorder.value) return
 
-  const confirmed = await confirmAction({
+  const confirmed = await confirm({
     title: 'Confirmer la commande',
-    message: 'Êtes-vous sûr de vouloir confirmer cette commande ?',
+    text: 'Êtes-vous sûr de vouloir confirmer cette commande ?',
     confirmText: 'Confirmer',
-    confirmColor: 'success',
+    color: 'success',
   })
 
   if (confirmed) {
     try {
       await preordersStore.confirmPreorder(preorder.value.id)
-      showToast('Commande confirmée avec succès', 'success')
+      showSuccess('Commande confirmée avec succès')
     } catch (error: any) {
-      showToast(error.message || 'Erreur lors de la confirmation', 'error')
+      showError(error.message || 'Erreur lors de la confirmation')
     }
   }
 }
@@ -112,21 +113,21 @@ const confirmOrder = async () => {
 const sendToOzonExpress = async () => {
   if (!preorder.value) return
 
-  const confirmed = await confirmAction({
+  const confirmed = await confirm({
     title: 'Envoyer vers OzonExpress',
-    message: 'Êtes-vous sûr de vouloir envoyer cette commande vers OzonExpress ?',
+    text: 'Êtes-vous sûr de vouloir envoyer cette commande vers OzonExpress ?',
     confirmText: 'Envoyer',
-    confirmColor: 'primary',
+    color: 'primary',
   })
 
   if (confirmed) {
     try {
       await shippingStore.addParcel(preorder.value.id)
-      showToast('Colis créé avec succès sur OzonExpress', 'success')
+      showSuccess('Colis créé avec succès sur OzonExpress')
       // Refresh order data
       await fetchPreorder()
     } catch (error: any) {
-      showToast(error.message || 'Erreur lors de la création du colis', 'error')
+      showError(error.message || 'Erreur lors de la création du colis')
     }
   }
 }
@@ -201,7 +202,7 @@ const formatDate = (date: string) => {
 }
 
 const goBack = () => {
-  router.push({ name: 'admin.orders.pre.index' })
+  router.push({ name: 'admin-orders-pre' })
 }
 
 // Lifecycle
@@ -310,7 +311,7 @@ onMounted(() => {
             v-if="preorder.shipping_parcel"
             color="info"
             variant="outlined"
-            @click="router.push({ name: 'admin.orders.ship.show', params: { id: preorder.id } })"
+            @click="router.push({ name: 'admin-orders-shipping-id', params: { id: preorder.id } })"
           >
             <VIcon start icon="tabler-package" />
             Voir Expédition

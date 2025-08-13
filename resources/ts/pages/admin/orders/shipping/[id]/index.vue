@@ -3,20 +3,21 @@ import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useShippingStore } from '@/stores/admin/shipping'
 import { useConfirmAction } from '@/composables/useConfirmAction'
-import { useToast } from '@/composables/useToast'
+import { useNotifications } from '@/composables/useNotifications'
 
 definePage({
   meta: {
     requiresAuth: true,
     requiresRole: 'admin',
+    layout: 'default',
   },
 })
 
 const route = useRoute()
 const router = useRouter()
 const shippingStore = useShippingStore()
-const { confirmAction } = useConfirmAction()
-const { showToast } = useToast()
+const { confirm } = useConfirmAction()
+const { showSuccess, showError } = useNotifications()
 
 // Local state
 const activeTab = ref('parcel')
@@ -43,7 +44,7 @@ const fetchTracking = async () => {
       shippingOrder.value.shipping_parcel.tracking_number
     )
   } catch (error: any) {
-    showToast(error.message || 'Erreur lors de la récupération du tracking', 'error')
+    showError(error.message || 'Erreur lors de la récupération du tracking')
   }
 }
 
@@ -55,40 +56,40 @@ const fetchParcelInfo = async () => {
       shippingOrder.value.shipping_parcel.tracking_number
     )
   } catch (error: any) {
-    showToast(error.message || 'Erreur lors de la récupération des infos du colis', 'error')
+    showError(error.message || 'Erreur lors de la récupération des infos du colis')
   }
 }
 
 const createDeliveryNote = async () => {
-  const confirmed = await confirmAction({
+  const confirmed = await confirm({
     title: 'Créer un bon de livraison',
-    message: 'Voulez-vous créer un nouveau bon de livraison ?',
+    text: 'Voulez-vous créer un nouveau bon de livraison ?',
     confirmText: 'Créer',
-    confirmColor: 'primary',
+    color: 'primary',
   })
 
   if (confirmed) {
     try {
       const ref = await shippingStore.createDeliveryNote()
       deliveryNoteRef.value = ref
-      showToast(`Bon de livraison créé: ${ref}`, 'success')
+      showSuccess(`Bon de livraison créé: ${ref}`)
     } catch (error: any) {
-      showToast(error.message || 'Erreur lors de la création du bon de livraison', 'error')
+      showError(error.message || 'Erreur lors de la création du bon de livraison')
     }
   }
 }
 
 const addParcelsToDeliveryNote = async () => {
   if (!deliveryNoteRef.value || !shippingOrder.value?.shipping_parcel?.tracking_number) {
-    showToast('Veuillez créer un bon de livraison et sélectionner des colis', 'warning')
+    showError('Veuillez créer un bon de livraison et sélectionner des colis')
     return
   }
 
-  const confirmed = await confirmAction({
+  const confirmed = await confirm({
     title: 'Ajouter le colis au bon de livraison',
-    message: `Ajouter le colis ${shippingOrder.value.shipping_parcel.tracking_number} au bon ${deliveryNoteRef.value} ?`,
+    text: `Ajouter le colis ${shippingOrder.value.shipping_parcel.tracking_number} au bon ${deliveryNoteRef.value} ?`,
     confirmText: 'Ajouter',
-    confirmColor: 'primary',
+    color: 'primary',
   })
 
   if (confirmed) {
@@ -97,34 +98,34 @@ const addParcelsToDeliveryNote = async () => {
         deliveryNoteRef.value,
         [shippingOrder.value.shipping_parcel.tracking_number]
       )
-      showToast('Colis ajouté au bon de livraison', 'success')
+      showSuccess('Colis ajouté au bon de livraison')
     } catch (error: any) {
-      showToast(error.message || 'Erreur lors de l\'ajout du colis', 'error')
+      showError(error.message || 'Erreur lors de l\'ajout du colis')
     }
   }
 }
 
 const saveDeliveryNote = async () => {
   if (!deliveryNoteRef.value) {
-    showToast('Aucun bon de livraison à sauvegarder', 'warning')
+    showError('Aucun bon de livraison à sauvegarder')
     return
   }
 
-  const confirmed = await confirmAction({
+  const confirmed = await confirm({
     title: 'Sauvegarder le bon de livraison',
-    message: `Sauvegarder le bon de livraison ${deliveryNoteRef.value} ?`,
+    text: `Sauvegarder le bon de livraison ${deliveryNoteRef.value} ?`,
     confirmText: 'Sauvegarder',
-    confirmColor: 'success',
+    color: 'success',
   })
 
   if (confirmed) {
     try {
       await shippingStore.saveDeliveryNote(deliveryNoteRef.value)
-      showToast('Bon de livraison sauvegardé', 'success')
+      showSuccess('Bon de livraison sauvegardé')
       // Update the shipping order to reflect the delivery note
       await fetchShippingOrder()
     } catch (error: any) {
-      showToast(error.message || 'Erreur lors de la sauvegarde', 'error')
+      showError(error.message || 'Erreur lors de la sauvegarde')
     }
   }
 }
@@ -195,7 +196,7 @@ const formatDate = (date: string) => {
 }
 
 const goBack = () => {
-  router.push({ name: 'admin.orders.ship.index' })
+  router.push({ name: 'admin-orders-shipping' })
 }
 
 // Lifecycle
@@ -424,7 +425,7 @@ onMounted(() => {
                     color="primary"
                     variant="outlined"
                     block
-                    @click="router.push({ name: 'admin.orders.pre.show', params: { id: shippingOrder.id } })"
+                    @click="router.push({ name: 'admin-orders-pre-id', params: { id: shippingOrder.id } })"
                   >
                     Voir Commande
                   </VBtn>

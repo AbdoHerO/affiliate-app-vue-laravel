@@ -3,20 +3,20 @@ import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useShippingStore } from '@/stores/admin/shipping'
 import { useConfirmAction } from '@/composables/useConfirmAction'
-import { useToast } from '@/composables/useToast'
-import { debounce } from 'lodash-es'
+import { useNotifications } from '@/composables/useNotifications'
 
 definePage({
   meta: {
     requiresAuth: true,
     requiresRole: 'admin',
+    layout: 'default',
   },
 })
 
 const router = useRouter()
 const shippingStore = useShippingStore()
-const { confirmAction } = useConfirmAction()
-const { showToast } = useToast()
+const { confirm } = useConfirmAction()
+const { showSuccess, showError } = useNotifications()
 
 // Local state
 const searchQuery = ref('')
@@ -62,7 +62,12 @@ const fetchShippingOrders = async () => {
   })
 }
 
-const debouncedFetch = debounce(fetchShippingOrders, 300)
+// Simple debounce implementation
+let debounceTimer: NodeJS.Timeout
+const debouncedFetch = () => {
+  clearTimeout(debounceTimer)
+  debounceTimer = setTimeout(fetchShippingOrders, 300)
+}
 
 const handleSearch = () => {
   shippingStore.filters.page = 1
@@ -83,7 +88,7 @@ const handleSort = (sortBy: any) => {
 }
 
 const viewShippingOrder = (order: any) => {
-  router.push({ name: 'admin.orders.ship.show', params: { id: order.id } })
+  router.push({ name: 'admin-orders-shipping-id', params: { id: order.id } })
 }
 
 const showTrackingModal = ref(false)
@@ -96,26 +101,26 @@ const viewTracking = async (order: any) => {
     trackingData.value = await shippingStore.getTracking(order.shipping_parcel.tracking_number)
     showTrackingModal.value = true
   } catch (error: any) {
-    showToast(error.message || 'Erreur lors de la récupération du tracking', 'error')
+    showError(error.message || 'Erreur lors de la récupération du tracking')
   } finally {
     trackingLoading.value = false
   }
 }
 
 const createDeliveryNote = async () => {
-  const confirmed = await confirmAction({
+  const confirmed = await confirm({
     title: 'Créer un bon de livraison',
-    message: 'Voulez-vous créer un nouveau bon de livraison ?',
+    text: 'Voulez-vous créer un nouveau bon de livraison ?',
     confirmText: 'Créer',
-    confirmColor: 'primary',
+    color: 'primary',
   })
 
   if (confirmed) {
     try {
       const ref = await shippingStore.createDeliveryNote()
-      showToast(`Bon de livraison créé: ${ref}`, 'success')
+      showSuccess(`Bon de livraison créé: ${ref}`)
     } catch (error: any) {
-      showToast(error.message || 'Erreur lors de la création du bon de livraison', 'error')
+      showError(error.message || 'Erreur lors de la création du bon de livraison')
     }
   }
 }

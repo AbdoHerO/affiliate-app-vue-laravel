@@ -4,21 +4,21 @@ import { useRouter } from 'vue-router'
 import { usePreordersStore } from '@/stores/admin/preorders'
 import { useShippingStore } from '@/stores/admin/shipping'
 import { useConfirmAction } from '@/composables/useConfirmAction'
-import { useToast } from '@/composables/useToast'
-import { debounce } from 'lodash-es'
+import { useNotifications } from '@/composables/useNotifications'
 
 definePage({
   meta: {
     requiresAuth: true,
     requiresRole: 'admin',
+    layout: 'default',
   },
 })
 
 const router = useRouter()
 const preordersStore = usePreordersStore()
 const shippingStore = useShippingStore()
-const { confirmAction } = useConfirmAction()
-const { showToast } = useToast()
+const { confirm } = useConfirmAction()
+const { showSuccess, showError } = useNotifications()
 
 // Local state
 const searchQuery = ref('')
@@ -66,7 +66,12 @@ const fetchPreorders = async () => {
   })
 }
 
-const debouncedFetch = debounce(fetchPreorders, 300)
+// Simple debounce implementation
+let debounceTimer: NodeJS.Timeout
+const debouncedFetch = () => {
+  clearTimeout(debounceTimer)
+  debounceTimer = setTimeout(fetchPreorders, 300)
+}
 
 const handleSearch = () => {
   preordersStore.filters.page = 1
@@ -87,24 +92,24 @@ const handleSort = (sortBy: any) => {
 }
 
 const viewPreorder = (preorder: any) => {
-  router.push({ name: 'admin.orders.pre.show', params: { id: preorder.id } })
+  router.push({ name: 'admin-orders-pre-id', params: { id: preorder.id } })
 }
 
 const sendToOzonExpress = async (preorder: any) => {
-  const confirmed = await confirmAction({
+  const confirmed = await confirm({
     title: 'Envoyer vers OzonExpress',
-    message: `Êtes-vous sûr de vouloir envoyer la commande ${preorder.id.slice(0, 8)} vers OzonExpress ?`,
+    text: `Êtes-vous sûr de vouloir envoyer la commande ${preorder.id.slice(0, 8)} vers OzonExpress ?`,
     confirmText: 'Envoyer',
-    confirmColor: 'primary',
+    color: 'primary',
   })
 
   if (confirmed) {
     try {
       await shippingStore.addParcel(preorder.id)
-      showToast('Colis créé avec succès sur OzonExpress', 'success')
+      showSuccess('Colis créé avec succès sur OzonExpress')
       fetchPreorders() // Refresh list
     } catch (error: any) {
-      showToast(error.message || 'Erreur lors de la création du colis', 'error')
+      showError(error.message || 'Erreur lors de la création du colis')
     }
   }
 }
@@ -344,7 +349,7 @@ onMounted(() => {
               color="info"
               variant="text"
               icon="tabler-package"
-              @click="router.push({ name: 'admin.orders.ship.show', params: { id: item.id } })"
+              @click="router.push({ name: 'admin-orders-shipping-id', params: { id: item.id } })"
             />
           </div>
         </template>

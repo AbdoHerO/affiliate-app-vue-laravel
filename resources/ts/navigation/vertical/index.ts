@@ -33,9 +33,9 @@ const adminNavigation = [
     icon: { icon: 'tabler-user-star' },
     children: [
       {
-        title: 'nav_all_affiliates',
+        title: 'File d\'Attente d\'Approbation',
         to: '/admin/affiliates',
-        icon: { icon: 'tabler-users-group' },
+        icon: { icon: 'tabler-user-check' },
       },
       {
         title: 'nav_affiliate_tiers',
@@ -49,9 +49,14 @@ const adminNavigation = [
     icon: { icon: 'tabler-shopping-cart' },
     children: [
       {
-        title: 'nav_all_orders',
-        to: '/admin/orders',
-        icon: { icon: 'tabler-list-details' },
+        title: 'Pré-commandes',
+        to: '/admin/orders/pre',
+        icon: { icon: 'tabler-package' },
+      },
+      {
+        title: 'Expéditions',
+        to: '/admin/orders/shipping',
+        icon: { icon: 'tabler-truck' },
       },
       {
         title: 'nav_order_conflicts',

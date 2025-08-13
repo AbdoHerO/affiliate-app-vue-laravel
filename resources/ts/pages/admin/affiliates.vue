@@ -3,20 +3,19 @@ import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUsersApprovalStore } from '@/stores/admin/usersApproval'
 import { useConfirmAction } from '@/composables/useConfirmAction'
-import { useToast } from '@/composables/useToast'
-import { debounce } from 'lodash-es'
+import { useNotifications } from '@/composables/useNotifications'
 
 definePage({
   meta: {
     requiresAuth: true,
     requiresRole: 'admin',
+    layout: 'default',
   },
 })
 
-const router = useRouter()
 const usersApprovalStore = useUsersApprovalStore()
-const { confirmAction } = useConfirmAction()
-const { showToast } = useToast()
+const { confirm } = useConfirmAction()
+const { showSuccess, showError } = useNotifications()
 
 // Local state
 const searchQuery = ref('')
@@ -83,7 +82,12 @@ const fetchUsers = async () => {
   })
 }
 
-const debouncedFetch = debounce(fetchUsers, 300)
+// Simple debounce implementation
+let debounceTimer: NodeJS.Timeout
+const debouncedFetch = () => {
+  clearTimeout(debounceTimer)
+  debounceTimer = setTimeout(fetchUsers, 300)
+}
 
 const handleSearch = () => {
   usersApprovalStore.filters.page = 1
@@ -120,11 +124,11 @@ const approveUser = async () => {
 
   try {
     await usersApprovalStore.approveUser(selectedUser.value.id, approveReason.value)
-    showToast('Utilisateur approuvé avec succès', 'success')
+    showSuccess('Utilisateur approuvé avec succès')
     showApproveDialog.value = false
     fetchUsers()
   } catch (error: any) {
-    showToast(error.message || 'Erreur lors de l\'approbation', 'error')
+    showError(error.message || 'Erreur lors de l\'approbation')
   }
 }
 
@@ -133,28 +137,28 @@ const refuseUser = async () => {
 
   try {
     await usersApprovalStore.refuseUser(selectedUser.value.id, refuseReason.value)
-    showToast('Demande refusée avec succès', 'success')
+    showSuccess('Demande refusée avec succès')
     showRefuseDialog.value = false
     fetchUsers()
   } catch (error: any) {
-    showToast(error.message || 'Erreur lors du refus', 'error')
+    showError(error.message || 'Erreur lors du refus')
   }
 }
 
 const resendVerification = async (user: any) => {
-  const confirmed = await confirmAction({
+  const confirmed = await confirm({
     title: 'Renvoyer l\'email de vérification',
-    message: `Renvoyer l'email de vérification à ${user.email} ?`,
+    text: `Renvoyer l'email de vérification à ${user.email} ?`,
     confirmText: 'Renvoyer',
-    confirmColor: 'primary',
+    color: 'primary',
   })
 
   if (confirmed) {
     try {
       await usersApprovalStore.resendVerification(user.id)
-      showToast('Email de vérification envoyé', 'success')
+      showSuccess('Email de vérification envoyé')
     } catch (error: any) {
-      showToast(error.message || 'Erreur lors de l\'envoi', 'error')
+      showError(error.message || 'Erreur lors de l\'envoi')
     }
   }
 }
@@ -399,10 +403,10 @@ onMounted(async () => {
         <template #item.email_verified="{ item }">
           <VChip
             size="small"
-            :color="item.email_verified_at ? 'success' : 'warning'"
+            :color="item.email_verifie ? 'success' : 'warning'"
             variant="tonal"
           >
-            {{ item.email_verified_at ? 'Vérifié' : 'Non vérifié' }}
+            {{ item.email_verifie ? 'Vérifié' : 'Non vérifié' }}
           </VChip>
         </template>
 
@@ -440,7 +444,7 @@ onMounted(async () => {
           <div class="d-flex gap-1">
             <!-- Resend Verification -->
             <VBtn
-              v-if="!item.email_verified_at"
+              v-if="!item.email_verifie"
               size="small"
               color="info"
               variant="text"
@@ -568,4 +572,4 @@ onMounted(async () => {
       </VCard>
     </VDialog>
   </div>
-</template></template>
+</template>

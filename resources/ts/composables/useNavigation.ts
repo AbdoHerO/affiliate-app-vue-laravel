@@ -52,8 +52,9 @@ export function useNavigation() {
             icon: { icon: 'tabler-user-star' },
             children: [
               {
-                title: t('nav_all_affiliates'),
+                title: 'File d\'Attente d\'Approbation',
                 to: 'admin-affiliates',
+                icon: { icon: 'tabler-user-check' },
               },
               {
                 title: t('nav_affiliate_tiers'),
@@ -67,12 +68,12 @@ export function useNavigation() {
             children: [
               {
                 title: 'Pré-commandes',
-                to: 'admin.orders.pre.index',
+                to: 'admin-orders-pre',
                 icon: { icon: 'tabler-package' },
               },
               {
                 title: 'Expéditions',
-                to: 'admin.orders.ship.index',
+                to: 'admin-orders-shipping',
                 icon: { icon: 'tabler-truck' },
               },
               {

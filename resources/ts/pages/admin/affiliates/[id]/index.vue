@@ -3,20 +3,21 @@ import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAffiliatesStore } from '@/stores/admin/affiliates'
 import { useConfirmAction } from '@/composables/useConfirmAction'
-import { useToast } from '@/composables/useToast'
+import { useNotifications } from '@/composables/useNotifications'
 
 definePage({
   meta: {
     requiresAuth: true,
     requiresRole: 'admin',
+    layout: 'default',
   },
 })
 
 const route = useRoute()
 const router = useRouter()
 const affiliatesStore = useAffiliatesStore()
-const { confirmAction } = useConfirmAction()
-const { showToast } = useToast()
+const { confirm } = useConfirmAction()
+const { showSuccess, showError } = useNotifications()
 
 // Local state
 const activeTab = ref('profile')
@@ -46,11 +47,11 @@ const changeTier = async () => {
 
   try {
     await affiliatesStore.changeTier(affiliate.value.id, selectedTier.value, 'Changement de tier depuis l\'interface admin')
-    showToast('Tier modifié avec succès', 'success')
+    showSuccess('Tier modifié avec succès')
     showTierDialog.value = false
     selectedTier.value = ''
   } catch (error: any) {
-    showToast(error.message || 'Erreur lors du changement de tier', 'error')
+    showError(error.message || 'Erreur lors du changement de tier')
   }
 }
 
@@ -63,14 +64,13 @@ const toggleBlock = async (action: 'block' | 'unblock') => {
       action, 
       action === 'block' ? blockReason.value : 'Débloqué depuis l\'interface admin'
     )
-    showToast(
-      action === 'block' ? 'Affilié bloqué avec succès' : 'Affilié débloqué avec succès', 
-      'success'
+    showSuccess(
+      action === 'block' ? 'Affilié bloqué avec succès' : 'Affilié débloqué avec succès'
     )
     showBlockDialog.value = false
     blockReason.value = ''
   } catch (error: any) {
-    showToast(error.message || 'Erreur lors de l\'opération', 'error')
+    showError(error.message || 'Erreur lors de l\'opération')
   }
 }
 

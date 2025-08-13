@@ -234,12 +234,12 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function scopeEmailNotVerified($query)
     {
-        return $query->whereNull('email_verified_at');
+        return $query->where('email_verifie', false);
     }
 
     public function scopeEmailVerified($query)
     {
-        return $query->whereNotNull('email_verified_at');
+        return $query->where('email_verifie', true);
     }
 
     /**
