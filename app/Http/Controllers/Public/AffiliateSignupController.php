@@ -182,7 +182,7 @@ class AffiliateSignupController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return redirect('/auth/affiliate-signup?error=invalid_link');
+            return redirect('/affiliate-signup?error=invalid_link');
         }
 
         try {
@@ -191,21 +191,21 @@ class AffiliateSignupController extends Controller
                 ->first();
 
             if (!$verification) {
-                return redirect('/auth/affiliate-signup?error=invalid_token');
+                return redirect('/affiliate-signup?error=invalid_token');
             }
 
             if ($verification->isExpired()) {
-                return redirect('/auth/affiliate-signup?error=expired_token&email=' . urlencode($request->email));
+                return redirect('/affiliate-signup?error=expired_token&email=' . urlencode($request->email));
             }
 
             $affilie = $verification->affilie;
 
             if (!$affilie || $affilie->email !== strtolower(trim($request->email))) {
-                return redirect('/auth/affiliate-signup?error=invalid_email');
+                return redirect('/affiliate-signup?error=invalid_email');
             }
 
             if ($affilie->isEmailVerified()) {
-                return redirect('/auth/affiliate-verified?already_verified=1');
+                return redirect('/affiliate-verified?already_verified=1');
             }
 
             // Mark email as verified
@@ -216,10 +216,10 @@ class AffiliateSignupController extends Controller
             // Delete verification token
             $verification->delete();
 
-            return redirect('/auth/affiliate-verified');
+            return redirect('/affiliate-verified');
 
         } catch (\Exception $e) {
-            return redirect('/auth/affiliate-signup?error=server_error');
+            return redirect('/affiliate-signup?error=server_error');
         }
     }
 }

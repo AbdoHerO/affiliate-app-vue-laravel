@@ -227,7 +227,7 @@ const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
 
                       <VList class="pa-0">
                         <VListItem
-                          :to="{ name: 'auth-affiliate-signup' }"
+                          :to="{ name: 'affiliate-signup' }"
                           class="pa-3 rounded mb-2"
                           style="border: 1px solid rgba(var(--v-theme-primary), 0.2);"
                         >
@@ -320,7 +320,7 @@ const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
                       </div>
                     </div>
                     <VBtn
-                      :to="{ name: 'auth-affiliate-signup' }"
+                      :to="{ name: 'affiliate-signup' }"
                       color="primary"
                       variant="flat"
                       size="small"

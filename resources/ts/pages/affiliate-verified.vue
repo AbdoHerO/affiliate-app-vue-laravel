@@ -160,7 +160,7 @@ const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
             <VBtn
               variant="outlined"
               size="large"
-              :to="{ name: 'auth-affiliate-signup' }"
+              :to="{ name: 'affiliate-signup' }"
             >
               Nouvelle inscription
             </VBtn>

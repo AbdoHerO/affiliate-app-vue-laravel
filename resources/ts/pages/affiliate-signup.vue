@@ -125,17 +125,19 @@ const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
     no-gutters
     class="auth-wrapper bg-surface"
   >
+    <!-- Image Section - Better balanced -->
     <VCol
-      md="8"
+      lg="7"
+      md="6"
       class="d-none d-md-flex"
     >
       <div class="position-relative bg-background w-100 me-0">
         <div
           class="d-flex align-center justify-center w-100 h-100"
-          style="padding-inline: 150px;"
+          style="padding-inline: 100px;"
         >
           <VImg
-            max-width="613"
+            max-width="500"
             :src="authThemeImg"
             class="auth-illustration mt-16 mb-2"
           />
@@ -151,15 +153,18 @@ const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
       </div>
     </VCol>
 
+    <!-- Form Section - Expanded for better balance -->
     <VCol
       cols="12"
-      md="4"
+      md="6"
+      lg="5"
       class="auth-card-v2 d-flex align-center justify-center"
     >
       <VCard
         flat
-        :max-width="500"
-        class="mt-12 mt-sm-0 pa-4"
+        :max-width="600"
+        class="mt-12 mt-sm-0 pa-6 w-100"
+        style="max-width: 100% !important;"
       >
         <VCardText>
           <VNodeRenderer
@@ -245,8 +250,11 @@ const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
                 />
               </VCol>
 
-              <!-- Email -->
-              <VCol cols="12">
+              <!-- Email et Téléphone -->
+              <VCol
+                cols="12"
+                md="6"
+              >
                 <AppTextField
                   v-model="form.email"
                   label="Email *"
@@ -256,8 +264,10 @@ const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
                 />
               </VCol>
 
-              <!-- Téléphone -->
-              <VCol cols="12">
+              <VCol
+                cols="12"
+                md="6"
+              >
                 <AppTextField
                   v-model="form.telephone"
                   label="Téléphone *"
@@ -266,8 +276,11 @@ const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
                 />
               </VCol>
 
-              <!-- Mot de passe -->
-              <VCol cols="12">
+              <!-- Mot de passe et Confirmation -->
+              <VCol
+                cols="12"
+                md="6"
+              >
                 <AppTextField
                   v-model="form.password"
                   label="Mot de passe *"
@@ -279,8 +292,10 @@ const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
                 />
               </VCol>
 
-              <!-- Confirmation mot de passe -->
-              <VCol cols="12">
+              <VCol
+                cols="12"
+                md="6"
+              >
                 <AppTextField
                   v-model="form.password_confirmation"
                   label="Confirmer le mot de passe *"
@@ -429,6 +444,58 @@ const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
     </VCol>
   </VRow>
 </template>
+
+<style lang="scss" scoped>
+.auth-wrapper {
+  min-height: 100vh;
+}
+
+.auth-card-v2 {
+  padding: 1.5rem;
+
+  @media (max-width: 960px) {
+    padding: 1rem;
+  }
+}
+
+// Ensure form takes full width on mobile
+@media (max-width: 960px) {
+  .auth-card-v2 .v-card {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+  }
+}
+
+// Better spacing for form fields
+.v-row .v-col {
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+
+// Responsive image sizing
+.auth-illustration {
+  width: 100%;
+  height: auto;
+  max-width: 500px;
+
+  @media (min-width: 1280px) {
+    max-width: 600px;
+  }
+}
+
+// Better balance for large screens
+@media (min-width: 1920px) {
+  .auth-card-v2 .v-card {
+    max-width: 700px !important;
+    padding: 3rem !important;
+  }
+
+  .auth-illustration {
+    max-width: 700px;
+  }
+}
+</style>
 
 <style lang="scss">
 @use "@core-scss/template/pages/page-auth";
