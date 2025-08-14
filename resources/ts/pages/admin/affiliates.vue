@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
-import { useUsersApprovalStore } from '@/stores/admin/usersApproval'
+import { useAffiliateApplicationsStore } from '@/stores/admin/affiliateApplications'
 import { useConfirmAction } from '@/composables/useConfirmAction'
 import { useNotifications } from '@/composables/useNotifications'
 
@@ -11,7 +11,7 @@ definePage({
   },
 })
 
-const usersApprovalStore = useUsersApprovalStore()
+const affiliateApplicationsStore = useAffiliateApplicationsStore()
 const { confirm } = useConfirmAction()
 const { showSuccess, showError } = useNotifications()
 
@@ -19,7 +19,7 @@ const { showSuccess, showError } = useNotifications()
 const searchQuery = ref('')
 const selectedApprovalStatus = ref('')
 const selectedEmailVerified = ref('')
-const selectedHasAffiliateRole = ref('')
+
 const dateFrom = ref('')
 const dateTo = ref('')
 const itemsPerPage = ref(15)
@@ -30,10 +30,10 @@ const approveReason = ref('')
 const refuseReason = ref('')
 
 // Computed
-const isLoading = computed(() => usersApprovalStore.isLoading)
-const users = computed(() => usersApprovalStore.users)
-const pagination = computed(() => usersApprovalStore.pagination)
-const stats = computed(() => usersApprovalStore.stats)
+const isLoading = computed(() => affiliateApplicationsStore.isLoading)
+const applications = computed(() => affiliateApplicationsStore.applications)
+const pagination = computed(() => affiliateApplicationsStore.pagination)
+const stats = computed(() => affiliateApplicationsStore.stats)
 
 // Table headers
 const headers = [
@@ -42,7 +42,7 @@ const headers = [
   { title: 'Téléphone', key: 'telephone', sortable: false },
   { title: 'Email Vérifié', key: 'email_verified', sortable: true },
   { title: 'Statut Approbation', key: 'approval_status', sortable: true },
-  { title: 'Rôle Affilié', key: 'has_affiliate_role', sortable: false },
+
   { title: 'Inscrit le', key: 'created_at', sortable: true },
   { title: 'Actions', key: 'actions', sortable: false },
 ]
@@ -61,19 +61,14 @@ const emailVerifiedOptions = [
   { title: 'Email non vérifié', value: 'false' },
 ]
 
-const hasAffiliateRoleOptions = [
-  { title: 'Tous', value: '' },
-  { title: 'A le rôle affilié', value: 'true' },
-  { title: 'N\'a pas le rôle affilié', value: 'false' },
-]
+
 
 // Methods
-const fetchUsers = async () => {
-  await usersApprovalStore.fetchUsers({
+const fetchApplications = async () => {
+  await affiliateApplicationsStore.fetchApplications({
     q: searchQuery.value || undefined,
     approval_status: selectedApprovalStatus.value || undefined,
     email_verified: selectedEmailVerified.value || undefined,
-    has_affiliate_role: selectedHasAffiliateRole.value || undefined,
     from: dateFrom.value || undefined,
     to: dateTo.value || undefined,
     perPage: itemsPerPage.value,
@@ -84,76 +79,76 @@ const fetchUsers = async () => {
 let debounceTimer: NodeJS.Timeout
 const debouncedFetch = () => {
   clearTimeout(debounceTimer)
-  debounceTimer = setTimeout(fetchUsers, 300)
+  debounceTimer = setTimeout(fetchApplications, 300)
 }
 
 const handleSearch = () => {
-  usersApprovalStore.filters.page = 1
+  affiliateApplicationsStore.filters.page = 1
   debouncedFetch()
 }
 
 const handlePageChange = (page: number) => {
-  usersApprovalStore.filters.page = page
-  fetchUsers()
+  affiliateApplicationsStore.filters.page = page
+  fetchApplications()
 }
 
 const handleSort = (sortBy: any) => {
   if (sortBy.length > 0) {
-    usersApprovalStore.filters.sort = sortBy[0].key
-    usersApprovalStore.filters.dir = sortBy[0].order
-    fetchUsers()
+    affiliateApplicationsStore.filters.sort = sortBy[0].key
+    affiliateApplicationsStore.filters.dir = sortBy[0].order
+    fetchApplications()
   }
 }
 
-const openApproveDialog = (user: any) => {
-  selectedUser.value = user
+const openApproveDialog = (application: any) => {
+  selectedUser.value = application
   approveReason.value = ''
   showApproveDialog.value = true
 }
 
-const openRefuseDialog = (user: any) => {
-  selectedUser.value = user
+const openRefuseDialog = (application: any) => {
+  selectedUser.value = application
   refuseReason.value = ''
   showRefuseDialog.value = true
 }
 
-const approveUser = async () => {
+const approveApplication = async () => {
   if (!selectedUser.value) return
 
   try {
-    await usersApprovalStore.approveUser(selectedUser.value.id, approveReason.value)
-    showSuccess('Utilisateur approuvé avec succès')
+    await affiliateApplicationsStore.approveApplication(selectedUser.value.id, approveReason.value)
+    showSuccess('Demande d\'affiliation approuvée avec succès')
     showApproveDialog.value = false
-    fetchUsers()
+    fetchApplications()
   } catch (error: any) {
     showError(error.message || 'Erreur lors de l\'approbation')
   }
 }
 
-const refuseUser = async () => {
+const refuseApplication = async () => {
   if (!selectedUser.value || !refuseReason.value.trim()) return
 
   try {
-    await usersApprovalStore.refuseUser(selectedUser.value.id, refuseReason.value)
+    await affiliateApplicationsStore.refuseApplication(selectedUser.value.id, refuseReason.value)
     showSuccess('Demande refusée avec succès')
     showRefuseDialog.value = false
-    fetchUsers()
+    fetchApplications()
   } catch (error: any) {
     showError(error.message || 'Erreur lors du refus')
   }
 }
 
-const resendVerification = async (user: any) => {
+const resendVerification = async (application: any) => {
   const confirmed = await confirm({
     title: 'Renvoyer l\'email de vérification',
-    text: `Renvoyer l'email de vérification à ${user.email} ?`,
+    text: `Renvoyer l'email de vérification à ${application.email} ?`,
     confirmText: 'Renvoyer',
     color: 'primary',
   })
 
   if (confirmed) {
     try {
-      await usersApprovalStore.resendVerification(user.id)
+      await affiliateApplicationsStore.resendVerification(application.id)
       showSuccess('Email de vérification envoyé')
     } catch (error: any) {
       showError(error.message || 'Erreur lors de l\'envoi')
@@ -187,9 +182,7 @@ const getApprovalStatusText = (status: string) => {
   }
 }
 
-const hasAffiliateRole = (user: any) => {
-  return user.roles?.some((role: any) => role.name === 'affiliate') || false
-}
+
 
 const formatDate = (date: string) => {
   return new Date(date).toLocaleDateString('fr-FR', {
@@ -203,17 +196,17 @@ const resetFilters = () => {
   searchQuery.value = ''
   selectedApprovalStatus.value = ''
   selectedEmailVerified.value = ''
-  selectedHasAffiliateRole.value = ''
+
   dateFrom.value = ''
   dateTo.value = ''
-  usersApprovalStore.resetFilters()
-  fetchUsers()
+  affiliateApplicationsStore.resetFilters()
+  fetchApplications()
 }
 
 // Lifecycle
 onMounted(async () => {
-  await usersApprovalStore.fetchStats()
-  await fetchUsers()
+  await affiliateApplicationsStore.fetchStats()
+  await fetchApplications()
 })
 </script>
 
@@ -260,7 +253,7 @@ onMounted(async () => {
       <VCol cols="12" md="2">
         <VCard variant="tonal" color="success">
           <VCardText class="text-center">
-            <div class="text-h4">{{ stats.approved_affiliates }}</div>
+            <div class="text-h4">{{ stats.approved_applications }}</div>
             <div class="text-body-2">Approuvés</div>
           </VCardText>
         </VCard>
@@ -315,15 +308,7 @@ onMounted(async () => {
               @update:model-value="handleSearch"
             />
           </VCol>
-          <VCol cols="12" md="2">
-            <VSelect
-              v-model="selectedHasAffiliateRole"
-              label="Rôle Affilié"
-              :items="hasAffiliateRoleOptions"
-              clearable
-              @update:model-value="handleSearch"
-            />
-          </VCol>
+
           <VCol cols="12" md="1">
             <VBtn
               color="secondary"
@@ -369,7 +354,7 @@ onMounted(async () => {
       <VDataTableServer
         v-model:items-per-page="itemsPerPage"
         :headers="headers"
-        :items="users"
+        :items="applications"
         :items-length="pagination.total"
         :loading="isLoading"
         :page="pagination.current_page"
@@ -401,10 +386,10 @@ onMounted(async () => {
         <template #item.email_verified="{ item }">
           <VChip
             size="small"
-            :color="item.email_verifie ? 'success' : 'warning'"
+            :color="item.email_verified_at ? 'success' : 'warning'"
             variant="tonal"
           >
-            {{ item.email_verifie ? 'Vérifié' : 'Non vérifié' }}
+            {{ item.email_verified_at ? 'Vérifié' : 'Non vérifié' }}
           </VChip>
         </template>
 
@@ -419,16 +404,7 @@ onMounted(async () => {
           </VChip>
         </template>
 
-        <!-- Has Affiliate Role Column -->
-        <template #item.has_affiliate_role="{ item }">
-          <VChip
-            size="small"
-            :color="hasAffiliateRole(item) ? 'success' : 'default'"
-            variant="tonal"
-          >
-            {{ hasAffiliateRole(item) ? 'Oui' : 'Non' }}
-          </VChip>
-        </template>
+
 
         <!-- Created At Column -->
         <template #item.created_at="{ item }">
@@ -442,7 +418,7 @@ onMounted(async () => {
           <div class="d-flex gap-1">
             <!-- Resend Verification -->
             <VBtn
-              v-if="!item.email_verifie"
+              v-if="!item.email_verified_at"
               size="small"
               color="info"
               variant="text"
@@ -521,7 +497,7 @@ onMounted(async () => {
           <VBtn
             color="success"
             variant="elevated"
-            @click="approveUser"
+            @click="approveApplication"
           >
             Approuver
           </VBtn>
@@ -562,7 +538,7 @@ onMounted(async () => {
             color="error"
             variant="elevated"
             :disabled="!refuseReason.trim()"
-            @click="refuseUser"
+            @click="refuseApplication"
           >
             Refuser
           </VBtn>
