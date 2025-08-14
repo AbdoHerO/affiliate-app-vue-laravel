@@ -52,6 +52,8 @@ declare module 'vue-router/auto-routes' {
     'affiliate-dashboard': RouteRecordInfo<'affiliate-dashboard', '/affiliate/dashboard', Record<never, never>, Record<never, never>>,
     'affiliate-marketing': RouteRecordInfo<'affiliate-marketing', '/affiliate/marketing', Record<never, never>, Record<never, never>>,
     'affiliate-orders': RouteRecordInfo<'affiliate-orders', '/affiliate/orders', Record<never, never>, Record<never, never>>,
+    'auth-affiliate-signup': RouteRecordInfo<'auth-affiliate-signup', '/auth/affiliate-signup', Record<never, never>, Record<never, never>>,
+    'auth-affiliate-verified': RouteRecordInfo<'auth-affiliate-verified', '/auth/affiliate-verified', Record<never, never>, Record<never, never>>,
     'login': RouteRecordInfo<'login', '/login', Record<never, never>, Record<never, never>>,
     'pslug': RouteRecordInfo<'pslug', '/p/:slug', { slug: ParamValue<true> }, { slug: ParamValue<false> }>,
     'profile': RouteRecordInfo<'profile', '/profile', Record<never, never>, Record<never, never>>,

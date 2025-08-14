@@ -21,10 +21,12 @@ use App\Http\Controllers\Admin\OzonExpressController;
 use App\Http\Controllers\Admin\CitiesController;
 use App\Http\Controllers\Admin\ShippingOrdersController;
 use App\Http\Controllers\Admin\AffiliatesController;
+use App\Http\Controllers\Admin\AffiliateApplicationsController;
 use App\Http\Controllers\Admin\UsersApprovalController;
 use App\Http\Controllers\Admin\VariantAttributController;
 use App\Http\Controllers\Admin\VariantValeurController;
 use App\Http\Controllers\Public\ProduitController as PublicProduitController;
+use App\Http\Controllers\Public\AffiliateSignupController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -37,6 +39,15 @@ Route::get('/test', function () {
 // Public routes (no authentication required)
 Route::prefix('public')->group(function () {
     Route::get('produits/{slugOrId}', [PublicProduitController::class, 'show']);
+
+    // Affiliate signup routes
+    Route::prefix('affiliates')->middleware('throttle:5,1')->group(function () {
+        Route::post('signup', [AffiliateSignupController::class, 'signup']);
+        Route::post('resend-verification', [AffiliateSignupController::class, 'resendVerification']);
+    });
+
+    // Email verification route (no throttle for better UX)
+    Route::get('affiliates/verify', [AffiliateSignupController::class, 'verify']);
 });
 
 // Public authentication routes
@@ -72,13 +83,22 @@ Route::middleware(['auth:sanctum'])->group(function () {
         // User Management
         Route::get('users', [UserManagementController::class, 'index']);
         Route::post('users', [UserManagementController::class, 'store']);
+
+        // Users Approval Queue (MUST be before users/{id} routes)
+        Route::get('users/approval-queue', [UsersApprovalController::class, 'index']);
+        Route::get('users/approval-queue/stats', [UsersApprovalController::class, 'getStats']);
+        Route::get('users/roles/list', [UserManagementController::class, 'getRoles']);
+
+        // User Management with ID parameters (MUST be after specific routes)
         Route::get('users/{id}', [UserManagementController::class, 'show']);
         Route::put('users/{id}', [UserManagementController::class, 'update']);
         Route::delete('users/{id}', [UserManagementController::class, 'destroy']);
         Route::post('users/{id}/restore', [UserManagementController::class, 'restore']);
         Route::delete('users/{id}/force', [UserManagementController::class, 'forceDelete']);
         Route::post('users/{id}/toggle-status', [UserManagementController::class, 'toggleStatus']);
-        Route::get('users/roles/list', [UserManagementController::class, 'getRoles']);
+        Route::post('users/{id}/approve', [UsersApprovalController::class, 'approve']);
+        Route::post('users/{id}/refuse', [UsersApprovalController::class, 'refuse']);
+        Route::post('users/{id}/resend-verification', [UsersApprovalController::class, 'resendVerification']);
 
         // Role & Permission Management
         Route::get('roles', [RolePermissionController::class, 'getRoles']);
@@ -211,12 +231,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('shipping/orders', [ShippingOrdersController::class, 'index']);
         Route::get('shipping/orders/{id}', [ShippingOrdersController::class, 'show']);
 
-        // Users Approval Queue (replaces Affiliates Management)
-        Route::get('users/approval-queue', [UsersApprovalController::class, 'index']);
-        Route::get('users/approval-queue/stats', [UsersApprovalController::class, 'getStats']);
-        Route::post('users/{id}/approve', [UsersApprovalController::class, 'approve']);
-        Route::post('users/{id}/refuse', [UsersApprovalController::class, 'refuse']);
-        Route::post('users/{id}/resend-verification', [UsersApprovalController::class, 'resendVerification']);
+
 
         // Legacy Affiliates Management (keep for now)
         Route::get('affiliates', [AffiliatesController::class, 'index']);
@@ -226,6 +241,13 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('affiliates/{id}/change-tier', [AffiliatesController::class, 'changeTier']);
         Route::get('affiliates/{id}/performance', [AffiliatesController::class, 'getPerformance']);
         Route::get('affiliate-tiers', [AffiliatesController::class, 'getTiers']);
+
+        // Affiliate Applications Management (new signup flow)
+        Route::get('affiliate-applications', [AffiliateApplicationsController::class, 'index']);
+        Route::get('affiliate-applications/stats', [AffiliateApplicationsController::class, 'getStats']);
+        Route::post('affiliate-applications/{id}/approve', [AffiliateApplicationsController::class, 'approve']);
+        Route::post('affiliate-applications/{id}/refuse', [AffiliateApplicationsController::class, 'refuse']);
+        Route::post('affiliate-applications/{id}/resend-verification', [AffiliateApplicationsController::class, 'resendVerification']);
     });
 
     // Affiliate only routes

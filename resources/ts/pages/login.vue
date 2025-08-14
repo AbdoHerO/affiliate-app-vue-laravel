@@ -30,6 +30,7 @@ const form = ref({
 
 const isPasswordVisible = ref(false)
 const loginError = ref('')
+const showAccountTypeMenu = ref(false)
 
 const handleLogin = async () => {
   loginError.value = ''
@@ -193,12 +194,96 @@ const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
                 <span class="d-inline-block">
                   {{ t('new_on_platform') }}
                 </span>
-                <a
-                  class="text-primary ms-1 d-inline-block text-body-1"
-                  href="javascript:void(0)"
+
+                <VMenu
+                  v-model="showAccountTypeMenu"
+                  :close-on-content-click="false"
+                  location="top"
                 >
-                  {{ t('create_account') }}
-                </a>
+                  <template #activator="{ props }">
+                    <a
+                      class="text-primary ms-1 d-inline-block text-body-1"
+                      href="javascript:void(0)"
+                      v-bind="props"
+                      @click="showAccountTypeMenu = !showAccountTypeMenu"
+                    >
+                      {{ t('create_account') }}
+                      <VIcon
+                        icon="tabler-chevron-up"
+                        size="16"
+                        class="ms-1"
+                      />
+                    </a>
+                  </template>
+
+                  <VCard
+                    min-width="280"
+                    class="mt-2"
+                  >
+                    <VCardText class="pa-4">
+                      <h6 class="text-h6 mb-3">
+                        🚀 Choisissez votre type de compte
+                      </h6>
+
+                      <VList class="pa-0">
+                        <VListItem
+                          :to="{ name: 'auth-affiliate-signup' }"
+                          class="pa-3 rounded mb-2"
+                          style="border: 1px solid rgba(var(--v-theme-primary), 0.2);"
+                        >
+                          <template #prepend>
+                            <VIcon
+                              icon="tabler-users"
+                              color="primary"
+                              size="24"
+                            />
+                          </template>
+
+                          <VListItemTitle class="text-primary font-weight-medium">
+                            Compte Affilié
+                          </VListItemTitle>
+                          <VListItemSubtitle class="text-sm">
+                            Rejoignez notre réseau d'affiliés et commencez à gagner des commissions
+                          </VListItemSubtitle>
+                        </VListItem>
+
+                        <VListItem
+                          href="javascript:void(0)"
+                          class="pa-3 rounded"
+                          style="border: 1px solid rgba(var(--v-theme-surface-variant), 0.3);"
+                          disabled
+                        >
+                          <template #prepend>
+                            <VIcon
+                              icon="tabler-building-store"
+                              color="surface-variant"
+                              size="24"
+                            />
+                          </template>
+
+                          <VListItemTitle class="text-disabled font-weight-medium">
+                            Compte Marchand
+                          </VListItemTitle>
+                          <VListItemSubtitle class="text-sm text-disabled">
+                            Bientôt disponible - Vendez vos produits sur notre plateforme
+                          </VListItemSubtitle>
+                        </VListItem>
+                      </VList>
+
+                      <VDivider class="my-3" />
+
+                      <div class="text-center">
+                        <VBtn
+                          variant="text"
+                          size="small"
+                          @click="showAccountTypeMenu = false"
+                        >
+                          Fermer
+                        </VBtn>
+                      </div>
+                    </VCardText>
+                  </VCard>
+                </VMenu>
               </VCol>
 
               <VCol
@@ -208,6 +293,43 @@ const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
                 <VDivider />
                 <span class="mx-4">{{ t('or') }}</span>
                 <VDivider />
+              </VCol>
+
+              <!-- affiliate signup promotion -->
+              <VCol
+                cols="12"
+                class="text-center"
+              >
+                <VAlert
+                  type="info"
+                  variant="tonal"
+                  class="mb-4"
+                >
+                  <div class="d-flex align-center">
+                    <VIcon
+                      icon="tabler-users"
+                      size="20"
+                      class="me-2"
+                    />
+                    <div class="flex-grow-1 text-start">
+                      <div class="text-sm font-weight-medium">
+                        Vous voulez devenir affilié ?
+                      </div>
+                      <div class="text-xs">
+                        Rejoignez notre réseau et commencez à gagner des commissions
+                      </div>
+                    </div>
+                    <VBtn
+                      :to="{ name: 'auth-affiliate-signup' }"
+                      color="primary"
+                      variant="flat"
+                      size="small"
+                      class="ms-3"
+                    >
+                      S'inscrire
+                    </VBtn>
+                  </div>
+                </VAlert>
               </VCol>
 
               <!-- auth providers -->

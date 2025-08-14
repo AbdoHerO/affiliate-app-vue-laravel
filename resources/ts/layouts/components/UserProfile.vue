@@ -9,7 +9,10 @@ const { user, isAuthenticated, logout } = useAuth()
 const { t } = useI18n()
 
 // Computed property for user avatar URL
-const userAvatarUrl = computed(() => getAvatarUrl(user.value?.photo_profil))
+const userAvatarUrl = computed(() => {
+  if (!user.value) return null
+  return getAvatarUrl(user.value.photo_profil)
+})
 
 const handleLogout = async () => {
   await logout()
@@ -18,6 +21,7 @@ const handleLogout = async () => {
 
 <template>
   <VBadge
+    v-if="isAuthenticated && user"
     dot
     location="bottom right"
     offset-x="3"
@@ -27,8 +31,8 @@ const handleLogout = async () => {
   >
     <VAvatar
       class="cursor-pointer"
-      :color="!user?.photo_profil ? 'primary' : undefined"
-      :variant="!user?.photo_profil ? 'tonal' : undefined"
+      :color="!user?.value?.photo_profil ? 'primary' : undefined"
+      :variant="!user?.value?.photo_profil ? 'tonal' : undefined"
     >
       <VImg :src="userAvatarUrl" />
 
@@ -52,8 +56,8 @@ const handleLogout = async () => {
                   color="success"
                 >
                   <VAvatar
-                    :color="!user?.photo_profil ? 'primary' : undefined"
-                    :variant="!user?.photo_profil ? 'tonal' : undefined"
+                    :color="!user?.value?.photo_profil ? 'primary' : undefined"
+                    :variant="!user?.value?.photo_profil ? 'tonal' : undefined"
                   >
                     <VImg :src="userAvatarUrl" />
                   </VAvatar>
@@ -62,9 +66,9 @@ const handleLogout = async () => {
             </template>
 
             <VListItemTitle class="font-weight-semibold">
-              {{ user?.nom_complet || 'Guest' }}
+              {{ user?.value?.nom_complet || 'Guest' }}
             </VListItemTitle>
-            <VListItemSubtitle>{{ user?.roles?.join(', ') || 'No Role' }}</VListItemSubtitle>
+            <VListItemSubtitle>{{ user?.value?.roles?.join(', ') || 'No Role' }}</VListItemSubtitle>
           </VListItem>
 
           <VDivider class="my-2" />
