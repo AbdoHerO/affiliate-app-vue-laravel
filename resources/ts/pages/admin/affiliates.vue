@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useAffiliateApplicationsStore } from '@/stores/admin/affiliateApplications'
 import { useConfirmAction } from '@/composables/useConfirmAction'
 import { useNotifications } from '@/composables/useNotifications'
@@ -19,13 +19,10 @@ const { showSuccess, showError } = useNotifications()
 const searchQuery = ref('')
 const selectedApprovalStatus = ref('')
 const selectedEmailVerified = ref('')
-
-const dateFrom = ref('')
-const dateTo = ref('')
 const itemsPerPage = ref(15)
 const showApproveDialog = ref(false)
 const showRefuseDialog = ref(false)
-const selectedUser = ref<any>(null)
+const selectedApplication = ref<any>(null)
 const approveReason = ref('')
 const refuseReason = ref('')
 
@@ -69,23 +66,27 @@ const fetchApplications = async () => {
     q: searchQuery.value || undefined,
     approval_status: selectedApprovalStatus.value || undefined,
     email_verified: selectedEmailVerified.value || undefined,
-    from: dateFrom.value || undefined,
-    to: dateTo.value || undefined,
     perPage: itemsPerPage.value,
   })
 }
 
 // Simple debounce implementation
+// Single debounced watcher for all filters
 let debounceTimer: NodeJS.Timeout
 const debouncedFetch = () => {
   clearTimeout(debounceTimer)
-  debounceTimer = setTimeout(fetchApplications, 300)
+  debounceTimer = setTimeout(() => {
+    affiliateApplicationsStore.filters.page = 1
+    fetchApplications()
+  }, 300)
 }
 
-const handleSearch = () => {
-  affiliateApplicationsStore.filters.page = 1
+// Watch all filters with single debounced handler
+watch([searchQuery, selectedApprovalStatus, selectedEmailVerified, itemsPerPage], () => {
   debouncedFetch()
-}
+}, { deep: true })
+
+
 
 const handlePageChange = (page: number) => {
   affiliateApplicationsStore.filters.page = page
@@ -101,22 +102,22 @@ const handleSort = (sortBy: any) => {
 }
 
 const openApproveDialog = (application: any) => {
-  selectedUser.value = application
+  selectedApplication.value = application
   approveReason.value = ''
   showApproveDialog.value = true
 }
 
 const openRefuseDialog = (application: any) => {
-  selectedUser.value = application
+  selectedApplication.value = application
   refuseReason.value = ''
   showRefuseDialog.value = true
 }
 
 const approveApplication = async () => {
-  if (!selectedUser.value) return
+  if (!selectedApplication.value) return
 
   try {
-    await affiliateApplicationsStore.approveApplication(selectedUser.value.id, approveReason.value)
+    await affiliateApplicationsStore.approveApplication(selectedApplication.value.id, approveReason.value)
     showSuccess('Demande d\'affiliation approuvée avec succès')
     showApproveDialog.value = false
     fetchApplications()
@@ -126,10 +127,10 @@ const approveApplication = async () => {
 }
 
 const refuseApplication = async () => {
-  if (!selectedUser.value || !refuseReason.value.trim()) return
+  if (!selectedApplication.value || !refuseReason.value.trim()) return
 
   try {
-    await affiliateApplicationsStore.refuseApplication(selectedUser.value.id, refuseReason.value)
+    await affiliateApplicationsStore.refuseApplication(selectedApplication.value.id, refuseReason.value)
     showSuccess('Demande refusée avec succès')
     showRefuseDialog.value = false
     fetchApplications()
@@ -139,20 +140,25 @@ const refuseApplication = async () => {
 }
 
 const resendVerification = async (application: any) => {
-  const confirmed = await confirm({
-    title: 'Renvoyer l\'email de vérification',
-    text: `Renvoyer l'email de vérification à ${application.email} ?`,
-    confirmText: 'Renvoyer',
-    color: 'primary',
-  })
+  console.log('🔍 Resend verification clicked for:', application.email)
+
+  // Temporary: Use simple confirm for testing
+  const confirmed = window.confirm(`Renvoyer l'email de vérification à ${application.email} ?`)
+
+  console.log('✅ Confirmation result:', confirmed)
 
   if (confirmed) {
     try {
+      console.log('📧 Sending verification email...')
       await affiliateApplicationsStore.resendVerification(application.id)
-      showSuccess('Email de vérification envoyé')
+      showSuccess('Email de vérification envoyé avec succès')
+      console.log('✅ Email sent successfully')
     } catch (error: any) {
-      showError(error.message || 'Erreur lors de l\'envoi')
+      console.error('❌ Error in resendVerification:', error)
+      showError(error.message || 'Erreur lors de l\'envoi de l\'email')
     }
+  } else {
+    console.log('❌ User cancelled')
   }
 }
 
@@ -182,6 +188,19 @@ const getApprovalStatusText = (status: string) => {
   }
 }
 
+const getApprovalStatusIcon = (status: string) => {
+  switch (status) {
+    case 'approved':
+      return '✓'
+    case 'pending_approval':
+      return '⏳'
+    case 'refused':
+      return '✗'
+    default:
+      return '?'
+  }
+}
+
 
 
 const formatDate = (date: string) => {
@@ -196,9 +215,6 @@ const resetFilters = () => {
   searchQuery.value = ''
   selectedApprovalStatus.value = ''
   selectedEmailVerified.value = ''
-
-  dateFrom.value = ''
-  dateTo.value = ''
   affiliateApplicationsStore.resetFilters()
   fetchApplications()
 }
@@ -279,70 +295,47 @@ onMounted(async () => {
     <!-- Filters Card -->
     <VCard class="mb-6">
       <VCardText>
-        <VRow>
-          <VCol cols="12" md="3">
+        <VRow class="align-center">
+          <VCol cols="12" md="4">
             <VTextField
               v-model="searchQuery"
-              label="Rechercher..."
+              label="Rechercher"
               placeholder="Nom, email, téléphone..."
               prepend-inner-icon="tabler-search"
               clearable
-              @input="handleSearch"
+              density="compact"
             />
           </VCol>
-          <VCol cols="12" md="2">
+          <VCol cols="12" md="3">
             <VSelect
               v-model="selectedApprovalStatus"
-              label="Statut Approbation"
+              label="Statut d'approbation"
               :items="approvalStatusOptions"
               clearable
-              @update:model-value="handleSearch"
+              density="compact"
             />
           </VCol>
-          <VCol cols="12" md="2">
+          <VCol cols="12" md="3">
             <VSelect
               v-model="selectedEmailVerified"
-              label="Email Vérifié"
+              label="Email vérifié"
               :items="emailVerifiedOptions"
               clearable
-              @update:model-value="handleSearch"
+              density="compact"
             />
           </VCol>
-
-          <VCol cols="12" md="1">
-            <VBtn
-              color="secondary"
-              variant="outlined"
-              block
-              @click="resetFilters"
-            >
-              <VIcon icon="tabler-filter-off" />
-            </VBtn>
-          </VCol>
-        </VRow>
-        <VRow>
-          <VCol cols="12" md="2">
-            <VTextField
-              v-model="dateFrom"
-              label="Date début"
-              type="date"
-              @change="handleSearch"
-            />
-          </VCol>
-          <VCol cols="12" md="2">
-            <VTextField
-              v-model="dateTo"
-              label="Date fin"
-              type="date"
-              @change="handleSearch"
-            />
-          </VCol>
-          <VCol cols="12" md="2">
+          <VCol cols="12" md="2" class="d-flex gap-2">
             <VSelect
               v-model="itemsPerPage"
               label="Par page"
               :items="[10, 15, 25, 50]"
-              @update:model-value="handleSearch"
+              density="compact"
+            />
+            <VBtn
+              color="secondary"
+              variant="outlined"
+              icon="tabler-filter-off"
+              @click="resetFilters"
             />
           </VCol>
         </VRow>
@@ -384,24 +377,36 @@ onMounted(async () => {
 
         <!-- Email Verified Column -->
         <template #item.email_verified="{ item }">
-          <VChip
-            size="small"
+          <VBadge
             :color="item.email_verified_at ? 'success' : 'warning'"
-            variant="tonal"
+            :content="item.email_verified_at ? '✓' : '!'"
+            inline
           >
-            {{ item.email_verified_at ? 'Vérifié' : 'Non vérifié' }}
-          </VChip>
+            <VChip
+              size="small"
+              :color="item.email_verified_at ? 'success' : 'warning'"
+              variant="tonal"
+            >
+              {{ item.email_verified_at ? 'Vérifié' : 'Non vérifié' }}
+            </VChip>
+          </VBadge>
         </template>
 
         <!-- Approval Status Column -->
         <template #item.approval_status="{ item }">
-          <VChip
-            size="small"
+          <VBadge
             :color="getApprovalStatusColor(item.approval_status)"
-            variant="tonal"
+            :content="getApprovalStatusIcon(item.approval_status)"
+            inline
           >
-            {{ getApprovalStatusText(item.approval_status) }}
-          </VChip>
+            <VChip
+              size="small"
+              :color="getApprovalStatusColor(item.approval_status)"
+              variant="tonal"
+            >
+              {{ getApprovalStatusText(item.approval_status) }}
+            </VChip>
+          </VBadge>
         </template>
 
 
@@ -417,34 +422,57 @@ onMounted(async () => {
         <template #item.actions="{ item }">
           <div class="d-flex gap-1">
             <!-- Resend Verification -->
-            <VBtn
+            <VTooltip
               v-if="!item.email_verified_at"
-              size="small"
-              color="info"
-              variant="text"
-              icon="tabler-mail"
-              @click="resendVerification(item)"
-            />
+              text="Renvoyer l'email de vérification"
+            >
+              <template #activator="{ props }">
+                <VBtn
+                  v-bind="props"
+                  size="small"
+                  color="info"
+                  variant="text"
+                  icon="tabler-mail"
+                  :loading="affiliateApplicationsStore.isResending(item.id)"
+                  :disabled="affiliateApplicationsStore.isResending(item.id)"
+                  @click.stop="resendVerification(item)"
+                />
+              </template>
+            </VTooltip>
 
             <!-- Approve -->
-            <VBtn
+            <VTooltip
               v-if="item.approval_status === 'pending_approval'"
-              size="small"
-              color="success"
-              variant="text"
-              icon="tabler-check"
-              @click="openApproveDialog(item)"
-            />
+              text="Approuver la demande"
+            >
+              <template #activator="{ props }">
+                <VBtn
+                  v-bind="props"
+                  size="small"
+                  color="success"
+                  variant="text"
+                  icon="tabler-check"
+                  @click="openApproveDialog(item)"
+                />
+              </template>
+            </VTooltip>
 
             <!-- Refuse -->
-            <VBtn
+            <VTooltip
               v-if="item.approval_status === 'pending_approval'"
-              size="small"
-              color="error"
-              variant="text"
-              icon="tabler-x"
-              @click="openRefuseDialog(item)"
-            />
+              text="Refuser la demande"
+            >
+              <template #activator="{ props }">
+                <VBtn
+                  v-bind="props"
+                  size="small"
+                  color="error"
+                  variant="text"
+                  icon="tabler-x"
+                  @click="openRefuseDialog(item)"
+                />
+              </template>
+            </VTooltip>
           </div>
         </template>
 
@@ -475,7 +503,7 @@ onMounted(async () => {
         <VCardTitle>Approuver l'Utilisateur</VCardTitle>
         <VCardText>
           <p class="mb-4">
-            Approuver <strong>{{ selectedUser?.nom_complet }}</strong> comme affilié ?
+            Approuver <strong>{{ selectedApplication?.nom_complet }}</strong> comme affilié ?
           </p>
           <VTextarea
             v-model="approveReason"
@@ -514,7 +542,7 @@ onMounted(async () => {
         <VCardTitle>Refuser la Demande</VCardTitle>
         <VCardText>
           <p class="mb-4">
-            Refuser la demande d'affiliation de <strong>{{ selectedUser?.nom_complet }}</strong> ?
+            Refuser la demande d'affiliation de <strong>{{ selectedApplication?.nom_complet }}</strong> ?
           </p>
           <VTextarea
             v-model="refuseReason"

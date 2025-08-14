@@ -56,6 +56,7 @@ export const useAffiliateApplicationsStore = defineStore('affiliateApplications'
     recent_signups: 0,
   })
   const loading = ref(false)
+  const resendingIds = ref<Set<string>>(new Set())
   const error = ref<string | null>(null)
   const pagination = ref<PaginationData>({
     current_page: 1,
@@ -74,6 +75,7 @@ export const useAffiliateApplicationsStore = defineStore('affiliateApplications'
   // Getters
   const hasApplications = computed(() => applications.value.length > 0)
   const isLoading = computed(() => loading.value)
+  const isResending = (id: string) => resendingIds.value.has(id)
 
   // Actions
   const fetchApplications = async (newFilters?: Partial<AffiliateApplicationFilters>) => {
@@ -167,6 +169,8 @@ export const useAffiliateApplicationsStore = defineStore('affiliateApplications'
   }
 
   const resendVerification = async (applicationId: string) => {
+    resendingIds.value.add(applicationId)
+
     try {
       const response = await axios.post(`/api/admin/affiliate-applications/${applicationId}/resend-verification`)
 
@@ -177,6 +181,8 @@ export const useAffiliateApplicationsStore = defineStore('affiliateApplications'
       }
     } catch (err: any) {
       throw new Error(err.response?.data?.message || err.message || 'Failed to resend verification')
+    } finally {
+      resendingIds.value.delete(applicationId)
     }
   }
 
@@ -194,6 +200,7 @@ export const useAffiliateApplicationsStore = defineStore('affiliateApplications'
     applications,
     stats,
     loading,
+    resendingIds,
     error,
     pagination,
     filters,
@@ -201,6 +208,7 @@ export const useAffiliateApplicationsStore = defineStore('affiliateApplications'
     // Getters
     hasApplications,
     isLoading,
+    isResending,
 
     // Actions
     fetchApplications,

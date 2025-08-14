@@ -211,7 +211,7 @@ class AffiliateApplicationsController extends Controller
                 return response()->json([
                     'success' => false,
                     'message' => 'L\'email est déjà vérifié.'
-                ], 422);
+                ], 409);
             }
 
             // Invalidate old tokens
