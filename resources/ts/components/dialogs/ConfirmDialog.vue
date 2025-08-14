@@ -1,151 +1,101 @@
 <script setup lang="ts">
 interface Props {
-  confirmationQuestion: string
-  isDialogVisible: boolean
-  confirmTitle: string
-  confirmMsg: string
-  cancelTitle: string
-  cancelMsg: string
+  modelValue: boolean
+  title?: string
+  text?: string
+  confirmText?: string
+  cancelText?: string
+  color?: string
+  icon?: string
+  loading?: boolean
 }
 
 interface Emit {
-  (e: 'update:isDialogVisible', value: boolean): void
-  (e: 'confirm', value: boolean): void
+  (e: 'update:modelValue', value: boolean): void
+  (e: 'confirm'): void
+  (e: 'cancel'): void
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  title: 'Confirmer l\'action',
+  text: 'Êtes-vous sûr de vouloir continuer ?',
+  confirmText: 'Confirmer',
+  cancelText: 'Annuler',
+  color: 'primary',
+  icon: 'tabler-alert-circle',
+  loading: false,
+})
 
 const emit = defineEmits<Emit>()
 
-const unsubscribed = ref(false)
-const cancelled = ref(false)
-
 const updateModelValue = (val: boolean) => {
-  emit('update:isDialogVisible', val)
+  emit('update:modelValue', val)
 }
 
-const onConfirmation = () => {
-  emit('confirm', true)
+const onConfirm = () => {
+  emit('confirm')
   updateModelValue(false)
-  unsubscribed.value = true
 }
 
 const onCancel = () => {
-  emit('confirm', false)
-  emit('update:isDialogVisible', false)
-  cancelled.value = true
+  emit('cancel')
+  updateModelValue(false)
 }
 </script>
 
 <template>
-  <!-- 👉 Confirm Dialog -->
   <VDialog
+    :model-value="props.modelValue"
     max-width="500"
-    :model-value="props.isDialogVisible"
+    persistent
     @update:model-value="updateModelValue"
   >
-    <VCard class="text-center px-10 py-6">
+    <VCard class="text-center pa-6">
       <VCardText>
-        <VBtn
-          icon
-          variant="outlined"
-          color="warning"
-          class="my-4"
-          style=" block-size: 88px;inline-size: 88px; pointer-events: none;"
+        <!-- Icon -->
+        <VAvatar
+          size="88"
+          :color="props.color"
+          variant="tonal"
+          class="mb-6"
         >
-          <span class="text-5xl">!</span>
-        </VBtn>
+          <VIcon
+            :icon="props.icon"
+            size="48"
+          />
+        </VAvatar>
 
-        <h6 class="text-lg font-weight-medium">
-          {{ props.confirmationQuestion }}
-        </h6>
+        <!-- Title -->
+        <h5 class="text-h5 mb-4">
+          {{ props.title }}
+        </h5>
+
+        <!-- Text -->
+        <p class="text-body-1 mb-6">
+          {{ props.text }}
+        </p>
       </VCardText>
 
-      <VCardText class="d-flex align-center justify-center gap-2">
+      <!-- Actions -->
+      <VCardActions class="justify-center gap-3">
         <VBtn
+          :color="props.color"
           variant="elevated"
-          @click="onConfirmation"
+          :loading="props.loading"
+          @click="onConfirm"
         >
-          Confirm
+          {{ props.confirmText }}
         </VBtn>
 
         <VBtn
           color="secondary"
-          variant="tonal"
+          variant="outlined"
+          :disabled="props.loading"
           @click="onCancel"
         >
-          Cancel
+          {{ props.cancelText }}
         </VBtn>
-      </VCardText>
-    </VCard>
-  </VDialog>
-
-  <!-- Unsubscribed -->
-  <VDialog
-    v-model="unsubscribed"
-    max-width="500"
-  >
-    <VCard>
-      <VCardText class="text-center px-10 py-6">
-        <VBtn
-          icon
-          variant="outlined"
-          color="success"
-          class="my-4"
-          style=" block-size: 88px;inline-size: 88px; pointer-events: none;"
-        >
-          <VIcon
-            icon="tabler-check"
-            size="38"
-          />
-        </VBtn>
-
-        <h1 class="text-h4 mb-4">
-          {{ props.confirmTitle }}
-        </h1>
-
-        <p>{{ props.confirmMsg }}</p>
-
-        <VBtn
-          color="success"
-          @click="unsubscribed = false"
-        >
-          Ok
-        </VBtn>
-      </VCardText>
-    </VCard>
-  </VDialog>
-
-  <!-- Cancelled -->
-  <VDialog
-    v-model="cancelled"
-    max-width="500"
-  >
-    <VCard>
-      <VCardText class="text-center px-10 py-6">
-        <VBtn
-          icon
-          variant="outlined"
-          color="error"
-          class="my-4"
-          style=" block-size: 88px;inline-size: 88px; pointer-events: none;"
-        >
-          <span class="text-5xl font-weight-light">X</span>
-        </VBtn>
-
-        <h1 class="text-h4 mb-4">
-          {{ props.cancelTitle }}
-        </h1>
-
-        <p>{{ props.cancelMsg }}</p>
-
-        <VBtn
-          color="success"
-          @click="cancelled = false"
-        >
-          Ok
-        </VBtn>
-      </VCardText>
+      </VCardActions>
     </VCard>
   </VDialog>
 </template>

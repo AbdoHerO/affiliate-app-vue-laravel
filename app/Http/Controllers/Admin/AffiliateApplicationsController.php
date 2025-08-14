@@ -91,9 +91,9 @@ class AffiliateApplicationsController extends Controller
             'pending_approval' => Affilie::pendingApproval()->count(),
             'email_verified' => Affilie::emailVerified()->count(),
             'email_not_verified' => Affilie::emailNotVerified()->count(),
-            'approved' => Affilie::approved()->count(),
-            'refused' => Affilie::refused()->count(),
-            'recent_applications' => Affilie::where('created_at', '>=', now()->subDays(7))->count(),
+            'approved_applications' => Affilie::approved()->count(),
+            'refused_applications' => Affilie::refused()->count(),
+            'recent_signups' => Affilie::where('created_at', '>=', now()->subDays(7))->count(),
         ];
 
         return response()->json([

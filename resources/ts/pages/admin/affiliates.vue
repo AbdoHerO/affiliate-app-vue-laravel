@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref, onMounted, computed, watch } from 'vue'
 import { useAffiliateApplicationsStore } from '@/stores/admin/affiliateApplications'
-import { useConfirmAction } from '@/composables/useConfirmAction'
 import { useNotifications } from '@/composables/useNotifications'
+import ConfirmDialog from '@/components/dialogs/ConfirmDialog.vue'
 
 definePage({
   meta: {
@@ -12,7 +12,6 @@ definePage({
 })
 
 const affiliateApplicationsStore = useAffiliateApplicationsStore()
-const { confirm } = useConfirmAction()
 const { showSuccess, showError } = useNotifications()
 
 // Local state
@@ -22,6 +21,7 @@ const selectedEmailVerified = ref('')
 const itemsPerPage = ref(15)
 const showApproveDialog = ref(false)
 const showRefuseDialog = ref(false)
+const showResendConfirm = ref(false)
 const selectedApplication = ref<any>(null)
 const approveReason = ref('')
 const refuseReason = ref('')
@@ -139,26 +139,19 @@ const refuseApplication = async () => {
   }
 }
 
-const resendVerification = async (application: any) => {
-  console.log('🔍 Resend verification clicked for:', application.email)
+const resendVerification = (application: any) => {
+  selectedApplication.value = application
+  showResendConfirm.value = true
+}
 
-  // Temporary: Use simple confirm for testing
-  const confirmed = window.confirm(`Renvoyer l'email de vérification à ${application.email} ?`)
+const confirmResendVerification = async () => {
+  if (!selectedApplication.value) return
 
-  console.log('✅ Confirmation result:', confirmed)
-
-  if (confirmed) {
-    try {
-      console.log('📧 Sending verification email...')
-      await affiliateApplicationsStore.resendVerification(application.id)
-      showSuccess('Email de vérification envoyé avec succès')
-      console.log('✅ Email sent successfully')
-    } catch (error: any) {
-      console.error('❌ Error in resendVerification:', error)
-      showError(error.message || 'Erreur lors de l\'envoi de l\'email')
-    }
-  } else {
-    console.log('❌ User cancelled')
+  try {
+    await affiliateApplicationsStore.resendVerification(selectedApplication.value.id)
+    showSuccess('Email de vérification envoyé avec succès')
+  } catch (error: any) {
+    showError(error.message || 'Erreur lors de l\'envoi de l\'email')
   }
 }
 
@@ -253,7 +246,7 @@ onMounted(async () => {
       <VCol cols="12" md="2">
         <VCard variant="tonal" color="warning">
           <VCardText class="text-center">
-            <div class="text-h4">{{ stats.pending_approval }}</div>
+            <div class="text-h4">{{ stats.pending_approval || 0 }}</div>
             <div class="text-body-2">En attente</div>
           </VCardText>
         </VCard>
@@ -261,7 +254,7 @@ onMounted(async () => {
       <VCol cols="12" md="2">
         <VCard variant="tonal" color="info">
           <VCardText class="text-center">
-            <div class="text-h4">{{ stats.email_not_verified }}</div>
+            <div class="text-h4">{{ stats.email_not_verified || 0 }}</div>
             <div class="text-body-2">Email non vérifié</div>
           </VCardText>
         </VCard>
@@ -269,7 +262,7 @@ onMounted(async () => {
       <VCol cols="12" md="2">
         <VCard variant="tonal" color="success">
           <VCardText class="text-center">
-            <div class="text-h4">{{ stats.approved_applications }}</div>
+            <div class="text-h4">{{ stats.approved_applications || 0 }}</div>
             <div class="text-body-2">Approuvés</div>
           </VCardText>
         </VCard>
@@ -277,7 +270,7 @@ onMounted(async () => {
       <VCol cols="12" md="2">
         <VCard variant="tonal" color="error">
           <VCardText class="text-center">
-            <div class="text-h4">{{ stats.refused_applications }}</div>
+            <div class="text-h4">{{ stats.refused_applications || 0 }}</div>
             <div class="text-body-2">Refusés</div>
           </VCardText>
         </VCard>
@@ -285,7 +278,7 @@ onMounted(async () => {
       <VCol cols="12" md="2">
         <VCard variant="tonal" color="primary">
           <VCardText class="text-center">
-            <div class="text-h4">{{ stats.recent_signups }}</div>
+            <div class="text-h4">{{ stats.recent_signups || 0 }}</div>
             <div class="text-body-2">7 derniers jours</div>
           </VCardText>
         </VCard>
@@ -497,37 +490,63 @@ onMounted(async () => {
     <!-- Approve Dialog -->
     <VDialog
       v-model="showApproveDialog"
-      max-width="500"
+      max-width="600"
+      persistent
     >
-      <VCard>
-        <VCardTitle>Approuver l'Utilisateur</VCardTitle>
-        <VCardText>
-          <p class="mb-4">
+      <VCard class="pa-6">
+        <VCardText class="text-center">
+          <!-- Icon -->
+          <VAvatar
+            size="88"
+            color="success"
+            variant="tonal"
+            class="mb-6"
+          >
+            <VIcon
+              icon="tabler-check"
+              size="48"
+            />
+          </VAvatar>
+
+          <!-- Title -->
+          <h5 class="text-h5 mb-4">
+            Approuver la demande d'affiliation
+          </h5>
+
+          <!-- Text -->
+          <p class="text-body-1 mb-6">
             Approuver <strong>{{ selectedApplication?.nom_complet }}</strong> comme affilié ?
+            <br>
+            <small class="text-medium-emphasis">Un compte utilisateur sera créé automatiquement.</small>
           </p>
+
+          <!-- Optional Reason -->
           <VTextarea
             v-model="approveReason"
             label="Raison (optionnel)"
             placeholder="Raison de l'approbation..."
-            variant="outlined"
             rows="3"
+            variant="outlined"
+            class="mb-4"
           />
         </VCardText>
-        <VCardActions>
-          <VSpacer />
-          <VBtn
-            color="secondary"
-            variant="text"
-            @click="showApproveDialog = false"
-          >
-            Annuler
-          </VBtn>
+
+        <!-- Actions -->
+        <VCardActions class="justify-center gap-3">
           <VBtn
             color="success"
             variant="elevated"
             @click="approveApplication"
           >
             Approuver
+          </VBtn>
+
+          <VBtn
+            color="secondary"
+            variant="outlined"
+            @click="showApproveDialog = false"
+          >
+            Annuler
           </VBtn>
         </VCardActions>
       </VCard>
@@ -536,32 +555,50 @@ onMounted(async () => {
     <!-- Refuse Dialog -->
     <VDialog
       v-model="showRefuseDialog"
-      max-width="500"
+      max-width="600"
+      persistent
     >
-      <VCard>
-        <VCardTitle>Refuser la Demande</VCardTitle>
-        <VCardText>
-          <p class="mb-4">
+      <VCard class="pa-6">
+        <VCardText class="text-center">
+          <!-- Icon -->
+          <VAvatar
+            size="88"
+            color="error"
+            variant="tonal"
+            class="mb-6"
+          >
+            <VIcon
+              icon="tabler-x"
+              size="48"
+            />
+          </VAvatar>
+
+          <!-- Title -->
+          <h5 class="text-h5 mb-4">
+            Refuser la demande d'affiliation
+          </h5>
+
+          <!-- Text -->
+          <p class="text-body-1 mb-6">
             Refuser la demande d'affiliation de <strong>{{ selectedApplication?.nom_complet }}</strong> ?
+            <br>
+            <small class="text-medium-emphasis">Cette action nécessite une justification.</small>
           </p>
+
+          <!-- Required Reason -->
           <VTextarea
             v-model="refuseReason"
             label="Raison du refus *"
             placeholder="Expliquez pourquoi vous refusez cette demande..."
             variant="outlined"
             rows="3"
-            :rules="[v => !!v || 'La raison est requise']"
+            :error="!refuseReason.trim()"
+            class="mb-4"
           />
         </VCardText>
-        <VCardActions>
-          <VSpacer />
-          <VBtn
-            color="secondary"
-            variant="text"
-            @click="showRefuseDialog = false"
-          >
-            Annuler
-          </VBtn>
+
+        <!-- Actions -->
+        <VCardActions class="justify-center gap-3">
           <VBtn
             color="error"
             variant="elevated"
@@ -570,8 +607,29 @@ onMounted(async () => {
           >
             Refuser
           </VBtn>
+
+          <VBtn
+            color="secondary"
+            variant="outlined"
+            @click="showRefuseDialog = false"
+          >
+            Annuler
+          </VBtn>
         </VCardActions>
       </VCard>
     </VDialog>
+
+    <!-- Resend Verification Confirm Dialog -->
+    <ConfirmDialog
+      v-model="showResendConfirm"
+      title="Renvoyer l'email de vérification"
+      :text="`Renvoyer l'email de vérification à ${selectedApplication?.email} ?`"
+      confirm-text="Renvoyer"
+      cancel-text="Annuler"
+      color="info"
+      icon="tabler-mail"
+      :loading="affiliateApplicationsStore.isResending(selectedApplication?.id || '')"
+      @confirm="confirmResendVerification"
+    />
   </div>
 </template>
