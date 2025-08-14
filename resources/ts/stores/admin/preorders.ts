@@ -48,6 +48,7 @@ export interface Preorder {
   total_ttc: number
   devise: string
   notes?: string
+  no_answer_count: number
   created_at: string
   updated_at: string
   boutique: {
@@ -223,6 +224,124 @@ export const usePreordersStore = defineStore('preorders', () => {
     currentPreorder.value = null
   }
 
+  // Bulk actions
+  const bulkChangeStatus = async (ids: string[], to: string, note?: string) => {
+    try {
+      const response = await axios.post('/api/admin/preorders/bulk/status', {
+        ids,
+        to,
+        note
+      })
+
+      if (response.data.success) {
+        // Update local state optimistically
+        const updatedOrders = response.data.data
+        updatedOrders.forEach((updatedOrder: Preorder) => {
+          const index = preorders.value.findIndex(order => order.id === updatedOrder.id)
+          if (index !== -1) {
+            preorders.value[index] = { ...preorders.value[index], ...updatedOrder }
+          }
+        })
+      }
+
+      return response.data
+    } catch (err: any) {
+      const message = err.response?.data?.message || 'Erreur lors de la mise à jour en lot'
+      error.value = message
+      throw new Error(message)
+    }
+  }
+
+  const bulkSendToShipping = async (ids: string[]) => {
+    try {
+      const response = await axios.post('/api/admin/preorders/bulk/send-to-shipping', {
+        ids
+      })
+
+      if (response.data.success) {
+        // Refresh the list to get updated shipping status
+        await fetchPreorders()
+      }
+
+      return response.data
+    } catch (err: any) {
+      const message = err.response?.data?.message || 'Erreur lors de l\'envoi en lot'
+      error.value = message
+      throw new Error(message)
+    }
+  }
+
+  const changeStatus = async (id: string, to: string, note?: string) => {
+    try {
+      const response = await axios.post(`/api/admin/preorders/${id}/status`, {
+        to,
+        note
+      })
+
+      if (response.data.success) {
+        // Update local state
+        const updatedOrder = response.data.data
+        const index = preorders.value.findIndex(order => order.id === id)
+        if (index !== -1) {
+          preorders.value[index] = { ...preorders.value[index], ...updatedOrder }
+        }
+
+        // Update current preorder if it's the same
+        if (currentPreorder.value?.id === id) {
+          currentPreorder.value = { ...currentPreorder.value, ...updatedOrder }
+        }
+      }
+
+      return response.data
+    } catch (err: any) {
+      const message = err.response?.data?.message || 'Erreur lors du changement de statut'
+      error.value = message
+      throw new Error(message)
+    }
+  }
+
+  const incrementNoAnswer = async (id: string) => {
+    try {
+      const response = await axios.post(`/api/admin/preorders/${id}/no-answer`)
+
+      if (response.data.success) {
+        // Update local state
+        const index = preorders.value.findIndex(order => order.id === id)
+        if (index !== -1) {
+          preorders.value[index].no_answer_count = response.data.data.no_answer_count
+        }
+
+        // Update current preorder if it's the same
+        if (currentPreorder.value?.id === id) {
+          currentPreorder.value.no_answer_count = response.data.data.no_answer_count
+        }
+      }
+
+      return response.data
+    } catch (err: any) {
+      const message = err.response?.data?.message || 'Erreur lors de l\'incrémentation'
+      error.value = message
+      throw new Error(message)
+    }
+  }
+
+  const sendToShipping = async (id: string) => {
+    try {
+      const response = await axios.post(`/api/admin/preorders/${id}/send-to-shipping`)
+
+      if (response.data.success) {
+        // Refresh the list to get updated shipping status
+        await fetchPreorders()
+      }
+
+      return response.data
+    } catch (err: any) {
+      const message = err.response?.data?.message || 'Erreur lors de l\'envoi'
+      error.value = message
+      throw new Error(message)
+    }
+  }
+
   return {
     // State
     preorders,
@@ -243,5 +362,12 @@ export const usePreordersStore = defineStore('preorders', () => {
     confirmPreorder,
     resetFilters,
     clearCurrentPreorder,
+
+    // Bulk actions
+    bulkChangeStatus,
+    bulkSendToShipping,
+    changeStatus,
+    incrementNoAnswer,
+    sendToShipping,
   }
 })

@@ -2,7 +2,6 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { usePreordersStore } from '@/stores/admin/preorders'
-import { useShippingStore } from '@/stores/admin/shipping'
 import { useConfirmAction } from '@/composables/useConfirmAction'
 import { useNotifications } from '@/composables/useNotifications'
 
@@ -16,7 +15,6 @@ definePage({
 const route = useRoute()
 const router = useRouter()
 const preordersStore = usePreordersStore()
-const shippingStore = useShippingStore()
 const { confirm } = useConfirmAction()
 const { showSuccess, showError } = useNotifications()
 
@@ -82,6 +80,12 @@ const saveChanges = async () => {
     await preordersStore.updatePreorder(preorder.value.id, formData.value)
     showSuccess('Commande mise à jour avec succès')
     isEditing.value = false
+
+    // Stay on detail page after save
+    router.replace({
+      name: 'admin-orders-pre-id',
+      params: { id: preorder.value.id }
+    })
   } catch (error: any) {
     showError(error.message || 'Erreur lors de la mise à jour')
   } finally {
@@ -101,7 +105,7 @@ const confirmOrder = async () => {
 
   if (confirmed) {
     try {
-      await preordersStore.confirmPreorder(preorder.value.id)
+      await preordersStore.changeStatus(preorder.value.id, 'confirmee')
       showSuccess('Commande confirmée avec succès')
     } catch (error: any) {
       showError(error.message || 'Erreur lors de la confirmation')
@@ -121,12 +125,12 @@ const sendToOzonExpress = async () => {
 
   if (confirmed) {
     try {
-      await shippingStore.addParcel(preorder.value.id)
-      showSuccess('Colis créé avec succès sur OzonExpress')
+      await preordersStore.sendToShipping(preorder.value.id)
+      showSuccess('Commande envoyée vers OzonExpress avec succès')
       // Refresh order data
       await fetchPreorder()
     } catch (error: any) {
-      showError(error.message || 'Erreur lors de la création du colis')
+      showError(error.message || 'Erreur lors de l\'envoi')
     }
   }
 }
@@ -409,7 +413,7 @@ onMounted(() => {
                       <VIcon icon="tabler-package" />
                     </VAvatar>
                     <div>
-                      <div class="font-weight-medium">{{ item.produit.nom }}</div>
+                      <div class="font-weight-medium">{{ item.produit.titre }}</div>
                     </div>
                   </div>
                 </template>

@@ -23,6 +23,11 @@ class PreordersController extends Controller
             'articles.produit:id,titre',
             'articles.variante:id,nom'
         ])
+        ->select([
+            'id', 'boutique_id', 'user_id', 'client_id', 'adresse_id', 'statut',
+            'confirmation_cc', 'mode_paiement', 'total_ht', 'total_ttc', 'devise',
+            'notes', 'no_answer_count', 'created_at', 'updated_at'
+        ])
         ->whereIn('statut', ['en_attente', 'confirmee'])
         ->whereDoesntHave('shippingParcel');
 
@@ -177,5 +182,242 @@ class PreordersController extends Controller
             'message' => 'Order confirmed successfully',
             'data' => $order,
         ]);
+    }
+
+    /**
+     * Bulk change status for multiple orders
+     */
+    public function bulkChangeStatus(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array|min:1',
+            'ids.*' => 'required|uuid|exists:commandes,id',
+            'to' => 'required|in:confirmee,injoignable,refusee,annulee',
+            'note' => 'nullable|string|max:500'
+        ]);
+
+        $ids = $request->input('ids');
+        $status = $request->input('to');
+        $note = $request->input('note');
+
+        // Validate that all orders can be transitioned
+        $orders = Commande::whereIn('id', $ids)
+            ->whereIn('statut', ['en_attente', 'confirmee'])
+            ->get();
+
+        if ($orders->count() !== count($ids)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Certaines commandes ne peuvent pas être modifiées'
+            ], 422);
+        }
+
+        // Update orders
+        $updated = [];
+        foreach ($orders as $order) {
+            $oldStatus = $order->statut;
+            $order->statut = $status;
+
+            if ($note) {
+                $order->notes = $order->notes ? $order->notes . "\n" . $note : $note;
+            }
+
+            // Increment no_answer_count for injoignable status
+            if ($status === 'injoignable') {
+                $order->no_answer_count = ($order->no_answer_count ?? 0) + 1;
+            }
+
+            $order->save();
+            $updated[] = $order->load([
+                'boutique:id,nom',
+                'affiliate:id,nom_complet,email',
+                'client:id,nom_complet,telephone',
+                'adresse:id,ville,adresse'
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => count($updated) . ' commande(s) mise(s) à jour',
+            'data' => $updated
+        ]);
+    }
+
+    /**
+     * Bulk send orders to shipping
+     */
+    public function bulkSendToShipping(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array|min:1',
+            'ids.*' => 'required|uuid|exists:commandes,id'
+        ]);
+
+        $ids = $request->input('ids');
+
+        // Get confirmed orders that don't have shipping parcels
+        $orders = Commande::whereIn('id', $ids)
+            ->where('statut', 'confirmee')
+            ->whereDoesntHave('shippingParcel')
+            ->get();
+
+        if ($orders->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Aucune commande éligible pour l\'expédition'
+            ], 422);
+        }
+
+        $results = [];
+        $ozonController = new \App\Http\Controllers\Admin\OzonExpressController();
+
+        foreach ($orders as $order) {
+            try {
+                $parcelRequest = new Request(['commande_id' => $order->id]);
+                $response = $ozonController->addParcel($parcelRequest);
+                $responseData = $response->getData(true);
+
+                if ($responseData['success']) {
+                    $results[] = [
+                        'order_id' => $order->id,
+                        'success' => true,
+                        'tracking_number' => $responseData['data']['tracking_number'] ?? null
+                    ];
+                } else {
+                    $results[] = [
+                        'order_id' => $order->id,
+                        'success' => false,
+                        'error' => $responseData['message'] ?? 'Erreur inconnue'
+                    ];
+                }
+            } catch (\Exception $e) {
+                $results[] = [
+                    'order_id' => $order->id,
+                    'success' => false,
+                    'error' => $e->getMessage()
+                ];
+            }
+        }
+
+        $successCount = collect($results)->where('success', true)->count();
+        $failureCount = collect($results)->where('success', false)->count();
+
+        return response()->json([
+            'success' => $successCount > 0,
+            'message' => "{$successCount} commande(s) envoyée(s), {$failureCount} échec(s)",
+            'data' => $results
+        ]);
+    }
+
+    /**
+     * Change status for a single order
+     */
+    public function changeStatus(Request $request, string $id)
+    {
+        $request->validate([
+            'to' => 'required|in:confirmee,injoignable,refusee,annulee',
+            'note' => 'nullable|string|max:500'
+        ]);
+
+        $order = Commande::findOrFail($id);
+
+        // Validate transition
+        if (!in_array($order->statut, ['en_attente', 'confirmee'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Cette commande ne peut pas être modifiée'
+            ], 422);
+        }
+
+        $status = $request->input('to');
+        $note = $request->input('note');
+
+        $order->statut = $status;
+
+        if ($note) {
+            $order->notes = $order->notes ? $order->notes . "\n" . $note : $note;
+        }
+
+        // Increment no_answer_count for injoignable status
+        if ($status === 'injoignable') {
+            $order->no_answer_count = ($order->no_answer_count ?? 0) + 1;
+        }
+
+        $order->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Statut mis à jour avec succès',
+            'data' => $order->load([
+                'boutique:id,nom',
+                'affiliate:id,nom_complet,email',
+                'client:id,nom_complet,telephone',
+                'adresse:id,ville,adresse'
+            ])
+        ]);
+    }
+
+    /**
+     * Increment no answer count
+     */
+    public function incrementNoAnswer(string $id)
+    {
+        $order = Commande::findOrFail($id);
+
+        $order->no_answer_count = ($order->no_answer_count ?? 0) + 1;
+        $order->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Compteur de non-réponse incrémenté',
+            'data' => ['no_answer_count' => $order->no_answer_count]
+        ]);
+    }
+
+    /**
+     * Send single order to shipping
+     */
+    public function sendToShipping(string $id)
+    {
+        $order = Commande::findOrFail($id);
+
+        if ($order->statut !== 'confirmee') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Seules les commandes confirmées peuvent être expédiées'
+            ], 422);
+        }
+
+        if ($order->shippingParcel) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Cette commande a déjà été expédiée'
+            ], 422);
+        }
+
+        try {
+            $ozonController = new \App\Http\Controllers\Admin\OzonExpressController();
+            $request = new Request(['commande_id' => $order->id]);
+            $response = $ozonController->addParcel($request);
+            $responseData = $response->getData(true);
+
+            if ($responseData['success']) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Commande envoyée vers OzonExpress',
+                    'data' => $responseData['data']
+                ]);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => $responseData['message'] ?? 'Erreur lors de l\'envoi'
+                ], 422);
+            }
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

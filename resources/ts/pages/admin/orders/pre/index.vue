@@ -2,7 +2,6 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { usePreordersStore } from '@/stores/admin/preorders'
-import { useShippingStore } from '@/stores/admin/shipping'
 import { useConfirmAction } from '@/composables/useConfirmAction'
 import { useNotifications } from '@/composables/useNotifications'
 
@@ -15,7 +14,6 @@ definePage({
 
 const router = useRouter()
 const preordersStore = usePreordersStore()
-const shippingStore = useShippingStore()
 const { confirm } = useConfirmAction()
 const { showSuccess, showError } = useNotifications()
 
@@ -28,6 +26,11 @@ const dateFrom = ref('')
 const dateTo = ref('')
 const itemsPerPage = ref(15)
 
+// Bulk selection state
+const selectedOrders = ref<string[]>([])
+const selectAll = ref(false)
+const bulkActionLoading = ref(false)
+
 // Computed
 const isLoading = computed(() => preordersStore.isLoading)
 const preorders = computed(() => preordersStore.preorders)
@@ -35,14 +38,16 @@ const pagination = computed(() => preordersStore.pagination)
 
 // Table headers
 const headers = [
+  { title: '', key: 'select', sortable: false, width: '50px' },
   { title: 'Code', key: 'id', sortable: true },
   { title: 'Client', key: 'client', sortable: false },
   { title: 'Affilié', key: 'affilie', sortable: false },
   { title: 'Boutique', key: 'boutique', sortable: false },
   { title: 'Total', key: 'total_ttc', sortable: true },
+  { title: 'No Answer', key: 'no_answer_count', sortable: true, width: '100px' },
   { title: 'Statut', key: 'statut', sortable: true },
   { title: 'Date', key: 'created_at', sortable: true },
-  { title: 'Actions', key: 'actions', sortable: false },
+  { title: 'Actions', key: 'actions', sortable: false, width: '150px' },
 ]
 
 // Status options
@@ -65,12 +70,7 @@ const fetchPreorders = async () => {
   })
 }
 
-// Simple debounce implementation
-let debounceTimer: NodeJS.Timeout
-const debouncedFetch = () => {
-  clearTimeout(debounceTimer)
-  debounceTimer = setTimeout(fetchPreorders, 300)
-}
+
 
 const handleSearch = () => {
   preordersStore.fetchPreorders({
@@ -102,24 +102,7 @@ const viewPreorder = (preorder: any) => {
   router.push({ name: 'admin-orders-pre-id', params: { id: preorder.id } })
 }
 
-const sendToOzonExpress = async (preorder: any) => {
-  const confirmed = await confirm({
-    title: 'Envoyer vers OzonExpress',
-    text: `Êtes-vous sûr de vouloir envoyer la commande ${preorder.id.slice(0, 8)} vers OzonExpress ?`,
-    confirmText: 'Envoyer',
-    color: 'primary',
-  })
 
-  if (confirmed) {
-    try {
-      await shippingStore.addParcel(preorder.id)
-      showSuccess('Colis créé avec succès sur OzonExpress')
-      fetchPreorders() // Refresh list
-    } catch (error: any) {
-      showError(error.message || 'Erreur lors de la création du colis')
-    }
-  }
-}
 
 const getStatusColor = (status: string) => {
   switch (status) {
@@ -167,8 +150,110 @@ const resetFilters = () => {
   selectedBoutique.value = ''
   dateFrom.value = ''
   dateTo.value = ''
+  selectedOrders.value = []
+  selectAll.value = false
   preordersStore.resetFilters()
   fetchPreorders()
+}
+
+// Selection handlers
+const toggleSelectAll = () => {
+  if (selectAll.value) {
+    selectedOrders.value = preorders.value.map(order => order.id)
+  } else {
+    selectedOrders.value = []
+  }
+}
+
+const toggleOrderSelection = (orderId: string) => {
+  const index = selectedOrders.value.indexOf(orderId)
+  if (index > -1) {
+    selectedOrders.value.splice(index, 1)
+  } else {
+    selectedOrders.value.push(orderId)
+  }
+
+  // Update select all state
+  selectAll.value = selectedOrders.value.length === preorders.value.length
+}
+
+// Bulk actions
+const bulkChangeStatus = async (status: string) => {
+  if (selectedOrders.value.length === 0) return
+
+  const confirmed = await confirm({
+    title: 'Changer le statut',
+    text: `Êtes-vous sûr de vouloir changer le statut de ${selectedOrders.value.length} commande(s) ?`,
+    confirmText: 'Confirmer',
+    cancelText: 'Annuler'
+  })
+
+  if (!confirmed) return
+
+  bulkActionLoading.value = true
+  try {
+    const result = await preordersStore.bulkChangeStatus(selectedOrders.value, status)
+    showSuccess(result.message)
+    selectedOrders.value = []
+    selectAll.value = false
+  } catch (error: any) {
+    showError(error.message)
+  } finally {
+    bulkActionLoading.value = false
+  }
+}
+
+const bulkSendToShipping = async () => {
+  if (selectedOrders.value.length === 0) return
+
+  const confirmed = await confirm({
+    title: 'Envoyer vers OzonExpress',
+    text: `Êtes-vous sûr de vouloir envoyer ${selectedOrders.value.length} commande(s) vers OzonExpress ?`,
+    confirmText: 'Envoyer',
+    cancelText: 'Annuler'
+  })
+
+  if (!confirmed) return
+
+  bulkActionLoading.value = true
+  try {
+    const result = await preordersStore.bulkSendToShipping(selectedOrders.value)
+    showSuccess(result.message)
+    selectedOrders.value = []
+    selectAll.value = false
+  } catch (error: any) {
+    showError(error.message)
+  } finally {
+    bulkActionLoading.value = false
+  }
+}
+
+// Quick actions
+const quickChangeStatus = async (orderId: string, status: string) => {
+  try {
+    const result = await preordersStore.changeStatus(orderId, status)
+    showSuccess(result.message)
+  } catch (error: any) {
+    showError(error.message)
+  }
+}
+
+const quickSendToShipping = async (orderId: string) => {
+  const confirmed = await confirm({
+    title: 'Envoyer vers OzonExpress',
+    text: 'Êtes-vous sûr de vouloir envoyer cette commande vers OzonExpress ?',
+    confirmText: 'Envoyer',
+    cancelText: 'Annuler'
+  })
+
+  if (!confirmed) return
+
+  try {
+    const result = await preordersStore.sendToShipping(orderId)
+    showSuccess(result.message)
+  } catch (error: any) {
+    showError(error.message)
+  }
 }
 
 // Lifecycle
@@ -260,6 +345,50 @@ onMounted(() => {
       </VCardText>
     </VCard>
 
+    <!-- Bulk Actions Toolbar -->
+    <VCard v-if="selectedOrders.length > 0" class="mb-4">
+      <VCardText>
+        <div class="d-flex align-center gap-4">
+          <VIcon icon="tabler-check" color="primary" />
+          <span class="text-body-1 font-weight-medium">
+            {{ selectedOrders.length }} commande(s) sélectionnée(s)
+          </span>
+
+          <VSpacer />
+
+          <VBtn
+            color="primary"
+            variant="elevated"
+            :loading="bulkActionLoading"
+            @click="bulkSendToShipping"
+          >
+            <VIcon start icon="tabler-truck" />
+            Envoyer OzonExpress
+          </VBtn>
+
+          <VSelect
+            label="Changer statut"
+            :items="[
+              { title: 'Confirmée', value: 'confirmee' },
+              { title: 'Injoignable', value: 'injoignable' },
+              { title: 'Refusée', value: 'refusee' },
+              { title: 'Annulée', value: 'annulee' }
+            ]"
+            style="min-width: 150px"
+            @update:model-value="bulkChangeStatus"
+          />
+
+          <VBtn
+            color="error"
+            variant="outlined"
+            @click="selectedOrders = []; selectAll = false"
+          >
+            <VIcon icon="tabler-x" />
+          </VBtn>
+        </div>
+      </VCardText>
+    </VCard>
+
     <!-- Data Table -->
     <VCard>
       <VDataTableServer
@@ -272,6 +401,22 @@ onMounted(() => {
         @update:page="handlePageChange"
         @update:sort-by="handleSort"
       >
+        <!-- Header Select All -->
+        <template #header.select>
+          <VCheckbox
+            v-model="selectAll"
+            @update:model-value="toggleSelectAll"
+          />
+        </template>
+
+        <!-- Select Column -->
+        <template #item.select="{ item }">
+          <VCheckbox
+            :model-value="selectedOrders.includes(item.id)"
+            @update:model-value="toggleOrderSelection(item.id)"
+          />
+        </template>
+
         <!-- Client Column -->
         <template #item.client="{ item }">
           <div>
@@ -314,6 +459,19 @@ onMounted(() => {
           </div>
         </template>
 
+        <!-- No Answer Count Column -->
+        <template #item.no_answer_count="{ item }">
+          <VBadge
+            v-if="item.no_answer_count > 0"
+            :content="item.no_answer_count"
+            color="warning"
+            inline
+          >
+            <VIcon icon="tabler-phone-off" size="20" />
+          </VBadge>
+          <span v-else class="text-medium-emphasis">0</span>
+        </template>
+
         <!-- Status Column -->
         <template #item.statut="{ item }">
           <VChip
@@ -334,7 +492,8 @@ onMounted(() => {
 
         <!-- Actions Column -->
         <template #item.actions="{ item }">
-          <div class="d-flex gap-2">
+          <div class="d-flex gap-1">
+            <!-- View Details -->
             <VBtn
               size="small"
               color="primary"
@@ -342,22 +501,70 @@ onMounted(() => {
               icon="tabler-eye"
               @click="viewPreorder(item)"
             />
-            <VBtn
-              v-if="!item.shipping_parcel"
-              size="small"
-              color="success"
-              variant="text"
-              icon="tabler-truck"
-              @click="sendToOzonExpress(item)"
-            />
-            <VBtn
-              v-else
-              size="small"
-              color="info"
-              variant="text"
-              icon="tabler-package"
-              @click="router.push({ name: 'admin-orders-shipping-id', params: { id: item.id } })"
-            />
+
+            <!-- Quick Status Actions -->
+            <VMenu>
+              <template #activator="{ props }">
+                <VBtn
+                  size="small"
+                  color="secondary"
+                  variant="text"
+                  icon="tabler-dots-vertical"
+                  v-bind="props"
+                />
+              </template>
+
+              <VList>
+                <VListItem
+                  v-if="item.statut === 'en_attente'"
+                  @click="quickChangeStatus(item.id, 'confirmee')"
+                >
+                  <VListItemTitle>
+                    <VIcon start icon="tabler-check" color="success" />
+                    Confirmée
+                  </VListItemTitle>
+                </VListItem>
+
+                <VListItem
+                  @click="quickChangeStatus(item.id, 'injoignable')"
+                >
+                  <VListItemTitle>
+                    <VIcon start icon="tabler-phone-off" color="warning" />
+                    Injoignable (+1)
+                  </VListItemTitle>
+                </VListItem>
+
+                <VListItem
+                  @click="quickChangeStatus(item.id, 'refusee')"
+                >
+                  <VListItemTitle>
+                    <VIcon start icon="tabler-x" color="error" />
+                    Refusée
+                  </VListItemTitle>
+                </VListItem>
+
+                <VListItem
+                  @click="quickChangeStatus(item.id, 'annulee')"
+                >
+                  <VListItemTitle>
+                    <VIcon start icon="tabler-ban" color="error" />
+                    Annulée
+                  </VListItemTitle>
+                </VListItem>
+
+                <VDivider v-if="item.statut === 'confirmee' && !item.shipping_parcel" />
+
+                <VListItem
+                  v-if="item.statut === 'confirmee' && !item.shipping_parcel"
+                  @click="quickSendToShipping(item.id)"
+                >
+                  <VListItemTitle>
+                    <VIcon start icon="tabler-truck" color="info" />
+                    Envoyer OzonExpress
+                  </VListItemTitle>
+                </VListItem>
+              </VList>
+            </VMenu>
           </div>
         </template>
 

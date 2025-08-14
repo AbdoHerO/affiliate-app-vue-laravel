@@ -218,6 +218,15 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::put('preorders/{id}', [PreordersController::class, 'update']);
         Route::post('preorders/{id}/confirm', [PreordersController::class, 'confirm']);
 
+        // Bulk actions for pre-orders
+        Route::post('preorders/bulk/status', [PreordersController::class, 'bulkChangeStatus']);
+        Route::post('preorders/bulk/send-to-shipping', [PreordersController::class, 'bulkSendToShipping']);
+
+        // Single order actions
+        Route::post('preorders/{id}/status', [PreordersController::class, 'changeStatus']);
+        Route::post('preorders/{id}/no-answer', [PreordersController::class, 'incrementNoAnswer']);
+        Route::post('preorders/{id}/send-to-shipping', [PreordersController::class, 'sendToShipping']);
+
         // OzonExpress Shipping Integration
         Route::post('shipping/ozon/parcels', [OzonExpressController::class, 'addParcel']);
         Route::post('shipping/ozon/tracking', [OzonExpressController::class, 'tracking']);

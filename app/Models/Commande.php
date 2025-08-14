@@ -37,6 +37,7 @@ class Commande extends Model
         'total_ttc',
         'devise',
         'notes',
+        'no_answer_count',
     ];
 
     /**
@@ -47,6 +48,7 @@ class Commande extends Model
     protected $casts = [
         'total_ht' => 'decimal:2',
         'total_ttc' => 'decimal:2',
+        'no_answer_count' => 'integer',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
