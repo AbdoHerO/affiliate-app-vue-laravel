@@ -69,20 +69,26 @@ const debouncedFetch = () => {
 }
 
 const handleSearch = () => {
-  shippingStore.filters.value.page = 1
-  debouncedFetch()
+  shippingStore.fetchShippingOrders({
+    page: 1,
+    q: searchQuery.value || undefined,
+    status: selectedStatus.value || undefined,
+    from: dateFrom.value || undefined,
+    to: dateTo.value || undefined,
+    perPage: itemsPerPage.value,
+  })
 }
 
 const handlePageChange = (page: number) => {
-  shippingStore.filters.value.page = page
-  fetchShippingOrders()
+  shippingStore.fetchShippingOrders({ page })
 }
 
 const handleSort = (sortBy: any) => {
   if (sortBy.length > 0) {
-    shippingStore.filters.value.sort = sortBy[0].key
-    shippingStore.filters.value.dir = sortBy[0].order
-    fetchShippingOrders()
+    shippingStore.fetchShippingOrders({
+      sort: sortBy[0].key,
+      dir: sortBy[0].order,
+    })
   }
 }
 

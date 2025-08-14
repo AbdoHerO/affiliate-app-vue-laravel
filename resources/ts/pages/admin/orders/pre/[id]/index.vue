@@ -10,7 +10,6 @@ definePage({
   meta: {
     requiresAuth: true,
     requiresRole: 'admin',
-    layout: 'default',
   },
 })
 
@@ -503,8 +502,8 @@ onMounted(() => {
 
                   <div class="mb-4">
                     <div class="text-body-2 text-medium-emphasis mb-1">Affilié</div>
-                    <div class="text-body-1">{{ preorder.affilie.utilisateur.nom_complet }}</div>
-                    <div class="text-caption text-medium-emphasis">{{ preorder.affilie.utilisateur.email }}</div>
+                    <div class="text-body-1">{{ preorder.affiliate?.nom_complet || 'N/A' }}</div>
+                    <div class="text-caption text-medium-emphasis">{{ preorder.affiliate?.email || 'N/A' }}</div>
                   </div>
 
                   <div class="mb-4">

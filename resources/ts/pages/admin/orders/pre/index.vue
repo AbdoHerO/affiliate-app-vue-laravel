@@ -73,20 +73,28 @@ const debouncedFetch = () => {
 }
 
 const handleSearch = () => {
-  preordersStore.filters.value.page = 1
-  debouncedFetch()
+  preordersStore.fetchPreorders({
+    page: 1,
+    q: searchQuery.value || undefined,
+    statut: selectedStatus.value || undefined,
+    affilie_id: selectedAffiliate.value || undefined,
+    boutique_id: selectedBoutique.value || undefined,
+    from: dateFrom.value || undefined,
+    to: dateTo.value || undefined,
+    perPage: itemsPerPage.value,
+  })
 }
 
 const handlePageChange = (page: number) => {
-  preordersStore.filters.value.page = page
-  fetchPreorders()
+  preordersStore.fetchPreorders({ page })
 }
 
 const handleSort = (sortBy: any) => {
   if (sortBy.length > 0) {
-    preordersStore.filters.value.sort = sortBy[0].key
-    preordersStore.filters.value.dir = sortBy[0].order
-    fetchPreorders()
+    preordersStore.fetchPreorders({
+      sort: sortBy[0].key,
+      dir: sortBy[0].order,
+    })
   }
 }
 
@@ -280,10 +288,10 @@ onMounted(() => {
         <template #item.affilie="{ item }">
           <div>
             <div class="font-weight-medium">
-              {{ item.affilie.utilisateur.nom_complet }}
+              {{ item.affiliate?.nom_complet || 'N/A' }}
             </div>
             <div class="text-caption text-medium-emphasis">
-              {{ item.affilie.utilisateur.email }}
+              {{ item.affiliate?.email || 'N/A' }}
             </div>
           </div>
         </template>

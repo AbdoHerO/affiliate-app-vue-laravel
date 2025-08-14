@@ -25,7 +25,7 @@ export interface PreorderArticle {
   total_ligne: number
   produit: {
     id: string
-    nom: string
+    titre: string
     images?: Array<{ url: string }>
   }
   variante?: {
@@ -54,12 +54,10 @@ export interface Preorder {
     id: string
     nom: string
   }
-  affilie: {
-    utilisateur: {
-      id: string
-      nom_complet: string
-      email: string
-    }
+  affiliate: {
+    id: string
+    nom_complet: string
+    email: string
   }
   client: {
     id: string
