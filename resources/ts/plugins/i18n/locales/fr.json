@@ -1118,5 +1118,8 @@
   "messages.user_permanently_deleted": "Utilisateur supprimé définitivement",
   "messages.user_restored_successfully": "Utilisateur restauré avec succès",
   "welcome_admin": "Bienvenue Administrateur",
-  "user_permissions": "Permissions Utilisateur"
+  "user_permissions": "Permissions Utilisateur",
+  "File d'Attente d'Approbation": "File d'Attente d'Approbation",
+  "Pré-commandes": "Pré-commandes",
+  "Expéditions": "Expéditions"
 }

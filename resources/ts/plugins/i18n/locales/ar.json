@@ -817,5 +817,8 @@
   // Latest missing keys
   "Catalogue de Variantes": "كتالوج المتغيرات",
   "welcome_admin": "مرحباً بالمدير",
-  "user_permissions": "صلاحيات المستخدم"
+  "user_permissions": "صلاحيات المستخدم",
+  "File d'Attente d'Approbation": "قائمة انتظار الموافقة",
+  "Pré-commandes": "الطلبات المسبقة",
+  "Expéditions": "الشحنات"
 }

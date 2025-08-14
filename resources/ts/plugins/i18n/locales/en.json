@@ -1235,5 +1235,8 @@
   // Latest missing keys
   "Catalogue de Variantes": "Variant Catalog",
   "welcome_admin": "Welcome Admin",
-  "user_permissions": "User Permissions"
+  "user_permissions": "User Permissions",
+  "File d'Attente d'Approbation": "Approval Queue",
+  "Pré-commandes": "Pre-orders",
+  "Expéditions": "Shipments"
 }
