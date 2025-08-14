@@ -259,8 +259,24 @@ export const usePreordersStore = defineStore('preorders', () => {
       })
 
       if (response.data.success) {
+        // Update local state with the results
+        const results = response.data.results || []
+        const successCount = results.filter((r: any) => r.success).length
+        const errorCount = results.filter((r: any) => !r.success).length
+
         // Refresh the list to get updated shipping status
         await fetchPreorders()
+
+        // Return enhanced response with summary
+        return {
+          ...response.data,
+          summary: {
+            total: ids.length,
+            success: successCount,
+            errors: errorCount,
+            results
+          }
+        }
       }
 
       return response.data

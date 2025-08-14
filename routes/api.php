@@ -25,6 +25,7 @@ use App\Http\Controllers\Admin\AffiliateApplicationsController;
 use App\Http\Controllers\Admin\UsersApprovalController;
 use App\Http\Controllers\Admin\VariantAttributController;
 use App\Http\Controllers\Admin\VariantValeurController;
+use App\Http\Controllers\Admin\TestController;
 use App\Http\Controllers\Public\ProduitController as PublicProduitController;
 use App\Http\Controllers\Public\AffiliateSignupController;
 use Illuminate\Http\Request;
@@ -257,6 +258,15 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('affiliate-applications/{id}/approve', [AffiliateApplicationsController::class, 'approve']);
         Route::post('affiliate-applications/{id}/refuse', [AffiliateApplicationsController::class, 'refuse']);
         Route::post('affiliate-applications/{id}/resend-verification', [AffiliateApplicationsController::class, 'resendVerification']);
+
+        // Testing & Debug Routes (only in non-production)
+        if (!app()->environment('production')) {
+            Route::prefix('test')->group(function () {
+                Route::get('ozonexpress', [TestController::class, 'testOzonExpress']);
+                Route::get('bulk-operations', [TestController::class, 'testBulkOperations']);
+                Route::get('system-status', [TestController::class, 'systemStatus']);
+            });
+        }
     });
 
     // Affiliate only routes

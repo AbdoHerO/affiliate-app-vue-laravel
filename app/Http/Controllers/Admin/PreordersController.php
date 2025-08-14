@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Commande;
+use App\Services\OzonExpressService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
@@ -268,25 +269,25 @@ class PreordersController extends Controller
         }
 
         $results = [];
-        $ozonController = new \App\Http\Controllers\Admin\OzonExpressController();
+        $ozonService = new OzonExpressService();
 
         foreach ($orders as $order) {
             try {
-                $parcelRequest = new Request(['commande_id' => $order->id]);
-                $response = $ozonController->addParcel($parcelRequest);
-                $responseData = $response->getData(true);
+                $response = $ozonService->addParcel($order);
 
-                if ($responseData['success']) {
+                if ($response['success']) {
                     $results[] = [
                         'order_id' => $order->id,
                         'success' => true,
-                        'tracking_number' => $responseData['data']['tracking_number'] ?? null
+                        'tracking_number' => $response['data']['tracking_number'] ?? null,
+                        'exists' => $response['exists'] ?? false,
+                        'mock' => $response['mock'] ?? false,
                     ];
                 } else {
                     $results[] = [
                         'order_id' => $order->id,
                         'success' => false,
-                        'error' => $responseData['message'] ?? 'Erreur inconnue'
+                        'error' => $response['message'] ?? 'Erreur inconnue'
                     ];
                 }
             } catch (\Exception $e) {
@@ -400,21 +401,19 @@ class PreordersController extends Controller
         }
 
         try {
-            $ozonController = new \App\Http\Controllers\Admin\OzonExpressController();
-            $request = new Request(['commande_id' => $order->id]);
-            $response = $ozonController->addParcel($request);
-            $responseData = $response->getData(true);
+            $ozonService = new OzonExpressService();
+            $response = $ozonService->addParcel($order);
 
-            if ($responseData['success']) {
+            if ($response['success']) {
                 return response()->json([
                     'success' => true,
                     'message' => 'Commande envoyée vers OzonExpress',
-                    'data' => $responseData['data']
+                    'data' => $response['data']
                 ]);
             } else {
                 return response()->json([
                     'success' => false,
-                    'message' => $responseData['message'] ?? 'Erreur lors de l\'envoi'
+                    'message' => $response['message'] ?? 'Erreur lors de l\'envoi'
                 ], 422);
             }
         } catch (\Exception $e) {

@@ -2,8 +2,9 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { usePreordersStore } from '@/stores/admin/preorders'
-import { useConfirmAction } from '@/composables/useConfirmAction'
+import { useQuickConfirm } from '@/composables/useConfirmAction'
 import { useNotifications } from '@/composables/useNotifications'
+import ConfirmActionDialog from '@/components/common/ConfirmActionDialog.vue'
 
 definePage({
   meta: {
@@ -15,7 +16,19 @@ definePage({
 const route = useRoute()
 const router = useRouter()
 const preordersStore = usePreordersStore()
-const { confirm } = useConfirmAction()
+const {
+  confirm,
+  isDialogVisible: isConfirmDialogVisible,
+  isLoading: isConfirmLoading,
+  dialogTitle,
+  dialogText,
+  dialogIcon,
+  dialogColor,
+  confirmButtonText,
+  cancelButtonText,
+  handleConfirm,
+  handleCancel
+} = useQuickConfirm()
 const { showSuccess, showError } = useNotifications()
 
 // Local state
@@ -122,14 +135,22 @@ const confirmOrder = async () => {
 }
 
 const sendToOzonExpress = async () => {
-  if (!preorder.value) return
+  console.log('sendToOzonExpress called')
+  console.log('preorder:', preorder.value)
+
+  if (!preorder.value) {
+    console.log('No preorder found')
+    return
+  }
 
   const confirmed = await confirm({
     title: 'Envoyer vers OzonExpress',
     text: 'Êtes-vous sûr de vouloir envoyer cette commande vers OzonExpress ?',
     confirmText: 'Envoyer',
-    color: 'primary',
+    cancelText: 'Annuler'
   })
+
+  console.log('User confirmed detail shipping:', confirmed)
 
   if (confirmed) {
     try {
@@ -574,5 +595,19 @@ onMounted(() => {
         Retour à la liste
       </VBtn>
     </div>
+
+    <!-- Confirm Dialog -->
+    <ConfirmActionDialog
+      :is-dialog-visible="isConfirmDialogVisible"
+      :is-loading="isConfirmLoading"
+      :dialog-title="dialogTitle"
+      :dialog-text="dialogText"
+      :dialog-icon="dialogIcon"
+      :dialog-color="dialogColor"
+      :confirm-button-text="confirmButtonText"
+      :cancel-button-text="cancelButtonText"
+      @confirm="handleConfirm"
+      @cancel="handleCancel"
+    />
   </div>
 </template>

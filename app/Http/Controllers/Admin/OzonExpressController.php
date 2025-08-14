@@ -101,7 +101,7 @@ class OzonExpressController extends Controller
             // Prepare products array
             $products = $commande->articles->map(function ($article) {
                 return [
-                    'ref' => $article->produit->reference ?? $article->produit->nom,
+                    'ref' => $article->produit->titre,
                     'qnty' => $article->quantite,
                 ];
             })->toArray();
@@ -109,7 +109,7 @@ class OzonExpressController extends Controller
             // Prepare form data for OzonExpress API
             $formData = [
                 'tracking-number' => $validated['tracking_number'] ?? '',
-                'parcel-receiver' => $commande->client->nom . ' ' . $commande->client->prenom,
+                'parcel-receiver' => $commande->client->nom_complet,
                 'parcel-phone' => $commande->client->telephone,
                 'parcel-city' => $commande->adresse->ville,
                 'parcel-address' => $commande->adresse->adresse,

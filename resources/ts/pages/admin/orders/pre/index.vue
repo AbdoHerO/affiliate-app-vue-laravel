@@ -2,8 +2,9 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { usePreordersStore } from '@/stores/admin/preorders'
-import { useConfirmAction } from '@/composables/useConfirmAction'
+import { useQuickConfirm } from '@/composables/useConfirmAction'
 import { useNotifications } from '@/composables/useNotifications'
+import ConfirmActionDialog from '@/components/common/ConfirmActionDialog.vue'
 
 definePage({
   meta: {
@@ -14,7 +15,19 @@ definePage({
 
 const router = useRouter()
 const preordersStore = usePreordersStore()
-const { confirm } = useConfirmAction()
+const {
+  confirm,
+  isDialogVisible: isConfirmDialogVisible,
+  isLoading: isConfirmLoading,
+  dialogTitle,
+  dialogText,
+  dialogIcon,
+  dialogColor,
+  confirmButtonText,
+  cancelButtonText,
+  handleConfirm,
+  handleCancel
+} = useQuickConfirm()
 const { showSuccess, showError } = useNotifications()
 
 // Local state
@@ -30,6 +43,7 @@ const itemsPerPage = ref(15)
 const selectedOrders = ref<string[]>([])
 const selectAll = ref(false)
 const bulkActionLoading = ref(false)
+const bulkStatusValue = ref('')
 
 // Computed
 const isLoading = computed(() => preordersStore.isLoading)
@@ -46,6 +60,7 @@ const headers = [
   { title: 'Total', key: 'total_ttc', sortable: true },
   { title: 'No Answer', key: 'no_answer_count', sortable: true, width: '100px' },
   { title: 'Statut', key: 'statut', sortable: true },
+  { title: 'Expédition', key: 'shipping', sortable: false, width: '120px' },
   { title: 'Date', key: 'created_at', sortable: true },
   { title: 'Actions', key: 'actions', sortable: false, width: '150px' },
 ]
@@ -167,6 +182,7 @@ const resetFilters = () => {
   dateTo.value = ''
   selectedOrders.value = []
   selectAll.value = false
+  bulkStatusValue.value = ''
   preordersStore.resetFilters()
   fetchPreorders()
 }
@@ -203,16 +219,23 @@ const bulkChangeStatus = async (status: string) => {
     cancelText: 'Annuler'
   })
 
-  if (!confirmed) return
+  if (!confirmed) {
+    // Reset dropdown value if user cancels
+    bulkStatusValue.value = ''
+    return
+  }
 
   bulkActionLoading.value = true
   try {
     const result = await preordersStore.bulkChangeStatus(selectedOrders.value, status)
-    showSuccess(result.message)
+    const statusText = getStatusText(status)
+    showSuccess(result.message || `${selectedOrders.value.length} commande(s) mise(s) à jour vers "${statusText}"`)
     selectedOrders.value = []
     selectAll.value = false
+    bulkStatusValue.value = '' // Reset dropdown after success
   } catch (error: any) {
     showError(error.message)
+    bulkStatusValue.value = '' // Reset dropdown on error
   } finally {
     bulkActionLoading.value = false
   }
@@ -233,9 +256,22 @@ const bulkSendToShipping = async () => {
   bulkActionLoading.value = true
   try {
     const result = await preordersStore.bulkSendToShipping(selectedOrders.value)
-    showSuccess(result.message)
+
+    // Show detailed feedback based on results
+    if (result.summary) {
+      const { total, success, errors } = result.summary
+      if (errors > 0) {
+        showError(`${success}/${total} commandes envoyées avec succès. ${errors} erreur(s).`)
+      } else {
+        showSuccess(`${success} commande(s) envoyée(s) vers OzonExpress avec succès.`)
+      }
+    } else {
+      showSuccess(result.message || 'Commandes envoyées vers OzonExpress')
+    }
+
     selectedOrders.value = []
     selectAll.value = false
+    bulkStatusValue.value = ''
   } catch (error: any) {
     showError(error.message)
   } finally {
@@ -392,14 +428,21 @@ onMounted(() => {
           </VBtn>
 
           <VSelect
+            v-model="bulkStatusValue"
             label="Changer statut"
+            placeholder="Sélectionner un statut"
             :items="[
               { title: 'Confirmée', value: 'confirmee' },
               { title: 'Injoignable', value: 'injoignable' },
               { title: 'Refusée', value: 'refusee' },
               { title: 'Annulée', value: 'annulee' }
             ]"
-            style="min-width: 150px"
+            style="min-width: 180px"
+            :loading="bulkActionLoading"
+            :disabled="bulkActionLoading"
+            clearable
+            variant="outlined"
+            density="compact"
             @update:model-value="(value) => value && bulkChangeStatus(value)"
           />
 
@@ -506,6 +549,20 @@ onMounted(() => {
           >
             {{ getStatusText(item.statut) }}
           </VChip>
+        </template>
+
+        <!-- Shipping Column -->
+        <template #item.shipping="{ item }">
+          <div v-if="item.shipping_parcel" class="d-flex align-center gap-1">
+            <VIcon icon="tabler-truck" color="success" size="16" />
+            <VTooltip activator="parent" location="top">
+              Tracking: {{ item.shipping_parcel.tracking_number }}
+            </VTooltip>
+            <span class="text-caption text-success">Expédié</span>
+          </div>
+          <div v-else class="text-caption text-medium-emphasis">
+            Non expédié
+          </div>
         </template>
 
         <!-- Date Column -->
@@ -616,5 +673,19 @@ onMounted(() => {
         </template>
       </VDataTableServer>
     </VCard>
+
+    <!-- Confirm Dialog -->
+    <ConfirmActionDialog
+      :is-dialog-visible="isConfirmDialogVisible"
+      :is-loading="isConfirmLoading"
+      :dialog-title="dialogTitle"
+      :dialog-text="dialogText"
+      :dialog-icon="dialogIcon"
+      :dialog-color="dialogColor"
+      :confirm-button-text="confirmButtonText"
+      :cancel-button-text="cancelButtonText"
+      @confirm="handleConfirm"
+      @cancel="handleCancel"
+    />
   </div>
 </template>
