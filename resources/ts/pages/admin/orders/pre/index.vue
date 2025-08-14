@@ -55,6 +55,9 @@ const statusOptions = [
   { title: 'Tous', value: '' },
   { title: 'En attente', value: 'en_attente' },
   { title: 'Confirmée', value: 'confirmee' },
+  { title: 'Injoignable', value: 'injoignable' },
+  { title: 'Refusée', value: 'refusee' },
+  { title: 'Annulée', value: 'annulee' },
 ]
 
 // Methods
@@ -110,6 +113,12 @@ const getStatusColor = (status: string) => {
       return 'warning'
     case 'confirmee':
       return 'success'
+    case 'injoignable':
+      return 'orange'
+    case 'refusee':
+      return 'error'
+    case 'annulee':
+      return 'secondary'
     default:
       return 'default'
   }
@@ -121,6 +130,12 @@ const getStatusText = (status: string) => {
       return 'En attente'
     case 'confirmee':
       return 'Confirmée'
+    case 'injoignable':
+      return 'Injoignable'
+    case 'refusee':
+      return 'Refusée'
+    case 'annulee':
+      return 'Annulée'
     default:
       return status
   }
@@ -232,6 +247,16 @@ const bulkSendToShipping = async () => {
 const quickChangeStatus = async (orderId: string, status: string) => {
   try {
     const result = await preordersStore.changeStatus(orderId, status)
+    showSuccess(result.message)
+  } catch (error: any) {
+    showError(error.message)
+  }
+}
+
+const quickInjoignable = async (orderId: string) => {
+  try {
+    // Call changeStatus with increment flag for injoignable
+    const result = await preordersStore.changeStatus(orderId, 'injoignable', undefined, true)
     showSuccess(result.message)
   } catch (error: any) {
     showError(error.message)
@@ -375,7 +400,7 @@ onMounted(() => {
               { title: 'Annulée', value: 'annulee' }
             ]"
             style="min-width: 150px"
-            @update:model-value="bulkChangeStatus"
+            @update:model-value="(value) => value && bulkChangeStatus(value)"
           />
 
           <VBtn
@@ -502,8 +527,8 @@ onMounted(() => {
               @click="viewPreorder(item)"
             />
 
-            <!-- Quick Status Actions -->
-            <VMenu>
+            <!-- Quick Status Actions (only if not shipped) -->
+            <VMenu v-if="!item.shipping_parcel">
               <template #activator="{ props }">
                 <VBtn
                   size="small"
@@ -515,18 +540,20 @@ onMounted(() => {
               </template>
 
               <VList>
+                <!-- Always show Confirmée (unless already confirmed) -->
                 <VListItem
-                  v-if="item.statut === 'en_attente'"
+                  v-if="item.statut !== 'confirmee'"
                   @click="quickChangeStatus(item.id, 'confirmee')"
                 >
                   <VListItemTitle>
                     <VIcon start icon="tabler-check" color="success" />
-                    Confirmée
+                    Confirmer
                   </VListItemTitle>
                 </VListItem>
 
+                <!-- Always show Injoignable (can increment multiple times) -->
                 <VListItem
-                  @click="quickChangeStatus(item.id, 'injoignable')"
+                  @click="quickInjoignable(item.id)"
                 >
                   <VListItemTitle>
                     <VIcon start icon="tabler-phone-off" color="warning" />
@@ -534,21 +561,25 @@ onMounted(() => {
                   </VListItemTitle>
                 </VListItem>
 
+                <!-- Always show Refusée (unless already refused) -->
                 <VListItem
+                  v-if="item.statut !== 'refusee'"
                   @click="quickChangeStatus(item.id, 'refusee')"
                 >
                   <VListItemTitle>
                     <VIcon start icon="tabler-x" color="error" />
-                    Refusée
+                    Refuser
                   </VListItemTitle>
                 </VListItem>
 
+                <!-- Always show Annulée (unless already cancelled) -->
                 <VListItem
+                  v-if="item.statut !== 'annulee'"
                   @click="quickChangeStatus(item.id, 'annulee')"
                 >
                   <VListItemTitle>
                     <VIcon start icon="tabler-ban" color="error" />
-                    Annulée
+                    Annuler
                   </VListItemTitle>
                 </VListItem>
 

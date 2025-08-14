@@ -271,11 +271,12 @@ export const usePreordersStore = defineStore('preorders', () => {
     }
   }
 
-  const changeStatus = async (id: string, to: string, note?: string) => {
+  const changeStatus = async (id: string, to: string, note?: string, increment?: boolean) => {
     try {
       const response = await axios.post(`/api/admin/preorders/${id}/status`, {
         to,
-        note
+        note,
+        increment
       })
 
       if (response.data.success) {

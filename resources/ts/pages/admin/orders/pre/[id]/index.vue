@@ -50,13 +50,18 @@ const confirmationOptions = [
 
 // Methods
 const fetchPreorder = async () => {
-  await preordersStore.fetchPreorder(orderId.value)
-  if (preorder.value) {
-    formData.value = {
-      statut: preorder.value.statut,
-      confirmation_cc: preorder.value.confirmation_cc,
-      notes: preorder.value.notes || '',
+  try {
+    await preordersStore.fetchPreorder(orderId.value)
+    if (preorder.value) {
+      formData.value = {
+        statut: preorder.value.statut,
+        confirmation_cc: preorder.value.confirmation_cc,
+        notes: preorder.value.notes || '',
+      }
     }
+  } catch (error: any) {
+    showError(error.message || 'Erreur lors du chargement de la commande')
+    router.push({ name: 'admin-orders-pre-index' })
   }
 }
 
@@ -80,6 +85,9 @@ const saveChanges = async () => {
     await preordersStore.updatePreorder(preorder.value.id, formData.value)
     showSuccess('Commande mise à jour avec succès')
     isEditing.value = false
+
+    // Re-fetch the order to get updated data
+    await fetchPreorder()
 
     // Stay on detail page after save
     router.replace({
@@ -238,9 +246,9 @@ onMounted(() => {
           />
           <div>
             <h1 class="text-h4 font-weight-bold mb-1">
-              Commande {{ preorder.id.slice(0, 8) }}
+              Commande {{ preorder?.id?.slice(0, 8) || 'Chargement...' }}
             </h1>
-            <div class="d-flex align-center gap-2">
+            <div v-if="preorder" class="d-flex align-center gap-2">
               <VChip
                 size="small"
                 :color="getStatusColor(preorder.statut)"
@@ -291,7 +299,7 @@ onMounted(() => {
           </template>
 
           <VBtn
-            v-if="preorder.statut === 'en_attente' && !isEditing"
+            v-if="preorder?.statut === 'en_attente' && !isEditing"
             color="success"
             variant="outlined"
             @click="confirmOrder"
@@ -301,7 +309,7 @@ onMounted(() => {
           </VBtn>
 
           <VBtn
-            v-if="!preorder.shipping_parcel && !isEditing"
+            v-if="preorder && !preorder.shipping_parcel && !isEditing"
             color="primary"
             variant="elevated"
             @click="sendToOzonExpress"
@@ -311,7 +319,7 @@ onMounted(() => {
           </VBtn>
 
           <VBtn
-            v-if="preorder.shipping_parcel"
+            v-if="preorder?.shipping_parcel"
             color="info"
             variant="outlined"
             @click="router.push({ name: 'admin-orders-shipping-id', params: { id: preorder.id } })"
@@ -352,11 +360,11 @@ onMounted(() => {
                 <VCardText>
                   <div class="mb-4">
                     <div class="text-body-2 text-medium-emphasis mb-1">Nom complet</div>
-                    <div class="text-h6">{{ preorder.client.nom_complet }}</div>
+                    <div class="text-h6">{{ preorder?.client?.nom_complet || '-' }}</div>
                   </div>
                   <div class="mb-4">
                     <div class="text-body-2 text-medium-emphasis mb-1">Téléphone</div>
-                    <div class="text-body-1">{{ preorder.client.telephone }}</div>
+                    <div class="text-body-1">{{ preorder?.client?.telephone || '-' }}</div>
                   </div>
                 </VCardText>
               </VCard>
@@ -367,11 +375,11 @@ onMounted(() => {
                 <VCardText>
                   <div class="mb-4">
                     <div class="text-body-2 text-medium-emphasis mb-1">Ville</div>
-                    <div class="text-h6">{{ preorder.adresse.ville }}</div>
+                    <div class="text-h6">{{ preorder?.adresse?.ville || '-' }}</div>
                   </div>
                   <div class="mb-4">
                     <div class="text-body-2 text-medium-emphasis mb-1">Adresse complète</div>
-                    <div class="text-body-1">{{ preorder.adresse.adresse }}</div>
+                    <div class="text-body-1">{{ preorder?.adresse?.adresse || '-' }}</div>
                   </div>
                 </VCardText>
               </VCard>
@@ -392,7 +400,7 @@ onMounted(() => {
                   { title: 'Prix unitaire', key: 'prix_unitaire' },
                   { title: 'Total', key: 'total_ligne' },
                 ]"
-                :items="preorder.articles"
+                :items="preorder?.articles || []"
                 :items-per-page="-1"
               >
                 <template #item.produit="{ item }">
@@ -425,7 +433,7 @@ onMounted(() => {
                     color="info"
                     variant="tonal"
                   >
-                    {{ item.variante.nom }}
+                    {{ item.variante?.nom || '-' }}
                   </VChip>
                   <span v-else class="text-medium-emphasis">-</span>
                 </template>
@@ -463,10 +471,10 @@ onMounted(() => {
                       <div v-else class="mb-4">
                         <div class="text-body-2 text-medium-emphasis mb-1">Statut</div>
                         <VChip
-                          :color="getStatusColor(preorder.statut)"
+                          :color="getStatusColor(preorder?.statut || '')"
                           variant="tonal"
                         >
-                          {{ getStatusText(preorder.statut) }}
+                          {{ getStatusText(preorder?.statut || '') }}
                         </VChip>
                       </div>
                     </VCol>
@@ -481,10 +489,10 @@ onMounted(() => {
                       <div v-else class="mb-4">
                         <div class="text-body-2 text-medium-emphasis mb-1">Confirmation CC</div>
                         <VChip
-                          :color="getConfirmationColor(preorder.confirmation_cc)"
+                          :color="getConfirmationColor(preorder?.confirmation_cc || '')"
                           variant="tonal"
                         >
-                          {{ getConfirmationText(preorder.confirmation_cc) }}
+                          {{ getConfirmationText(preorder?.confirmation_cc || '') }}
                         </VChip>
                       </div>
                     </VCol>
@@ -499,7 +507,7 @@ onMounted(() => {
                   />
                   <div v-else class="mb-4">
                     <div class="text-body-2 text-medium-emphasis mb-1">Notes</div>
-                    <div class="text-body-1">{{ preorder.notes || 'Aucune note' }}</div>
+                    <div class="text-body-1">{{ preorder?.notes || 'Aucune note' }}</div>
                   </div>
 
                   <VDivider class="my-4" />
@@ -512,12 +520,12 @@ onMounted(() => {
 
                   <div class="mb-4">
                     <div class="text-body-2 text-medium-emphasis mb-1">Boutique</div>
-                    <VChip color="info" variant="tonal">{{ preorder.boutique.nom }}</VChip>
+                    <VChip color="info" variant="tonal">{{ preorder?.boutique?.nom || '-' }}</VChip>
                   </div>
 
                   <div class="mb-4">
                     <div class="text-body-2 text-medium-emphasis mb-1">Date de création</div>
-                    <div class="text-body-1">{{ formatDate(preorder.created_at) }}</div>
+                    <div class="text-body-1">{{ preorder?.created_at ? formatDate(preorder.created_at) : '-' }}</div>
                   </div>
                 </VCardText>
               </VCard>
@@ -528,15 +536,15 @@ onMounted(() => {
                 <VCardText>
                   <div class="d-flex justify-space-between mb-2">
                     <span>Total HT:</span>
-                    <span>{{ formatCurrency(preorder.total_ht) }}</span>
+                    <span>{{ preorder?.total_ht ? formatCurrency(preorder.total_ht) : '-' }}</span>
                   </div>
                   <VDivider class="my-2" />
                   <div class="d-flex justify-space-between font-weight-bold text-h6">
                     <span>Total TTC:</span>
-                    <span>{{ formatCurrency(preorder.total_ttc) }}</span>
+                    <span>{{ preorder?.total_ttc ? formatCurrency(preorder.total_ttc) : '-' }}</span>
                   </div>
                   <div class="text-caption text-medium-emphasis mt-2">
-                    Mode de paiement: {{ preorder.mode_paiement.toUpperCase() }}
+                    Mode de paiement: {{ preorder?.mode_paiement?.toUpperCase() || '-' }}
                   </div>
                 </VCardText>
               </VCard>

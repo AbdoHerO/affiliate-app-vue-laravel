@@ -28,7 +28,7 @@ class PreordersController extends Controller
             'confirmation_cc', 'mode_paiement', 'total_ht', 'total_ttc', 'devise',
             'notes', 'no_answer_count', 'created_at', 'updated_at'
         ])
-        ->whereIn('statut', ['en_attente', 'confirmee'])
+        ->whereIn('statut', ['en_attente', 'confirmee', 'injoignable', 'refusee', 'annulee'])
         ->whereDoesntHave('shippingParcel');
 
         // Apply filters
@@ -200,22 +200,21 @@ class PreordersController extends Controller
         $status = $request->input('to');
         $note = $request->input('note');
 
-        // Validate that all orders can be transitioned
+        // Get orders and validate they can be transitioned (not shipped)
         $orders = Commande::whereIn('id', $ids)
-            ->whereIn('statut', ['en_attente', 'confirmee'])
+            ->whereDoesntHave('shippingParcel')
             ->get();
 
         if ($orders->count() !== count($ids)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Certaines commandes ne peuvent pas être modifiées'
+                'message' => 'Certaines commandes ont déjà été expédiées et ne peuvent pas être modifiées'
             ], 422);
         }
 
         // Update orders
         $updated = [];
         foreach ($orders as $order) {
-            $oldStatus = $order->statut;
             $order->statut = $status;
 
             if ($note) {
@@ -316,34 +315,39 @@ class PreordersController extends Controller
     {
         $request->validate([
             'to' => 'required|in:confirmee,injoignable,refusee,annulee',
-            'note' => 'nullable|string|max:500'
+            'note' => 'nullable|string|max:500',
+            'increment' => 'nullable|boolean'
         ]);
 
         $order = Commande::findOrFail($id);
 
-        // Validate transition
-        if (!in_array($order->statut, ['en_attente', 'confirmee'])) {
+        // Allow transitions from any status except shipped orders
+        if ($order->shippingParcel) {
             return response()->json([
                 'success' => false,
-                'message' => 'Cette commande ne peut pas être modifiée'
+                'message' => 'Cette commande a déjà été expédiée et ne peut plus être modifiée'
             ], 422);
         }
 
         $status = $request->input('to');
         $note = $request->input('note');
+        $increment = $request->input('increment', false);
 
-        $order->statut = $status;
+        // Use transaction for data integrity
+        DB::transaction(function () use ($order, $status, $note, $increment) {
+            $order->statut = $status;
 
-        if ($note) {
-            $order->notes = $order->notes ? $order->notes . "\n" . $note : $note;
-        }
+            if ($note) {
+                $order->notes = $order->notes ? $order->notes . "\n" . $note : $note;
+            }
 
-        // Increment no_answer_count for injoignable status
-        if ($status === 'injoignable') {
-            $order->no_answer_count = ($order->no_answer_count ?? 0) + 1;
-        }
+            // Increment no_answer_count for injoignable status or when explicitly requested
+            if ($status === 'injoignable' || $increment) {
+                $order->no_answer_count = ($order->no_answer_count ?? 0) + 1;
+            }
 
-        $order->save();
+            $order->save();
+        });
 
         return response()->json([
             'success' => true,
