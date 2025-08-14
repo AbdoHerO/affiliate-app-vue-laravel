@@ -158,7 +158,7 @@ const navigateTo = (routeName: string) => {
               color="warning"
               variant="elevated"
               :disabled="!hasPermission('manage orders')"
-              @click="navigateTo('admin-orders')"
+              @click="navigateTo('admin-orders-pre')"
             >
               <VIcon start icon="tabler-shopping-cart" />
               {{ $t('order_management') }}

@@ -19,7 +19,7 @@ definePage({
   },
 })
 
-const { login, isLoading, error } = useAuth()
+const { login, isLoading } = useAuth()
 const { t } = useI18n()
 
 const form = ref({

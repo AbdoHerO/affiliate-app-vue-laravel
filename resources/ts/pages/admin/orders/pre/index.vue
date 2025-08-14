@@ -10,7 +10,6 @@ definePage({
   meta: {
     requiresAuth: true,
     requiresRole: 'admin',
-    layout: 'default',
   },
 })
 
@@ -74,19 +73,19 @@ const debouncedFetch = () => {
 }
 
 const handleSearch = () => {
-  preordersStore.filters.page = 1
+  preordersStore.filters.value.page = 1
   debouncedFetch()
 }
 
 const handlePageChange = (page: number) => {
-  preordersStore.filters.page = page
+  preordersStore.filters.value.page = page
   fetchPreorders()
 }
 
 const handleSort = (sortBy: any) => {
   if (sortBy.length > 0) {
-    preordersStore.filters.sort = sortBy[0].key
-    preordersStore.filters.dir = sortBy[0].order
+    preordersStore.filters.value.sort = sortBy[0].key
+    preordersStore.filters.value.dir = sortBy[0].order
     fetchPreorders()
   }
 }

@@ -26,6 +26,46 @@ class OzonExpressController extends Controller
     }
 
     /**
+     * Check if OzonExpress is enabled
+     */
+    private function isOzonExpressEnabled(): bool
+    {
+        return config('services.ozonexpress.enabled', true);
+    }
+
+    /**
+     * Create a mock parcel for testing when OzonExpress is disabled
+     */
+    private function createMockParcel(Commande $commande, ?string $trackingNumber = null): JsonResponse
+    {
+        $mockTrackingNumber = $trackingNumber ?: 'MOCK' . strtoupper(\Illuminate\Support\Str::random(8)) . rand(1000, 9999);
+
+        $parcel = ShippingParcel::create([
+            'commande_id' => $commande->id,
+            'provider' => 'ozonexpress',
+            'tracking_number' => $mockTrackingNumber,
+            'status' => 'pending',
+            'city_name' => $commande->adresse->ville,
+            'receiver' => $commande->client->nom_complet,
+            'phone' => $commande->client->telephone,
+            'address' => $commande->adresse->adresse,
+            'price' => 35.00, // Mock delivery price
+            'note' => 'Mock parcel created for testing (OzonExpress disabled)',
+            'last_synced_at' => now(),
+            'meta' => [
+                'mock_data' => true,
+                'created_at' => now()->toISOString(),
+            ],
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Mock parcel created successfully (OzonExpress disabled)',
+            'data' => $parcel,
+        ]);
+    }
+
+    /**
      * Create a parcel at OzonExpress from a commande.
      */
     public function addParcel(Request $request): JsonResponse
@@ -50,6 +90,11 @@ class OzonExpressController extends Controller
                 'message' => 'Parcel already exists',
                 'data' => $commande->shippingParcel,
             ]);
+        }
+
+        // If OzonExpress is disabled, create mock parcel for testing
+        if (!$this->isOzonExpressEnabled()) {
+            return $this->createMockParcel($commande, $validated['tracking_number'] ?? null);
         }
 
         try {

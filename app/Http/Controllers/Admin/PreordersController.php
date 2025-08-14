@@ -20,7 +20,7 @@ class PreordersController extends Controller
             'affiliate:id,nom_complet,email', // Changed from affilie.utilisateur to affiliate
             'client:id,nom_complet,telephone',
             'adresse:id,ville,adresse',
-            'articles.produit:id,nom',
+            'articles.produit:id,titre',
             'articles.variante:id,nom'
         ])
         ->whereIn('statut', ['en_attente', 'confirmee'])

@@ -9,7 +9,6 @@ definePage({
   meta: {
     requiresAuth: true,
     requiresRole: 'admin',
-    layout: 'default',
   },
 })
 

@@ -9,7 +9,6 @@ definePage({
   meta: {
     requiresAuth: true,
     requiresRole: 'admin',
-    layout: 'default',
   },
 })
 
@@ -70,19 +69,19 @@ const debouncedFetch = () => {
 }
 
 const handleSearch = () => {
-  shippingStore.filters.page = 1
+  shippingStore.filters.value.page = 1
   debouncedFetch()
 }
 
 const handlePageChange = (page: number) => {
-  shippingStore.filters.page = page
+  shippingStore.filters.value.page = page
   fetchShippingOrders()
 }
 
 const handleSort = (sortBy: any) => {
   if (sortBy.length > 0) {
-    shippingStore.filters.sort = sortBy[0].key
-    shippingStore.filters.dir = sortBy[0].order
+    shippingStore.filters.value.sort = sortBy[0].key
+    shippingStore.filters.value.dir = sortBy[0].order
     fetchShippingOrders()
   }
 }

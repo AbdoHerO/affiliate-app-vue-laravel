@@ -31,7 +31,6 @@ declare module 'vue-router/auto-routes' {
     'admin-dashboard-simple': RouteRecordInfo<'admin-dashboard-simple', '/admin/dashboard-simple', Record<never, never>, Record<never, never>>,
     'admin-kyc-documents': RouteRecordInfo<'admin-kyc-documents', '/admin/kyc-documents', Record<never, never>, Record<never, never>>,
     'admin-order-conflicts': RouteRecordInfo<'admin-order-conflicts', '/admin/order-conflicts', Record<never, never>, Record<never, never>>,
-    'admin-orders': RouteRecordInfo<'admin-orders', '/admin/orders', Record<never, never>, Record<never, never>>,
     'admin-orders-pre': RouteRecordInfo<'admin-orders-pre', '/admin/orders/pre', Record<never, never>, Record<never, never>>,
     'admin-orders-pre-id': RouteRecordInfo<'admin-orders-pre-id', '/admin/orders/pre/:id', { id: ParamValue<true> }, { id: ParamValue<false> }>,
     'admin-orders-shipping': RouteRecordInfo<'admin-orders-shipping', '/admin/orders/shipping', Record<never, never>, Record<never, never>>,

@@ -36,6 +36,7 @@ return [
     ],
 
     'ozonexpress' => [
+        'enabled' => env('OZONEXPRESS_ENABLED', true),
         'id' => env('OZONEXPRESS_ID'),
         'key' => env('OZONEXPRESS_KEY'),
         'base_url' => env('OZONEXPRESS_BASE_URL', 'https://api.ozonexpress.ma'),
