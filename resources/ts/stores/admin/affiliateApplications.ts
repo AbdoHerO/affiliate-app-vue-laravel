@@ -22,6 +22,8 @@ export interface AffiliateApplication {
   adresse?: string
   ville?: string
   pays?: string
+  rib?: string
+  bank_type?: string
   notes?: string
   approval_status: string
   refusal_reason?: string

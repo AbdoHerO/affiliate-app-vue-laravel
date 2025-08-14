@@ -34,6 +34,8 @@ class AffiliateSignupController extends Controller
             'adresse' => 'required|string|max:500',
             'ville' => 'required|string|max:100',
             'pays' => 'required|string|max:100',
+            'rib' => 'required|string|max:34',
+            'bank_type' => 'required|string|max:50',
             'notes' => 'nullable|string|max:1000',
             'accept_terms' => 'required|accepted',
         ], [
@@ -49,6 +51,10 @@ class AffiliateSignupController extends Controller
             'adresse.required' => 'L\'adresse est requise.',
             'ville.required' => 'La ville est requise.',
             'pays.required' => 'Le pays est requis.',
+            'rib.required' => 'Le RIB est requis.',
+            'rib.max' => 'Le RIB ne peut pas dépasser 34 caractères.',
+            'bank_type.required' => 'Le type de banque est requis.',
+            'bank_type.max' => 'Le type de banque ne peut pas dépasser 50 caractères.',
             'accept_terms.required' => 'Vous devez accepter les conditions d\'utilisation.',
         ]);
 
@@ -70,6 +76,8 @@ class AffiliateSignupController extends Controller
                 'ville' => $request->ville,
                 'pays' => $request->pays,
                 'mot_de_passe_hash' => Hash::make($request->password),
+                'rib' => $request->rib,
+                'bank_type' => $request->bank_type,
                 'notes' => $request->notes,
                 'approval_status' => 'pending_approval',
                 'email_verified_at' => null,

@@ -40,6 +40,8 @@ class User extends Authenticatable implements MustVerifyEmail
         'kyc_statut',
         'approval_status',
         'refusal_reason',
+        'rib',
+        'bank_type',
     ];
 
     /**

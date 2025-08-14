@@ -118,6 +118,8 @@ const userForm = ref({
   role: '',
   statut: 'actif' as User['statut'],
   kyc_statut: 'non_requis' as User['kyc_statut'],
+  rib: '',
+  bank_type: '',
 })
 
 // Form errors handling
@@ -220,6 +222,8 @@ const createUser = async () => {
         role: userForm.value.role,
         statut: userForm.value.statut,
         kyc_statut: userForm.value.kyc_statut,
+        rib: userForm.value.rib,
+        bank_type: userForm.value.bank_type,
       }),
       headers: { 'Content-Type': 'application/json' },
     })
@@ -263,6 +267,8 @@ const updateUser = async () => {
       role: userForm.value.role,
       statut: userForm.value.statut,
       kyc_statut: userForm.value.kyc_statut,
+      rib: userForm.value.rib,
+      bank_type: userForm.value.bank_type,
     }
     if (userForm.value.password) payload.password = userForm.value.password
 
@@ -370,6 +376,8 @@ const resetForm = () => {
     role: '',
     statut: 'actif',
     kyc_statut: 'non_requis',
+    rib: '',
+    bank_type: '',
   }
   selectedUser.value = null
 }
@@ -386,6 +394,8 @@ const openEditDialog = (user: User) => {
     role: user.roles[0] || '',
     statut: user.statut,
     kyc_statut: user.kyc_statut,
+    rib: user.rib || '',
+    bank_type: user.bank_type || '',
   }
   showEditDialog.value = true
 }
@@ -595,6 +605,40 @@ watch(
             <VTextField v-model="userForm.password" :label="t('password')" :placeholder="t('enter_password')" :error-messages="userErrors.password" type="password" required class="mb-4" />
             <VTextField v-model="userForm.telephone" :label="t('phone')" :placeholder="t('enter_phone')" :error-messages="userErrors.telephone" class="mb-4" />
             <VTextarea v-model="userForm.adresse" :label="t('address')" :placeholder="t('enter_address')" :error-messages="userErrors.adresse" rows="3" class="mb-4" />
+
+            <!-- Bank Information -->
+            <VRow class="mb-4">
+              <VCol cols="12" md="6">
+                <VSelect
+                  v-model="userForm.bank_type"
+                  :label="'Type de banque'"
+                  :placeholder="'Sélectionner une banque'"
+                  :error-messages="userErrors.bank_type"
+                  :items="[
+                    'Attijariwafa Bank',
+                    'Banque Populaire',
+                    'BMCE Bank',
+                    'BMCI',
+                    'CIH Bank',
+                    'Crédit Agricole',
+                    'Crédit du Maroc',
+                    'Société Générale',
+                    'Autre'
+                  ]"
+                  clearable
+                />
+              </VCol>
+              <VCol cols="12" md="6">
+                <VTextField
+                  v-model="userForm.rib"
+                  :label="'RIB'"
+                  :placeholder="'Entrer le RIB'"
+                  :error-messages="userErrors.rib"
+                  style="font-family: monospace;"
+                />
+              </VCol>
+            </VRow>
+
             <ProfileImageUpload
               v-model="userForm.photo_profil"
               :label="t('profile_image')"
@@ -624,6 +668,40 @@ watch(
             <VTextField v-model="userForm.email" :label="t('email')" :placeholder="t('enter_email')" :error-messages="userErrors.email" type="email" required class="mb-4" />
             <VTextField v-model="userForm.telephone" :label="t('phone')" :placeholder="t('enter_phone')" :error-messages="userErrors.telephone" class="mb-4" />
             <VTextarea v-model="userForm.adresse" :label="t('address')" :placeholder="t('enter_address')" :error-messages="userErrors.adresse" rows="3" class="mb-4" />
+
+            <!-- Bank Information -->
+            <VRow class="mb-4">
+              <VCol cols="12" md="6">
+                <VSelect
+                  v-model="userForm.bank_type"
+                  :label="'Type de banque'"
+                  :placeholder="'Sélectionner une banque'"
+                  :error-messages="userErrors.bank_type"
+                  :items="[
+                    'Attijariwafa Bank',
+                    'Banque Populaire',
+                    'BMCE Bank',
+                    'BMCI',
+                    'CIH Bank',
+                    'Crédit Agricole',
+                    'Crédit du Maroc',
+                    'Société Générale',
+                    'Autre'
+                  ]"
+                  clearable
+                />
+              </VCol>
+              <VCol cols="12" md="6">
+                <VTextField
+                  v-model="userForm.rib"
+                  :label="'RIB'"
+                  :placeholder="'Entrer le RIB'"
+                  :error-messages="userErrors.rib"
+                  style="font-family: monospace;"
+                />
+              </VCol>
+            </VRow>
+
             <ProfileImageUpload
               v-model="userForm.photo_profil"
               :label="t('profile_image')"

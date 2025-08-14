@@ -11,6 +11,8 @@ interface SignupData {
   adresse: string
   ville: string
   pays: string
+  rib: string
+  bank_type: string
   notes?: string
   accept_terms: boolean
 }

@@ -8,6 +8,8 @@ export interface User {
   statut: 'actif' | 'inactif' | 'bloque'
   email_verifie: boolean
   kyc_statut: 'non_requis' | 'en_attente' | 'valide' | 'refuse'
+  rib?: string
+  bank_type?: string
   roles: string[]
   permissions: string[]
   remember_token?: string

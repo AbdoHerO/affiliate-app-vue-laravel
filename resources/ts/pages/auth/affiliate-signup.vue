@@ -38,6 +38,8 @@ const form = ref({
   adresse: '',
   ville: '',
   pays: 'Maroc',
+  rib: '',
+  bank_type: '',
   notes: '',
   accept_terms: false,
 })
@@ -55,6 +57,18 @@ const countries = [
   'Belgique',
   'Suisse',
   'Canada',
+  'Autre'
+]
+
+const bankTypes = [
+  'Attijariwafa Bank',
+  'Banque Populaire',
+  'BMCE Bank',
+  'BMCI',
+  'CIH Bank',
+  'Crédit Agricole',
+  'Crédit du Maroc',
+  'Société Générale',
   'Autre'
 ]
 
@@ -310,6 +324,33 @@ const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
                   label="Pays *"
                   :items="countries"
                   :error-messages="getError('pays')"
+                />
+              </VCol>
+
+              <!-- Informations bancaires -->
+              <VCol
+                cols="12"
+                sm="6"
+              >
+                <AppSelect
+                  v-model="form.bank_type"
+                  label="Type de banque *"
+                  placeholder="Sélectionner votre banque"
+                  :items="bankTypes"
+                  :error-messages="getError('bank_type')"
+                />
+              </VCol>
+
+              <VCol
+                cols="12"
+                sm="6"
+              >
+                <AppTextField
+                  v-model="form.rib"
+                  label="RIB *"
+                  placeholder="Votre RIB/IBAN"
+                  style="font-family: monospace;"
+                  :error-messages="getError('rib')"
                 />
               </VCol>
 

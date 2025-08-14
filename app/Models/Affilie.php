@@ -23,6 +23,8 @@ class Affilie extends Model
         'approval_status',
         'refusal_reason',
         'notes',
+        'rib',
+        'bank_type',
     ];
 
     protected $hidden = [

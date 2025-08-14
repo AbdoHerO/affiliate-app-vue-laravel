@@ -96,6 +96,8 @@ class UserManagementController extends Controller
             'statut' => 'required|string|in:actif,inactif,bloque',
             'email_verifie' => 'boolean',
             'kyc_statut' => 'required|string|in:non_requis,en_attente,valide,refuse',
+            'rib' => 'nullable|string|max:34',
+            'bank_type' => 'nullable|string|max:50',
         ]);
 
         $user = User::create([
@@ -108,6 +110,8 @@ class UserManagementController extends Controller
             'statut' => $request->statut,
             'email_verifie' => $request->boolean('email_verifie', false),
             'kyc_statut' => $request->kyc_statut,
+            'rib' => $request->rib,
+            'bank_type' => $request->bank_type,
         ]);
 
         // Assign role
@@ -143,9 +147,13 @@ class UserManagementController extends Controller
                 'id' => $user->id,
                 'nom_complet' => $user->nom_complet,
                 'email' => $user->email,
+                'telephone' => $user->telephone,
+                'adresse' => $user->adresse,
                 'statut' => $user->statut,
                 'kyc_statut' => $user->kyc_statut,
                 'email_verifie' => $user->email_verifie,
+                'rib' => $user->rib,
+                'bank_type' => $user->bank_type,
                 'created_at' => $user->created_at,
                 'roles' => $user->getRoleNames(),
                 'permissions' => $user->getAllPermissions()->pluck('name'),
@@ -178,6 +186,8 @@ class UserManagementController extends Controller
             'statut' => 'sometimes|required|string|in:actif,inactif,bloque',
             'email_verifie' => 'sometimes|boolean',
             'kyc_statut' => 'sometimes|required|string|in:non_requis,en_attente,valide,refuse',
+            'rib' => 'sometimes|nullable|string|max:34',
+            'bank_type' => 'sometimes|nullable|string|max:50',
         ]);
 
         // Update user fields
@@ -207,6 +217,12 @@ class UserManagementController extends Controller
         }
         if ($request->has('kyc_statut')) {
             $user->kyc_statut = $request->kyc_statut;
+        }
+        if ($request->has('rib')) {
+            $user->rib = $request->rib;
+        }
+        if ($request->has('bank_type')) {
+            $user->bank_type = $request->bank_type;
         }
 
         $user->save();

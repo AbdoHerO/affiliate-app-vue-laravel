@@ -37,9 +37,9 @@ const headers = [
   { title: 'Utilisateur', key: 'user', sortable: false },
   { title: 'Email', key: 'email', sortable: true },
   { title: 'Téléphone', key: 'telephone', sortable: false },
+  { title: 'Banque', key: 'bank_type', sortable: false },
   { title: 'Email Vérifié', key: 'email_verified', sortable: true },
   { title: 'Statut Approbation', key: 'approval_status', sortable: true },
-
   { title: 'Inscrit le', key: 'created_at', sortable: true },
   { title: 'Actions', key: 'actions', sortable: false },
 ]
@@ -365,6 +365,18 @@ onMounted(async () => {
                 ID: {{ item.id.slice(0, 8) }}
               </div>
             </div>
+          </div>
+        </template>
+
+        <!-- Bank Type Column -->
+        <template #item.bank_type="{ item }">
+          <div class="text-body-2">
+            <VIcon
+              icon="tabler-building-bank"
+              size="16"
+              class="me-2"
+            />
+            {{ item.bank_type || 'Non renseigné' }}
           </div>
         </template>
 

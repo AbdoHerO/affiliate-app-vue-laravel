@@ -135,6 +135,8 @@ class AffiliateApplicationsController extends Controller
                     'statut' => 'actif',
                     'email_verifie' => true,
                     'kyc_statut' => 'non_requis',
+                    'rib' => $affilie->rib,
+                    'bank_type' => $affilie->bank_type,
                 ]);
 
                 // Assign affiliate role
