@@ -12,6 +12,7 @@ import { getAvatarUrl } from '@/utils/imageUtils'
 import { useUserSoftDelete } from '@/composables/useSoftDelete'
 import SoftDeleteFilter from '@/components/common/SoftDeleteFilter.vue'
 import SoftDeleteActions from '@/components/common/SoftDeleteActions.vue'
+import type { User } from '@/types/auth'
 
 definePage({
   meta: {
@@ -61,7 +62,10 @@ type User = {
   statut: 'actif' | 'inactif' | 'bloque'
   email_verifie: boolean
   kyc_statut: 'non_requis' | 'en_attente' | 'valide' | 'refuse'
+  rib?: string
+  bank_type?: string
   roles: string[]
+  permissions?: string[]
   remember_token?: string
   created_at: string
   updated_at?: string
@@ -105,6 +109,7 @@ const kycStatusOptions = [
 // Dialog states
 const showCreateDialog = ref(false)
 const showEditDialog = ref(false)
+const showViewDialog = ref(false)
 const selectedUser = ref<User | null>(null)
 
 // Form data
@@ -157,7 +162,7 @@ const fetchUsers = async (page = 1) => {
         // Optionally redirect to login
       }
     } else if (data.value) {
-      users.value = data.value.users.map((user: any) => ({
+      users.value = data.value.users.map((user: any): User => ({
         id: String(user.id),
         nom_complet: user.nom_complet,
         email: user.email,
@@ -168,9 +173,13 @@ const fetchUsers = async (page = 1) => {
         statut: user.statut,
         email_verifie: user.email_verifie,
         kyc_statut: user.kyc_statut,
+        rib: user.rib,
+        bank_type: user.bank_type,
         created_at: user.created_at,
         updated_at: user.updated_at,
         deleted_at: user.deleted_at,
+        permissions: user.permissions ?? [],
+        remember_token: user.remember_token,
       }))
 
       pagination.value = data.value.pagination
@@ -400,6 +409,11 @@ const openEditDialog = (user: User) => {
   showEditDialog.value = true
 }
 
+const openViewDialog = (user: User) => {
+  selectedUser.value = user
+  showViewDialog.value = true
+}
+
 const clearFilters = () => {
   filters.value = { search: '', role: '', statut: '' }
   fetchUsers(1)
@@ -501,6 +515,8 @@ watch(
               <th>{{ t('name') }}</th>
               <th>{{ t('email') }}</th>
               <th>{{ t('phone') }}</th>
+              <th>Type de banque</th>
+              <th>RIB</th>
               <th>{{ t('role') }}</th>
               <th>{{ t('status') }}</th>
               <th>{{ t('record_status') }}</th>
@@ -523,6 +539,17 @@ watch(
               <td>{{ user.nom_complet }}</td>
               <td>{{ user.email }}</td>
               <td>{{ user.telephone || '-' }}</td>
+              <td>
+                <div class="d-flex align-center">
+                  <VIcon icon="tabler-building-bank" size="16" class="me-2" />
+                  {{ user.bank_type || 'Non renseigné' }}
+                </div>
+              </td>
+              <td>
+                <div style="font-family: monospace; font-size: 0.875rem;">
+                  {{ user.rib || 'Non renseigné' }}
+                </div>
+              </td>
               <td>
                 <VChip :color="user.roles[0] === 'admin' ? 'error' : 'primary'" size="small">
                   {{ user.roles[0] || t('no_role') }}
@@ -564,6 +591,7 @@ watch(
                   @restored="fetchUsers(pagination.current_page)"
                   @permanently-deleted="fetchUsers(pagination.current_page)"
                   @edit="openEditDialog"
+                  @view="openViewDialog"
                 />
               </td>
             </tr>
@@ -717,6 +745,127 @@ watch(
           <VSpacer />
           <VBtn variant="outlined" type="button" @click="showEditDialog = false">{{ t('cancel') }}</VBtn>
           <VBtn color="primary" type="button" :loading="loading" @click="updateUser">{{ t('update_user') }}</VBtn>
+        </VCardActions>
+      </VCard>
+    </VDialog>
+
+    <!-- View User Dialog -->
+    <VDialog v-model="showViewDialog" max-width="600">
+      <VCard>
+        <VCardTitle class="d-flex align-center">
+          <VIcon icon="tabler-eye" class="me-2" />
+          {{ t('view_user') }}
+        </VCardTitle>
+        <VCardText>
+          <VRow v-if="selectedUser">
+            <!-- Profile Image -->
+            <VCol cols="12" class="text-center mb-4">
+              <VAvatar size="120">
+                <VImg
+                  :src="getAvatarUrl(selectedUser.photo_profil)"
+                  :alt="selectedUser.nom_complet"
+                  cover
+                />
+              </VAvatar>
+            </VCol>
+
+            <!-- User Information -->
+            <VCol cols="12" md="6">
+              <div class="mb-3">
+                <strong>{{ t('full_name') }}:</strong>
+                <div>{{ selectedUser.nom_complet }}</div>
+              </div>
+            </VCol>
+            <VCol cols="12" md="6">
+              <div class="mb-3">
+                <strong>{{ t('email') }}:</strong>
+                <div>{{ selectedUser.email }}</div>
+              </div>
+            </VCol>
+            <VCol cols="12" md="6">
+              <div class="mb-3">
+                <strong>{{ t('phone') }}:</strong>
+                <div>{{ selectedUser.telephone || '-' }}</div>
+              </div>
+            </VCol>
+            <VCol cols="12" md="6">
+              <div class="mb-3">
+                <strong>{{ t('role') }}:</strong>
+                <VChip :color="selectedUser.roles[0] === 'admin' ? 'error' : 'primary'" size="small">
+                  {{ selectedUser.roles[0] || t('no_role') }}
+                </VChip>
+              </div>
+            </VCol>
+            <VCol cols="12">
+              <div class="mb-3">
+                <strong>{{ t('address') }}:</strong>
+                <div>{{ selectedUser.adresse || '-' }}</div>
+              </div>
+            </VCol>
+
+            <!-- Bank Information -->
+            <VCol cols="12" md="6">
+              <div class="mb-3">
+                <strong>Type de banque:</strong>
+                <div class="d-flex align-center">
+                  <VIcon icon="tabler-building-bank" size="16" class="me-2" />
+                  {{ selectedUser.bank_type || 'Non renseigné' }}
+                </div>
+              </div>
+            </VCol>
+            <VCol cols="12" md="6">
+              <div class="mb-3">
+                <strong>RIB:</strong>
+                <div style="font-family: monospace;">{{ selectedUser.rib || 'Non renseigné' }}</div>
+              </div>
+            </VCol>
+
+            <!-- Status Information -->
+            <VCol cols="12" md="6">
+              <div class="mb-3">
+                <strong>{{ t('status') }}:</strong>
+                <VChip
+                  :color="selectedUser.statut === 'actif' ? 'success' : selectedUser.statut === 'bloque' ? 'error' : 'warning'"
+                  size="small"
+                >
+                  {{ selectedUser.statut }}
+                </VChip>
+              </div>
+            </VCol>
+            <VCol cols="12" md="6">
+              <div class="mb-3">
+                <strong>{{ t('kyc_status') }}:</strong>
+                <VChip
+                  :color="selectedUser.kyc_statut === 'valide' ? 'success' : selectedUser.kyc_statut === 'refuse' ? 'error' : 'warning'"
+                  size="small"
+                >
+                  {{ selectedUser.kyc_statut }}
+                </VChip>
+              </div>
+            </VCol>
+            <VCol cols="12" md="6">
+              <div class="mb-3">
+                <strong>Email vérifié:</strong>
+                <VChip
+                  :color="selectedUser.email_verifie ? 'success' : 'warning'"
+                  size="small"
+                >
+                  {{ selectedUser.email_verifie ? 'Oui' : 'Non' }}
+                </VChip>
+              </div>
+            </VCol>
+            <VCol cols="12" md="6">
+              <div class="mb-3">
+                <strong>{{ t('created') }}:</strong>
+                <div>{{ new Date(selectedUser.created_at).toLocaleDateString() }}</div>
+              </div>
+            </VCol>
+          </VRow>
+        </VCardText>
+        <VCardActions>
+          <VSpacer />
+          <VBtn variant="outlined" @click="showViewDialog = false">{{ t('close') }}</VBtn>
+          <VBtn color="primary" @click="openEditDialog(selectedUser); showViewDialog = false">{{ t('edit') }}</VBtn>
         </VCardActions>
       </VCard>
     </VDialog>
