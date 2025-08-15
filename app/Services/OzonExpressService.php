@@ -284,4 +284,141 @@ class OzonExpressService
             ];
         }
     }
+
+    /**
+     * Get all parcels from OzonExpress platform
+     */
+    public function getAllParcels(int $limit = 50, int $offset = 0): array
+    {
+        if (!$this->enabled) {
+            return [
+                'success' => false,
+                'message' => 'OzonExpress is disabled',
+            ];
+        }
+
+        try {
+            $response = Http::asForm()->post(
+                "{$this->baseUrl}/customers/{$this->customerId}/{$this->apiKey}/parcels",
+                [
+                    'limit' => $limit,
+                    'offset' => $offset
+                ]
+            );
+
+            if (!$response->successful()) {
+                return [
+                    'success' => false,
+                    'message' => 'Failed to get parcels list',
+                    'error' => $response->body(),
+                ];
+            }
+
+            $data = $response->json();
+
+            return [
+                'success' => true,
+                'data' => $data,
+                'parcels' => $data['parcels'] ?? [],
+                'total' => $data['total'] ?? 0,
+            ];
+
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'message' => 'Failed to get parcels list: ' . $e->getMessage(),
+                'error' => $e->getMessage(),
+            ];
+        }
+    }
+
+    /**
+     * Sync local database with OzonExpress platform data
+     */
+    public function syncParcelsFromPlatform(): array
+    {
+        if (!$this->enabled) {
+            return [
+                'success' => false,
+                'message' => 'OzonExpress is disabled',
+            ];
+        }
+
+        try {
+            $result = $this->getAllParcels(100, 0); // Get up to 100 recent parcels
+
+            if (!$result['success']) {
+                return $result;
+            }
+
+            $platformParcels = $result['parcels'];
+            $syncedCount = 0;
+            $updatedCount = 0;
+            $errors = [];
+
+            foreach ($platformParcels as $platformParcel) {
+                try {
+                    $trackingNumber = $platformParcel['tracking_number'] ?? null;
+
+                    if (!$trackingNumber) {
+                        continue;
+                    }
+
+                    // Find existing parcel in local database
+                    $localParcel = \App\Models\ShippingParcel::where('tracking_number', $trackingNumber)->first();
+
+                    if ($localParcel) {
+                        // Update existing parcel with platform data
+                        $localParcel->update([
+                            'status' => $platformParcel['status'] ?? $localParcel->status,
+                            'city_name' => $platformParcel['city'] ?? $localParcel->city_name,
+                            'price' => $platformParcel['price'] ?? $localParcel->price,
+                            'last_synced_at' => now(),
+                            'meta' => array_merge($localParcel->meta ?? [], [
+                                'platform_data' => $platformParcel,
+                                'synced_from_platform' => true,
+                                'last_platform_sync' => now()->toISOString()
+                            ])
+                        ]);
+                        $updatedCount++;
+                    } else {
+                        // Create new parcel from platform data
+                        \App\Models\ShippingParcel::create([
+                            'tracking_number' => $trackingNumber,
+                            'status' => $platformParcel['status'] ?? 'unknown',
+                            'provider' => 'OzonExpress',
+                            'city_name' => $platformParcel['city'] ?? null,
+                            'price' => $platformParcel['price'] ?? null,
+                            'last_synced_at' => now(),
+                            'meta' => [
+                                'platform_data' => $platformParcel,
+                                'synced_from_platform' => true,
+                                'created_from_platform' => true,
+                                'last_platform_sync' => now()->toISOString()
+                            ]
+                        ]);
+                        $syncedCount++;
+                    }
+                } catch (\Exception $e) {
+                    $errors[] = "Error syncing parcel {$trackingNumber}: " . $e->getMessage();
+                }
+            }
+
+            return [
+                'success' => true,
+                'message' => "Synchronization completed",
+                'synced_new' => $syncedCount,
+                'updated_existing' => $updatedCount,
+                'total_platform_parcels' => count($platformParcels),
+                'errors' => $errors
+            ];
+
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'message' => 'Failed to sync parcels: ' . $e->getMessage(),
+                'error' => $e->getMessage(),
+            ];
+        }
+    }
 }

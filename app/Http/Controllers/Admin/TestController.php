@@ -150,12 +150,38 @@ class TestController extends Controller
      */
     public function getShippingParcels(): JsonResponse
     {
-        $parcels = \App\Models\ShippingParcel::with('commande.client')
+        // Get all parcels with analytics
+        $totalParcels = \App\Models\ShippingParcel::count();
+        $mockParcels = \App\Models\ShippingParcel::whereJsonContains('meta->mock_data', true)->count();
+        $realParcels = $totalParcels - $mockParcels;
+
+        // Get today's parcels
+        $todayParcels = \App\Models\ShippingParcel::whereDate('created_at', today())->count();
+
+        // Get recent parcels (prioritize real ones)
+        $recentReal = \App\Models\ShippingParcel::with('commande.client')
+            ->where(function($query) {
+                $query->whereJsonDoesntContain('meta->mock_data', true)
+                      ->orWhereNull('meta->mock_data');
+            })
             ->orderBy('created_at', 'desc')
-            ->limit(20)
+            ->limit(15)
             ->get();
 
-        $parcelsData = $parcels->map(function ($parcel) {
+        $recentMock = \App\Models\ShippingParcel::with('commande.client')
+            ->whereJsonContains('meta->mock_data', true)
+            ->orderBy('created_at', 'desc')
+            ->limit(5)
+            ->get();
+
+        // Combine and sort by creation date
+        $allRecent = $recentReal->concat($recentMock)
+            ->sortByDesc('created_at')
+            ->take(20);
+
+        $parcelsData = $allRecent->map(function ($parcel) {
+            $isReal = !($parcel->meta['mock_data'] ?? false);
+
             return [
                 'id' => $parcel->id,
                 'tracking_number' => $parcel->tracking_number,
@@ -168,14 +194,68 @@ class TestController extends Controller
                 'created_at' => $parcel->created_at,
                 'last_synced_at' => $parcel->last_synced_at,
                 'meta' => $parcel->meta,
+                'is_real' => $isReal,
+                'type' => $isReal ? 'real' : 'mock',
             ];
         });
 
         return response()->json([
             'success' => true,
-            'message' => 'Recent shipping parcels retrieved',
-            'total_parcels' => \App\Models\ShippingParcel::count(),
-            'recent_parcels' => $parcelsData,
+            'message' => 'Shipping parcels with analytics retrieved',
+            'total_parcels' => $totalParcels,
+            'real_parcels' => $realParcels,
+            'mock_parcels' => $mockParcels,
+            'today_parcels' => $todayParcels,
+            'recent_parcels' => $parcelsData->values(),
+            'analytics' => [
+                'total' => $totalParcels,
+                'real' => $realParcels,
+                'mock' => $mockParcels,
+                'today' => $todayParcels,
+                'real_percentage' => $totalParcels > 0 ? round(($realParcels / $totalParcels) * 100, 1) : 0,
+            ]
+        ]);
+    }
+
+    /**
+     * Sync parcels from OzonExpress platform
+     */
+    public function syncParcelsFromPlatform(): JsonResponse
+    {
+        $ozonService = new \App\Services\OzonExpressService();
+
+        $result = $ozonService->syncParcelsFromPlatform();
+
+        return response()->json([
+            'success' => $result['success'],
+            'message' => $result['message'],
+            'data' => $result,
+        ]);
+    }
+
+    /**
+     * Get real parcels from OzonExpress platform
+     */
+    public function getRealParcelsFromPlatform(): JsonResponse
+    {
+        $ozonService = new \App\Services\OzonExpressService();
+
+        $result = $ozonService->getAllParcels(50, 0);
+
+        if (!$result['success']) {
+            return response()->json([
+                'success' => false,
+                'message' => $result['message'],
+                'error' => $result['error'] ?? null,
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Real parcels from OzonExpress platform retrieved',
+            'total_platform_parcels' => $result['total'],
+            'platform_parcels' => $result['parcels'],
+            'source' => 'ozonexpress_platform'
         ]);
     }
 

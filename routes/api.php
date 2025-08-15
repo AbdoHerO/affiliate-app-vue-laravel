@@ -267,6 +267,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
                 Route::get('system-status', [TestController::class, 'systemStatus']);
                 Route::get('api-connectivity', [TestController::class, 'testApiConnectivity']);
                 Route::get('shipping-parcels', [TestController::class, 'getShippingParcels']);
+                Route::post('sync-parcels', [TestController::class, 'syncParcelsFromPlatform']);
+                Route::get('platform-parcels', [TestController::class, 'getRealParcelsFromPlatform']);
             });
         }
     });
