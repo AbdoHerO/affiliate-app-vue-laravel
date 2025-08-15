@@ -213,7 +213,6 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import axios from 'axios'
 
 definePage({
   meta: {
@@ -232,10 +231,10 @@ const loading = ref({
   bulkTest: false
 })
 
-const systemStatus = ref(null)
-const apiTestResult = ref(null)
-const shippingParcels = ref(null)
-const bulkTestResult = ref(null)
+const systemStatus = ref<any>(null)
+const apiTestResult = ref<any>(null)
+const shippingParcels = ref<any>(null)
+const bulkTestResult = ref<any>(null)
 
 const metaDialog = ref({
   show: false,
@@ -257,8 +256,12 @@ const parcelHeaders = [
 const loadSystemStatus = async () => {
   loading.value.systemStatus = true
   try {
-    const response = await axios.get('/api/admin/test/system-status')
-    systemStatus.value = response.data
+    const { data, error } = await useApi('/admin/test/system-status')
+    if (error.value) {
+      console.error('Error loading system status:', error.value)
+    } else {
+      systemStatus.value = data.value
+    }
   } catch (error) {
     console.error('Error loading system status:', error)
   } finally {
@@ -269,13 +272,21 @@ const loadSystemStatus = async () => {
 const testApiConnectivity = async () => {
   loading.value.apiTest = true
   try {
-    const response = await axios.get('/api/admin/test/api-connectivity')
-    apiTestResult.value = response.data
+    const { data, error } = await useApi('/admin/test/api-connectivity')
+    if (error.value) {
+      console.error('Error testing API connectivity:', error.value)
+      apiTestResult.value = {
+        success: false,
+        message: 'Erreur lors du test de connectivité: ' + (error.value as any)?.message
+      }
+    } else {
+      apiTestResult.value = data.value
+    }
   } catch (error) {
     console.error('Error testing API connectivity:', error)
     apiTestResult.value = {
       success: false,
-      message: 'Erreur lors du test de connectivité: ' + error.message
+      message: 'Erreur lors du test de connectivité: ' + (error as any)?.message
     }
   } finally {
     loading.value.apiTest = false
@@ -285,8 +296,12 @@ const testApiConnectivity = async () => {
 const loadShippingParcels = async () => {
   loading.value.parcels = true
   try {
-    const response = await axios.get('/api/admin/test/shipping-parcels')
-    shippingParcels.value = response.data
+    const { data, error } = await useApi('/admin/test/shipping-parcels')
+    if (error.value) {
+      console.error('Error loading shipping parcels:', error.value)
+    } else {
+      shippingParcels.value = data.value
+    }
   } catch (error) {
     console.error('Error loading shipping parcels:', error)
   } finally {
@@ -297,13 +312,21 @@ const loadShippingParcels = async () => {
 const testBulkOperations = async () => {
   loading.value.bulkTest = true
   try {
-    const response = await axios.get('/api/admin/test/bulk-operations')
-    bulkTestResult.value = response.data
+    const { data, error } = await useApi('/admin/test/bulk-operations')
+    if (error.value) {
+      console.error('Error testing bulk operations:', error.value)
+      bulkTestResult.value = {
+        success: false,
+        message: 'Erreur lors du test des opérations en lot: ' + (error.value as any)?.message
+      }
+    } else {
+      bulkTestResult.value = data.value
+    }
   } catch (error) {
     console.error('Error testing bulk operations:', error)
     bulkTestResult.value = {
       success: false,
-      message: 'Erreur lors du test des opérations en lot: ' + error.message
+      message: 'Erreur lors du test des opérations en lot: ' + (error as any)?.message
     }
   } finally {
     loading.value.bulkTest = false
