@@ -260,6 +260,79 @@ class TestController extends Controller
     }
 
     /**
+     * Test creating a parcel on OzonExpress platform
+     */
+    public function testCreateParcel(): JsonResponse
+    {
+        // First check if OzonExpress is enabled
+        if (!config('services.ozonexpress.enabled')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'OzonExpress is disabled in configuration',
+                'data' => [
+                    'config_check' => [
+                        'enabled' => false,
+                        'base_url' => config('services.ozonexpress.base_url'),
+                        'customer_id' => config('services.ozonexpress.id'),
+                        'api_key_set' => !empty(config('services.ozonexpress.key')),
+                    ]
+                ]
+            ]);
+        }
+
+        $ozonService = new \App\Services\OzonExpressService();
+
+        $result = $ozonService->testCreateParcel();
+
+        return response()->json([
+            'success' => $result['success'],
+            'message' => $result['message'],
+            'data' => $result,
+        ]);
+    }
+
+    /**
+     * Test tracking a specific parcel
+     */
+    public function testTrackParcel(Request $request): JsonResponse
+    {
+        $trackingNumber = $request->input('tracking_number');
+
+        if (!$trackingNumber) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Tracking number is required',
+            ], 400);
+        }
+
+        $ozonService = new \App\Services\OzonExpressService();
+
+        $result = $ozonService->testTrackParcel($trackingNumber);
+
+        return response()->json([
+            'success' => $result['success'],
+            'message' => $result['message'],
+            'data' => $result,
+        ]);
+    }
+
+    /**
+     * Test basic API connectivity
+     */
+    public function testBasicConnectivity(): JsonResponse
+    {
+        $ozonService = new \App\Services\OzonExpressService();
+
+        $result = $ozonService->testApiConnectivity();
+
+        return response()->json([
+            'success' => $result['success'],
+            'message' => $result['message'],
+            'data' => $result,
+        ]);
+    }
+
+    /**
      * Interpret API response for debugging
      */
     private function interpretApiResponse(array $response): array

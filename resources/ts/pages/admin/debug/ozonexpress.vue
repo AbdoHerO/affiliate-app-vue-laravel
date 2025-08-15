@@ -394,7 +394,41 @@
               >
                 Test Opérations en Lot
               </VBtn>
+
+              <VBtn
+                color="success"
+                @click="testCreateParcel"
+                :loading="loading.createTest"
+                :disabled="!testMode.useReal"
+              >
+                <VIcon start icon="tabler-package-export" />
+                Test Send Colis
+              </VBtn>
+
+              <VBtn
+                color="info"
+                @click="showTrackingDialog = true"
+                :disabled="!testMode.useReal"
+              >
+                <VIcon start icon="tabler-search" />
+                Suivre Colis
+              </VBtn>
+
+              <VBtn
+                v-if="createTestResult?.success && createTestResult?.data?.tracking_number"
+                color="secondary"
+                @click="trackLastCreatedParcel"
+                :loading="loading.trackTest"
+              >
+                <VIcon start icon="tabler-eye" />
+                Suivre Dernier Colis Créé
+              </VBtn>
             </div>
+
+            <VAlert v-if="!testMode.useReal" type="warning" variant="tonal" density="compact" class="mt-2">
+              <VIcon start icon="tabler-alert-triangle" />
+              Les tests de création et suivi ne sont disponibles qu'en mode API réelle
+            </VAlert>
             
             <div v-if="bulkTestResult" class="mt-4">
               <VAlert
@@ -412,6 +446,100 @@
                 </div>
               </div>
             </div>
+
+            <!-- Test Create Parcel Results -->
+            <div v-if="createTestResult" class="mt-4">
+              <VAlert
+                :type="createTestResult.success ? 'success' : 'error'"
+                variant="tonal"
+              >
+                {{ createTestResult.message }}
+              </VAlert>
+
+              <div v-if="createTestResult.success && createTestResult.data" class="mt-2">
+                <VCard variant="tonal" color="success">
+                  <VCardTitle class="text-h6">Colis Créé avec Succès</VCardTitle>
+                  <VCardText>
+                    <div class="d-flex flex-column gap-2">
+                      <div><strong>Numéro de Suivi:</strong> {{ createTestResult.data.tracking_number }}</div>
+                      <div><strong>ID Local:</strong> {{ createTestResult.data.local_parcel_id }}</div>
+                      <div><strong>Client Test:</strong> {{ createTestResult.data.test_data?.client_name }}</div>
+                      <div><strong>Ville:</strong> {{ createTestResult.data.test_data?.city }}</div>
+                      <div><strong>Prix:</strong> {{ createTestResult.data.test_data?.price }} DH</div>
+                    </div>
+
+                    <VExpansionPanels class="mt-3">
+                      <VExpansionPanel>
+                        <VExpansionPanelTitle>Réponse Plateforme</VExpansionPanelTitle>
+                        <VExpansionPanelText>
+                          <pre class="text-caption">{{ JSON.stringify(createTestResult.data.platform_response, null, 2) }}</pre>
+                        </VExpansionPanelText>
+                      </VExpansionPanel>
+                    </VExpansionPanels>
+                  </VCardText>
+                </VCard>
+              </div>
+            </div>
+
+            <!-- Test Track Parcel Results -->
+            <div v-if="trackTestResult" class="mt-4">
+              <VAlert
+                :type="trackTestResult.success ? 'success' : 'error'"
+                variant="tonal"
+              >
+                {{ trackTestResult.message }}
+              </VAlert>
+
+              <div v-if="trackTestResult.success && trackTestResult.data" class="mt-2">
+                <VCard variant="tonal" color="info">
+                  <VCardTitle class="text-h6">Informations de Suivi</VCardTitle>
+                  <VCardText>
+                    <div class="d-flex flex-column gap-2 mb-3">
+                      <div><strong>Numéro de Suivi:</strong> {{ trackTestResult.data.tracking_number }}</div>
+                      <div><strong>Existe Localement:</strong>
+                        <VChip :color="trackTestResult.data.comparison?.exists_locally ? 'success' : 'error'" size="small">
+                          {{ trackTestResult.data.comparison?.exists_locally ? 'Oui' : 'Non' }}
+                        </VChip>
+                      </div>
+                      <div><strong>Existe sur Plateforme:</strong>
+                        <VChip :color="trackTestResult.data.comparison?.exists_on_platform ? 'success' : 'error'" size="small">
+                          {{ trackTestResult.data.comparison?.exists_on_platform ? 'Oui' : 'Non' }}
+                        </VChip>
+                      </div>
+                      <div v-if="trackTestResult.data.comparison?.status_match !== null">
+                        <strong>Statuts Correspondent:</strong>
+                        <VChip :color="trackTestResult.data.comparison?.status_match ? 'success' : 'warning'" size="small">
+                          {{ trackTestResult.data.comparison?.status_match ? 'Oui' : 'Non' }}
+                        </VChip>
+                      </div>
+                    </div>
+
+                    <VExpansionPanels>
+                      <VExpansionPanel v-if="trackTestResult.data.local_parcel">
+                        <VExpansionPanelTitle>Données Locales</VExpansionPanelTitle>
+                        <VExpansionPanelText>
+                          <pre class="text-caption">{{ JSON.stringify(trackTestResult.data.local_parcel, null, 2) }}</pre>
+                        </VExpansionPanelText>
+                      </VExpansionPanel>
+
+                      <VExpansionPanel v-if="trackTestResult.data.platform_parcel_info?.success">
+                        <VExpansionPanelTitle>Données Plateforme</VExpansionPanelTitle>
+                        <VExpansionPanelText>
+                          <pre class="text-caption">{{ JSON.stringify(trackTestResult.data.platform_parcel_info.data, null, 2) }}</pre>
+                        </VExpansionPanelText>
+                      </VExpansionPanel>
+
+                      <VExpansionPanel v-if="trackTestResult.data.platform_tracking_info?.success">
+                        <VExpansionPanelTitle>Historique de Suivi</VExpansionPanelTitle>
+                        <VExpansionPanelText>
+                          <pre class="text-caption">{{ JSON.stringify(trackTestResult.data.platform_tracking_info.data, null, 2) }}</pre>
+                        </VExpansionPanelText>
+                      </VExpansionPanel>
+                    </VExpansionPanels>
+                  </VCardText>
+                </VCard>
+              </div>
+            </div>
           </VCardText>
         </VCard>
       </VCardText>
@@ -427,6 +555,52 @@
         <VCardActions>
           <VSpacer />
           <VBtn @click="metaDialog.show = false">Fermer</VBtn>
+        </VCardActions>
+      </VCard>
+    </VDialog>
+
+    <!-- Tracking Dialog -->
+    <VDialog v-model="showTrackingDialog" max-width="500">
+      <VCard>
+        <VCardTitle>Suivre un Colis</VCardTitle>
+        <VCardText>
+          <VTextField
+            v-model="trackingNumber"
+            label="Numéro de Suivi"
+            placeholder="Ex: OZ83PYCK141995"
+            variant="outlined"
+            :loading="loading.trackTest"
+          />
+
+          <div v-if="createTestResult?.success && createTestResult?.data?.tracking_number" class="mt-2">
+            <VBtn
+              size="small"
+              color="secondary"
+              variant="outlined"
+              @click="trackingNumber = createTestResult.data.tracking_number"
+            >
+              <VIcon start icon="tabler-copy" />
+              Utiliser Dernier Colis Créé ({{ createTestResult.data.tracking_number }})
+            </VBtn>
+          </div>
+        </VCardText>
+        <VCardActions>
+          <VSpacer />
+          <VBtn
+            color="grey"
+            variant="text"
+            @click="showTrackingDialog = false"
+          >
+            Annuler
+          </VBtn>
+          <VBtn
+            color="primary"
+            @click="testTrackParcel"
+            :loading="loading.trackTest"
+            :disabled="!trackingNumber.trim()"
+          >
+            Suivre
+          </VBtn>
         </VCardActions>
       </VCard>
     </VDialog>
@@ -453,7 +627,9 @@ const loading = ref({
   bulkTest: false,
   analytics: false,
   sync: false,
-  platformParcels: false
+  platformParcels: false,
+  createTest: false,
+  trackTest: false
 })
 
 const systemStatus = ref<any>(null)
@@ -463,6 +639,10 @@ const bulkTestResult = ref<any>(null)
 const parcelsAnalytics = ref<any>(null)
 const syncResult = ref<any>(null)
 const platformParcels = ref<any>(null)
+const createTestResult = ref<any>(null)
+const trackTestResult = ref<any>(null)
+const showTrackingDialog = ref(false)
+const trackingNumber = ref('')
 
 // Test mode state
 const testMode = ref({
@@ -788,6 +968,116 @@ const disableOzonExpress = async () => {
   // For now, just show a message
   alert('Utilisez la commande: php artisan ozonexpress:toggle --disable')
   loading.value.toggle = false
+}
+
+const testCreateParcel = async () => {
+  loading.value.createTest = true
+  try {
+    const { data, error } = await useApi('/admin/test/create-parcel', { method: 'POST' })
+    if (error.value) {
+      console.error('Error creating test parcel:', error.value)
+      createTestResult.value = {
+        success: false,
+        message: 'Erreur lors de la création du colis test: ' + (error.value as any)?.message
+      }
+    } else {
+      createTestResult.value = data.value
+      // Refresh parcels data after creation
+      if ((data.value as any)?.success) {
+        await loadShippingParcels()
+      }
+    }
+  } catch (error) {
+    console.error('Error creating test parcel:', error)
+    createTestResult.value = {
+      success: false,
+      message: 'Erreur lors de la création du colis test: ' + (error as any)?.message
+    }
+  } finally {
+    loading.value.createTest = false
+  }
+}
+
+const testTrackParcel = async () => {
+  if (!trackingNumber.value.trim()) {
+    trackTestResult.value = {
+      success: false,
+      message: 'Veuillez entrer un numéro de suivi'
+    }
+    return
+  }
+
+  loading.value.trackTest = true
+  try {
+    // Use useApi for proper authentication
+    const { data, error } = await useApi('/admin/test/track-parcel', {
+      method: 'POST',
+      body: JSON.stringify({ tracking_number: trackingNumber.value.trim() }),
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+
+    if (error.value) {
+      console.error('Error tracking parcel:', error.value)
+      trackTestResult.value = {
+        success: false,
+        message: 'Erreur lors du suivi du colis: ' + (error.value as any)?.message
+      }
+    } else {
+      trackTestResult.value = data.value
+      showTrackingDialog.value = false
+    }
+  } catch (error) {
+    console.error('Error tracking parcel:', error)
+    trackTestResult.value = {
+      success: false,
+      message: 'Erreur lors du suivi du colis: ' + (error as any)?.message
+    }
+  } finally {
+    loading.value.trackTest = false
+  }
+}
+
+const trackLastCreatedParcel = async () => {
+  if (!createTestResult.value?.data?.tracking_number) {
+    trackTestResult.value = {
+      success: false,
+      message: 'Aucun colis test créé récemment'
+    }
+    return
+  }
+
+  const lastTrackingNumber = createTestResult.value.data.tracking_number
+
+  loading.value.trackTest = true
+  try {
+    const { data, error } = await useApi('/admin/test/track-parcel', {
+      method: 'POST',
+      body: JSON.stringify({ tracking_number: lastTrackingNumber }),
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+
+    if (error.value) {
+      console.error('Error tracking last created parcel:', error.value)
+      trackTestResult.value = {
+        success: false,
+        message: 'Erreur lors du suivi du colis créé: ' + (error.value as any)?.message
+      }
+    } else {
+      trackTestResult.value = data.value
+    }
+  } catch (error) {
+    console.error('Error tracking last created parcel:', error)
+    trackTestResult.value = {
+      success: false,
+      message: 'Erreur lors du suivi du colis créé: ' + (error as any)?.message
+    }
+  } finally {
+    loading.value.trackTest = false
+  }
 }
 
 const showMetaDialog = (item: any) => {
