@@ -29,7 +29,7 @@ const {
   handleConfirm,
   handleCancel
 } = useQuickConfirm()
-const { showSuccess, showError } = useNotifications()
+const { showSuccess, showError, snackbar } = useNotifications()
 
 // Local state
 const activeTab = ref('client')
@@ -135,13 +135,7 @@ const confirmOrder = async () => {
 }
 
 const sendToOzonExpress = async () => {
-  console.log('sendToOzonExpress called')
-  console.log('preorder:', preorder.value)
-
-  if (!preorder.value) {
-    console.log('No preorder found')
-    return
-  }
+  if (!preorder.value) return
 
   const confirmed = await confirm({
     title: 'Envoyer vers OzonExpress',
@@ -150,8 +144,6 @@ const sendToOzonExpress = async () => {
     cancelText: 'Annuler'
   })
 
-  console.log('User confirmed detail shipping:', confirmed)
-
   if (confirmed) {
     try {
       await preordersStore.sendToShipping(preorder.value.id)
@@ -159,7 +151,8 @@ const sendToOzonExpress = async () => {
       // Refresh order data
       await fetchPreorder()
     } catch (error: any) {
-      showError(error.message || 'Erreur lors de l\'envoi')
+      showError(error.message || 'Erreur lors de l\'envoi vers OzonExpress')
+      console.error('Detail shipping error:', error)
     }
   }
 }
@@ -609,5 +602,15 @@ onMounted(() => {
       @confirm="handleConfirm"
       @cancel="handleCancel"
     />
+
+    <!-- Success/Error Snackbar -->
+    <VSnackbar
+      v-model="snackbar.show"
+      :color="snackbar.color"
+      :timeout="snackbar.timeout"
+      location="top end"
+    >
+      {{ snackbar.message }}
+    </VSnackbar>
   </div>
 </template>

@@ -73,11 +73,26 @@ class OzonExpressService
                 'products' => json_encode($products),
             ];
 
+            // Log the API call for debugging
+            Log::info('OzonExpress API Call', [
+                'commande_id' => $commande->id,
+                'url' => "{$this->baseUrl}/customers/{$this->customerId}/{$this->apiKey}/add-parcel",
+                'form_data' => $formData,
+            ]);
+
             // Make API call to OzonExpress
             $response = Http::asForm()->post(
                 "{$this->baseUrl}/customers/{$this->customerId}/{$this->apiKey}/add-parcel",
                 $formData
             );
+
+            // Log the response for debugging
+            Log::info('OzonExpress API Response', [
+                'commande_id' => $commande->id,
+                'status' => $response->status(),
+                'headers' => $response->headers(),
+                'body' => $response->body(),
+            ]);
 
             if (!$response->successful()) {
                 Log::error('OzonExpress API Error', [
@@ -90,6 +105,11 @@ class OzonExpressService
                     'success' => false,
                     'message' => 'Failed to create parcel at OzonExpress',
                     'error' => $response->body(),
+                    'debug_info' => [
+                        'url' => "{$this->baseUrl}/customers/{$this->customerId}/{$this->apiKey}/add-parcel",
+                        'status_code' => $response->status(),
+                        'response_headers' => $response->headers(),
+                    ],
                 ];
             }
 

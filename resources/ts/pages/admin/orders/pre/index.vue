@@ -28,7 +28,7 @@ const {
   handleConfirm,
   handleCancel
 } = useQuickConfirm()
-const { showSuccess, showError } = useNotifications()
+const { showSuccess, showError, snackbar } = useNotifications()
 
 // Local state
 const searchQuery = ref('')
@@ -234,8 +234,9 @@ const bulkChangeStatus = async (status: string) => {
     selectAll.value = false
     bulkStatusValue.value = '' // Reset dropdown after success
   } catch (error: any) {
-    showError(error.message)
+    showError(error.message || 'Erreur lors du changement de statut')
     bulkStatusValue.value = '' // Reset dropdown on error
+    console.error('Bulk status change error:', error)
   } finally {
     bulkActionLoading.value = false
   }
@@ -273,7 +274,8 @@ const bulkSendToShipping = async () => {
     selectAll.value = false
     bulkStatusValue.value = ''
   } catch (error: any) {
-    showError(error.message)
+    showError(error.message || 'Erreur lors de l\'envoi vers OzonExpress')
+    console.error('Bulk shipping error:', error)
   } finally {
     bulkActionLoading.value = false
   }
@@ -313,7 +315,8 @@ const quickSendToShipping = async (orderId: string) => {
     const result = await preordersStore.sendToShipping(orderId)
     showSuccess(result.message)
   } catch (error: any) {
-    showError(error.message)
+    showError(error.message || 'Erreur lors de l\'envoi vers OzonExpress')
+    console.error('Individual shipping error:', error)
   }
 }
 
@@ -687,5 +690,15 @@ onMounted(() => {
       @confirm="handleConfirm"
       @cancel="handleCancel"
     />
+
+    <!-- Success/Error Snackbar -->
+    <VSnackbar
+      v-model="snackbar.show"
+      :color="snackbar.color"
+      :timeout="snackbar.timeout"
+      location="top end"
+    >
+      {{ snackbar.message }}
+    </VSnackbar>
   </div>
 </template>

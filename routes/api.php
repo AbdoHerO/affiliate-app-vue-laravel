@@ -265,6 +265,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
                 Route::get('ozonexpress', [TestController::class, 'testOzonExpress']);
                 Route::get('bulk-operations', [TestController::class, 'testBulkOperations']);
                 Route::get('system-status', [TestController::class, 'systemStatus']);
+                Route::get('api-connectivity', [TestController::class, 'testApiConnectivity']);
+                Route::get('shipping-parcels', [TestController::class, 'getShippingParcels']);
             });
         }
     });

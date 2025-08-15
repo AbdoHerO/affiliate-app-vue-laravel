@@ -80,6 +80,11 @@ export function useNavigation() {
                 title: t('nav_order_conflicts'),
                 to: 'admin-order-conflicts',
               },
+              {
+                title: 'Debug OzonExpress',
+                to: 'admin-debug-ozonexpress',
+                icon: { icon: 'tabler-bug' },
+              },
             ],
           },
           {

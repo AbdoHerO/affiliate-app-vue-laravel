@@ -457,7 +457,7 @@ const viewDocument = (doc: KycDocument) => {
 
 const deleteDocument = async (document: KycDocument) => {
   // Show confirm dialog before deleting
-  const confirmed = await confirmDelete(t('document'), `${getTypeLabel(document.type_doc)} - ${document.utilisateur.nom_complet}`)
+  const confirmed = await confirmDelete(t('document'), `${getTypeLabel(document.type_doc)} - ${document.utilisateur?.nom_complet || 'Unknown User'}`)
   if (!confirmed) return
 
   try {
@@ -636,8 +636,8 @@ onMounted(async () => {
             <tr v-for="document in filteredDocuments" :key="document.id">
               <td>
                 <div>
-                  <div class="font-weight-medium">{{ document.utilisateur.nom_complet }}</div>
-                  <div class="text-caption text-medium-emphasis">{{ document.utilisateur.email }}</div>
+                  <div class="font-weight-medium">{{ document.utilisateur?.nom_complet || 'N/A' }}</div>
+                  <div class="text-caption text-medium-emphasis">{{ document.utilisateur?.email || 'N/A' }}</div>
                 </div>
               </td>
               <td>
@@ -778,7 +778,7 @@ onMounted(async () => {
         <VCardText v-if="selectedDocument">
           <div class="mb-4">
             <h4 class="text-h6 mb-2">{{ t('document_info') }}</h4>
-            <p><strong>{{ t('user') }}:</strong> {{ selectedDocument.utilisateur.nom_complet }}</p>
+            <p><strong>{{ t('user') }}:</strong> {{ selectedDocument.utilisateur?.nom_complet || 'N/A' }}</p>
             <p><strong>{{ t('type') }}:</strong> {{ getTypeLabel(selectedDocument.type_doc) }}</p>
             <p><strong>{{ t('current_status') }}:</strong> {{ selectedDocument.statut }}</p>
           </div>

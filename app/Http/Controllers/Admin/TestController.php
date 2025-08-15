@@ -96,7 +96,7 @@ class TestController extends Controller
     public function systemStatus(): JsonResponse
     {
         $ozonService = new OzonExpressService();
-        
+
         // Count orders by status
         $orderCounts = [
             'en_attente' => Commande::where('statut', 'en_attente')->count(),
@@ -117,5 +117,91 @@ class TestController extends Controller
             'environment' => app()->environment(),
             'debug_mode' => config('app.debug'),
         ]);
+    }
+
+    /**
+     * Test OzonExpress API connectivity
+     */
+    public function testApiConnectivity(): JsonResponse
+    {
+        $ozonService = new OzonExpressService();
+
+        if (!$ozonService->isEnabled()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'OzonExpress is disabled in configuration',
+                'suggestion' => 'Run: php artisan ozonexpress:toggle --enable'
+            ]);
+        }
+
+        // Test API connectivity by trying to get parcel info for a fake tracking number
+        $testResult = $ozonService->getParcelInfo('TEST123456789');
+
+        return response()->json([
+            'success' => true,
+            'message' => 'API connectivity test completed',
+            'api_response' => $testResult,
+            'interpretation' => $this->interpretApiResponse($testResult),
+        ]);
+    }
+
+    /**
+     * Get detailed shipping parcels information
+     */
+    public function getShippingParcels(): JsonResponse
+    {
+        $parcels = \App\Models\ShippingParcel::with('commande.client')
+            ->orderBy('created_at', 'desc')
+            ->limit(20)
+            ->get();
+
+        $parcelsData = $parcels->map(function ($parcel) {
+            return [
+                'id' => $parcel->id,
+                'tracking_number' => $parcel->tracking_number,
+                'status' => $parcel->status,
+                'provider' => $parcel->provider,
+                'commande_id' => $parcel->commande_id,
+                'client_name' => $parcel->commande->client->nom_complet ?? 'N/A',
+                'city' => $parcel->city_name,
+                'price' => $parcel->price,
+                'created_at' => $parcel->created_at,
+                'last_synced_at' => $parcel->last_synced_at,
+                'meta' => $parcel->meta,
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Recent shipping parcels retrieved',
+            'total_parcels' => \App\Models\ShippingParcel::count(),
+            'recent_parcels' => $parcelsData,
+        ]);
+    }
+
+    /**
+     * Interpret API response for debugging
+     */
+    private function interpretApiResponse(array $response): array
+    {
+        if (!$response['success']) {
+            if (str_contains($response['message'] ?? '', 'Failed to get parcel info')) {
+                return [
+                    'status' => 'api_error',
+                    'message' => 'API call failed - check credentials and network connectivity',
+                    'suggestions' => [
+                        'Verify OZONEXPRESS_ID and OZONEXPRESS_KEY in .env',
+                        'Check if the API endpoint is accessible',
+                        'Verify network connectivity to OzonExpress servers'
+                    ]
+                ];
+            }
+        }
+
+        return [
+            'status' => 'unknown',
+            'message' => 'Response received but interpretation unclear',
+            'raw_response' => $response
+        ];
     }
 }

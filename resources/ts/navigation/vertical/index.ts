@@ -63,6 +63,11 @@ const adminNavigation = [
         to: '/admin/order-conflicts',
         icon: { icon: 'tabler-alert-triangle' },
       },
+      {
+        title: 'Debug OzonExpress',
+        to: '/admin/debug/ozonexpress',
+        icon: { icon: 'tabler-bug' },
+      },
     ],
   },
   {
