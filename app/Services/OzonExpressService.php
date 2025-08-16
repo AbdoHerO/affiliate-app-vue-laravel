@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Commande;
 use App\Models\ShippingParcel;
 use App\Services\OzonSettingsService;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -63,7 +64,7 @@ class OzonExpressService
                 ];
             })->toArray();
 
-            // Look up the city ID from the shipping cities table
+            // Look up the city ID from the shipping cities table (OzonExpress expects city ID)
             $shippingCity = \App\Models\ShippingCity::where('provider', 'ozonexpress')
                 ->where('name', $commande->adresse->ville)
                 ->where('active', true)
@@ -84,17 +85,17 @@ class OzonExpressService
                 ];
             }
 
-            // Prepare form data for OzonExpress API
+            // Prepare form data for OzonExpress API (use city ID like testCreateParcel)
             $formData = [
                 'tracking-number' => $trackingNumber ?? '',
                 'parcel-receiver' => $commande->client->nom_complet,
                 'parcel-phone' => $commande->client->telephone,
-                'parcel-city' => $shippingCity->city_id, // Use the city ID, not the name
+                'parcel-city' => $shippingCity->city_id, // Use city ID like testCreateParcel method
                 'parcel-address' => $commande->adresse->adresse,
                 'parcel-note' => $commande->notes ?? '',
-                'parcel-price' => $commande->total_ttc,
+                'parcel-price' => (string) intval($commande->total_ttc),
                 'parcel-nature' => 'Produits divers',
-                'parcel-stock' => '1', // 1 = stock, 0 = pickup
+                'parcel-stock' => '0', // 0 = ramassage (pickup), 1 = stock
                 'products' => json_encode($products),
             ];
 
@@ -175,34 +176,65 @@ class OzonExpressService
                 ];
             }
 
-            // Create shipping parcel record
-            $parcel = ShippingParcel::create([
-                'commande_id' => $commande->id,
-                'provider' => 'ozonexpress',
-                'tracking_number' => $trackingNumber,
-                'status' => 'pending',
-                'city_id' => $cityId,
-                'city_name' => $cityName,
-                'receiver' => $receiver,
-                'phone' => $phone,
-                'address' => $address,
-                'price' => $price,
-                'note' => $note,
-                'delivered_price' => $deliveredPrice,
-                'returned_price' => $returnedPrice,
-                'refused_price' => $refusedPrice,
-                'last_synced_at' => now(),
-                'meta' => [
-                    'api_response' => $responseData,
-                    'form_data' => $formData,
-                ],
-            ]);
+            // Use database transaction to ensure atomicity
+            DB::beginTransaction();
 
-            return [
-                'success' => true,
-                'message' => 'Parcel created successfully',
-                'data' => $parcel,
-            ];
+            try {
+                // Create shipping parcel record
+                $parcel = ShippingParcel::create([
+                    'commande_id' => $commande->id,
+                    'provider' => 'ozonexpress',
+                    'tracking_number' => $trackingNumber,
+                    'status' => 'pending',
+                    'city_id' => $cityId,
+                    'city_name' => $cityName,
+                    'receiver' => $receiver,
+                    'phone' => $phone,
+                    'address' => $address,
+                    'price' => $price,
+                    'note' => $note,
+                    'delivered_price' => $deliveredPrice,
+                    'returned_price' => $returnedPrice,
+                    'refused_price' => $refusedPrice,
+                    'last_synced_at' => now(),
+                    'meta' => [
+                        'api_response' => $responseData,
+                        'form_data' => $formData,
+                    ],
+                ]);
+
+                // Update order status to indicate it's been shipped
+                $oldStatus = $commande->statut;
+                $commande->update([
+                    'statut' => 'expediee', // Changed from current status to shipped
+                ]);
+
+                DB::commit();
+
+                Log::info('Shipping parcel created and order status updated successfully', [
+                    'commande_id' => $commande->id,
+                    'tracking_number' => $trackingNumber,
+                    'parcel_id' => $parcel->id,
+                    'old_status' => $oldStatus,
+                    'new_status' => 'expediee',
+                ]);
+
+                return [
+                    'success' => true,
+                    'message' => 'Parcel created successfully and order status updated',
+                    'data' => $parcel,
+                ];
+
+            } catch (\Exception $dbException) {
+                DB::rollBack();
+                Log::error('Failed to create shipping parcel or update order status', [
+                    'commande_id' => $commande->id,
+                    'error' => $dbException->getMessage(),
+                    'trace' => $dbException->getTraceAsString(),
+                ]);
+
+                throw $dbException; // Re-throw to be handled by outer catch
+            }
 
         } catch (\Exception $e) {
             Log::error('OzonExpress Service Error', [

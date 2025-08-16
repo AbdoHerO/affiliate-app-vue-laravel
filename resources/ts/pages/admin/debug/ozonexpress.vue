@@ -586,10 +586,15 @@
                           />
                         </VCol>
                         <VCol cols="12" md="6">
-                          <VTextField
+                          <VSelect
                             v-model="manualForm.city"
+                            :items="shippingStore.cities"
+                            item-title="name"
+                            item-value="city_id"
                             label="Ville"
+                            placeholder="Sélectionnez une ville"
                             required
+                            :loading="shippingStore.loading"
                           />
                         </VCol>
                         <VCol cols="12" md="6">
@@ -850,8 +855,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useOzonDebugStore } from '@/stores/admin/ozonDebug'
+import { useShippingStore } from '@/stores/admin/shipping'
 import { useNotifications } from '@/composables/useNotifications'
 
 definePage({
@@ -864,6 +870,7 @@ definePage({
 
 // Stores
 const ozonDebugStore = useOzonDebugStore()
+const shippingStore = useShippingStore()
 const { showSuccess, showError } = useNotifications()
 
 // State
@@ -902,7 +909,7 @@ const trackResult = ref<any>(null)
 const manualForm = ref({
   receiver: '',
   phone: '',
-  city: '',
+  city: '', // Will store city_id instead of city name
   address: '',
   price: 0,
   nature: '',
@@ -1238,11 +1245,11 @@ const disableOzonExpress = async () => {
 const testCreateParcel = async () => {
   loading.value.createTest = true
   try {
-    // Use the new debug API with predefined test data
+    // Use the new debug API with predefined test data (use city ID)
     const result = await ozonDebugStore.sendParcel({
       receiver: 'Test Client',
       phone: '0612345678',
-      city: 'Casablanca',
+      city: '97', // Casablanca city ID
       address: '123 Rue Test, Quartier Test',
       price: 50.00,
       nature: 'Test Product',
@@ -1492,4 +1499,9 @@ const copyToClipboard = async (text: string) => {
     showError('Erreur lors de la copie')
   }
 }
+
+// Load cities on component mount
+onMounted(async () => {
+  await shippingStore.fetchCities()
+})
 </script>

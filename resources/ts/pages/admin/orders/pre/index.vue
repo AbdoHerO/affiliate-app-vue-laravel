@@ -509,7 +509,7 @@ onMounted(() => {
               color="secondary"
               variant="tonal"
             >
-              {{ item.client?.city?.nom || item.city?.nom || 'N/A' }}
+              {{ item.adresse?.ville || 'N/A' }}
             </VChip>
           </div>
         </template>

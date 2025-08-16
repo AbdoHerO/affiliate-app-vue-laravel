@@ -323,7 +323,7 @@ onMounted(() => {
           </VBtn>
 
           <VBtn
-            v-if="preorder && !preorder.shipping_parcel && !isEditing"
+            v-if="preorder && preorder.statut === 'confirmee' && !preorder.shipping_parcel && !isEditing"
             color="primary"
             variant="elevated"
             @click="sendToOzonExpress"

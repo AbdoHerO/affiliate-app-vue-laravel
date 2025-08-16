@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Commande;
-use App\Services\OzonExpressService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
@@ -269,7 +268,7 @@ class PreordersController extends Controller
         }
 
         $results = [];
-        $ozonService = new OzonExpressService();
+        $ozonService = app(\App\Services\OzonExpressService::class);
 
         foreach ($orders as $order) {
             try {
@@ -401,7 +400,7 @@ class PreordersController extends Controller
         }
 
         try {
-            $ozonService = new OzonExpressService();
+            $ozonService = app(\App\Services\OzonExpressService::class);
             $response = $ozonService->addParcel($order);
 
             if ($response['success']) {

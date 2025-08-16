@@ -247,6 +247,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('shipping/orders', [ShippingOrdersController::class, 'index']);
         Route::get('shipping/orders/{id}', [ShippingOrdersController::class, 'show']);
 
+        // Tracking refresh endpoints
+        Route::post('shipping/orders/refresh-tracking', [ShippingOrdersController::class, 'refreshTracking']);
+        Route::post('shipping/orders/refresh-tracking-bulk', [ShippingOrdersController::class, 'refreshTrackingBulk']);
+
 
 
         // Legacy Affiliates Management (keep for now)
