@@ -976,23 +976,42 @@ class OzonExpressService
             $trackingData = $trackingResult['data'] ?? [];
             $parcelData = $parcelInfoResult['success'] ? ($parcelInfoResult['data'] ?? []) : [];
 
-            // Extract status information
-            $status = $parcelData['status'] ?? 'unknown';
-            $lastStatusText = $trackingData['last_status'] ?? null;
-            $lastStatusCode = $trackingData['status_code'] ?? null;
+            // Extract status information from OzonExpress response structure
+            $lastTracking = $trackingData['TRACKING']['LAST_TRACKING'] ?? [];
+            $parcelInfo = $parcelData['PARCEL-INFO']['INFOS'] ?? [];
+
+            // Get status information
+            $lastStatusText = $lastTracking['STATUT'] ?? null;
+            $lastStatusTime = $lastTracking['TIME_STR'] ?? null;
+            $lastStatusComment = $lastTracking['COMMENT'] ?? null;
+
+            // Map OzonExpress status to our internal status
+            $status = $this->mapOzonExpressStatus($lastStatusText);
+
+            // Parse the status time
+            $lastStatusAt = null;
+            if ($lastStatusTime) {
+                try {
+                    $lastStatusAt = \Carbon\Carbon::createFromFormat('Y-m-d H:i', $lastStatusTime);
+                } catch (\Exception $e) {
+                    $lastStatusAt = now();
+                }
+            }
 
             if ($parcel) {
                 // Update existing parcel
                 $parcel->update([
                     'status' => $status,
                     'last_status_text' => $lastStatusText,
-                    'last_status_code' => $lastStatusCode,
-                    'last_status_at' => now(),
+                    'last_status_code' => $lastStatusText, // Use status text as code for OzonExpress
+                    'last_status_at' => $lastStatusAt ?: now(),
                     'last_synced_at' => now(),
                     'meta' => array_merge($parcel->meta ?? [], [
                         'last_tracking_check' => now()->toISOString(),
                         'tracking_data' => $trackingData,
                         'parcel_data' => $parcelData,
+                        'last_status_comment' => $lastStatusComment,
+                        'last_status_time_str' => $lastStatusTime,
                     ])
                 ]);
             } else {
@@ -1002,20 +1021,26 @@ class OzonExpressService
                     'provider' => 'ozonexpress',
                     'tracking_number' => $trackingNumber,
                     'status' => $status,
-                    'receiver' => $parcelData['receiver'] ?? null,
-                    'phone' => $parcelData['phone'] ?? null,
-                    'city_name' => $parcelData['city'] ?? null,
-                    'address' => $parcelData['address'] ?? null,
-                    'price' => $parcelData['price'] ?? null,
+                    'city_id' => $parcelInfo['CITY_ID'] ?? null,
+                    'city_name' => $parcelInfo['CITY_NAME'] ?? null,
+                    'receiver' => $parcelInfo['RECEIVER'] ?? null,
+                    'phone' => $parcelInfo['PHONE'] ?? null,
+                    'address' => $parcelInfo['ADDRESS'] ?? null,
+                    'price' => $parcelInfo['PRICE'] ?? null,
+                    'delivered_price' => $parcelInfo['DELIVERED-PRICE'] ?? null,
+                    'returned_price' => $parcelInfo['RETURNED-PRICE'] ?? null,
+                    'refused_price' => $parcelInfo['REFUSED-PRICE'] ?? null,
                     'last_status_text' => $lastStatusText,
-                    'last_status_code' => $lastStatusCode,
-                    'last_status_at' => now(),
+                    'last_status_code' => $lastStatusText, // Use status text as code for OzonExpress
+                    'last_status_at' => $lastStatusAt ?: now(),
                     'last_synced_at' => now(),
                     'meta' => [
                         'external_parcel' => true,
                         'tracking_data' => $trackingData,
                         'parcel_data' => $parcelData,
                         'created_via_debug' => true,
+                        'last_status_comment' => $lastStatusComment,
+                        'last_status_time_str' => $lastStatusTime,
                     ]
                 ]);
             }
@@ -1037,5 +1062,37 @@ class OzonExpressService
                 'error' => $e->getMessage(),
             ];
         }
+    }
+
+    /**
+     * Map OzonExpress status to our internal status system
+     */
+    private function mapOzonExpressStatus(?string $ozonStatus): string
+    {
+        if (!$ozonStatus) {
+            return 'unknown';
+        }
+
+        // Map OzonExpress French status to English equivalents
+        $statusMap = [
+            'Nouveau Colis' => 'pending',
+            'Colis Reçu' => 'received',
+            'En Transit' => 'in_transit',
+            'En Cours de Livraison' => 'out_for_delivery',
+            'Livré' => 'delivered',
+            'Retourné' => 'returned',
+            'Refusé' => 'refused',
+            'Annulé' => 'cancelled',
+            'En Attente' => 'pending',
+            'Expédié' => 'shipped',
+            'Arrivé au Centre' => 'at_facility',
+            'Prêt pour Livraison' => 'ready_for_delivery',
+            'Tentative de Livraison' => 'delivery_attempted',
+            'Échec de Livraison' => 'delivery_failed',
+            'Retour en Cours' => 'return_in_progress',
+            'Retour Livré' => 'return_delivered',
+        ];
+
+        return $statusMap[$ozonStatus] ?? 'unknown';
     }
 }

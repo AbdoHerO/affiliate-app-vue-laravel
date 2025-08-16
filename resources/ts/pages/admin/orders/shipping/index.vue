@@ -182,33 +182,45 @@ const createDeliveryNote = async () => {
 }
 
 const getStatusColor = (status: string) => {
-  switch (status) {
-    case 'created':
-      return 'info'
+  switch (status?.toLowerCase()) {
+    case 'delivered': return 'success'
+    case 'shipped':
     case 'in_transit':
-      return 'warning'
-    case 'delivered':
-      return 'success'
+    case 'out_for_delivery': return 'info'
+    case 'pending':
+    case 'created':
+    case 'received':
+    case 'ready_for_delivery': return 'warning'
+    case 'cancelled':
+    case 'refused':
+    case 'delivery_failed': return 'error'
     case 'returned':
-      return 'error'
-    default:
-      return 'default'
+    case 'return_delivered': return 'secondary'
+    default: return 'default'
   }
 }
 
 const getStatusText = (status: string) => {
-  switch (status) {
-    case 'created':
-      return 'Créé'
-    case 'in_transit':
-      return 'En transit'
-    case 'delivered':
-      return 'Livré'
-    case 'returned':
-      return 'Retourné'
-    default:
-      return status
+  const statusLabels: Record<string, string> = {
+    'pending': 'En Attente',
+    'created': 'Créé',
+    'received': 'Reçu',
+    'in_transit': 'En Transit',
+    'out_for_delivery': 'En Cours de Livraison',
+    'delivered': 'Livré',
+    'returned': 'Retourné',
+    'refused': 'Refusé',
+    'cancelled': 'Annulé',
+    'shipped': 'Expédié',
+    'at_facility': 'Arrivé au Centre',
+    'ready_for_delivery': 'Prêt pour Livraison',
+    'delivery_attempted': 'Tentative de Livraison',
+    'delivery_failed': 'Échec de Livraison',
+    'return_in_progress': 'Retour en Cours',
+    'return_delivered': 'Retour Livré',
+    'unknown': 'Statut Inconnu'
   }
+  return statusLabels[status?.toLowerCase()] || status || 'Inconnu'
 }
 
 const formatCurrency = (amount: number) => {

@@ -217,7 +217,7 @@
               >
                 <template #item.status="{ item }">
                   <VChip size="small" :color="getStatusColor(item.status)">
-                    {{ item.status }}
+                    {{ getStatusLabel(item.status) }}
                   </VChip>
                 </template>
 
@@ -344,7 +344,7 @@
 
                 <template #item.status="{ item }">
                   <VChip size="small" :color="getStatusColor(item.status)">
-                    {{ item.status }}
+                    {{ getStatusLabel(item.status) }}
                   </VChip>
                 </template>
 
@@ -761,7 +761,7 @@
                             :color="getStatusColor(trackResult.data.parcel?.status)"
                             variant="tonal"
                           >
-                            {{ trackResult.data.parcel?.status || 'Inconnu' }}
+                            {{ getStatusLabel(trackResult.data.parcel?.status) }}
                           </VChip>
                         </VCol>
                         <VCol cols="12" md="6">
@@ -1353,12 +1353,43 @@ const showMetaDialog = (item: any) => {
 }
 
 const getStatusColor = (status: string) => {
-  switch (status) {
-    case 'pending': return 'warning'
+  switch (status?.toLowerCase()) {
     case 'delivered': return 'success'
-    case 'returned': return 'error'
-    default: return 'info'
+    case 'shipped':
+    case 'in_transit':
+    case 'out_for_delivery': return 'info'
+    case 'pending':
+    case 'received':
+    case 'ready_for_delivery': return 'warning'
+    case 'cancelled':
+    case 'refused':
+    case 'delivery_failed': return 'error'
+    case 'returned':
+    case 'return_delivered': return 'secondary'
+    default: return 'secondary'
   }
+}
+
+const getStatusLabel = (status: string) => {
+  const statusLabels: Record<string, string> = {
+    'pending': 'En Attente',
+    'received': 'Reçu',
+    'in_transit': 'En Transit',
+    'out_for_delivery': 'En Cours de Livraison',
+    'delivered': 'Livré',
+    'returned': 'Retourné',
+    'refused': 'Refusé',
+    'cancelled': 'Annulé',
+    'shipped': 'Expédié',
+    'at_facility': 'Arrivé au Centre',
+    'ready_for_delivery': 'Prêt pour Livraison',
+    'delivery_attempted': 'Tentative de Livraison',
+    'delivery_failed': 'Échec de Livraison',
+    'return_in_progress': 'Retour en Cours',
+    'return_delivered': 'Retour Livré',
+    'unknown': 'Statut Inconnu'
+  }
+  return statusLabels[status?.toLowerCase()] || status || 'Inconnu'
 }
 
 const formatDate = (date: string) => {
