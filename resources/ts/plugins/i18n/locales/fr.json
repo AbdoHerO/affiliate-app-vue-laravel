@@ -18,7 +18,9 @@
   "nav_categories": "Catégories",
   "nav_boutiques": "Boutiques",
   "nav_variant_catalog": "Catalogue de Variantes",
-  
+  "nav_ozonexpress_credentials": "OzonExpress Paramètres",
+  "nav_ozonexpress_cities": "OzonExpress Villes",
+
   "admin_produits_drag_sort": "Glissez pour réorganiser les images",
 
   "common_basic_info": "Informations de base",
@@ -1040,6 +1042,7 @@
   "variante": "variante",
   "proposition": "proposition",
   "rupture de stock": "rupture de stock",
+  "ville": "ville",
 
   // ===========================================
   // MISSING TRANSLATION KEYS FROM CONSOLE WARNINGS

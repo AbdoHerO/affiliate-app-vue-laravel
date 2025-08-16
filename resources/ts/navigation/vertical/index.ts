@@ -94,6 +94,16 @@ const adminNavigation = [
         to: '/admin/variants/attributs',
         icon: { icon: 'tabler-palette' },
       },
+      {
+        title: 'nav_ozonexpress_credentials',
+        to: '/admin/integrations/ozon/credentials',
+        icon: { icon: 'tabler-settings' },
+      },
+      {
+        title: 'nav_ozonexpress_cities',
+        to: '/admin/integrations/ozon/cities',
+        icon: { icon: 'tabler-map-pin' },
+      },
     ],
   },
   {

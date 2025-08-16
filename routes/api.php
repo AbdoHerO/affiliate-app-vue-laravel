@@ -259,6 +259,26 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('affiliate-applications/{id}/refuse', [AffiliateApplicationsController::class, 'refuse']);
         Route::post('affiliate-applications/{id}/resend-verification', [AffiliateApplicationsController::class, 'resendVerification']);
 
+        // OzonExpress Integration Management
+        Route::prefix('integrations/ozon')->group(function () {
+            // Settings
+            Route::get('settings', [\App\Http\Controllers\Admin\OzonSettingsController::class, 'show']);
+            Route::get('settings/edit', [\App\Http\Controllers\Admin\OzonSettingsController::class, 'edit']);
+            Route::put('settings', [\App\Http\Controllers\Admin\OzonSettingsController::class, 'update']);
+            Route::post('settings/test', [\App\Http\Controllers\Admin\OzonSettingsController::class, 'testConnection']);
+
+            // Cities
+            Route::get('cities', [\App\Http\Controllers\Admin\OzonCitiesController::class, 'index']);
+            Route::post('cities', [\App\Http\Controllers\Admin\OzonCitiesController::class, 'store']);
+            Route::get('cities/stats', [\App\Http\Controllers\Admin\OzonCitiesController::class, 'stats']);
+            Route::get('cities/{id}', [\App\Http\Controllers\Admin\OzonCitiesController::class, 'show']);
+            Route::put('cities/{id}', [\App\Http\Controllers\Admin\OzonCitiesController::class, 'update']);
+            Route::delete('cities/{id}', [\App\Http\Controllers\Admin\OzonCitiesController::class, 'destroy']);
+            Route::post('cities/{id}/restore', [\App\Http\Controllers\Admin\OzonCitiesController::class, 'restore']);
+            Route::delete('cities/{id}/force', [\App\Http\Controllers\Admin\OzonCitiesController::class, 'forceDelete']);
+            Route::post('cities/import', [\App\Http\Controllers\Admin\OzonCitiesController::class, 'import']);
+        });
+
         // Testing & Debug Routes (only in non-production)
         if (!app()->environment('production')) {
             Route::prefix('test')->group(function () {

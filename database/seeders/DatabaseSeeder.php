@@ -18,6 +18,10 @@ class DatabaseSeeder extends Seeder
             BoutiqueSeeder::class,
             CategorieSeeder::class,
             ComprehensiveProductSeeder::class,
+
+            // OzonExpress integration seeders
+            AppSettingsSeeder::class,
+            OzonExpressCitiesSeeder::class,
         ]);
     }
 }

@@ -17,11 +17,14 @@ return new class extends Migration
             $table->string('city_id');
             $table->string('ref')->nullable();
             $table->string('name');
+            $table->boolean('active')->default(true);
             $table->json('prices')->nullable(); // delivery, return, refused prices
+            $table->json('meta')->nullable(); // additional metadata
             $table->timestampsTz();
 
             $table->unique(['provider', 'city_id']);
             $table->index(['provider', 'name']);
+            $table->index(['provider', 'active']);
         });
     }
 

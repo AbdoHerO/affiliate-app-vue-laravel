@@ -18,11 +18,8 @@ export const useApi = createFetch({
       // Get auth store instance
       const authStore = useAuthStore()
 
-      // Try to get token from auth store first, then localStorage, then cookie
-      const authToken = authStore.token || localStorage.getItem('auth_token')
-      const accessToken = useCookie('accessToken').value
-
-      const token = authToken || accessToken
+      // Try to get token from auth store first, then localStorage
+      const token = authStore.token || localStorage.getItem('auth_token')
 
       // Ensure headers object exists and set Accept header
       options.headers = {

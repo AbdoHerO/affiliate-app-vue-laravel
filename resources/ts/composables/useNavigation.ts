@@ -108,6 +108,16 @@ export function useNavigation() {
                 to: 'admin-variants-attributs',
                 icon: { icon: 'tabler-palette' },
               },
+              {
+                title: t('nav_ozonexpress_credentials'),
+                to: 'admin-integrations-ozon-credentials',
+                icon: { icon: 'tabler-settings' },
+              },
+              {
+                title: t('nav_ozonexpress_cities'),
+                to: 'admin-integrations-ozon-cities',
+                icon: { icon: 'tabler-map-pin' },
+              },
             ],
           },
           {

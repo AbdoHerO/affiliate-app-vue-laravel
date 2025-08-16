@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Services\OzonSettingsService;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -11,7 +12,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Register OzonSettingsService
+        $this->app->singleton(OzonSettingsService::class, function () {
+            return new OzonSettingsService();
+        });
     }
 
     /**

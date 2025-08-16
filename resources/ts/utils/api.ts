@@ -7,8 +7,14 @@ export const $api = ofetch.create({
     'Content-Type': 'application/json',
   },
   async onRequest({ options }) {
-    const accessToken = useCookie('accessToken').value
-    if (accessToken)
-      options.headers.append('Authorization', `Bearer ${accessToken}`)
+    // Get token from localStorage to avoid circular dependency
+    const token = localStorage.getItem('auth_token')
+
+    if (token) {
+      options.headers = {
+        ...options.headers,
+        'Authorization': `Bearer ${token}`
+      }
+    }
   },
 })
