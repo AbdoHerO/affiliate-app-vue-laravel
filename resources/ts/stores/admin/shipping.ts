@@ -187,7 +187,7 @@ export const useShippingStore = defineStore('shipping', () => {
     error.value = null
 
     try {
-      const response = await axios.post('/api/admin/shipping/ozon/tracking', {
+      const response = await axios.post('/api/admin/shipping/ozon/track', {
         tracking_number: trackingNumber,
       })
 

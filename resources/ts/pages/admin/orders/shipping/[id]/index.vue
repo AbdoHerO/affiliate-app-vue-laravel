@@ -20,7 +20,8 @@ const { showSuccess, showError } = useNotifications()
 
 // Local state
 const activeTab = ref('parcel')
-const trackingData = ref(null)
+const trackingData = ref<any>(null)
+const trackingLoading = ref(false)
 const parcelInfo = ref(null)
 const deliveryNoteRef = ref('')
 const selectedParcels = ref<string[]>([])
@@ -38,12 +39,16 @@ const fetchShippingOrder = async () => {
 const fetchTracking = async () => {
   if (!shippingOrder.value?.shipping_parcel?.tracking_number) return
 
+  trackingLoading.value = true
   try {
     trackingData.value = await shippingStore.getTracking(
       shippingOrder.value.shipping_parcel.tracking_number
     )
+    showSuccess('Données de suivi récupérées avec succès')
   } catch (error: any) {
     showError(error.message || 'Erreur lors de la récupération du tracking')
+  } finally {
+    trackingLoading.value = false
   }
 }
 
@@ -194,6 +199,75 @@ const formatDate = (date: string) => {
   })
 }
 
+// Tracking data parsing helpers
+const getTrackingNumber = computed(() => {
+  return trackingData.value?.tracking_info?.TRACKING?.['TRACKING-NUMBER'] || ''
+})
+
+const getLastTracking = computed(() => {
+  return trackingData.value?.tracking_info?.TRACKING?.LAST_TRACKING || null
+})
+
+const getTrackingHistory = computed(() => {
+  const history = trackingData.value?.tracking_info?.TRACKING?.HISTORY
+  if (!history) return []
+
+  // Convert object to array and sort by time (newest first)
+  return Object.values(history)
+    .filter((item: any) => item && item.TIME_STR)
+    .sort((a: any, b: any) => {
+      // Sort by TIME_STR in descending order (newest first)
+      return new Date(b.TIME_STR).getTime() - new Date(a.TIME_STR).getTime()
+    })
+})
+
+const getParcelSummary = computed(() => {
+  return trackingData.value?.parcel_info?.PARCEL_INFO?.INFOS || null
+})
+
+const getTrackingStatusColor = (status: string) => {
+  if (!status) return 'secondary'
+
+  const statusLower = status.toLowerCase()
+
+  // Map Ozon STATUT to badge colors
+  if (statusLower.includes('nouveau') || statusLower.includes('créé')) return 'info'
+  if (statusLower.includes('en cours') || statusLower.includes('transit')) return 'warning'
+  if (statusLower.includes('livré')) return 'success'
+  if (statusLower.includes('retourné') || statusLower.includes('refusé')) return 'error'
+
+  return 'secondary'
+}
+
+const formatDateTime = (dateStr: string) => {
+  if (!dateStr) return ''
+
+  try {
+    const date = new Date(dateStr)
+    return date.toLocaleDateString('fr-FR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    })
+  } catch {
+    return dateStr
+  }
+}
+
+const copyTrackingNumber = async () => {
+  const trackingNumber = getTrackingNumber.value
+  if (!trackingNumber) return
+
+  try {
+    await navigator.clipboard.writeText(trackingNumber)
+    showSuccess('Numéro de suivi copié!')
+  } catch (error) {
+    showError('Erreur lors de la copie')
+  }
+}
+
 const goBack = () => {
   router.push({ name: 'admin-orders-shipping' })
 }
@@ -264,6 +338,7 @@ onMounted(() => {
             color="info"
             variant="outlined"
             @click="fetchTracking"
+            :loading="trackingLoading"
           >
             <VIcon start icon="tabler-route" />
             Tracking
@@ -437,23 +512,189 @@ onMounted(() => {
 
         <!-- Tracking Tab -->
         <VWindowItem value="tracking">
-          <VCard>
+          <!-- Loading State -->
+          <VCard v-if="trackingLoading">
+            <VCardTitle>Suivi du Colis</VCardTitle>
+            <VCardText>
+              <div class="text-center py-8">
+                <VProgressCircular
+                  indeterminate
+                  color="primary"
+                  size="64"
+                  class="mb-4"
+                />
+                <h3 class="text-h6 mb-2">Récupération des données de suivi...</h3>
+                <p class="text-body-2 text-medium-emphasis">
+                  Veuillez patienter pendant que nous récupérons les informations
+                </p>
+              </div>
+            </VCardText>
+          </VCard>
+
+          <!-- Tracking Data Display -->
+          <div v-else-if="trackingData">
+            <!-- Header Card -->
+            <VCard class="mb-4">
+              <VCardTitle class="d-flex align-center justify-space-between">
+                <span>Suivi du Colis</span>
+                <VBtn
+                  color="primary"
+                  variant="outlined"
+                  @click="fetchTracking"
+                  :loading="trackingLoading"
+                >
+                  <VIcon start icon="tabler-refresh" />
+                  Actualiser
+                </VBtn>
+              </VCardTitle>
+              <VCardText>
+                <!-- Tracking Number & Status -->
+                <div class="d-flex flex-column flex-md-row align-md-center justify-space-between gap-4 mb-4">
+                  <div class="d-flex align-center gap-2">
+                    <VChip
+                      color="primary"
+                      variant="tonal"
+                      class="font-mono"
+                      size="large"
+                    >
+                      {{ getTrackingNumber }}
+                    </VChip>
+                    <VBtn
+                      icon="tabler-copy"
+                      variant="text"
+                      size="small"
+                      @click="copyTrackingNumber"
+                    />
+                  </div>
+
+                  <div class="d-flex align-center gap-2">
+                    <VChip
+                      :color="getTrackingStatusColor(getLastTracking?.STATUT || '')"
+                      variant="tonal"
+                      size="large"
+                    >
+                      {{ getLastTracking?.STATUT || 'Statut inconnu' }}
+                    </VChip>
+                    <div v-if="getLastTracking?.TIME_STR" class="text-body-2 text-medium-emphasis">
+                      Mis à jour le {{ formatDateTime(getLastTracking.TIME_STR) }}
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Summary Information -->
+                <VRow v-if="getParcelSummary">
+                  <VCol cols="12" md="6">
+                    <div class="mb-3">
+                      <div class="text-body-2 text-medium-emphasis mb-1">Destinataire</div>
+                      <div class="text-body-1 font-weight-medium">
+                        {{ getParcelSummary.RECEIVER || '-' }}
+                      </div>
+                    </div>
+                    <div class="mb-3">
+                      <div class="text-body-2 text-medium-emphasis mb-1">Téléphone</div>
+                      <div class="text-body-1">
+                        {{ getParcelSummary.PHONE || '-' }}
+                      </div>
+                    </div>
+                  </VCol>
+                  <VCol cols="12" md="6">
+                    <div class="mb-3">
+                      <div class="text-body-2 text-medium-emphasis mb-1">Ville</div>
+                      <div class="text-body-1">
+                        {{ getParcelSummary.CITY_NAME || '-' }}
+                      </div>
+                    </div>
+                    <div class="mb-3">
+                      <div class="text-body-2 text-medium-emphasis mb-1">Adresse</div>
+                      <div class="text-body-1">
+                        {{ getParcelSummary.ADDRESS || '-' }}
+                      </div>
+                    </div>
+                  </VCol>
+                  <VCol cols="12" v-if="getParcelSummary.PRICE">
+                    <div class="mb-3">
+                      <div class="text-body-2 text-medium-emphasis mb-1">Prix</div>
+                      <div class="text-h6 text-primary">
+                        {{ formatCurrency(parseFloat(getParcelSummary.PRICE) || 0) }}
+                      </div>
+                    </div>
+                  </VCol>
+                </VRow>
+              </VCardText>
+            </VCard>
+
+            <!-- Timeline Card -->
+            <VCard>
+              <VCardTitle>Historique du Suivi</VCardTitle>
+              <VCardText>
+                <div v-if="getTrackingHistory.length > 0">
+                  <VTimeline
+                    side="end"
+                    align="start"
+                    truncate-line="both"
+                    density="compact"
+                  >
+                    <VTimelineItem
+                      v-for="(event, index) in getTrackingHistory"
+                      :key="index"
+                      :dot-color="getTrackingStatusColor(event.STATUT)"
+                      size="small"
+                    >
+                      <template #icon>
+                        <VIcon
+                          :icon="event.STATUT?.toLowerCase().includes('livré') ? 'tabler-check' : 'tabler-package'"
+                          size="16"
+                        />
+                      </template>
+
+                      <div class="d-flex flex-column flex-md-row align-md-center justify-space-between">
+                        <div>
+                          <div class="text-body-1 font-weight-medium mb-1">
+                            {{ event.STATUT }}
+                          </div>
+                          <div v-if="event.COMMENT" class="text-body-2 text-medium-emphasis mb-2">
+                            {{ event.COMMENT }}
+                          </div>
+                        </div>
+                        <div class="text-body-2 text-medium-emphasis">
+                          {{ formatDateTime(event.TIME_STR) }}
+                        </div>
+                      </div>
+                    </VTimelineItem>
+                  </VTimeline>
+                </div>
+                <div v-else class="text-center py-8">
+                  <VIcon
+                    icon="tabler-timeline"
+                    size="64"
+                    class="mb-4"
+                    color="disabled"
+                  />
+                  <h3 class="text-h6 mb-2">Aucun événement de suivi</h3>
+                  <p class="text-body-2 text-medium-emphasis">
+                    Aucun événement de suivi pour le moment.
+                  </p>
+                </div>
+              </VCardText>
+            </VCard>
+          </div>
+
+          <!-- Empty State -->
+          <VCard v-else>
             <VCardTitle class="d-flex align-center justify-space-between">
               <span>Suivi du Colis</span>
               <VBtn
                 color="primary"
                 variant="outlined"
                 @click="fetchTracking"
+                :loading="trackingLoading"
               >
                 <VIcon start icon="tabler-refresh" />
-                Actualiser
+                Récupérer le Suivi
               </VBtn>
             </VCardTitle>
             <VCardText>
-              <div v-if="trackingData">
-                <pre class="text-body-2">{{ JSON.stringify(trackingData, null, 2) }}</pre>
-              </div>
-              <div v-else class="text-center py-8">
+              <div class="text-center py-8">
                 <VIcon
                   icon="tabler-route"
                   size="64"
@@ -462,14 +703,16 @@ onMounted(() => {
                 />
                 <h3 class="text-h6 mb-2">Aucune donnée de suivi</h3>
                 <p class="text-body-2 text-medium-emphasis mb-4">
-                  Cliquez sur "Actualiser" pour récupérer les informations de suivi
+                  Cliquez sur "Récupérer le Suivi" pour obtenir les informations de suivi
                 </p>
                 <VBtn
                   color="primary"
                   variant="elevated"
                   @click="fetchTracking"
+                  :loading="trackingLoading"
                 >
-                  Récupérer le suivi
+                  <VIcon start icon="tabler-route" />
+                  Récupérer le Suivi
                 </VBtn>
               </div>
             </VCardText>
