@@ -4,6 +4,9 @@ import { useRouter } from 'vue-router'
 import { useShippingStore } from '@/stores/admin/shipping'
 import { useConfirmAction } from '@/composables/useConfirmAction'
 import { useNotifications } from '@/composables/useNotifications'
+import TrackingModal from '@/components/dialogs/TrackingModal.vue'
+import DeliveryNoteDialog from '@/components/dialogs/DeliveryNoteDialog.vue'
+import OzonExpressConfirmDialog from '@/components/dialogs/OzonExpressConfirmDialog.vue'
 
 definePage({
   meta: {
@@ -98,17 +101,63 @@ const viewShippingOrder = (order: any) => {
   router.push({ name: 'admin-orders-shipping-id', params: { id: order.id } })
 }
 
+// Dialog states
 const showTrackingModal = ref(false)
-const trackingData = ref(null)
+const trackingData = ref<any>(null)
 const trackingLoading = ref(false)
+const trackingError = ref('')
+const currentTrackingNumber = ref('')
+
+const showDeliveryNoteDialog = ref(false)
+const showOzonDialog = ref(false)
+const ozonDialogLoading = ref(false)
+const currentOrderForResend = ref<any>(null)
 
 const viewTracking = async (order: any) => {
+  currentTrackingNumber.value = order.shipping_parcel.tracking_number
   trackingLoading.value = true
+  trackingError.value = ''
+
   try {
-    trackingData.value = await shippingStore.getTracking(order.shipping_parcel.tracking_number)
+    // Get both tracking and parcel info
+    const [trackingInfo, parcelInfo] = await Promise.all([
+      shippingStore.trackParcel(order.shipping_parcel.tracking_number),
+      shippingStore.getParcelInfoNew(order.shipping_parcel.tracking_number)
+    ])
+
+    trackingData.value = {
+      tracking_info: trackingInfo,
+      parcel_info: parcelInfo
+    }
     showTrackingModal.value = true
   } catch (error: any) {
-    showError(error.message || 'Erreur lors de la récupération du tracking')
+    trackingError.value = error.message || 'Erreur lors de la récupération du tracking'
+    showError(trackingError.value)
+  } finally {
+    trackingLoading.value = false
+  }
+}
+
+const refreshTrackingModal = async () => {
+  if (!currentTrackingNumber.value) return
+
+  trackingLoading.value = true
+  trackingError.value = ''
+
+  try {
+    const [trackingInfo, parcelInfo] = await Promise.all([
+      shippingStore.trackParcel(currentTrackingNumber.value),
+      shippingStore.getParcelInfoNew(currentTrackingNumber.value)
+    ])
+
+    trackingData.value = {
+      tracking_info: trackingInfo,
+      parcel_info: parcelInfo
+    }
+    showSuccess('Suivi actualisé avec succès')
+  } catch (error: any) {
+    trackingError.value = error.message || 'Erreur lors de l\'actualisation du tracking'
+    showError(trackingError.value)
   } finally {
     trackingLoading.value = false
   }
@@ -163,22 +212,45 @@ const refreshTrackingBulk = async () => {
   }
 }
 
-const createDeliveryNote = async () => {
-  const confirmed = await confirm({
-    title: 'Créer un bon de livraison',
-    text: 'Voulez-vous créer un nouveau bon de livraison ?',
-    confirmText: 'Créer',
-    color: 'primary',
-  })
+const resendToOzonExpress = async (order: any) => {
+  currentOrderForResend.value = order
+  showOzonDialog.value = true
+}
 
-  if (confirmed) {
-    try {
-      const ref = await shippingStore.createDeliveryNote()
-      showSuccess(`Bon de livraison créé: ${ref}`)
-    } catch (error: any) {
-      showError(error.message || 'Erreur lors de la création du bon de livraison')
-    }
+const handleOzonConfirm = async (mode: 'ramassage' | 'stock') => {
+  if (!currentOrderForResend.value) return
+
+  ozonDialogLoading.value = true
+  try {
+    await shippingStore.resendToOzon(currentOrderForResend.value.id, mode)
+    showSuccess(`Commande renvoyée vers OzonExpress en mode ${mode === 'ramassage' ? 'Ramassage' : 'Stock'}`)
+    // Refresh the list to show updated data
+    await fetchShippingOrders()
+  } catch (error: any) {
+    showError(error.message || 'Erreur lors du renvoi vers OzonExpress')
+  } finally {
+    ozonDialogLoading.value = false
   }
+}
+
+const handleOzonCancel = () => {
+  // Dialog will close automatically
+}
+
+const createDeliveryNote = async () => {
+  if (selectedOrders.value.length === 0) {
+    showError('Veuillez sélectionner au moins une commande')
+    return
+  }
+
+  showDeliveryNoteDialog.value = true
+}
+
+const handleDeliveryNoteCreated = (ref: string) => {
+  showSuccess(`Bon de livraison créé avec succès: ${ref}`)
+  selectedOrders.value = []
+  // Refresh the list to show updated delivery note refs
+  fetchShippingOrders()
 }
 
 const getStatusColor = (status: string) => {
@@ -298,10 +370,11 @@ onMounted(() => {
         <VBtn
           color="secondary"
           variant="outlined"
+          :disabled="selectedOrders.length === 0"
           @click="createDeliveryNote"
         >
           <VIcon start icon="tabler-file-plus" />
-          Bon de Livraison
+          Bon de Livraison ({{ selectedOrders.length }})
         </VBtn>
         <VBtn
           color="primary"
@@ -461,33 +534,60 @@ onMounted(() => {
         <!-- Actions Column -->
         <template #item.actions="{ item }">
           <div class="d-flex gap-1">
+            <!-- View Order Details -->
             <VBtn
               size="small"
               color="primary"
               variant="text"
               icon="tabler-eye"
               @click="viewShippingOrder(item)"
-            />
-            <VBtn
-              size="small"
-              color="info"
-              variant="text"
-              icon="tabler-route"
-              :loading="trackingLoading"
-              @click="viewTracking(item)"
-            />
-            <VBtn
-              size="small"
-              color="success"
-              variant="text"
-              icon="tabler-refresh"
-              :loading="refreshingTracking.includes(item.shipping_parcel.tracking_number)"
-              @click="refreshTracking(item)"
             >
               <VTooltip activator="parent" location="top">
-                Actualiser le suivi
+                Voir les détails
               </VTooltip>
             </VBtn>
+
+            <!-- If no tracking number, show resend button -->
+            <VBtn
+              v-if="!item.shipping_parcel.tracking_number"
+              size="small"
+              color="warning"
+              variant="text"
+              icon="tabler-truck"
+              @click="resendToOzonExpress(item)"
+            >
+              <VTooltip activator="parent" location="top">
+                Renvoyer vers OzonExpress
+              </VTooltip>
+            </VBtn>
+
+            <!-- If has tracking number, show tracking actions -->
+            <template v-else>
+              <VBtn
+                size="small"
+                color="info"
+                variant="text"
+                icon="tabler-route"
+                :loading="trackingLoading"
+                @click="viewTracking(item)"
+              >
+                <VTooltip activator="parent" location="top">
+                  Voir le suivi
+                </VTooltip>
+              </VBtn>
+              <VBtn
+                size="small"
+                color="success"
+                variant="text"
+                icon="tabler-refresh"
+                :loading="refreshingTracking.includes(item.shipping_parcel.tracking_number)"
+                @click="refreshTracking(item)"
+              >
+                <VTooltip activator="parent" location="top">
+                  Actualiser le suivi
+                </VTooltip>
+              </VBtn>
+            </template>
             <VMenu>
               <template #activator="{ props }">
                 <VBtn
@@ -545,36 +645,38 @@ onMounted(() => {
       </VDataTableServer>
     </VCard>
 
-    <!-- Tracking Modal -->
-    <VDialog
+    <!-- Enhanced Tracking Modal -->
+    <TrackingModal
       v-model="showTrackingModal"
-      max-width="600"
-    >
-      <VCard>
-        <VCardTitle class="d-flex align-center gap-2">
-          <VIcon icon="tabler-route" />
-          Suivi de Colis
-        </VCardTitle>
-        <VCardText>
-          <div v-if="trackingData">
-            <pre class="text-body-2">{{ JSON.stringify(trackingData, null, 2) }}</pre>
-          </div>
-          <div v-else class="text-center py-4">
-            <VProgressCircular indeterminate />
-            <p class="mt-2">Chargement du suivi...</p>
-          </div>
-        </VCardText>
-        <VCardActions>
-          <VSpacer />
-          <VBtn
-            color="primary"
-            variant="text"
-            @click="showTrackingModal = false"
-          >
-            Fermer
-          </VBtn>
-        </VCardActions>
-      </VCard>
-    </VDialog>
+      :tracking-number="currentTrackingNumber"
+      :tracking-data="trackingData"
+      :loading="trackingLoading"
+      :error="trackingError"
+      @refresh="refreshTrackingModal"
+      @retry="refreshTrackingModal"
+    />
+
+    <!-- OzonExpress Resend Dialog -->
+    <OzonExpressConfirmDialog
+      v-model="showOzonDialog"
+      :loading="ozonDialogLoading"
+      title="Renvoyer vers OzonExpress"
+      text="Êtes-vous sûr de vouloir renvoyer cette commande vers OzonExpress ?"
+      default-mode="ramassage"
+      @confirm="handleOzonConfirm"
+      @cancel="handleOzonCancel"
+    />
+
+    <!-- Delivery Note Dialog -->
+    <DeliveryNoteDialog
+      v-model="showDeliveryNoteDialog"
+      :selected-tracking-numbers="selectedOrders
+        .map(orderId => {
+          const order = shippingOrders.find(o => o.id === orderId)
+          return order?.shipping_parcel?.tracking_number
+        })
+        .filter(Boolean) as string[]"
+      @created="handleDeliveryNoteCreated"
+    />
   </div>
 </template>

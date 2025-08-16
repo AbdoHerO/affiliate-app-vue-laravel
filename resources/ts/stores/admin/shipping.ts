@@ -228,12 +228,84 @@ export const useShippingStore = defineStore('shipping', () => {
     }
   }
 
+  const resendToOzon = async (commandeId: string, mode: 'ramassage' | 'stock' = 'ramassage') => {
+    loading.value = true
+    error.value = null
+
+    try {
+      const response = await axios.post('/api/admin/shipping/ozon/resend', {
+        commande_id: commandeId,
+        mode
+      })
+
+      if (response.data.success) {
+        // Refresh shipping orders to get updated data
+        await fetchShippingOrders(filters.value)
+        return response.data.data
+      } else {
+        throw new Error(response.data.message || 'Failed to resend to OzonExpress')
+      }
+    } catch (err: any) {
+      error.value = err.response?.data?.message || err.message || 'Failed to resend to OzonExpress'
+      console.error('Error resending to OzonExpress:', err)
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const trackParcel = async (trackingNumber: string) => {
+    loading.value = true
+    error.value = null
+
+    try {
+      const response = await axios.post('/api/admin/shipping/ozon/track', {
+        tracking_number: trackingNumber,
+      })
+
+      if (response.data.success) {
+        return response.data.data
+      } else {
+        throw new Error(response.data.message || 'Failed to track parcel')
+      }
+    } catch (err: any) {
+      error.value = err.response?.data?.message || err.message || 'Failed to track parcel'
+      console.error('Error tracking parcel:', err)
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const getParcelInfoNew = async (trackingNumber: string) => {
+    loading.value = true
+    error.value = null
+
+    try {
+      const response = await axios.post('/api/admin/shipping/ozon/parcel-info', {
+        tracking_number: trackingNumber,
+      })
+
+      if (response.data.success) {
+        return response.data.data
+      } else {
+        throw new Error(response.data.message || 'Failed to get parcel info')
+      }
+    } catch (err: any) {
+      error.value = err.response?.data?.message || err.message || 'Failed to get parcel info'
+      console.error('Error getting parcel info:', err)
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
   const createDeliveryNote = async () => {
     loading.value = true
     error.value = null
 
     try {
-      const response = await axios.post('/api/admin/shipping/ozon/delivery-notes')
+      const response = await axios.post('/api/admin/shipping/ozon/dn/create')
 
       if (response.data.success) {
         return response.data.data.ref
@@ -254,13 +326,13 @@ export const useShippingStore = defineStore('shipping', () => {
     error.value = null
 
     try {
-      const response = await axios.post('/api/admin/shipping/ozon/delivery-notes/add', {
+      const response = await axios.post('/api/admin/shipping/ozon/dn/add-parcels', {
         ref,
         codes,
       })
 
       if (response.data.success) {
-        return true
+        return response.data.data
       } else {
         throw new Error(response.data.message || 'Failed to add parcels to delivery note')
       }
@@ -278,18 +350,41 @@ export const useShippingStore = defineStore('shipping', () => {
     error.value = null
 
     try {
-      const response = await axios.post('/api/admin/shipping/ozon/delivery-notes/save', {
+      const response = await axios.post('/api/admin/shipping/ozon/dn/save', {
         ref,
       })
 
       if (response.data.success) {
-        return true
+        return response.data.data
       } else {
         throw new Error(response.data.message || 'Failed to save delivery note')
       }
     } catch (err: any) {
       error.value = err.response?.data?.message || err.message || 'Failed to save delivery note'
       console.error('Error saving delivery note:', err)
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const getDeliveryNotePdf = async (ref: string) => {
+    loading.value = true
+    error.value = null
+
+    try {
+      const response = await axios.get('/api/admin/shipping/ozon/dn/pdf', {
+        params: { ref }
+      })
+
+      if (response.data.success) {
+        return response.data.data
+      } else {
+        throw new Error(response.data.message || 'Failed to get PDF links')
+      }
+    } catch (err: any) {
+      error.value = err.response?.data?.message || err.message || 'Failed to get PDF links'
+      console.error('Error getting PDF links:', err)
       throw err
     } finally {
       loading.value = false
@@ -388,9 +483,13 @@ export const useShippingStore = defineStore('shipping', () => {
     addParcel,
     getTracking,
     getParcelInfo,
+    resendToOzon,
+    trackParcel,
+    getParcelInfoNew,
     createDeliveryNote,
     addParcelsToDeliveryNote,
     saveDeliveryNote,
+    getDeliveryNotePdf,
     fetchCities,
     resetFilters,
     clearCurrentShippingOrder,

@@ -1148,4 +1148,220 @@ class OzonExpressService
 
         return $statusMap[$ozonStatus] ?? 'unknown';
     }
+
+    /**
+     * Get detailed parcel information
+     */
+    public function parcelInfo(string $trackingNumber): array
+    {
+        try {
+            return $this->getParcelInfo($trackingNumber);
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'message' => 'Failed to get parcel info: ' . $e->getMessage(),
+                'error' => $e->getMessage(),
+            ];
+        }
+    }
+
+    /**
+     * Create a new delivery note
+     */
+    public function dnCreate(): array
+    {
+        try {
+            $response = Http::asForm()->post(
+                "{$this->baseUrl}/customers/{$this->customerId}/{$this->apiKey}/dn-create"
+            );
+
+            if ($response->successful()) {
+                $data = $response->json();
+
+                if (isset($data['RESULT']) && $data['RESULT'] === 'SUCCESS') {
+                    return [
+                        'success' => true,
+                        'message' => 'Delivery note created successfully',
+                        'data' => [
+                            'ref' => $data['REF'] ?? null,
+                            'response' => $data
+                        ]
+                    ];
+                } else {
+                    return [
+                        'success' => false,
+                        'message' => $data['MESSAGE'] ?? 'Failed to create delivery note',
+                        'response' => $data
+                    ];
+                }
+            } else {
+                return [
+                    'success' => false,
+                    'message' => 'HTTP error: ' . $response->status(),
+                    'response' => $response->body()
+                ];
+            }
+
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'message' => 'Failed to create delivery note: ' . $e->getMessage(),
+                'error' => $e->getMessage(),
+            ];
+        }
+    }
+
+    /**
+     * Add parcels to delivery note
+     */
+    public function dnAddParcels(string $ref, array $trackingNumbers): array
+    {
+        try {
+            $response = Http::asForm()->post(
+                "{$this->baseUrl}/customers/{$this->customerId}/{$this->apiKey}/dn-add-parcels",
+                [
+                    'ref' => $ref,
+                    'codes' => implode(',', $trackingNumbers)
+                ]
+            );
+
+            if ($response->successful()) {
+                $data = $response->json();
+
+                if (isset($data['RESULT']) && $data['RESULT'] === 'SUCCESS') {
+                    return [
+                        'success' => true,
+                        'message' => 'Parcels added to delivery note successfully',
+                        'data' => [
+                            'ref' => $ref,
+                            'added_count' => count($trackingNumbers),
+                            'response' => $data
+                        ]
+                    ];
+                } else {
+                    return [
+                        'success' => false,
+                        'message' => $data['MESSAGE'] ?? 'Failed to add parcels to delivery note',
+                        'response' => $data
+                    ];
+                }
+            } else {
+                return [
+                    'success' => false,
+                    'message' => 'HTTP error: ' . $response->status(),
+                    'response' => $response->body()
+                ];
+            }
+
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'message' => 'Failed to add parcels to delivery note: ' . $e->getMessage(),
+                'error' => $e->getMessage(),
+            ];
+        }
+    }
+
+    /**
+     * Save delivery note
+     */
+    public function dnSave(string $ref): array
+    {
+        try {
+            $response = Http::asForm()->post(
+                "{$this->baseUrl}/customers/{$this->customerId}/{$this->apiKey}/dn-save",
+                [
+                    'ref' => $ref
+                ]
+            );
+
+            if ($response->successful()) {
+                $data = $response->json();
+
+                if (isset($data['RESULT']) && $data['RESULT'] === 'SUCCESS') {
+                    return [
+                        'success' => true,
+                        'message' => 'Delivery note saved successfully',
+                        'data' => [
+                            'ref' => $ref,
+                            'response' => $data
+                        ]
+                    ];
+                } else {
+                    return [
+                        'success' => false,
+                        'message' => $data['MESSAGE'] ?? 'Failed to save delivery note',
+                        'response' => $data
+                    ];
+                }
+            } else {
+                return [
+                    'success' => false,
+                    'message' => 'HTTP error: ' . $response->status(),
+                    'response' => $response->body()
+                ];
+            }
+
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'message' => 'Failed to save delivery note: ' . $e->getMessage(),
+                'error' => $e->getMessage(),
+            ];
+        }
+    }
+
+    /**
+     * Get delivery note PDF links
+     */
+    public function dnGetPdf(string $ref): array
+    {
+        try {
+            $response = Http::get(
+                "{$this->baseUrl}/customers/{$this->customerId}/{$this->apiKey}/dn-pdf",
+                [
+                    'ref' => $ref
+                ]
+            );
+
+            if ($response->successful()) {
+                $data = $response->json();
+
+                if (isset($data['RESULT']) && $data['RESULT'] === 'SUCCESS') {
+                    return [
+                        'success' => true,
+                        'message' => 'PDF links retrieved successfully',
+                        'data' => [
+                            'ref' => $ref,
+                            'pdf_links' => [
+                                'bl_pdf' => $data['BL_PDF'] ?? null,
+                                'tickets_a4' => $data['TICKETS_A4'] ?? null,
+                                'tickets_100x100' => $data['TICKETS_100X100'] ?? null,
+                            ],
+                            'response' => $data
+                        ]
+                    ];
+                } else {
+                    return [
+                        'success' => false,
+                        'message' => $data['MESSAGE'] ?? 'Failed to get PDF links',
+                        'response' => $data
+                    ];
+                }
+            } else {
+                return [
+                    'success' => false,
+                    'message' => 'HTTP error: ' . $response->status(),
+                    'response' => $response->body()
+                ];
+            }
+
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'message' => 'Failed to get PDF links: ' . $e->getMessage(),
+                'error' => $e->getMessage(),
+            ];
+        }
+    }
 }

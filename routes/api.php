@@ -251,6 +251,15 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('shipping/orders/refresh-tracking', [ShippingOrdersController::class, 'refreshTracking']);
         Route::post('shipping/orders/refresh-tracking-bulk', [ShippingOrdersController::class, 'refreshTrackingBulk']);
 
+        // OzonExpress Shipping Orders APIs
+        Route::post('shipping/ozon/resend', [ShippingOrdersController::class, 'resendToOzon']);
+        Route::post('shipping/ozon/track', [ShippingOrdersController::class, 'trackParcel']);
+        Route::post('shipping/ozon/parcel-info', [ShippingOrdersController::class, 'getParcelInfo']);
+        Route::post('shipping/ozon/dn/create', [ShippingOrdersController::class, 'createDeliveryNote']);
+        Route::post('shipping/ozon/dn/add-parcels', [ShippingOrdersController::class, 'addParcelsToDeliveryNote']);
+        Route::post('shipping/ozon/dn/save', [ShippingOrdersController::class, 'saveDeliveryNote']);
+        Route::get('shipping/ozon/dn/pdf', [ShippingOrdersController::class, 'getDeliveryNotePdf']);
+
 
 
         // Legacy Affiliates Management (keep for now)
