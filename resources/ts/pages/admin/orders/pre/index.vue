@@ -55,6 +55,7 @@ const headers = [
   { title: '', key: 'select', sortable: false, width: '50px' },
   { title: 'Code', key: 'id', sortable: true },
   { title: 'Client', key: 'client', sortable: false },
+  { title: 'Ville', key: 'city', sortable: false },  
   { title: 'Affilié', key: 'affilie', sortable: false },
   { title: 'Boutique', key: 'boutique', sortable: false },
   { title: 'Total', key: 'total_ttc', sortable: true },
@@ -500,6 +501,18 @@ onMounted(() => {
           </div>
         </template>
 
+        <!-- City Column -->
+        <template #item.city="{ item }">
+          <div>
+            <VChip
+              size="small"
+              color="secondary"
+              variant="tonal"
+            >
+              {{ item.client?.city?.nom || item.city?.nom || 'N/A' }}
+            </VChip>
+          </div>
+        </template>
         <!-- Affiliate Column -->
         <template #item.affilie="{ item }">
           <div>

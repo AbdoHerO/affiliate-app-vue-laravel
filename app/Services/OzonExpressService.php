@@ -63,12 +63,33 @@ class OzonExpressService
                 ];
             })->toArray();
 
+            // Look up the city ID from the shipping cities table
+            $shippingCity = \App\Models\ShippingCity::where('provider', 'ozonexpress')
+                ->where('name', $commande->adresse->ville)
+                ->where('active', true)
+                ->first();
+
+            if (!$shippingCity || empty($shippingCity->city_id)) {
+                Log::error('City not found in shipping cities', [
+                    'commande_id' => $commande->id,
+                    'requested_city' => $commande->adresse->ville,
+                    'available_cities_count' => \App\Models\ShippingCity::where('provider', 'ozonexpress')->where('active', true)->count()
+                ]);
+
+                return [
+                    'success' => false,
+                    'message' => "City '{$commande->adresse->ville}' not found in OzonExpress shipping cities. Please use a valid city.",
+                    'error' => 'Invalid city',
+                    'requested_city' => $commande->adresse->ville,
+                ];
+            }
+
             // Prepare form data for OzonExpress API
             $formData = [
                 'tracking-number' => $trackingNumber ?? '',
                 'parcel-receiver' => $commande->client->nom_complet,
                 'parcel-phone' => $commande->client->telephone,
-                'parcel-city' => $commande->adresse->ville,
+                'parcel-city' => $shippingCity->city_id, // Use the city ID, not the name
                 'parcel-address' => $commande->adresse->adresse,
                 'parcel-note' => $commande->notes ?? '',
                 'parcel-price' => $commande->total_ttc,
