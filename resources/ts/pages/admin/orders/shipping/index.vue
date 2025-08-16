@@ -46,13 +46,22 @@ const headers = [
   { title: 'Actions', key: 'actions', sortable: false },
 ]
 
-// Status options
+// Status options - consistent with OzonExpress mapping
 const statusOptions = [
   { title: 'Tous', value: '' },
-  { title: 'Créé', value: 'created' },
-  { title: 'En cours', value: 'in_transit' },
+  { title: 'En attente', value: 'pending' },
+  { title: 'Reçu', value: 'received' },
+  { title: 'En transit', value: 'in_transit' },
+  { title: 'Expédié', value: 'shipped' },
+  { title: 'Au centre', value: 'at_facility' },
+  { title: 'Prêt pour livraison', value: 'ready_for_delivery' },
+  { title: 'En cours de livraison', value: 'out_for_delivery' },
+  { title: 'Tentative de livraison', value: 'delivery_attempted' },
   { title: 'Livré', value: 'delivered' },
   { title: 'Retourné', value: 'returned' },
+  { title: 'Refusé', value: 'refused' },
+  { title: 'Annulé', value: 'cancelled' },
+  { title: 'Inconnu', value: 'unknown' },
 ]
 
 // Methods
@@ -127,7 +136,8 @@ const viewTracking = async (order: any) => {
 
     trackingData.value = {
       tracking_info: trackingInfo,
-      parcel_info: parcelInfo
+      parcel_info: parcelInfo,
+      parcel: order.shipping_parcel // Include the local parcel data with mapped status
     }
     showTrackingModal.value = true
   } catch (error: any) {
@@ -150,11 +160,20 @@ const refreshTrackingModal = async () => {
       shippingStore.getParcelInfoNew(currentTrackingNumber.value)
     ])
 
+    // Find the updated parcel data from the store
+    const updatedOrder = shippingOrders.value.find(order =>
+      order.shipping_parcel?.tracking_number === currentTrackingNumber.value
+    )
+
     trackingData.value = {
       tracking_info: trackingInfo,
-      parcel_info: parcelInfo
+      parcel_info: parcelInfo,
+      parcel: updatedOrder?.shipping_parcel // Include updated parcel data
     }
     showSuccess('Suivi actualisé avec succès')
+
+    // Refresh the orders list to get updated status
+    await fetchShippingOrders()
   } catch (error: any) {
     trackingError.value = error.message || 'Erreur lors de l\'actualisation du tracking'
     showError(trackingError.value)
@@ -260,37 +279,33 @@ const getStatusColor = (status: string) => {
     case 'in_transit':
     case 'out_for_delivery': return 'info'
     case 'pending':
-    case 'created':
     case 'received':
+    case 'at_facility':
     case 'ready_for_delivery': return 'warning'
     case 'cancelled':
     case 'refused':
-    case 'delivery_failed': return 'error'
-    case 'returned':
-    case 'return_delivered': return 'secondary'
+    case 'delivery_attempted': return 'error'
+    case 'returned': return 'secondary'
+    case 'unknown': return 'default'
     default: return 'default'
   }
 }
 
 const getStatusText = (status: string) => {
   const statusLabels: Record<string, string> = {
-    'pending': 'En Attente',
-    'created': 'Créé',
+    'pending': 'En attente',
     'received': 'Reçu',
-    'in_transit': 'En Transit',
-    'out_for_delivery': 'En Cours de Livraison',
+    'in_transit': 'En transit',
+    'shipped': 'Expédié',
+    'at_facility': 'Au centre',
+    'ready_for_delivery': 'Prêt pour livraison',
+    'out_for_delivery': 'En cours de livraison',
+    'delivery_attempted': 'Tentative de livraison',
     'delivered': 'Livré',
     'returned': 'Retourné',
     'refused': 'Refusé',
     'cancelled': 'Annulé',
-    'shipped': 'Expédié',
-    'at_facility': 'Arrivé au Centre',
-    'ready_for_delivery': 'Prêt pour Livraison',
-    'delivery_attempted': 'Tentative de Livraison',
-    'delivery_failed': 'Échec de Livraison',
-    'return_in_progress': 'Retour en Cours',
-    'return_delivered': 'Retour Livré',
-    'unknown': 'Statut Inconnu'
+    'unknown': 'Inconnu',
   }
   return statusLabels[status?.toLowerCase()] || status || 'Inconnu'
 }
@@ -541,25 +556,24 @@ onMounted(() => {
               variant="text"
               icon="tabler-eye"
               @click="viewShippingOrder(item)"
-            >
-              <VTooltip activator="parent" location="top">
-                Voir les détails
-              </VTooltip>
-            </VBtn>
+            />
+            <VTooltip activator="prev" location="top">
+              Voir les détails
+            </VTooltip>
 
             <!-- If no tracking number, show resend button -->
-            <VBtn
-              v-if="!item.shipping_parcel.tracking_number"
-              size="small"
-              color="warning"
-              variant="text"
-              icon="tabler-truck"
-              @click="resendToOzonExpress(item)"
-            >
-              <VTooltip activator="parent" location="top">
+            <template v-if="!item.shipping_parcel?.tracking_number">
+              <VBtn
+                size="small"
+                color="warning"
+                variant="text"
+                icon="tabler-truck"
+                @click="resendToOzonExpress(item)"
+              />
+              <VTooltip activator="prev" location="top">
                 Renvoyer vers OzonExpress
               </VTooltip>
-            </VBtn>
+            </template>
 
             <!-- If has tracking number, show tracking actions -->
             <template v-else>
@@ -570,23 +584,22 @@ onMounted(() => {
                 icon="tabler-route"
                 :loading="trackingLoading"
                 @click="viewTracking(item)"
-              >
-                <VTooltip activator="parent" location="top">
-                  Voir le suivi
-                </VTooltip>
-              </VBtn>
+              />
+              <VTooltip activator="prev" location="top">
+                Voir le suivi
+              </VTooltip>
+
               <VBtn
                 size="small"
                 color="success"
                 variant="text"
                 icon="tabler-refresh"
-                :loading="refreshingTracking.includes(item.shipping_parcel.tracking_number)"
+                :loading="refreshingTracking.includes(item.shipping_parcel?.tracking_number)"
                 @click="refreshTracking(item)"
-              >
-                <VTooltip activator="parent" location="top">
-                  Actualiser le suivi
-                </VTooltip>
-              </VBtn>
+              />
+              <VTooltip activator="prev" location="top">
+                Actualiser le suivi
+              </VTooltip>
             </template>
             <VMenu>
               <template #activator="{ props }">

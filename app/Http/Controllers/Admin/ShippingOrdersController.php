@@ -87,7 +87,8 @@ class ShippingOrdersController extends Controller
     {
         $order = Commande::with([
             'boutique',
-            'affiliate', // Changed from affilie.utilisateur to affiliate
+            'affilie.utilisateur', // Load the legacy relationship with user
+            'affiliate', // Also load the new relationship for compatibility
             'client',
             'adresse',
             'articles.produit.images',

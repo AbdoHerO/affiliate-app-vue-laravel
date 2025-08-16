@@ -232,6 +232,7 @@ onMounted(() => {
             </h1>
             <div class="d-flex align-center gap-2">
               <VChip
+                v-if="shippingOrder.shipping_parcel?.tracking_number"
                 size="small"
                 color="primary"
                 variant="tonal"
@@ -241,17 +242,17 @@ onMounted(() => {
               </VChip>
               <VChip
                 size="small"
-                :color="getStatusColor(shippingOrder.shipping_parcel.status)"
+                :color="getStatusColor(shippingOrder.shipping_parcel?.status || 'unknown')"
                 variant="tonal"
               >
-                {{ getStatusText(shippingOrder.shipping_parcel.status) }}
+                {{ getStatusText(shippingOrder.shipping_parcel?.status || 'unknown') }}
               </VChip>
               <VChip
                 size="small"
                 color="info"
                 variant="tonal"
               >
-                {{ shippingOrder.shipping_parcel.city_name || shippingOrder.adresse.ville }}
+                {{ shippingOrder.shipping_parcel?.city_name || shippingOrder.adresse?.ville || '-' }}
               </VChip>
             </div>
           </div>
@@ -277,7 +278,7 @@ onMounted(() => {
             Infos Colis
           </VBtn>
 
-          <VMenu v-if="shippingOrder.shipping_parcel.delivery_note_ref">
+          <VMenu v-if="shippingOrder.shipping_parcel?.delivery_note_ref">
             <template #activator="{ props }">
               <VBtn
                 color="primary"
@@ -289,13 +290,13 @@ onMounted(() => {
               </VBtn>
             </template>
             <VList>
-              <VListItem @click="openPDF(shippingOrder.shipping_parcel.delivery_note_ref, 'pdf')">
+              <VListItem @click="openPDF(shippingOrder.shipping_parcel?.delivery_note_ref || '', 'pdf')">
                 <VListItemTitle>PDF Standard</VListItemTitle>
               </VListItem>
-              <VListItem @click="openPDF(shippingOrder.shipping_parcel.delivery_note_ref, 'a4')">
+              <VListItem @click="openPDF(shippingOrder.shipping_parcel?.delivery_note_ref || '', 'a4')">
                 <VListItemTitle>Étiquettes A4</VListItemTitle>
               </VListItem>
-              <VListItem @click="openPDF(shippingOrder.shipping_parcel.delivery_note_ref, '100x100')">
+              <VListItem @click="openPDF(shippingOrder.shipping_parcel?.delivery_note_ref || '', '100x100')">
                 <VListItemTitle>Étiquettes 100x100</VListItemTitle>
               </VListItem>
             </VList>
@@ -404,21 +405,21 @@ onMounted(() => {
                 <VCardText>
                   <div class="mb-4">
                     <div class="text-body-2 text-medium-emphasis mb-1">Client</div>
-                    <div class="text-body-1">{{ shippingOrder.client.nom_complet }}</div>
-                    <div class="text-caption text-medium-emphasis">{{ shippingOrder.client.telephone }}</div>
+                    <div class="text-body-1">{{ shippingOrder.client?.nom_complet || '-' }}</div>
+                    <div class="text-caption text-medium-emphasis">{{ shippingOrder.client?.telephone || '-' }}</div>
                   </div>
                   <div class="mb-4">
                     <div class="text-body-2 text-medium-emphasis mb-1">Affilié</div>
-                    <div class="text-body-1">{{ shippingOrder.affilie.utilisateur.nom_complet }}</div>
-                    <div class="text-caption text-medium-emphasis">{{ shippingOrder.affilie.utilisateur.email }}</div>
+                    <div class="text-body-1">{{ shippingOrder.affilie?.utilisateur?.nom_complet || '-' }}</div>
+                    <div class="text-caption text-medium-emphasis">{{ shippingOrder.affilie?.utilisateur?.email || '-' }}</div>
                   </div>
                   <div class="mb-4">
                     <div class="text-body-2 text-medium-emphasis mb-1">Boutique</div>
-                    <VChip color="info" variant="tonal">{{ shippingOrder.boutique.nom }}</VChip>
+                    <VChip color="info" variant="tonal">{{ shippingOrder.boutique?.nom || '-' }}</VChip>
                   </div>
                   <div class="mb-4">
                     <div class="text-body-2 text-medium-emphasis mb-1">Total</div>
-                    <div class="text-h6">{{ formatCurrency(shippingOrder.total_ttc) }}</div>
+                    <div class="text-h6">{{ formatCurrency(shippingOrder.total_ttc || 0) }}</div>
                   </div>
                   <VBtn
                     color="primary"

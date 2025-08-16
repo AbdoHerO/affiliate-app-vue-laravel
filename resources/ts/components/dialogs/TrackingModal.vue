@@ -257,11 +257,22 @@ const updateModelValue = (val: boolean) => {
 
 // Extract data from tracking response
 const lastStatus = computed(() => {
+  // First try to get from the parcel data (preferred - already mapped)
+  if (props.trackingData?.parcel?.status) {
+    return {
+      status: props.trackingData.parcel.status,
+      status_text: props.trackingData.parcel.last_status_text || props.trackingData.parcel.status,
+      time: props.trackingData.parcel.last_status_at,
+      comment: props.trackingData.parcel.meta?.last_status_comment
+    }
+  }
+
+  // Fallback to raw tracking data
   if (!props.trackingData?.tracking_info?.TRACKING?.LAST_TRACKING) return null
-  
+
   const lastTracking = props.trackingData.tracking_info.TRACKING.LAST_TRACKING
   return {
-    status: lastTracking.STATUT,
+    status: mapOzonStatus(lastTracking.STATUT),
     status_text: lastTracking.STATUT,
     time: lastTracking.TIME_STR,
     comment: lastTracking.COMMENT
@@ -284,45 +295,73 @@ const parcelInfo = computed((): ParcelInfo | null => {
 
 const trackingHistory = computed((): TrackingEvent[] => {
   if (!props.trackingData?.tracking_info?.TRACKING?.HISTORY) return []
-  
+
   const history = props.trackingData.tracking_info.TRACKING.HISTORY
   if (!Array.isArray(history)) return []
-  
+
   return history.map(event => ({
-    status: event.STATUT,
+    status: mapOzonStatus(event.STATUT),
     status_text: event.STATUT,
     time: event.TIME_STR,
     comment: event.COMMENT
   })).reverse() // Show newest first
 })
 
+// Map OzonExpress French status to internal status
+const mapOzonStatus = (ozonStatus: string): string => {
+  if (!ozonStatus) return 'unknown'
+
+  const statusMap: Record<string, string> = {
+    'Nouveau Colis': 'pending',
+    'Colis Reçu': 'received',
+    'En Transit': 'in_transit',
+    'En Cours de Livraison': 'out_for_delivery',
+    'Livré': 'delivered',
+    'Retourné': 'returned',
+    'Refusé': 'refused',
+    'Annulé': 'cancelled',
+    'En Attente': 'pending',
+    'Expédié': 'shipped',
+    'Arrivé au Centre': 'at_facility',
+    'Prêt pour Livraison': 'ready_for_delivery',
+    'Tentative de Livraison': 'delivery_attempted',
+  }
+
+  return statusMap[ozonStatus] || 'unknown'
+}
+
 const getStatusColor = (status: string) => {
   switch (status?.toLowerCase()) {
-    case 'livré': return 'success'
-    case 'en transit':
-    case 'en cours de livraison': return 'info'
-    case 'nouveau colis':
-    case 'colis reçu':
-    case 'prêt pour livraison': return 'warning'
-    case 'annulé':
-    case 'refusé':
-    case 'échec de livraison': return 'error'
-    case 'retourné':
-    case 'retour livré': return 'secondary'
+    case 'delivered': return 'success'
+    case 'in_transit':
+    case 'out_for_delivery':
+    case 'shipped': return 'info'
+    case 'pending':
+    case 'received':
+    case 'at_facility':
+    case 'ready_for_delivery': return 'warning'
+    case 'cancelled':
+    case 'refused':
+    case 'delivery_attempted': return 'error'
+    case 'returned': return 'secondary'
     default: return 'default'
   }
 }
 
 const getStatusIcon = (status: string) => {
   switch (status?.toLowerCase()) {
-    case 'livré': return 'tabler-check'
-    case 'en transit': return 'tabler-truck'
-    case 'en cours de livraison': return 'tabler-truck-delivery'
-    case 'nouveau colis': return 'tabler-package'
-    case 'colis reçu': return 'tabler-package-import'
-    case 'retourné': return 'tabler-package-export'
-    case 'refusé': return 'tabler-x'
-    case 'annulé': return 'tabler-ban'
+    case 'delivered': return 'tabler-check'
+    case 'in_transit': return 'tabler-truck'
+    case 'out_for_delivery': return 'tabler-truck-delivery'
+    case 'shipped': return 'tabler-truck'
+    case 'pending': return 'tabler-package'
+    case 'received': return 'tabler-package-import'
+    case 'at_facility': return 'tabler-building-warehouse'
+    case 'ready_for_delivery': return 'tabler-truck-loading'
+    case 'returned': return 'tabler-package-export'
+    case 'refused': return 'tabler-x'
+    case 'cancelled': return 'tabler-ban'
+    case 'delivery_attempted': return 'tabler-clock-exclamation'
     default: return 'tabler-circle'
   }
 }

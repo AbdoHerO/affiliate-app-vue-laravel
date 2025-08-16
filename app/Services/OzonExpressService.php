@@ -1170,6 +1170,22 @@ class OzonExpressService
      */
     public function dnCreate(): array
     {
+        // Check if debug mode is enabled for delivery notes
+        if (config('services.ozonexpress.debug_bl', false)) {
+            return [
+                'success' => true,
+                'message' => 'Delivery note created successfully (MOCK)',
+                'data' => [
+                    'ref' => 'DN-MOCK-' . time(),
+                    'response' => [
+                        'RESULT' => 'SUCCESS',
+                        'MESSAGE' => 'Mock delivery note created',
+                        'REF' => 'DN-MOCK-' . time()
+                    ]
+                ]
+            ];
+        }
+
         try {
             $response = Http::asForm()->post(
                 "{$this->baseUrl}/customers/{$this->customerId}/{$this->apiKey}/dn-create"
@@ -1216,6 +1232,24 @@ class OzonExpressService
      */
     public function dnAddParcels(string $ref, array $trackingNumbers): array
     {
+        // Check if debug mode is enabled for delivery notes
+        if (config('services.ozonexpress.debug_bl', false)) {
+            return [
+                'success' => true,
+                'message' => 'Parcels added to delivery note successfully (MOCK)',
+                'data' => [
+                    'ref' => $ref,
+                    'added_count' => count($trackingNumbers),
+                    'tracking_numbers' => $trackingNumbers,
+                    'response' => [
+                        'RESULT' => 'SUCCESS',
+                        'MESSAGE' => 'Mock parcels added',
+                        'ADDED_COUNT' => count($trackingNumbers)
+                    ]
+                ]
+            ];
+        }
+
         try {
             $response = Http::asForm()->post(
                 "{$this->baseUrl}/customers/{$this->customerId}/{$this->apiKey}/dn-add-parcels",
@@ -1267,6 +1301,22 @@ class OzonExpressService
      */
     public function dnSave(string $ref): array
     {
+        // Check if debug mode is enabled for delivery notes
+        if (config('services.ozonexpress.debug_bl', false)) {
+            return [
+                'success' => true,
+                'message' => 'Delivery note saved successfully (MOCK)',
+                'data' => [
+                    'ref' => $ref,
+                    'response' => [
+                        'RESULT' => 'SUCCESS',
+                        'MESSAGE' => 'Mock delivery note saved',
+                        'REF' => $ref
+                    ]
+                ]
+            ];
+        }
+
         try {
             $response = Http::asForm()->post(
                 "{$this->baseUrl}/customers/{$this->customerId}/{$this->apiKey}/dn-save",
@@ -1316,6 +1366,29 @@ class OzonExpressService
      */
     public function dnGetPdf(string $ref): array
     {
+        // Check if debug mode is enabled for delivery notes
+        if (config('services.ozonexpress.debug_bl', false)) {
+            return [
+                'success' => true,
+                'message' => 'PDF links retrieved successfully (MOCK)',
+                'data' => [
+                    'ref' => $ref,
+                    'pdf_links' => [
+                        'bl_pdf' => 'https://example.com/mock-bl.pdf',
+                        'tickets_a4' => 'https://example.com/mock-tickets-a4.pdf',
+                        'tickets_100x100' => 'https://example.com/mock-tickets-100x100.pdf',
+                    ],
+                    'response' => [
+                        'RESULT' => 'SUCCESS',
+                        'MESSAGE' => 'Mock PDF links generated',
+                        'BL_PDF' => 'https://example.com/mock-bl.pdf',
+                        'TICKETS_A4' => 'https://example.com/mock-tickets-a4.pdf',
+                        'TICKETS_100X100' => 'https://example.com/mock-tickets-100x100.pdf'
+                    ]
+                ]
+            ];
+        }
+
         try {
             $response = Http::get(
                 "{$this->baseUrl}/customers/{$this->customerId}/{$this->apiKey}/dn-pdf",

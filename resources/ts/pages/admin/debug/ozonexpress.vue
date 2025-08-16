@@ -792,6 +792,95 @@
       </VCardText>
     </VCard>
 
+    <!-- Delivery Note Testing -->
+    <VCard class="mt-6">
+      <VCardTitle class="d-flex align-center gap-2">
+        <VIcon icon="tabler-file-plus" />
+        Test Bon de Livraison (BL)
+      </VCardTitle>
+      <VCardText>
+        <VAlert
+          type="info"
+          variant="tonal"
+          class="mb-4"
+        >
+          <VAlertTitle>Test du Workflow Bon de Livraison</VAlertTitle>
+          Testez le processus complet : Créer → Ajouter Colis → Sauvegarder → PDFs
+        </VAlert>
+
+        <div class="d-flex flex-wrap gap-2 mb-4">
+          <VBtn
+            color="primary"
+            variant="outlined"
+            @click="testCreateDeliveryNote"
+            :loading="loading.deliveryNote"
+          >
+            <VIcon start icon="tabler-plus" />
+            1. Créer BL
+          </VBtn>
+
+          <VBtn
+            color="info"
+            variant="outlined"
+            :disabled="!deliveryNoteRef"
+            @click="testAddParcelsToDeliveryNote"
+            :loading="loading.deliveryNote"
+          >
+            <VIcon start icon="tabler-package-import" />
+            2. Ajouter Colis
+          </VBtn>
+
+          <VBtn
+            color="success"
+            variant="outlined"
+            :disabled="!deliveryNoteRef"
+            @click="testSaveDeliveryNote"
+            :loading="loading.deliveryNote"
+          >
+            <VIcon start icon="tabler-device-floppy" />
+            3. Sauvegarder
+          </VBtn>
+
+          <VBtn
+            color="secondary"
+            variant="outlined"
+            :disabled="!deliveryNoteRef"
+            @click="testGetDeliveryNotePdf"
+            :loading="loading.deliveryNote"
+          >
+            <VIcon start icon="tabler-file-download" />
+            4. Obtenir PDFs
+          </VBtn>
+        </div>
+
+        <div v-if="deliveryNoteRef" class="mb-4">
+          <VAlert type="success" variant="tonal">
+            <VAlertTitle>Référence BL Active</VAlertTitle>
+            {{ deliveryNoteRef }}
+          </VAlert>
+        </div>
+
+        <div v-if="deliveryNoteResult" class="mt-4">
+          <VAlert
+            :type="deliveryNoteResult.success ? 'success' : 'error'"
+            variant="tonal"
+          >
+            <VAlertTitle>{{ deliveryNoteResult.success ? 'Succès' : 'Erreur' }}</VAlertTitle>
+            {{ deliveryNoteResult.message }}
+          </VAlert>
+
+          <div v-if="deliveryNoteResult.success && deliveryNoteResult.data" class="mt-3">
+            <VCard variant="outlined">
+              <VCardTitle>Résultat</VCardTitle>
+              <VCardText>
+                <pre class="text-caption">{{ JSON.stringify(deliveryNoteResult.data, null, 2) }}</pre>
+              </VCardText>
+            </VCard>
+          </div>
+        </div>
+      </VCardText>
+    </VCard>
+
     <!-- Meta Dialog -->
     <VDialog v-model="metaDialog.show" max-width="600">
       <VCard>
@@ -884,7 +973,8 @@ const loading = ref({
   sync: false,
   platformParcels: false,
   createTest: false,
-  trackTest: false
+  trackTest: false,
+  deliveryNote: false
 })
 
 const systemStatus = ref<any>(null)
@@ -898,6 +988,10 @@ const createTestResult = ref<any>(null)
 const trackTestResult = ref<any>(null)
 const showTrackingDialog = ref(false)
 const trackingNumber = ref('')
+
+// Delivery Note state
+const deliveryNoteRef = ref('')
+const deliveryNoteResult = ref<any>(null)
 
 // Enhanced debug state
 const sendTab = ref('manual')
@@ -1497,6 +1591,156 @@ const copyToClipboard = async (text: string) => {
     showSuccess('Numéro de suivi copié!')
   } catch (error) {
     showError('Erreur lors de la copie')
+  }
+}
+
+// Delivery Note test methods
+const testCreateDeliveryNote = async () => {
+  loading.value.deliveryNote = true
+  deliveryNoteResult.value = null
+
+  try {
+    const response = await fetch('/api/admin/shipping/ozon/dn/create', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+      },
+    })
+
+    const data = await response.json()
+    deliveryNoteResult.value = data
+
+    if (data.success) {
+      deliveryNoteRef.value = data.data.ref
+      showSuccess(`Bon de livraison créé: ${data.data.ref}`)
+    } else {
+      showError(data.message || 'Erreur lors de la création du bon de livraison')
+    }
+  } catch (error: any) {
+    deliveryNoteResult.value = {
+      success: false,
+      message: 'Erreur de connexion: ' + error.message
+    }
+    showError('Erreur de connexion')
+  } finally {
+    loading.value.deliveryNote = false
+  }
+}
+
+const testAddParcelsToDeliveryNote = async () => {
+  if (!deliveryNoteRef.value) return
+
+  loading.value.deliveryNote = true
+  deliveryNoteResult.value = null
+
+  try {
+    // Use some test tracking numbers
+    const testTrackingNumbers = ['TEST-001', 'TEST-002', 'TEST-003']
+
+    const response = await fetch('/api/admin/shipping/ozon/dn/add-parcels', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+      },
+      body: JSON.stringify({
+        ref: deliveryNoteRef.value,
+        codes: testTrackingNumbers
+      })
+    })
+
+    const data = await response.json()
+    deliveryNoteResult.value = data
+
+    if (data.success) {
+      showSuccess(`${testTrackingNumbers.length} colis ajoutés au bon de livraison`)
+    } else {
+      showError(data.message || 'Erreur lors de l\'ajout des colis')
+    }
+  } catch (error: any) {
+    deliveryNoteResult.value = {
+      success: false,
+      message: 'Erreur de connexion: ' + error.message
+    }
+    showError('Erreur de connexion')
+  } finally {
+    loading.value.deliveryNote = false
+  }
+}
+
+const testSaveDeliveryNote = async () => {
+  if (!deliveryNoteRef.value) return
+
+  loading.value.deliveryNote = true
+  deliveryNoteResult.value = null
+
+  try {
+    const response = await fetch('/api/admin/shipping/ozon/dn/save', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+      },
+      body: JSON.stringify({
+        ref: deliveryNoteRef.value
+      })
+    })
+
+    const data = await response.json()
+    deliveryNoteResult.value = data
+
+    if (data.success) {
+      showSuccess('Bon de livraison sauvegardé avec succès')
+    } else {
+      showError(data.message || 'Erreur lors de la sauvegarde')
+    }
+  } catch (error: any) {
+    deliveryNoteResult.value = {
+      success: false,
+      message: 'Erreur de connexion: ' + error.message
+    }
+    showError('Erreur de connexion')
+  } finally {
+    loading.value.deliveryNote = false
+  }
+}
+
+const testGetDeliveryNotePdf = async () => {
+  if (!deliveryNoteRef.value) return
+
+  loading.value.deliveryNote = true
+  deliveryNoteResult.value = null
+
+  try {
+    const response = await fetch(`/api/admin/shipping/ozon/dn/pdf?ref=${deliveryNoteRef.value}`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+      },
+    })
+
+    const data = await response.json()
+    deliveryNoteResult.value = data
+
+    if (data.success) {
+      showSuccess('Liens PDF récupérés avec succès')
+
+      // Open PDFs if available
+      const links = data.data.pdf_links
+      if (links.bl_pdf) {
+        window.open(links.bl_pdf, '_blank')
+      }
+    } else {
+      showError(data.message || 'Erreur lors de la récupération des PDFs')
+    }
+  } catch (error: any) {
+    deliveryNoteResult.value = {
+      success: false,
+      message: 'Erreur de connexion: ' + error.message
+    }
+    showError('Erreur de connexion')
+  } finally {
+    loading.value.deliveryNote = false
   }
 }
 
