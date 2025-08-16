@@ -6,11 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Models\Commande;
 use App\Models\ShippingParcel;
 use App\Models\ShippingCity;
+use App\Services\OzonExpressService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class OzonExpressController extends Controller
 {
@@ -374,6 +376,83 @@ class OzonExpressController extends Controller
                 'success' => false,
                 'message' => 'Failed to save delivery note',
                 'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Debug API: Send a parcel to OzonExpress
+     */
+    public function debugSendParcel(Request $request): JsonResponse
+    {
+        try {
+            $ozonService = app(OzonExpressService::class);
+
+            // Validate input - either commande_id or full form data
+            if ($request->has('commande_id')) {
+                $validated = $request->validate([
+                    'commande_id' => 'required|exists:commandes,id',
+                ]);
+
+                $result = $ozonService->addParcelFromCommande($validated['commande_id']);
+            } else {
+                $validated = $request->validate([
+                    'receiver' => 'required|string|max:255',
+                    'phone' => 'required|string|max:20',
+                    'city' => 'required|string|max:255',
+                    'address' => 'required|string',
+                    'price' => 'required|numeric|min:0',
+                    'nature' => 'required|string|max:255',
+                    'stock' => 'required|integer|in:0,1',
+                    'products' => 'required|array|min:1',
+                    'products.*.ref' => 'required|string',
+                    'products.*.qnty' => 'required|integer|min:1',
+                ]);
+
+                $result = $ozonService->addParcelFromData($validated);
+            }
+
+            return response()->json($result);
+
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to send parcel: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Debug API: Track an existing parcel
+     */
+    public function debugTrack(Request $request): JsonResponse
+    {
+        try {
+            $validated = $request->validate([
+                'tracking_number' => 'required|string',
+            ]);
+
+            $ozonService = app(OzonExpressService::class);
+            $result = $ozonService->track($validated['tracking_number']);
+
+            return response()->json($result);
+
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to track parcel: ' . $e->getMessage(),
             ], 500);
         }
     }

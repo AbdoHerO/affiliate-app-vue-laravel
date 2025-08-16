@@ -237,6 +237,12 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('shipping/ozon/delivery-notes/save', [OzonExpressController::class, 'saveDeliveryNote']);
         Route::get('shipping/ozon/cities', [CitiesController::class, 'index']);
 
+        // OzonExpress Debug API
+        Route::prefix('shipping/ozon/debug')->group(function () {
+            Route::post('send-parcel', [OzonExpressController::class, 'debugSendParcel']);
+            Route::post('track', [OzonExpressController::class, 'debugTrack']);
+        });
+
         // Shipping Orders Management (orders with parcels)
         Route::get('shipping/orders', [ShippingOrdersController::class, 'index']);
         Route::get('shipping/orders/{id}', [ShippingOrdersController::class, 'show']);

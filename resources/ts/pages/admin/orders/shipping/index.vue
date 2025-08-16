@@ -23,6 +23,8 @@ const selectedStatus = ref('')
 const dateFrom = ref('')
 const dateTo = ref('')
 const itemsPerPage = ref(15)
+const selectedOrders = ref<string[]>([])
+const refreshingTracking = ref<string[]>([])
 
 // Computed
 const isLoading = computed(() => shippingStore.isLoading)
@@ -109,6 +111,55 @@ const viewTracking = async (order: any) => {
     showError(error.message || 'Erreur lors de la récupération du tracking')
   } finally {
     trackingLoading.value = false
+  }
+}
+
+const refreshTracking = async (order: any) => {
+  const trackingNumber = order.shipping_parcel.tracking_number
+  refreshingTracking.value.push(trackingNumber)
+
+  try {
+    const result = await shippingStore.refreshTracking(trackingNumber)
+    if (result.success) {
+      showSuccess('Suivi mis à jour avec succès')
+    } else {
+      showError(result.message || 'Erreur lors de la mise à jour du suivi')
+    }
+  } catch (error: any) {
+    showError(error.message || 'Erreur lors de la mise à jour du suivi')
+  } finally {
+    refreshingTracking.value = refreshingTracking.value.filter(tn => tn !== trackingNumber)
+  }
+}
+
+const refreshTrackingBulk = async () => {
+  if (selectedOrders.value.length === 0) {
+    showError('Veuillez sélectionner au moins une commande')
+    return
+  }
+
+  const confirmed = await confirm({
+    title: 'Actualiser le suivi',
+    text: `Voulez-vous actualiser le suivi de ${selectedOrders.value.length} commande(s) ?`,
+    confirmText: 'Actualiser',
+    cancelText: 'Annuler'
+  })
+
+  if (!confirmed) return
+
+  try {
+    const trackingNumbers = selectedOrders.value
+      .map(orderId => {
+        const order = shippingOrders.value.find(o => o.id === orderId)
+        return order?.shipping_parcel?.tracking_number
+      })
+      .filter(Boolean) as string[]
+
+    const result = await shippingStore.refreshTrackingBulk(trackingNumbers)
+    showSuccess(result.message || 'Suivi mis à jour avec succès')
+    selectedOrders.value = []
+  } catch (error: any) {
+    showError(error.message || 'Erreur lors de la mise à jour du suivi')
   }
 }
 
@@ -224,6 +275,15 @@ onMounted(() => {
       </div>
       <div class="d-flex gap-2">
         <VBtn
+          color="success"
+          variant="outlined"
+          :disabled="selectedOrders.length === 0"
+          @click="refreshTrackingBulk"
+        >
+          <VIcon start icon="tabler-refresh" />
+          Actualiser Suivi ({{ selectedOrders.length }})
+        </VBtn>
+        <VBtn
           color="secondary"
           variant="outlined"
           @click="createDeliveryNote"
@@ -307,11 +367,14 @@ onMounted(() => {
     <VCard>
       <VDataTableServer
         v-model:items-per-page="itemsPerPage"
+        v-model="selectedOrders"
         :headers="headers"
         :items="shippingOrders"
         :items-length="pagination.total"
         :loading="isLoading"
         :page="pagination.current_page"
+        show-select
+        item-value="id"
         @update:page="handlePageChange"
         @update:sort-by="handleSort"
       >
@@ -401,6 +464,18 @@ onMounted(() => {
               :loading="trackingLoading"
               @click="viewTracking(item)"
             />
+            <VBtn
+              size="small"
+              color="success"
+              variant="text"
+              icon="tabler-refresh"
+              :loading="refreshingTracking.includes(item.shipping_parcel.tracking_number)"
+              @click="refreshTracking(item)"
+            >
+              <VTooltip activator="parent" location="top">
+                Actualiser le suivi
+              </VTooltip>
+            </VBtn>
             <VMenu>
               <template #activator="{ props }">
                 <VBtn

@@ -545,6 +545,248 @@
       </VCardText>
     </VCard>
 
+    <!-- Enhanced Debug API Section -->
+    <VCard class="mt-6">
+      <VCardTitle class="d-flex align-center gap-2">
+        <VIcon icon="tabler-api" />
+        API Debug Avancé
+      </VCardTitle>
+      <VCardText>
+        <VRow>
+          <!-- Send Parcel Card -->
+          <VCol cols="12" lg="6">
+            <VCard variant="outlined">
+              <VCardTitle class="d-flex align-center gap-2">
+                <VIcon icon="tabler-package-export" />
+                Envoyer un Colis
+              </VCardTitle>
+              <VCardText>
+                <VTabs v-model="sendTab" class="mb-4">
+                  <VTab value="manual">Saisie Manuelle</VTab>
+                  <VTab value="order">Depuis Commande</VTab>
+                </VTabs>
+
+                <VWindow v-model="sendTab">
+                  <!-- Manual Entry Tab -->
+                  <VWindowItem value="manual">
+                    <VForm @submit.prevent="sendManualParcel">
+                      <VRow>
+                        <VCol cols="12" md="6">
+                          <VTextField
+                            v-model="manualForm.receiver"
+                            label="Destinataire"
+                            required
+                          />
+                        </VCol>
+                        <VCol cols="12" md="6">
+                          <VTextField
+                            v-model="manualForm.phone"
+                            label="Téléphone"
+                            required
+                          />
+                        </VCol>
+                        <VCol cols="12" md="6">
+                          <VTextField
+                            v-model="manualForm.city"
+                            label="Ville"
+                            required
+                          />
+                        </VCol>
+                        <VCol cols="12" md="6">
+                          <VTextField
+                            v-model="manualForm.price"
+                            label="Prix"
+                            type="number"
+                            step="0.01"
+                            required
+                          />
+                        </VCol>
+                        <VCol cols="12">
+                          <VTextarea
+                            v-model="manualForm.address"
+                            label="Adresse"
+                            required
+                          />
+                        </VCol>
+                        <VCol cols="12" md="6">
+                          <VTextField
+                            v-model="manualForm.nature"
+                            label="Nature du colis"
+                            required
+                          />
+                        </VCol>
+                        <VCol cols="12" md="6">
+                          <VSelect
+                            v-model="manualForm.stock"
+                            :items="[
+                              { title: 'Ramassage', value: 0 },
+                              { title: 'Stock', value: 1 }
+                            ]"
+                            label="Type de colis"
+                            required
+                          />
+                        </VCol>
+                        <VCol cols="12">
+                          <VBtn
+                            type="submit"
+                            color="primary"
+                            :loading="ozonDebugStore.loading.sendParcel"
+                            :disabled="!testMode.useReal"
+                            block
+                          >
+                            <VIcon start icon="tabler-send" />
+                            Envoyer Colis
+                          </VBtn>
+                        </VCol>
+                      </VRow>
+                    </VForm>
+                  </VWindowItem>
+
+                  <!-- From Order Tab -->
+                  <VWindowItem value="order">
+                    <VForm @submit.prevent="sendFromOrder">
+                      <VRow>
+                        <VCol cols="12">
+                          <VTextField
+                            v-model="selectedOrderId"
+                            label="ID de la commande"
+                            placeholder="Entrez l'ID de la commande..."
+                            required
+                          />
+                        </VCol>
+                        <VCol cols="12">
+                          <VBtn
+                            type="submit"
+                            color="primary"
+                            :loading="ozonDebugStore.loading.sendParcel"
+                            :disabled="!selectedOrderId || !testMode.useReal"
+                            block
+                          >
+                            <VIcon start icon="tabler-send" />
+                            Envoyer Colis
+                          </VBtn>
+                        </VCol>
+                      </VRow>
+                    </VForm>
+                  </VWindowItem>
+                </VWindow>
+
+                <!-- Send Result -->
+                <VAlert
+                  v-if="sendResult"
+                  :type="sendResult.success ? 'success' : 'error'"
+                  variant="tonal"
+                  class="mt-4"
+                >
+                  <div class="d-flex align-center justify-space-between">
+                    <span>{{ sendResult.message }}</span>
+                    <VBtn
+                      v-if="sendResult.success && sendResult.tracking_number"
+                      size="small"
+                      variant="text"
+                      @click="copyToClipboard(sendResult.tracking_number)"
+                    >
+                      <VIcon icon="tabler-copy" />
+                      Copier
+                    </VBtn>
+                  </div>
+                  <div v-if="sendResult.success && sendResult.tracking_number" class="mt-2">
+                    <VChip
+                      size="small"
+                      color="primary"
+                      variant="tonal"
+                      class="font-mono"
+                    >
+                      {{ sendResult.tracking_number }}
+                    </VChip>
+                  </div>
+                </VAlert>
+              </VCardText>
+            </VCard>
+          </VCol>
+
+          <!-- Track Parcel Card -->
+          <VCol cols="12" lg="6">
+            <VCard variant="outlined">
+              <VCardTitle class="d-flex align-center gap-2">
+                <VIcon icon="tabler-search" />
+                Suivre un Colis
+              </VCardTitle>
+              <VCardText>
+                <VForm @submit.prevent="trackParcelEnhanced">
+                  <VRow>
+                    <VCol cols="12">
+                      <VTextField
+                        v-model="enhancedTrackingNumber"
+                        label="Numéro de suivi"
+                        placeholder="Entrez le numéro de suivi..."
+                        required
+                      />
+                    </VCol>
+                    <VCol cols="12">
+                      <VBtn
+                        type="submit"
+                        color="info"
+                        :loading="ozonDebugStore.loading.track"
+                        :disabled="!enhancedTrackingNumber || !testMode.useReal"
+                        block
+                      >
+                        <VIcon start icon="tabler-search" />
+                        Suivre Maintenant
+                      </VBtn>
+                    </VCol>
+                  </VRow>
+                </VForm>
+
+                <!-- Track Result -->
+                <VAlert
+                  v-if="trackResult"
+                  :type="trackResult.success ? 'success' : 'error'"
+                  variant="tonal"
+                  class="mt-4"
+                >
+                  {{ trackResult.message }}
+                </VAlert>
+
+                <!-- Tracking Details -->
+                <div v-if="trackResult?.success && trackResult.data" class="mt-4">
+                  <VCard variant="outlined">
+                    <VCardTitle>Détails du Colis</VCardTitle>
+                    <VCardText>
+                      <VRow>
+                        <VCol cols="12" md="6">
+                          <div class="text-caption text-medium-emphasis">Statut</div>
+                          <VChip
+                            size="small"
+                            :color="getStatusColor(trackResult.data.parcel?.status)"
+                            variant="tonal"
+                          >
+                            {{ trackResult.data.parcel?.status || 'Inconnu' }}
+                          </VChip>
+                        </VCol>
+                        <VCol cols="12" md="6">
+                          <div class="text-caption text-medium-emphasis">Dernière mise à jour</div>
+                          <div class="text-body-2">
+                            {{ formatDate(trackResult.data.parcel?.last_status_at) }}
+                          </div>
+                        </VCol>
+                        <VCol cols="12" v-if="trackResult.data.parcel?.last_status_text">
+                          <div class="text-caption text-medium-emphasis">Dernier statut</div>
+                          <div class="text-body-2">
+                            {{ trackResult.data.parcel.last_status_text }}
+                          </div>
+                        </VCol>
+                      </VRow>
+                    </VCardText>
+                  </VCard>
+                </div>
+              </VCardText>
+            </VCard>
+          </VCol>
+        </VRow>
+      </VCardText>
+    </VCard>
+
     <!-- Meta Dialog -->
     <VDialog v-model="metaDialog.show" max-width="600">
       <VCard>
@@ -609,6 +851,8 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useOzonDebugStore } from '@/stores/admin/ozonDebug'
+import { useNotifications } from '@/composables/useNotifications'
 
 definePage({
   meta: {
@@ -617,6 +861,10 @@ definePage({
     roles: ['admin']
   }
 })
+
+// Stores
+const ozonDebugStore = useOzonDebugStore()
+const { showSuccess, showError } = useNotifications()
 
 // State
 const loading = ref({
@@ -643,6 +891,23 @@ const createTestResult = ref<any>(null)
 const trackTestResult = ref<any>(null)
 const showTrackingDialog = ref(false)
 const trackingNumber = ref('')
+
+// Enhanced debug state
+const sendTab = ref('manual')
+const selectedOrderId = ref('')
+const enhancedTrackingNumber = ref('')
+const sendResult = ref<any>(null)
+const trackResult = ref<any>(null)
+
+const manualForm = ref({
+  receiver: '',
+  phone: '',
+  city: '',
+  address: '',
+  price: 0,
+  nature: '',
+  stock: 0,
+})
 
 // Test mode state
 const testMode = ref({
@@ -973,26 +1238,35 @@ const disableOzonExpress = async () => {
 const testCreateParcel = async () => {
   loading.value.createTest = true
   try {
-    const { data, error } = await useApi('/admin/test/create-parcel', { method: 'POST' })
-    if (error.value) {
-      console.error('Error creating test parcel:', error.value)
-      createTestResult.value = {
-        success: false,
-        message: 'Erreur lors de la création du colis test: ' + (error.value as any)?.message
-      }
+    // Use the new debug API with predefined test data
+    const result = await ozonDebugStore.sendParcel({
+      receiver: 'Test Client',
+      phone: '0612345678',
+      city: 'Casablanca',
+      address: '123 Rue Test, Quartier Test',
+      price: 50.00,
+      nature: 'Test Product',
+      stock: 0, // Ramassage
+      products: [
+        { ref: 'TEST-PRODUCT-001', qnty: 1 }
+      ]
+    })
+
+    createTestResult.value = result
+
+    if (result.success) {
+      showSuccess('Colis test créé avec succès!')
+      await loadShippingParcels()
     } else {
-      createTestResult.value = data.value
-      // Refresh parcels data after creation
-      if ((data.value as any)?.success) {
-        await loadShippingParcels()
-      }
+      showError(result.message || 'Erreur lors de la création du colis test')
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error creating test parcel:', error)
     createTestResult.value = {
       success: false,
-      message: 'Erreur lors de la création du colis test: ' + (error as any)?.message
+      message: 'Erreur lors de la création du colis test: ' + error.message
     }
+    showError(error.message || 'Erreur lors de la création du colis test')
   } finally {
     loading.value.createTest = false
   }
@@ -1009,38 +1283,34 @@ const testTrackParcel = async () => {
 
   loading.value.trackTest = true
   try {
-    // Use useApi for proper authentication
-    const { data, error } = await useApi('/admin/test/track-parcel', {
-      method: 'POST',
-      body: JSON.stringify({ tracking_number: trackingNumber.value.trim() }),
-      headers: {
-        'Content-Type': 'application/json'
-      }
+    // Use the new debug API
+    const result = await ozonDebugStore.track({
+      tracking_number: trackingNumber.value.trim()
     })
 
-    if (error.value) {
-      console.error('Error tracking parcel:', error.value)
-      trackTestResult.value = {
-        success: false,
-        message: 'Erreur lors du suivi du colis: ' + (error.value as any)?.message
-      }
+    trackTestResult.value = result
+    showTrackingDialog.value = false
+
+    if (result.success) {
+      showSuccess('Suivi mis à jour avec succès!')
+      await loadShippingParcels()
     } else {
-      trackTestResult.value = data.value
-      showTrackingDialog.value = false
+      showError(result.message || 'Erreur lors du suivi du colis')
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error tracking parcel:', error)
     trackTestResult.value = {
       success: false,
-      message: 'Erreur lors du suivi du colis: ' + (error as any)?.message
+      message: 'Erreur lors du suivi du colis: ' + error.message
     }
+    showError(error.message || 'Erreur lors du suivi du colis')
   } finally {
     loading.value.trackTest = false
   }
 }
 
 const trackLastCreatedParcel = async () => {
-  if (!createTestResult.value?.data?.tracking_number) {
+  if (!createTestResult.value?.data?.tracking_number && !createTestResult.value?.tracking_number) {
     trackTestResult.value = {
       success: false,
       message: 'Aucun colis test créé récemment'
@@ -1048,33 +1318,30 @@ const trackLastCreatedParcel = async () => {
     return
   }
 
-  const lastTrackingNumber = createTestResult.value.data.tracking_number
+  const lastTrackingNumber = createTestResult.value.data?.tracking_number || createTestResult.value.tracking_number
 
   loading.value.trackTest = true
   try {
-    const { data, error } = await useApi('/admin/test/track-parcel', {
-      method: 'POST',
-      body: JSON.stringify({ tracking_number: lastTrackingNumber }),
-      headers: {
-        'Content-Type': 'application/json'
-      }
+    // Use the new debug API
+    const result = await ozonDebugStore.track({
+      tracking_number: lastTrackingNumber
     })
 
-    if (error.value) {
-      console.error('Error tracking last created parcel:', error.value)
-      trackTestResult.value = {
-        success: false,
-        message: 'Erreur lors du suivi du colis créé: ' + (error.value as any)?.message
-      }
+    trackTestResult.value = result
+
+    if (result.success) {
+      showSuccess('Suivi du dernier colis créé mis à jour avec succès!')
+      await loadShippingParcels()
     } else {
-      trackTestResult.value = data.value
+      showError(result.message || 'Erreur lors du suivi du colis créé')
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error tracking last created parcel:', error)
     trackTestResult.value = {
       success: false,
-      message: 'Erreur lors du suivi du colis créé: ' + (error as any)?.message
+      message: 'Erreur lors du suivi du colis créé: ' + error.message
     }
+    showError(error.message || 'Erreur lors du suivi du colis créé')
   } finally {
     loading.value.trackTest = false
   }
@@ -1096,5 +1363,102 @@ const getStatusColor = (status: string) => {
 
 const formatDate = (date: string) => {
   return new Date(date).toLocaleString('fr-FR')
+}
+
+// Enhanced debug functions
+const sendManualParcel = async () => {
+  sendResult.value = null
+  try {
+    const result = await ozonDebugStore.sendParcel({
+      receiver: manualForm.value.receiver,
+      phone: manualForm.value.phone,
+      city: manualForm.value.city,
+      address: manualForm.value.address,
+      price: manualForm.value.price,
+      nature: manualForm.value.nature,
+      stock: manualForm.value.stock,
+      products: [
+        { ref: 'DEBUG-PRODUCT', qnty: 1 }
+      ]
+    })
+
+    sendResult.value = result
+
+    if (result.success) {
+      showSuccess('Colis envoyé avec succès!')
+      // Reset form
+      manualForm.value = {
+        receiver: '',
+        phone: '',
+        city: '',
+        address: '',
+        price: 0,
+        nature: '',
+        stock: 0,
+      }
+      // Refresh parcels data
+      await loadShippingParcels()
+    } else {
+      showError(result.message || 'Erreur lors de l\'envoi du colis')
+    }
+  } catch (error: any) {
+    showError(error.message || 'Erreur lors de l\'envoi du colis')
+  }
+}
+
+const sendFromOrder = async () => {
+  if (!selectedOrderId.value) return
+
+  sendResult.value = null
+  try {
+    const result = await ozonDebugStore.sendParcel({
+      commande_id: selectedOrderId.value
+    })
+
+    sendResult.value = result
+
+    if (result.success) {
+      showSuccess('Colis envoyé avec succès!')
+      selectedOrderId.value = ''
+      // Refresh parcels data
+      await loadShippingParcels()
+    } else {
+      showError(result.message || 'Erreur lors de l\'envoi du colis')
+    }
+  } catch (error: any) {
+    showError(error.message || 'Erreur lors de l\'envoi du colis')
+  }
+}
+
+const trackParcelEnhanced = async () => {
+  if (!enhancedTrackingNumber.value) return
+
+  trackResult.value = null
+  try {
+    const result = await ozonDebugStore.track({
+      tracking_number: enhancedTrackingNumber.value
+    })
+
+    trackResult.value = result
+
+    if (result.success) {
+      showSuccess('Suivi mis à jour avec succès!')
+      // Refresh parcels data
+      await loadShippingParcels()
+    } else {
+      showError(result.message || 'Erreur lors du suivi du colis')
+    }
+  } catch (error: any) {
+    showError(error.message || 'Erreur lors du suivi du colis')
+  }
+}
+
+const copyToClipboard = async (text: string) => {
+  try {
+    await navigator.clipboard.writeText(text)
+    showSuccess('Numéro de suivi copié!')
+  } catch (error) {
+    showError('Erreur lors de la copie')
+  }
 }
 </script>

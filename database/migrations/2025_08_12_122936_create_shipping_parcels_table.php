@@ -29,6 +29,9 @@ return new class extends Migration
             $table->decimal('refused_price', 12, 2)->nullable();
             $table->string('delivery_note_ref')->nullable();
             $table->timestampTz('last_synced_at')->nullable();
+            $table->string('last_status_text')->nullable();
+            $table->string('last_status_code')->nullable();
+            $table->timestampTz('last_status_at')->nullable();
             $table->json('meta')->nullable();
             $table->timestampsTz();
 

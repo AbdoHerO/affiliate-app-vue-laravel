@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Commande;
 use App\Models\ShippingParcel;
+use App\Services\OzonSettingsService;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -16,10 +17,13 @@ class OzonExpressService
 
     public function __construct()
     {
-        $this->baseUrl = config('services.ozonexpress.base_url', 'https://api.ozonexpress.ma');
-        $this->customerId = config('services.ozonexpress.id');
-        $this->apiKey = config('services.ozonexpress.key');
-        $this->enabled = config('services.ozonexpress.enabled', true);
+        $settingsService = app(OzonSettingsService::class);
+        $settings = $settingsService->getSettings();
+
+        $this->baseUrl = $settings['base_url'] ?? 'https://api.ozonexpress.ma';
+        $this->customerId = $settings['customer_id'];
+        $this->apiKey = $settings['api_key'];
+        $this->enabled = $settings['enabled'] ?? true;
     }
 
     /**
@@ -115,18 +119,40 @@ class OzonExpressService
 
             $responseData = $response->json();
 
-            // Parse response according to API documentation
-            $trackingNumber = $responseData[0] ?? null;
-            $receiver = $responseData[1] ?? $commande->client->nom_complet;
-            $phone = $responseData[2] ?? $commande->client->telephone;
-            $cityId = $responseData[3] ?? null;
-            $cityName = $responseData[4] ?? $commande->adresse->ville;
-            $address = $responseData[5] ?? $commande->adresse->adresse;
-            $price = $responseData[6] ?? $commande->total_ttc;
-            $note = $responseData[7] ?? $commande->notes;
-            $deliveredPrice = $responseData[8] ?? null;
-            $returnedPrice = $responseData[9] ?? null;
-            $refusedPrice = $responseData[10] ?? null;
+            // Parse response - handle both response formats
+            $trackingNumber = null;
+            $newParcelData = [];
+
+            // Check for new API response format first
+            if (isset($responseData['ADD-PARCEL']['NEW-PARCEL']['TRACKING-NUMBER'])) {
+                $newParcelData = $responseData['ADD-PARCEL']['NEW-PARCEL'];
+                $trackingNumber = $newParcelData['TRACKING-NUMBER'];
+            }
+            // Fallback to old array format
+            elseif (isset($responseData[0])) {
+                $trackingNumber = $responseData[0];
+            }
+
+            // Extract data with fallbacks
+            $receiver = $newParcelData['RECEIVER'] ?? $responseData[1] ?? $commande->client->nom_complet;
+            $phone = $newParcelData['PHONE'] ?? $responseData[2] ?? $commande->client->telephone;
+            $cityId = $newParcelData['CITY_ID'] ?? $responseData[3] ?? null;
+            $cityName = $newParcelData['CITY_NAME'] ?? $responseData[4] ?? $commande->adresse->ville;
+            $address = $newParcelData['ADDRESS'] ?? $responseData[5] ?? $commande->adresse->adresse;
+            $price = $newParcelData['PRICE'] ?? $responseData[6] ?? $commande->total_ttc;
+            $note = $newParcelData['NOTE'] ?? $responseData[7] ?? $commande->notes;
+            $deliveredPrice = $newParcelData['DELIVERED-PRICE'] ?? $responseData[8] ?? null;
+            $returnedPrice = $newParcelData['RETURNED-PRICE'] ?? $responseData[9] ?? null;
+            $refusedPrice = $newParcelData['REFUSED-PRICE'] ?? $responseData[10] ?? null;
+
+            // Validate tracking number
+            if (!$trackingNumber) {
+                return [
+                    'success' => false,
+                    'message' => 'No tracking number returned from OzonExpress',
+                    'response' => $responseData,
+                ];
+            }
 
             // Create shipping parcel record
             $parcel = ShippingParcel::create([
@@ -160,6 +186,115 @@ class OzonExpressService
         } catch (\Exception $e) {
             Log::error('OzonExpress Service Error', [
                 'commande_id' => $commande->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return [
+                'success' => false,
+                'message' => 'Failed to create parcel: ' . $e->getMessage(),
+                'error' => $e->getMessage(),
+            ];
+        }
+    }
+
+    /**
+     * Add a parcel to OzonExpress from form data (for debug API)
+     */
+    public function addParcelFromData(array $data): array
+    {
+        if (!$this->enabled) {
+            return [
+                'success' => false,
+                'message' => 'OzonExpress is disabled',
+            ];
+        }
+
+        try {
+            // Prepare form data for OzonExpress API
+            $formData = [
+                'parcel-receiver' => $data['receiver'],
+                'parcel-phone' => $data['phone'],
+                'parcel-city' => $data['city'],
+                'parcel-address' => $data['address'],
+                'parcel-price' => $data['price'],
+                'parcel-nature' => $data['nature'],
+                'parcel-stock' => $data['stock'],
+                'products' => json_encode($data['products']),
+            ];
+
+            // Add tracking number if provided
+            if (!empty($data['tracking_number'])) {
+                $formData['tracking-number'] = $data['tracking_number'];
+            }
+
+            // Call OzonExpress API
+            $response = Http::asForm()->post(
+                "{$this->baseUrl}/customers/{$this->customerId}/{$this->apiKey}/add-parcel",
+                $formData
+            );
+
+            if (!$response->successful()) {
+                return [
+                    'success' => false,
+                    'message' => 'Failed to create parcel at OzonExpress',
+                    'error' => $response->body(),
+                ];
+            }
+
+            $responseData = $response->json();
+
+            // Extract tracking number from OzonExpress response structure
+            $trackingNumber = $responseData['ADD-PARCEL']['NEW-PARCEL']['TRACKING-NUMBER'] ??
+                             $responseData['tracking_number'] ??
+                             null;
+
+            if (!$trackingNumber) {
+                return [
+                    'success' => false,
+                    'message' => 'No tracking number returned from OzonExpress',
+                    'response' => $responseData,
+                ];
+            }
+
+            // Extract additional data from OzonExpress response
+            $newParcelData = $responseData['ADD-PARCEL']['NEW-PARCEL'] ?? [];
+
+            // Create shipping parcel record
+            $parcel = ShippingParcel::create([
+                'commande_id' => null, // Debug parcel doesn't have a commande
+                'provider' => 'ozonexpress',
+                'tracking_number' => $trackingNumber,
+                'status' => 'created',
+                'city_id' => $newParcelData['CITY_ID'] ?? null,
+                'city_name' => $newParcelData['CITY_NAME'] ?? $data['city'],
+                'receiver' => $newParcelData['RECEIVER'] ?? $data['receiver'],
+                'phone' => $newParcelData['PHONE'] ?? $data['phone'],
+                'address' => $newParcelData['ADDRESS'] ?? $data['address'],
+                'price' => $newParcelData['PRICE'] ?? $data['price'],
+                'note' => $newParcelData['NOTE'] ?? 'Debug parcel created via API',
+                'delivered_price' => $newParcelData['DELIVERED-PRICE'] ?? null,
+                'returned_price' => $newParcelData['RETURNED-PRICE'] ?? null,
+                'refused_price' => $newParcelData['REFUSED-PRICE'] ?? null,
+                'last_synced_at' => now(),
+                'meta' => [
+                    'api_response' => $responseData,
+                    'form_data' => $formData,
+                    'debug_created' => true,
+                    'ozon_parcel_data' => $newParcelData,
+                ],
+            ]);
+
+            return [
+                'success' => true,
+                'message' => 'Parcel created successfully',
+                'data' => $parcel,
+                'tracking_number' => $trackingNumber,
+            ];
+
+        } catch (\Exception $e) {
+            Log::error('OzonExpress Debug Service Error', [
+                'data' => $data,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
@@ -796,6 +931,110 @@ class OzonExpressService
                 'message' => 'Failed to track parcel: ' . $e->getMessage(),
                 'error' => $e->getMessage(),
                 'tracking_number' => $trackingNumber,
+            ];
+        }
+    }
+
+    /**
+     * Add a parcel from commande ID (for debug API)
+     */
+    public function addParcelFromCommande(string $commandeId): array
+    {
+        $commande = Commande::with([
+            'client',
+            'adresse',
+            'articles.produit',
+            'articles.variante',
+            'shippingParcel'
+        ])->findOrFail($commandeId);
+
+        return $this->addParcel($commande);
+    }
+
+    /**
+     * Track a parcel by tracking number (for debug API)
+     * This method will upsert the shipping_parcels table
+     */
+    public function track(string $trackingNumber): array
+    {
+        try {
+            // Get tracking info from OzonExpress
+            $trackingResult = $this->getTracking($trackingNumber);
+
+            if (!$trackingResult['success']) {
+                return $trackingResult;
+            }
+
+            // Get parcel info as well
+            $parcelInfoResult = $this->getParcelInfo($trackingNumber);
+
+            // Find or create shipping parcel record
+            $parcel = ShippingParcel::where('provider', 'ozonexpress')
+                ->where('tracking_number', $trackingNumber)
+                ->first();
+
+            $trackingData = $trackingResult['data'] ?? [];
+            $parcelData = $parcelInfoResult['success'] ? ($parcelInfoResult['data'] ?? []) : [];
+
+            // Extract status information
+            $status = $parcelData['status'] ?? 'unknown';
+            $lastStatusText = $trackingData['last_status'] ?? null;
+            $lastStatusCode = $trackingData['status_code'] ?? null;
+
+            if ($parcel) {
+                // Update existing parcel
+                $parcel->update([
+                    'status' => $status,
+                    'last_status_text' => $lastStatusText,
+                    'last_status_code' => $lastStatusCode,
+                    'last_status_at' => now(),
+                    'last_synced_at' => now(),
+                    'meta' => array_merge($parcel->meta ?? [], [
+                        'last_tracking_check' => now()->toISOString(),
+                        'tracking_data' => $trackingData,
+                        'parcel_data' => $parcelData,
+                    ])
+                ]);
+            } else {
+                // Create new parcel record (for externally created parcels)
+                $parcel = ShippingParcel::create([
+                    'commande_id' => null, // External parcel
+                    'provider' => 'ozonexpress',
+                    'tracking_number' => $trackingNumber,
+                    'status' => $status,
+                    'receiver' => $parcelData['receiver'] ?? null,
+                    'phone' => $parcelData['phone'] ?? null,
+                    'city_name' => $parcelData['city'] ?? null,
+                    'address' => $parcelData['address'] ?? null,
+                    'price' => $parcelData['price'] ?? null,
+                    'last_status_text' => $lastStatusText,
+                    'last_status_code' => $lastStatusCode,
+                    'last_status_at' => now(),
+                    'last_synced_at' => now(),
+                    'meta' => [
+                        'external_parcel' => true,
+                        'tracking_data' => $trackingData,
+                        'parcel_data' => $parcelData,
+                        'created_via_debug' => true,
+                    ]
+                ]);
+            }
+
+            return [
+                'success' => true,
+                'message' => 'Parcel tracked successfully',
+                'data' => [
+                    'parcel' => $parcel,
+                    'tracking_info' => $trackingData,
+                    'parcel_info' => $parcelData,
+                ],
+            ];
+
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'message' => 'Failed to track parcel: ' . $e->getMessage(),
+                'error' => $e->getMessage(),
             ];
         }
     }

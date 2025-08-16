@@ -36,6 +36,9 @@ class ShippingParcel extends Model
         'refused_price',
         'delivery_note_ref',
         'last_synced_at',
+        'last_status_text',
+        'last_status_code',
+        'last_status_at',
         'meta',
     ];
 
@@ -48,6 +51,7 @@ class ShippingParcel extends Model
         'returned_price' => 'decimal:2',
         'refused_price' => 'decimal:2',
         'last_synced_at' => 'datetime',
+        'last_status_at' => 'datetime',
         'meta' => 'array',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',

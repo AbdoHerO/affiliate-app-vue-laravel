@@ -331,6 +331,57 @@ export const useShippingStore = defineStore('shipping', () => {
     currentShippingOrder.value = null
   }
 
+  const refreshTracking = async (trackingNumber: string): Promise<any> => {
+    try {
+      const response = await axios.post('/api/admin/shipping/ozon/debug/track', {
+        tracking_number: trackingNumber
+      })
+
+      if (response.data.success) {
+        // Refresh shipping orders to get updated data
+        await fetchShippingOrders(filters.value)
+      }
+
+      return response.data
+    } catch (error: any) {
+      console.error('Error refreshing tracking:', error)
+      throw error
+    }
+  }
+
+  const refreshTrackingBulk = async (trackingNumbers: string[]): Promise<any> => {
+    try {
+      const results = await Promise.allSettled(
+        trackingNumbers.map(trackingNumber =>
+          axios.post('/api/admin/shipping/ozon/debug/track', { tracking_number: trackingNumber })
+        )
+      )
+
+      const successCount = results.filter(result =>
+        result.status === 'fulfilled' && result.value.data.success
+      ).length
+
+      const errorCount = results.length - successCount
+
+      // Refresh shipping orders to get updated data
+      await fetchShippingOrders(filters.value)
+
+      return {
+        success: true,
+        message: `${successCount} colis mis à jour, ${errorCount} erreurs`,
+        results: results.map((result, index) => ({
+          tracking_number: trackingNumbers[index],
+          success: result.status === 'fulfilled' && result.value.data.success,
+          data: result.status === 'fulfilled' ? result.value.data : null,
+          error: result.status === 'rejected' ? result.reason : null
+        }))
+      }
+    } catch (error: any) {
+      console.error('Error refreshing tracking bulk:', error)
+      throw error
+    }
+  }
+
   return {
     // State
     shippingOrders,
@@ -358,5 +409,7 @@ export const useShippingStore = defineStore('shipping', () => {
     fetchCities,
     resetFilters,
     clearCurrentShippingOrder,
+    refreshTracking,
+    refreshTrackingBulk,
   }
 })
