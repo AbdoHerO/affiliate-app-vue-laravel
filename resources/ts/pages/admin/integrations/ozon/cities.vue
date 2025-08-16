@@ -58,7 +58,6 @@ const clearFilters = () => {
   deleteFilter.value = 'active'
   ozonCitiesStore.setFilters({
     q: '',
-    active: '',
     include_deleted: 'active',
     page: 1,
     per_page: 15
@@ -80,11 +79,15 @@ const fetchCities = async () => {
   await ozonCitiesStore.fetchCities()
 }
 
+// Handle delete event from SoftDeleteActions
+const handleDeleted = async () => {
+  await fetchCities()
+}
+
 // Debounced search
 const debouncedSearch = useDebounceFn(async () => {
   ozonCitiesStore.setFilters({
     q: searchQuery.value,
-    active: activeFilter.value,
     include_deleted: deleteFilter.value,
     page: 1
   })
@@ -252,6 +255,7 @@ const formatPrice = (price: number | null | undefined) => {
   if (price === null || price === undefined) return '-'
   return `${price.toFixed(2)} MAD`
 }
+
 </script>
 
 <template>
@@ -454,7 +458,7 @@ const formatPrice = (price: number | null | undefined) => {
             api-endpoint="/admin/integrations/ozon/cities"
             item-name-field="name"
             :show-view="false"
-            @deleted="fetchCities"
+            @deleted="handleDeleted"
             @restored="fetchCities"
             @permanently-deleted="fetchCities"
             @edit="openEditDialog"

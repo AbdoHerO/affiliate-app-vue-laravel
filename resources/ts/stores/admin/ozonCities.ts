@@ -23,7 +23,6 @@ export interface ShippingCity {
 
 export interface CityFilters {
   q: string
-  active: string
   include_deleted: string
   page: number
   per_page: number
@@ -100,7 +99,6 @@ export const useOzonCitiesStore = defineStore('ozonCities', () => {
   
   const filters = ref<CityFilters>({
     q: '',
-    active: '',
     include_deleted: 'active',
     page: 1,
     per_page: 15,
@@ -114,7 +112,7 @@ export const useOzonCitiesStore = defineStore('ozonCities', () => {
     try {
       const params = new URLSearchParams()
       if (filters.value.q) params.append('q', filters.value.q)
-      if (filters.value.active !== '') params.append('active', filters.value.active)
+      if (filters.value.include_deleted) params.append('include_deleted', filters.value.include_deleted)
       params.append('page', filters.value.page.toString())
       params.append('per_page', filters.value.per_page.toString())
 

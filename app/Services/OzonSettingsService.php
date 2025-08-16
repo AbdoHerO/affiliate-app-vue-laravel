@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\AppSetting;
 use App\Models\ShippingCity;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
@@ -152,19 +153,35 @@ class OzonSettingsService
 
         // Test actual API connectivity by calling the /cities endpoint
         try {
-            $response = $this->callOzonExpressApi('/cities', 'GET');
+            // Try different possible URL formats for OzonExpress API
+            $possibleEndpoints = [
+                '/cities',
+                '/api/cities',
+                '/v1/cities',
+                '/api/v1/cities'
+            ];
 
-            if ($response['success']) {
-                return [
-                    'success' => true,
-                    'message' => 'Connection successful! API credentials are valid.',
-                ];
-            } else {
-                return [
-                    'success' => false,
-                    'message' => 'Connection failed: ' . ($response['message'] ?? 'Unknown error'),
-                ];
+            $lastError = null;
+            foreach ($possibleEndpoints as $endpoint) {
+                try {
+                    $response = $this->callOzonExpressApi($endpoint, 'GET');
+                    if ($response['success']) {
+                        return [
+                            'success' => true,
+                            'message' => 'Connection successful! API credentials are valid.',
+                        ];
+                    }
+                } catch (\Exception $e) {
+                    $lastError = $e->getMessage();
+                    Log::info('Failed endpoint: ' . $endpoint . ' - Error: ' . $lastError);
+                    continue;
+                }
             }
+
+            return [
+                'success' => false,
+                'message' => 'Connection failed: Unable to find valid API endpoint. Last error: ' . $lastError,
+            ];
         } catch (\Exception $e) {
             return [
                 'success' => false,
@@ -190,6 +207,9 @@ class OzonSettingsService
         try {
             // OzonExpress uses path-based authentication: /{customer_id}/{api_key}/endpoint
             $authenticatedUrl = rtrim($baseUrl, '/') . '/' . $settings['customer_id'] . '/' . $settings['api_key'] . $endpoint;
+
+            // Log the URL for debugging (remove in production)
+            Log::info('OzonExpress API URL: ' . $authenticatedUrl);
 
             $http = \Illuminate\Support\Facades\Http::timeout(30)
                 ->withHeaders([
@@ -217,8 +237,16 @@ class OzonSettingsService
                     throw new \Exception('Authentication failed. Please check your API credentials.');
                 } elseif ($statusCode === 403) {
                     throw new \Exception('Access forbidden. Please check your API permissions.');
+                } elseif ($statusCode === 404) {
+                    throw new \Exception('API endpoint not found. Please check the base URL configuration.');
                 } else {
-                    throw new \Exception('API request failed with status ' . $statusCode . ': ' . $response->body());
+                    $errorBody = $response->body();
+                    // Don't include the full HTML error page in the response
+                    if (str_contains($errorBody, '<!DOCTYPE HTML')) {
+                        throw new \Exception('API endpoint not found (404). Please check the base URL configuration.');
+                    } else {
+                        throw new \Exception('API request failed with status ' . $statusCode . ': ' . $errorBody);
+                    }
                 }
             }
         } catch (\Illuminate\Http\Client\ConnectionException $e) {
