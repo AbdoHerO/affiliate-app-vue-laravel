@@ -184,7 +184,7 @@ const clearFieldError = (field: string) => {
           </VAlert>
 
           <!-- Action Buttons -->
-          <div class="d-flex gap-3">
+          <div class="d-flex gap-3 mt-5">
             <VBtn
               type="submit"
               color="primary"
@@ -195,7 +195,7 @@ const clearFieldError = (field: string) => {
               Sauvegarder
             </VBtn>
 
-            <VBtn
+            <!-- <VBtn
               variant="outlined"
               color="secondary"
               :loading="ozonSettingsStore.loading"
@@ -204,7 +204,7 @@ const clearFieldError = (field: string) => {
             >
               <VIcon icon="tabler-plug-connected" start />
               Tester la connexion
-            </VBtn>
+            </VBtn> -->
           </div>
         </VForm>
       </VCardText>

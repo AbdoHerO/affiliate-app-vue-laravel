@@ -43,6 +43,7 @@ const clearFilters = () => {
   deleteFilter.value = 'active'
   ozonCitiesStore.setFilters({
     q: '',
+    active: '',
     include_deleted: 'active',
     page: 1,
     per_page: 15
@@ -73,6 +74,7 @@ const handleDeleted = async () => {
 const debouncedSearch = useDebounceFn(async () => {
   ozonCitiesStore.setFilters({
     q: searchQuery.value,
+    active: activeFilter.value,
     include_deleted: deleteFilter.value,
     page: 1
   })
@@ -83,13 +85,7 @@ const debouncedSearch = useDebounceFn(async () => {
 watch(searchQuery, debouncedSearch)
 
 // Watch for filter changes
-watch(activeFilter, async () => {
-  ozonCitiesStore.setFilters({
-    active: activeFilter.value,
-    page: 1
-  })
-  await ozonCitiesStore.fetchCities()
-})
+watch(activeFilter, debouncedSearch)
 
 watch(deleteFilter, async () => {
   ozonCitiesStore.setFilters({

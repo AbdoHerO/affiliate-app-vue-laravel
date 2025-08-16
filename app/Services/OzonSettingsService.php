@@ -151,7 +151,8 @@ class OzonSettingsService
             ];
         }
 
-        // Test actual API connectivity by calling the /parcels endpoint (like in debug page)
+        // Test actual API connectivity by calling the /parcels endpoint
+        // This endpoint requires authentication and will fail with wrong credentials
         try {
             $response = $this->callOzonExpressApi('/parcels', 'POST', [
                 'limit' => 1,
@@ -166,10 +167,21 @@ class OzonSettingsService
             } else {
                 return [
                     'success' => false,
-                    'message' => 'Connection failed: ' . ($response['message'] ?? 'Unknown error'),
+                    'message' => 'Connection failed: ' . ($response['message'] ?? 'Invalid credentials or API error'),
                 ];
             }
         } catch (\Exception $e) {
+            // Check if it's an authentication error
+            if (str_contains($e->getMessage(), 'Authentication failed') ||
+                str_contains($e->getMessage(), '401') ||
+                str_contains($e->getMessage(), 'Unauthorized') ||
+                str_contains($e->getMessage(), 'Failed to get parcel info')) {
+                return [
+                    'success' => false,
+                    'message' => 'Connection failed: Invalid credentials. Please check your Customer ID and API Key.',
+                ];
+            }
+
             return [
                 'success' => false,
                 'message' => 'Connection failed: ' . $e->getMessage(),
@@ -197,6 +209,8 @@ class OzonSettingsService
 
             // Log the URL for debugging (remove in production)
             Log::info('OzonExpress API URL: ' . $authenticatedUrl);
+            Log::info('OzonExpress API Method: ' . $method);
+            Log::info('OzonExpress API Data: ' . json_encode($data));
 
             if ($method === 'GET') {
                 $response = \Illuminate\Support\Facades\Http::timeout(30)->get($authenticatedUrl);
@@ -207,14 +221,58 @@ class OzonSettingsService
                 throw new \Exception('Unsupported HTTP method: ' . $method);
             }
 
+            Log::info('OzonExpress API Response Status: ' . $response->status());
+            Log::info('OzonExpress API Response Body: ' . $response->body());
+
             if ($response->successful()) {
+                $data = $response->json();
+
+                // OzonExpress specific validation
+                // Check for the specific OzonExpress API response format
+                if (is_array($data) && isset($data['CHECK_API'])) {
+                    $checkApi = $data['CHECK_API'];
+                    if (isset($checkApi['RESULT']) && $checkApi['RESULT'] === 'ERROR') {
+                        $errorMessage = $checkApi['MESSAGE'] ?? 'API authentication failed';
+                        throw new \Exception('Authentication failed: ' . $errorMessage);
+                    }
+
+                    if (isset($checkApi['RESULT']) && $checkApi['RESULT'] === 'SUCCESS') {
+                        // Valid credentials
+                        return [
+                            'success' => true,
+                            'data' => $data,
+                            'status_code' => $response->status(),
+                        ];
+                    }
+                }
+
+                // Additional validation for other error formats
+                if (is_array($data)) {
+                    $errorIndicators = ['error', 'message', 'status'];
+                    foreach ($errorIndicators as $indicator) {
+                        if (isset($data[$indicator])) {
+                            $errorText = strtolower($data[$indicator]);
+                            if (str_contains($errorText, 'unauthorized') ||
+                                str_contains($errorText, 'invalid') ||
+                                str_contains($errorText, 'authentication') ||
+                                str_contains($errorText, 'access denied') ||
+                                str_contains($errorText, 'forbidden') ||
+                                str_contains($errorText, 'verify your api key')) {
+                                throw new \Exception('Authentication failed. Please check your API credentials.');
+                            }
+                        }
+                    }
+                }
+
                 return [
                     'success' => true,
-                    'data' => $response->json(),
+                    'data' => $data,
                     'status_code' => $response->status(),
                 ];
             } else {
                 $statusCode = $response->status();
+                $errorBody = $response->body();
+
                 if ($statusCode === 401) {
                     throw new \Exception('Authentication failed. Please check your API credentials.');
                 } elseif ($statusCode === 403) {
@@ -222,12 +280,17 @@ class OzonSettingsService
                 } elseif ($statusCode === 404) {
                     throw new \Exception('API endpoint not found. Please check the base URL configuration.');
                 } else {
-                    $errorBody = $response->body();
                     // Don't include the full HTML error page in the response
                     if (str_contains($errorBody, '<!DOCTYPE HTML')) {
                         throw new \Exception('API endpoint not found (404). Please check the base URL configuration.');
                     } else {
-                        throw new \Exception('API request failed with status ' . $statusCode . ': ' . $errorBody);
+                        // Try to parse JSON error response
+                        $errorData = json_decode($errorBody, true);
+                        if (is_array($errorData) && isset($errorData['error'])) {
+                            throw new \Exception('API error: ' . $errorData['error']);
+                        } else {
+                            throw new \Exception('API request failed with status ' . $statusCode . ': ' . $errorBody);
+                        }
                     }
                 }
             }
