@@ -18,6 +18,8 @@ class OzonSettingsService
         return [
             'customer_id' => AppSetting::get('ozonexpress.customer_id'),
             'api_key' => AppSetting::get('ozonexpress.api_key'),
+            'base_url' => AppSetting::get('ozonexpress.base_url', 'https://api.ozonexpress.ma'),
+            'enabled' => AppSetting::get('ozonexpress.enabled', true),
         ];
     }
 
@@ -44,6 +46,16 @@ class OzonSettingsService
             'OzonExpress API Key'
         );
 
+        if (isset($data['base_url'])) {
+            AppSetting::set(
+                'ozonexpress.base_url',
+                $data['base_url'],
+                'string',
+                false,
+                'OzonExpress API Base URL'
+            );
+        }
+
         // Clear config cache to reload settings
         $this->clearConfigCache();
 
@@ -58,6 +70,7 @@ class OzonSettingsService
         $validator = Validator::make($data, [
             'customer_id' => 'required|string|max:32',
             'api_key' => 'required|string|max:128',
+            'base_url' => 'nullable|url|max:255',
         ]);
 
         if ($validator->fails()) {
@@ -93,6 +106,7 @@ class OzonSettingsService
         return [
             'customer_id' => AppSetting::get('ozonexpress.customer_id'),
             'api_key' => $this->getMaskedApiKey(),
+            'base_url' => AppSetting::get('ozonexpress.base_url', 'https://api.ozonexpress.ma'),
         ];
     }
 
@@ -170,23 +184,23 @@ class OzonSettingsService
             throw new \Exception('OzonExpress credentials not configured');
         }
 
-        // OzonExpress API base URL (you may need to adjust this)
-        $baseUrl = 'https://api.ozonexpress.ma'; // Replace with actual OzonExpress API URL
-        $url = $baseUrl . $endpoint;
+        // Get base URL from settings
+        $baseUrl = $settings['base_url'] ?? 'https://api.ozonexpress.ma';
 
         try {
+            // OzonExpress uses path-based authentication: /{customer_id}/{api_key}/endpoint
+            $authenticatedUrl = rtrim($baseUrl, '/') . '/' . $settings['customer_id'] . '/' . $settings['api_key'] . $endpoint;
+
             $http = \Illuminate\Support\Facades\Http::timeout(30)
                 ->withHeaders([
                     'Content-Type' => 'application/json',
                     'Accept' => 'application/json',
-                    'Authorization' => 'Bearer ' . $settings['api_key'], // Adjust auth method as needed
-                    'X-Customer-ID' => $settings['customer_id'], // Adjust header name as needed
                 ]);
 
             if ($method === 'GET') {
-                $response = $http->get($url);
+                $response = $http->get($authenticatedUrl);
             } elseif ($method === 'POST') {
-                $response = $http->post($url, $data);
+                $response = $http->post($authenticatedUrl, $data);
             } else {
                 throw new \Exception('Unsupported HTTP method: ' . $method);
             }

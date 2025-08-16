@@ -13,7 +13,6 @@ const ozonCitiesStore = useOzonCitiesStore()
 // Composables
 const {
   confirmDelete,
-  confirmUpdate,
   isDialogVisible,
   isLoading,
   dialogTitle,
@@ -52,6 +51,21 @@ const activeFilter = ref('')
 const deleteFilter = ref('active')
 const perPageOptions = [10, 15, 25, 50]
 
+// Clear filters function
+const clearFilters = () => {
+  searchQuery.value = ''
+  activeFilter.value = ''
+  deleteFilter.value = 'active'
+  ozonCitiesStore.setFilters({
+    q: '',
+    active: '',
+    include_deleted: 'active',
+    page: 1,
+    per_page: 15
+  })
+  debouncedSearch()
+}
+
 // Import
 const importFile = ref<File | null>(null)
 const importFileInput = ref<HTMLInputElement>()
@@ -61,10 +75,17 @@ onMounted(async () => {
   await ozonCitiesStore.fetchCities()
 })
 
+// Fetch cities function for refresh
+const fetchCities = async () => {
+  await ozonCitiesStore.fetchCities()
+}
+
 // Debounced search
 const debouncedSearch = useDebounceFn(async () => {
   ozonCitiesStore.setFilters({
     q: searchQuery.value,
+    active: activeFilter.value,
+    include_deleted: deleteFilter.value,
     page: 1
   })
   await ozonCitiesStore.fetchCities()
@@ -150,10 +171,10 @@ const saveCity = async () => {
 
     if (selectedCity.value) {
       // Update existing city
-      success = await ozonCitiesStore.updateCity(selectedCity.value.id, cityForm.value)
+      success = await ozonCitiesStore.updateCity(selectedCity.value.id, cityForm.value as any)
     } else {
       // Create new city
-      success = await ozonCitiesStore.createCity(cityForm.value)
+      success = await ozonCitiesStore.createCity(cityForm.value as any)
     }
 
     if (success) {
@@ -190,16 +211,19 @@ const handleFileSelect = (event: Event) => {
 const importCities = async () => {
   if (!importFile.value) return
 
-  const success = await confirmUpdate('importation', 'fichier de villes', async () => {
-    return await ozonCitiesStore.importCities(importFile.value!)
-  })
+  try {
+    const success = await ozonCitiesStore.importCities(importFile.value)
 
-  if (success) {
-    showSuccess('Villes importées avec succès')
-    showImportDialog.value = false
-    importFile.value = null
-  } else {
-    showError(ozonCitiesStore.error || 'Erreur lors de l\'importation')
+    if (success) {
+      showSuccess('Villes importées avec succès')
+      showImportDialog.value = false
+      importFile.value = null
+    } else {
+      showError(ozonCitiesStore.error || 'Erreur lors de l\'importation')
+    }
+  } catch (error) {
+    console.error('Error importing cities:', error)
+    showError('Erreur lors de l\'importation')
   }
 }
 
@@ -377,6 +401,18 @@ const formatPrice = (price: number | null | undefined) => {
               density="compact"
               @update:model-value="changePerPage"
             />
+          </VCol>
+
+          <VCol cols="12" md="1" class="d-flex align-center">
+            <VBtn
+              variant="outlined"
+              color="secondary"
+              size="small"
+              @click="clearFilters"
+            >
+              <VIcon icon="tabler-filter-off" class="me-1" />
+              Effacer
+            </VBtn>
           </VCol>
         </VRow>
       </VCardText>

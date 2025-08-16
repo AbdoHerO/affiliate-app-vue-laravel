@@ -15,6 +15,7 @@ const { showSuccess, showError, snackbar } = useNotifications()
 const form = ref({
   customer_id: '',
   api_key: '',
+  base_url: 'https://api.ozonexpress.ma',
 })
 
 const showApiKey = ref(false)
@@ -142,6 +143,19 @@ const clearFieldError = (field: string) => {
                   </VBtn>
                 </template>
               </VTextField>
+            </VCol>
+
+            <!-- Base URL -->
+            <VCol cols="12">
+              <VTextField
+                v-model="form.base_url"
+                label="URL de base de l'API"
+                placeholder="https://api.ozonexpress.ma"
+                variant="outlined"
+                required
+                :error-messages="formErrors.base_url"
+                @input="clearFieldError('base_url')"
+              />
             </VCol>
           </VRow>
 
