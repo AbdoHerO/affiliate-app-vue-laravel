@@ -38,7 +38,7 @@ class OzonExpressService
     /**
      * Add a parcel to OzonExpress from a commande (idempotent)
      */
-    public function addParcel(Commande $commande, ?string $trackingNumber = null): array
+    public function addParcel(Commande $commande, ?string $stockMode = null, ?string $trackingNumber = null): array
     {
         // Check if parcel already exists (idempotency)
         if ($commande->shippingParcel) {
@@ -95,7 +95,7 @@ class OzonExpressService
                 'parcel-note' => $commande->notes ?? '',
                 'parcel-price' => (string) intval($commande->total_ttc),
                 'parcel-nature' => 'Produits divers',
-                'parcel-stock' => '0', // 0 = ramassage (pickup), 1 = stock
+                'parcel-stock' => $stockMode ?? '0', // 0 = ramassage (pickup), 1 = stock
                 'products' => json_encode($products),
             ];
 

@@ -252,10 +252,11 @@ export const usePreordersStore = defineStore('preorders', () => {
     }
   }
 
-  const bulkSendToShipping = async (ids: string[]) => {
+  const bulkSendToShipping = async (ids: string[], mode: 'ramassage' | 'stock' = 'ramassage') => {
     try {
       const response = await axios.post('/api/admin/preorders/bulk/send-to-shipping', {
-        ids
+        ids,
+        mode
       })
 
       if (response.data.success) {
@@ -342,9 +343,11 @@ export const usePreordersStore = defineStore('preorders', () => {
     }
   }
 
-  const sendToShipping = async (id: string) => {
+  const sendToShipping = async (id: string, mode: 'ramassage' | 'stock' = 'ramassage') => {
     try {
-      const response = await axios.post(`/api/admin/preorders/${id}/send-to-shipping`)
+      const response = await axios.post(`/api/admin/preorders/${id}/send-to-shipping`, {
+        mode
+      })
 
       if (response.data.success) {
         // Refresh the list to get updated shipping status

@@ -5,6 +5,7 @@ import { usePreordersStore } from '@/stores/admin/preorders'
 import { useQuickConfirm } from '@/composables/useConfirmAction'
 import { useNotifications } from '@/composables/useNotifications'
 import ConfirmActionDialog from '@/components/common/ConfirmActionDialog.vue'
+import OzonExpressConfirmDialog from '@/components/dialogs/OzonExpressConfirmDialog.vue'
 
 definePage({
   meta: {
@@ -35,6 +36,8 @@ const { showSuccess, showError, snackbar } = useNotifications()
 const activeTab = ref('client')
 const isEditing = ref(false)
 const isSaving = ref(false)
+const showOzonDialog = ref(false)
+const ozonDialogLoading = ref(false)
 
 // Form data
 const formData = ref({
@@ -136,25 +139,28 @@ const confirmOrder = async () => {
 
 const sendToOzonExpress = async () => {
   if (!preorder.value) return
+  showOzonDialog.value = true
+}
 
-  const confirmed = await confirm({
-    title: 'Envoyer vers OzonExpress',
-    text: 'Êtes-vous sûr de vouloir envoyer cette commande vers OzonExpress ?',
-    confirmText: 'Envoyer',
-    cancelText: 'Annuler'
-  })
+const handleOzonConfirm = async (mode: 'ramassage' | 'stock') => {
+  if (!preorder.value) return
 
-  if (confirmed) {
-    try {
-      await preordersStore.sendToShipping(preorder.value.id)
-      showSuccess('Commande envoyée vers OzonExpress avec succès')
-      // Refresh order data
-      await fetchPreorder()
-    } catch (error: any) {
-      showError(error.message || 'Erreur lors de l\'envoi vers OzonExpress')
-      console.error('Detail shipping error:', error)
-    }
+  ozonDialogLoading.value = true
+  try {
+    await preordersStore.sendToShipping(preorder.value.id, mode)
+    showSuccess(`Commande envoyée vers OzonExpress en mode ${mode === 'ramassage' ? 'Ramassage' : 'Stock'}`)
+    // Refresh order data
+    await fetchPreorder()
+  } catch (error: any) {
+    showError(error.message || 'Erreur lors de l\'envoi vers OzonExpress')
+    console.error('Detail shipping error:', error)
+  } finally {
+    ozonDialogLoading.value = false
   }
+}
+
+const handleOzonCancel = () => {
+  // Dialog will close automatically
 }
 
 const getStatusColor = (status: string) => {
@@ -588,6 +594,15 @@ onMounted(() => {
         Retour à la liste
       </VBtn>
     </div>
+
+    <!-- OzonExpress Confirm Dialog -->
+    <OzonExpressConfirmDialog
+      v-model="showOzonDialog"
+      :loading="ozonDialogLoading"
+      text="Êtes-vous sûr de vouloir envoyer cette commande vers OzonExpress ?"
+      @confirm="handleOzonConfirm"
+      @cancel="handleOzonCancel"
+    />
 
     <!-- Confirm Dialog -->
     <ConfirmActionDialog

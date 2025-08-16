@@ -249,7 +249,8 @@ class PreordersController extends Controller
     {
         $request->validate([
             'ids' => 'required|array|min:1',
-            'ids.*' => 'required|uuid|exists:commandes,id'
+            'ids.*' => 'required|uuid|exists:commandes,id',
+            'mode' => 'sometimes|string|in:ramassage,stock'
         ]);
 
         $ids = $request->input('ids');
@@ -267,12 +268,15 @@ class PreordersController extends Controller
             ], 422);
         }
 
+        $mode = $request->input('mode', 'ramassage'); // Default to ramassage
+        $stockValue = $mode === 'stock' ? '1' : '0';
+
         $results = [];
         $ozonService = app(\App\Services\OzonExpressService::class);
 
         foreach ($orders as $order) {
             try {
-                $response = $ozonService->addParcel($order);
+                $response = $ozonService->addParcel($order, $stockValue);
 
                 if ($response['success']) {
                     $results[] = [
@@ -381,8 +385,12 @@ class PreordersController extends Controller
     /**
      * Send single order to shipping
      */
-    public function sendToShipping(string $id)
+    public function sendToShipping(Request $request, string $id)
     {
+        $request->validate([
+            'mode' => 'sometimes|string|in:ramassage,stock'
+        ]);
+
         $order = Commande::findOrFail($id);
 
         if ($order->statut !== 'confirmee') {
@@ -400,8 +408,11 @@ class PreordersController extends Controller
         }
 
         try {
+            $mode = $request->input('mode', 'ramassage'); // Default to ramassage
+            $stockValue = $mode === 'stock' ? '1' : '0';
+
             $ozonService = app(\App\Services\OzonExpressService::class);
-            $response = $ozonService->addParcel($order);
+            $response = $ozonService->addParcel($order, $stockValue);
 
             if ($response['success']) {
                 return response()->json([

@@ -59,6 +59,7 @@ declare module 'vue' {
     LanguageSwitcher: typeof import('./resources/ts/components/LanguageSwitcher.vue')['default']
     MoreBtn: typeof import('./resources/ts/@core/components/MoreBtn.vue')['default']
     Notifications: typeof import('./resources/ts/@core/components/Notifications.vue')['default']
+    OzonExpressConfirmDialog: typeof import('./resources/ts/components/dialogs/OzonExpressConfirmDialog.vue')['default']
     PaymentProvidersDialog: typeof import('./resources/ts/components/dialogs/PaymentProvidersDialog.vue')['default']
     PricingPlanDialog: typeof import('./resources/ts/components/dialogs/PricingPlanDialog.vue')['default']
     ProductDescriptionEditor: typeof import('./resources/ts/@core/components/ProductDescriptionEditor.vue')['default']

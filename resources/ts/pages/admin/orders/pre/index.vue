@@ -5,6 +5,7 @@ import { usePreordersStore } from '@/stores/admin/preorders'
 import { useQuickConfirm } from '@/composables/useConfirmAction'
 import { useNotifications } from '@/composables/useNotifications'
 import ConfirmActionDialog from '@/components/common/ConfirmActionDialog.vue'
+import OzonExpressConfirmDialog from '@/components/dialogs/OzonExpressConfirmDialog.vue'
 
 definePage({
   meta: {
@@ -44,6 +45,12 @@ const selectedOrders = ref<string[]>([])
 const selectAll = ref(false)
 const bulkActionLoading = ref(false)
 const bulkStatusValue = ref('')
+
+// OzonExpress dialog state
+const showOzonDialog = ref(false)
+const ozonDialogLoading = ref(false)
+const ozonDialogType = ref<'single' | 'bulk'>('single')
+const currentOrderId = ref<string>('')
 
 // Computed
 const isLoading = computed(() => preordersStore.isLoading)
@@ -246,40 +253,8 @@ const bulkChangeStatus = async (status: string) => {
 const bulkSendToShipping = async () => {
   if (selectedOrders.value.length === 0) return
 
-  const confirmed = await confirm({
-    title: 'Envoyer vers OzonExpress',
-    text: `Êtes-vous sûr de vouloir envoyer ${selectedOrders.value.length} commande(s) vers OzonExpress ?`,
-    confirmText: 'Envoyer',
-    cancelText: 'Annuler'
-  })
-
-  if (!confirmed) return
-
-  bulkActionLoading.value = true
-  try {
-    const result = await preordersStore.bulkSendToShipping(selectedOrders.value)
-
-    // Show detailed feedback based on results
-    if (result.summary) {
-      const { total, success, errors } = result.summary
-      if (errors > 0) {
-        showError(`${success}/${total} commandes envoyées avec succès. ${errors} erreur(s).`)
-      } else {
-        showSuccess(`${success} commande(s) envoyée(s) vers OzonExpress avec succès.`)
-      }
-    } else {
-      showSuccess(result.message || 'Commandes envoyées vers OzonExpress')
-    }
-
-    selectedOrders.value = []
-    selectAll.value = false
-    bulkStatusValue.value = ''
-  } catch (error: any) {
-    showError(error.message || 'Erreur lors de l\'envoi vers OzonExpress')
-    console.error('Bulk shipping error:', error)
-  } finally {
-    bulkActionLoading.value = false
-  }
+  ozonDialogType.value = 'bulk'
+  showOzonDialog.value = true
 }
 
 // Quick actions
@@ -303,22 +278,49 @@ const quickInjoignable = async (orderId: string) => {
 }
 
 const quickSendToShipping = async (orderId: string) => {
-  const confirmed = await confirm({
-    title: 'Envoyer vers OzonExpress',
-    text: 'Êtes-vous sûr de vouloir envoyer cette commande vers OzonExpress ?',
-    confirmText: 'Envoyer',
-    cancelText: 'Annuler'
-  })
+  currentOrderId.value = orderId
+  ozonDialogType.value = 'single'
+  showOzonDialog.value = true
+}
 
-  if (!confirmed) return
+const handleOzonConfirm = async (mode: 'ramassage' | 'stock') => {
+  ozonDialogLoading.value = true
 
   try {
-    const result = await preordersStore.sendToShipping(orderId)
-    showSuccess(result.message)
+    if (ozonDialogType.value === 'bulk') {
+      // Bulk action
+      const result = await preordersStore.bulkSendToShipping(selectedOrders.value, mode)
+
+      // Show detailed feedback based on results
+      if (result.summary) {
+        const { total, success, errors } = result.summary
+        if (errors > 0) {
+          showError(`${success}/${total} commandes envoyées avec succès. ${errors} erreur(s).`)
+        } else {
+          showSuccess(`${success} commande(s) envoyée(s) vers OzonExpress en mode ${mode === 'ramassage' ? 'Ramassage' : 'Stock'}.`)
+        }
+      } else {
+        showSuccess(result.message || 'Commandes envoyées vers OzonExpress')
+      }
+
+      selectedOrders.value = []
+      selectAll.value = false
+      bulkStatusValue.value = ''
+    } else {
+      // Single action
+      const result = await preordersStore.sendToShipping(currentOrderId.value, mode)
+      showSuccess(`Commande envoyée vers OzonExpress en mode ${mode === 'ramassage' ? 'Ramassage' : 'Stock'}`)
+    }
   } catch (error: any) {
     showError(error.message || 'Erreur lors de l\'envoi vers OzonExpress')
-    console.error('Individual shipping error:', error)
+    console.error('OzonExpress shipping error:', error)
+  } finally {
+    ozonDialogLoading.value = false
   }
+}
+
+const handleOzonCancel = () => {
+  // Dialog will close automatically
 }
 
 // Lifecycle
@@ -689,6 +691,17 @@ onMounted(() => {
         </template>
       </VDataTableServer>
     </VCard>
+
+    <!-- OzonExpress Confirm Dialog -->
+    <OzonExpressConfirmDialog
+      v-model="showOzonDialog"
+      :loading="ozonDialogLoading"
+      :text="ozonDialogType === 'bulk'
+        ? `Êtes-vous sûr de vouloir envoyer ${selectedOrders.length} commande(s) vers OzonExpress ?`
+        : 'Êtes-vous sûr de vouloir envoyer cette commande vers OzonExpress ?'"
+      @confirm="handleOzonConfirm"
+      @cancel="handleOzonCancel"
+    />
 
     <!-- Confirm Dialog -->
     <ConfirmActionDialog
