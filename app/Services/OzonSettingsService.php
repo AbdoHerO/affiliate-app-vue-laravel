@@ -151,37 +151,24 @@ class OzonSettingsService
             ];
         }
 
-        // Test actual API connectivity by calling the /cities endpoint
+        // Test actual API connectivity by calling the /parcels endpoint (like in debug page)
         try {
-            // Try different possible URL formats for OzonExpress API
-            $possibleEndpoints = [
-                '/cities',
-                '/api/cities',
-                '/v1/cities',
-                '/api/v1/cities'
-            ];
+            $response = $this->callOzonExpressApi('/parcels', 'POST', [
+                'limit' => 1,
+                'offset' => 0
+            ]);
 
-            $lastError = null;
-            foreach ($possibleEndpoints as $endpoint) {
-                try {
-                    $response = $this->callOzonExpressApi($endpoint, 'GET');
-                    if ($response['success']) {
-                        return [
-                            'success' => true,
-                            'message' => 'Connection successful! API credentials are valid.',
-                        ];
-                    }
-                } catch (\Exception $e) {
-                    $lastError = $e->getMessage();
-                    Log::info('Failed endpoint: ' . $endpoint . ' - Error: ' . $lastError);
-                    continue;
-                }
+            if ($response['success']) {
+                return [
+                    'success' => true,
+                    'message' => 'Connection successful! API credentials are valid.',
+                ];
+            } else {
+                return [
+                    'success' => false,
+                    'message' => 'Connection failed: ' . ($response['message'] ?? 'Unknown error'),
+                ];
             }
-
-            return [
-                'success' => false,
-                'message' => 'Connection failed: Unable to find valid API endpoint. Last error: ' . $lastError,
-            ];
         } catch (\Exception $e) {
             return [
                 'success' => false,
@@ -205,22 +192,17 @@ class OzonSettingsService
         $baseUrl = $settings['base_url'] ?? 'https://api.ozonexpress.ma';
 
         try {
-            // OzonExpress uses path-based authentication: /{customer_id}/{api_key}/endpoint
-            $authenticatedUrl = rtrim($baseUrl, '/') . '/' . $settings['customer_id'] . '/' . $settings['api_key'] . $endpoint;
+            // OzonExpress uses path-based authentication: /customers/{customer_id}/{api_key}/endpoint
+            $authenticatedUrl = rtrim($baseUrl, '/') . '/customers/' . $settings['customer_id'] . '/' . $settings['api_key'] . $endpoint;
 
             // Log the URL for debugging (remove in production)
             Log::info('OzonExpress API URL: ' . $authenticatedUrl);
 
-            $http = \Illuminate\Support\Facades\Http::timeout(30)
-                ->withHeaders([
-                    'Content-Type' => 'application/json',
-                    'Accept' => 'application/json',
-                ]);
-
             if ($method === 'GET') {
-                $response = $http->get($authenticatedUrl);
+                $response = \Illuminate\Support\Facades\Http::timeout(30)->get($authenticatedUrl);
             } elseif ($method === 'POST') {
-                $response = $http->post($authenticatedUrl, $data);
+                // Use form data like in OzonExpressService
+                $response = \Illuminate\Support\Facades\Http::timeout(30)->asForm()->post($authenticatedUrl, $data);
             } else {
                 throw new \Exception('Unsupported HTTP method: ' . $method);
             }

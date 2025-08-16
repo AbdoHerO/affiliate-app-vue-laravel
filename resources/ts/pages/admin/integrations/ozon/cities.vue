@@ -1,29 +1,14 @@
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue'
 import { useOzonCitiesStore, type ShippingCity } from '@/stores/admin/ozonCities'
-import { useQuickConfirm } from '@/composables/useConfirmAction'
 import { useNotifications } from '@/composables/useNotifications'
 import { useDebounceFn } from '@vueuse/core'
-import ConfirmActionDialog from '@/components/common/ConfirmActionDialog.vue'
 import SoftDeleteActions from '@/components/common/SoftDeleteActions.vue'
 
 // Store
 const ozonCitiesStore = useOzonCitiesStore()
 
 // Composables
-const {
-  confirmDelete,
-  isDialogVisible,
-  isLoading,
-  dialogTitle,
-  dialogText,
-  dialogIcon,
-  dialogColor,
-  confirmButtonText,
-  cancelButtonText,
-  handleConfirm,
-  handleCancel
-} = useQuickConfirm()
 const { showSuccess, showError, snackbar } = useNotifications()
 
 // UI State
@@ -732,19 +717,7 @@ const formatPrice = (price: number | null | undefined) => {
       {{ snackbar.message }}
     </VSnackbar>
 
-    <!-- Confirm Dialog -->
-    <ConfirmActionDialog
-      v-model="isDialogVisible"
-      :title="dialogTitle"
-      :text="dialogText"
-      :icon="dialogIcon"
-      :color="dialogColor"
-      :confirm-text="confirmButtonText"
-      :cancel-text="cancelButtonText"
-      :loading="isLoading"
-      @confirm="handleConfirm"
-      @cancel="handleCancel"
-    />
+
   </div>
 </template>
 
