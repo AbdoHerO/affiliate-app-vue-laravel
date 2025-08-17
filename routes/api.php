@@ -288,6 +288,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::post('/{id}/approve', [CommissionsController::class, 'approve']);
             Route::post('/{id}/reject', [CommissionsController::class, 'reject']);
             Route::post('/{id}/adjust', [CommissionsController::class, 'adjust']);
+            Route::post('/{id}/mark-paid', [CommissionsController::class, 'markAsPaid']);
             Route::post('/bulk/approve', [CommissionsController::class, 'bulkApprove']);
             Route::post('/bulk/reject', [CommissionsController::class, 'bulkReject']);
             Route::post('/recalc/{commandeId}', [CommissionsController::class, 'recalculate']);

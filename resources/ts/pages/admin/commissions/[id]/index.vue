@@ -105,6 +105,28 @@ const handleReject = async () => {
   }
 }
 
+const handleMarkAsPaid = async () => {
+  if (!commission.value) return
+
+  const confirmed = await confirm({
+    title: 'Marquer comme payée',
+    text: `Confirmer le paiement de cette commission de ${commission.value.amount} ${commission.value.currency} ?`,
+    confirmText: 'Confirmer le paiement',
+    color: 'primary',
+    type: 'success',
+  })
+
+  if (confirmed) {
+    const result = await commissionsStore.markAsPaid(commission.value.id)
+    if (result.success) {
+      showSuccess(result.message)
+      await fetchCommission()
+    } else {
+      showError(result.message)
+    }
+  }
+}
+
 const openAdjustDialog = () => {
   if (!commission.value) return
   adjustAmount.value = commission.value.amount
@@ -240,6 +262,16 @@ onMounted(async () => {
             @click="openAdjustDialog"
           >
             Ajuster
+          </VBtn>
+
+          <VBtn
+            v-if="commission.status === 'approved' && !commission.paid_at"
+            color="primary"
+            variant="elevated"
+            prepend-icon="tabler-cash"
+            @click="handleMarkAsPaid"
+          >
+            Marquer comme payée
           </VBtn>
         </div>
       </div>

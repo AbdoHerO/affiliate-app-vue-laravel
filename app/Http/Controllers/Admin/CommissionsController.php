@@ -262,6 +262,48 @@ class CommissionsController extends Controller
     }
 
     /**
+     * Mark commission as paid
+     */
+    public function markAsPaid(string $id): JsonResponse
+    {
+        $commission = CommissionAffilie::findOrFail($id);
+
+        if ($commission->status !== CommissionAffilie::STATUS_APPROVED) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Only approved commissions can be marked as paid'
+            ], 400);
+        }
+
+        if ($commission->paid_at) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Commission is already marked as paid'
+            ], 400);
+        }
+
+        DB::transaction(function () use ($commission) {
+            $commission->update([
+                'status' => CommissionAffilie::STATUS_PAID,
+                'paid_at' => now(),
+                'notes' => $this->appendNote($commission->notes, 'Marked as paid by admin')
+            ]);
+        });
+
+        Log::info('Commission marked as paid', [
+            'commission_id' => $commission->id,
+            'amount' => $commission->amount,
+            'admin_id' => request()->user()->id
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Commission marked as paid successfully',
+            'data' => new CommissionResource($commission->fresh())
+        ]);
+    }
+
+    /**
      * Bulk approve commissions
      */
     public function bulkApprove(BulkCommissionRequest $request): JsonResponse

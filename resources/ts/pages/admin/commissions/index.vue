@@ -165,6 +165,9 @@ const handleAdjust = async (commission: Commission) => {
 }
 
 const handleMarkAsPaid = async (commission: Commission) => {
+  console.log('handleMarkAsPaid called', { commission, store: commissionsStore })
+  console.log('markAsPaid method exists:', typeof commissionsStore.markAsPaid)
+
   const confirmed = await confirm({
     title: 'Marquer comme payée',
     text: `Confirmer le paiement de cette commission de ${commission.amount} ${commission.currency} ?`,
