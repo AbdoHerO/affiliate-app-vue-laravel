@@ -475,10 +475,14 @@ export const useWithdrawalsStore = defineStore('withdrawals', () => {
       const response = await $api(url)
 
       if (response?.success || response?.data) {
-        // Unwrap payload safely: response.data?.data ?? response.data ?? response
+        // Normalize here to always return an array
         const commissions = Array.isArray(response?.data?.data)
           ? response.data.data
-          : (Array.isArray(response?.data) ? response.data : [])
+          : Array.isArray(response?.data)
+          ? response.data
+          : Array.isArray(response)
+          ? response
+          : []
 
         return {
           success: true,

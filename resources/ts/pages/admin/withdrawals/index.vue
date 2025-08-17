@@ -92,12 +92,17 @@ const hasFilters = computed(() => {
 })
 
 const isAllSelected = computed(() => {
-  return withdrawals.value.length > 0 && 
-         withdrawals.value.every(w => selectedWithdrawals.value.includes(w.id))
+  const items = withdrawals.value || []
+  if (!items.length) return false
+  const selected = new Set((selectedWithdrawals.value || []).filter(Boolean))
+  return items.every(w => w && w.id && selected.has(w.id))
 })
 
 const isSomeSelected = computed(() => {
-  return selectedWithdrawals.value.length > 0 && !isAllSelected.value
+  const items = withdrawals.value || []
+  const selected = new Set((selectedWithdrawals.value || []).filter(Boolean))
+  if (!items.length || !selected.size) return false
+  return !isAllSelected.value
 })
 
 // Methods
@@ -131,10 +136,15 @@ const clearFilters = () => {
 }
 
 const toggleSelectAll = () => {
+  const items = (withdrawals.value || []).filter(w => w && w.id)
+  if (!items.length) {
+    selectedWithdrawals.value = []
+    return
+  }
   if (isAllSelected.value) {
     selectedWithdrawals.value = []
   } else {
-    selectedWithdrawals.value = withdrawals.value.map(w => w.id)
+    selectedWithdrawals.value = items.map(w => w.id)
   }
 }
 
@@ -423,42 +433,42 @@ onMounted(() => {
         <!-- ID Column -->
         <template #item.id="{ item }">
           <div class="text-body-2 font-family-monospace">
-            {{ item?.id?.slice(0, 8) ?? '—' }}...
+            {{ item?.id ? (item.id.slice(0, 8) + '...') : '—' }}
           </div>
         </template>
 
         <!-- User Column -->
         <template #item.user.nom_complet="{ item }">
           <div>
-            <div class="text-body-2 font-weight-medium">{{ item.user?.nom_complet }}</div>
-            <div class="text-caption text-medium-emphasis">{{ item.user?.email }}</div>
+            <div class="text-body-2 font-weight-medium">{{ item?.user?.nom_complet || '—' }}</div>
+            <div class="text-caption text-medium-emphasis">{{ item?.user?.email || '' }}</div>
           </div>
         </template>
 
         <!-- Amount Column -->
         <template #item.amount="{ item }">
           <div class="text-body-2 font-weight-medium">
-            {{ Number(item.amount).toFixed(2) }} MAD
+            {{ Number(item?.amount || 0).toFixed(2) }} MAD
           </div>
         </template>
 
         <!-- Method Column -->
         <template #item.method="{ item }">
           <VChip variant="tonal" size="small">
-            {{ item.method === 'bank_transfer' ? 'Virement' : item.method }}
+            {{ item?.method === 'bank_transfer' ? 'Virement' : (item?.method || '—') }}
           </VChip>
         </template>
 
         <!-- Status Column -->
         <template #item.status="{ item }">
-          <WithdrawalStatusBadge :status="item.status" />
+          <WithdrawalStatusBadge :status="item?.status || 'pending'" />
         </template>
 
         <!-- Commission Count Column -->
         <template #item.commission_count="{ item }">
           <div class="text-center">
             <VChip variant="tonal" color="primary" size="small">
-              {{ item.commission_count }}
+              {{ item?.commission_count ?? 0 }}
             </VChip>
           </div>
         </template>
@@ -466,16 +476,16 @@ onMounted(() => {
         <!-- Created At Column -->
         <template #item.created_at="{ item }">
           <div class="text-body-2">
-            {{ new Date(item.created_at).toLocaleDateString() }}
+            {{ item?.created_at ? new Date(item.created_at).toLocaleDateString() : '—' }}
           </div>
           <div class="text-caption text-medium-emphasis">
-            {{ new Date(item.created_at).toLocaleTimeString() }}
+            {{ item?.created_at ? new Date(item.created_at).toLocaleTimeString() : '' }}
           </div>
         </template>
 
         <!-- Actions Column -->
         <template #item.actions="{ item }">
-          <div class="d-flex gap-1">
+          <div class="d-flex gap-1" v-if="item && item.id">
             <!-- View -->
             <ActionIcon
               icon="tabler-eye"

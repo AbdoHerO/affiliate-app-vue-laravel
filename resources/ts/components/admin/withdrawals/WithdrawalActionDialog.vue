@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, nextTick } from 'vue'
 import { useWithdrawalsStore } from '@/stores/admin/withdrawals'
 import { useNotifications } from '@/composables/useNotifications'
 
@@ -28,6 +28,7 @@ const reason = ref('')
 const paymentRef = ref('')
 const paidAt = ref('')
 const evidenceFile = ref<File | null>(null)
+const isClosing = ref(false)
 
 // Computed
 const dialogTitle = computed(() => {
@@ -82,7 +83,9 @@ const isFormValid = computed(() => {
 // Watch for dialog visibility changes
 watch(() => props.isVisible, (newVal) => {
   if (newVal) {
+    // dialog just opened → reset local state
     resetForm()
+    isClosing.value = false
   }
 })
 
@@ -95,9 +98,16 @@ const resetForm = () => {
   evidenceFile.value = null
 }
 
-const closeDialog = () => {
+const closeDialog = async () => {
+  if (isClosing.value) return
+  isClosing.value = true
+  // 1) tell parent to hide the dialog
   emit('update:isVisible', false)
+  // 2) wait a tick so parent unmounts us safely
+  await nextTick()
+  // 3) then notify "closed"
   emit('closed')
+  isClosing.value = false
 }
 
 const handleFileChange = (event: Event) => {
@@ -147,8 +157,9 @@ const handleSubmit = async () => {
 
     if (result.success) {
       showSuccess(result.message)
+      // emit success BEFORE close (parent will refresh)
       emit('success')
-      closeDialog()
+      await closeDialog()
     } else {
       showError(result.message)
     }

@@ -326,15 +326,7 @@ fetchUsers()
               </VCol>
             </VRow>
 
-            <VTextarea
-              v-model="form.notes"
-              label="Notes (optionnelles)"
-              placeholder="Ajouter des notes sur ce retrait..."
-              rows="3"
-              auto-grow
-              :error="hasError('notes')"
-              :error-messages="getError('notes')"
-            />
+
           </div>
 
           <!-- Step 2: Commission Selection -->
