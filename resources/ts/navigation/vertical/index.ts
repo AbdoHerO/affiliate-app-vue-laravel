@@ -116,6 +116,11 @@ const adminNavigation = [
         icon: { icon: 'tabler-percentage' },
       },
       {
+        title: 'nav_withdrawals',
+        to: '/admin/withdrawals',
+        icon: { icon: 'tabler-wallet' },
+      },
+      {
         title: 'nav_payments',
         to: '/admin/payments',
         icon: { icon: 'tabler-credit-card' },

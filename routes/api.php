@@ -294,6 +294,21 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::post('/recalc/{commandeId}', [CommissionsController::class, 'recalculate']);
         });
 
+        // Withdrawals Management
+        Route::prefix('withdrawals')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Admin\WithdrawalsController::class, 'index']);
+            Route::get('/export', [\App\Http\Controllers\Admin\WithdrawalsController::class, 'export']);
+            Route::get('/{id}', [\App\Http\Controllers\Admin\WithdrawalsController::class, 'show']);
+            Route::post('/', [\App\Http\Controllers\Admin\WithdrawalsController::class, 'store']);
+            Route::post('/{id}/attach-commissions', [\App\Http\Controllers\Admin\WithdrawalsController::class, 'attachCommissions']);
+            Route::post('/{id}/detach-commissions', [\App\Http\Controllers\Admin\WithdrawalsController::class, 'detachCommissions']);
+            Route::post('/{id}/approve', [\App\Http\Controllers\Admin\WithdrawalsController::class, 'approve']);
+            Route::post('/{id}/reject', [\App\Http\Controllers\Admin\WithdrawalsController::class, 'reject']);
+            Route::post('/{id}/mark-in-payment', [\App\Http\Controllers\Admin\WithdrawalsController::class, 'markInPayment']);
+            Route::post('/{id}/mark-paid', [\App\Http\Controllers\Admin\WithdrawalsController::class, 'markPaid']);
+            Route::get('/users/{user_id}/eligible-commissions', [\App\Http\Controllers\Admin\WithdrawalsController::class, 'getEligibleCommissions']);
+        });
+
         // OzonExpress Integration Management
         Route::prefix('integrations/ozon')->group(function () {
             // Settings

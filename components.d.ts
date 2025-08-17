@@ -38,6 +38,7 @@ declare module 'vue' {
     CategoryCrudDialog: typeof import('./resources/ts/components/admin/categories/CategoryCrudDialog.vue')['default']
     CategoryImageUpload: typeof import('./resources/ts/components/admin/categories/CategoryImageUpload.vue')['default']
     CategoryViewDialog: typeof import('./resources/ts/components/admin/categories/CategoryViewDialog.vue')['default']
+    CommissionSelector: typeof import('./resources/ts/components/admin/withdrawals/CommissionSelector.vue')['default']
     ConfirmActionDialog: typeof import('./resources/ts/components/common/ConfirmActionDialog.vue')['default']
     ConfirmDialog: typeof import('./resources/ts/components/dialogs/ConfirmDialog.vue')['default']
     ConfirmModal: typeof import('./resources/ts/components/common/ConfirmModal.vue')['default']
@@ -92,5 +93,7 @@ declare module 'vue' {
     UserInfoEditDialog: typeof import('./resources/ts/components/dialogs/UserInfoEditDialog.vue')['default']
     UserUpgradePlanDialog: typeof import('./resources/ts/components/dialogs/UserUpgradePlanDialog.vue')['default']
     VariantChips: typeof import('./resources/ts/components/public/VariantChips.vue')['default']
+    WithdrawalActionDialog: typeof import('./resources/ts/components/admin/withdrawals/WithdrawalActionDialog.vue')['default']
+    WithdrawalStatusBadge: typeof import('./resources/ts/components/admin/withdrawals/WithdrawalStatusBadge.vue')['default']
   }
 }

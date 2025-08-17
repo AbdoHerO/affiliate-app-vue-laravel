@@ -129,6 +129,10 @@ export function useNavigation() {
                 to: 'admin-commissions',
               },
               {
+                title: t('nav_withdrawals'),
+                to: 'admin-withdrawals',
+              },
+              {
                 title: t('nav_payments'),
                 to: 'admin-payments',
               },
