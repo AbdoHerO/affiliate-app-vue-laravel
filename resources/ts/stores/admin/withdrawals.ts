@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { useApi } from '@/composables/useApi'
+import { $api } from '@/utils/api'
 
 export interface Withdrawal {
   id: string
@@ -153,9 +153,6 @@ export const useWithdrawalsStore = defineStore('withdrawals', () => {
   const hasWithdrawals = computed(() => withdrawals.value.length > 0)
   const isLoading = computed(() => loading.value)
 
-  // API instance
-  const { api } = useApi()
-
   // Actions
   const fetchList = async (newFilters?: Partial<WithdrawalFilters>) => {
     try {
@@ -166,20 +163,41 @@ export const useWithdrawalsStore = defineStore('withdrawals', () => {
         Object.assign(filters.value, newFilters)
       }
 
-      const response = await api.get('/admin/withdrawals', {
-        params: filters.value,
+      // Build query string for the API call
+      const queryParams = new URLSearchParams()
+      Object.entries(filters.value).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+          if (Array.isArray(value)) {
+            value.forEach(v => queryParams.append(`${key}[]`, v.toString()))
+          } else {
+            queryParams.append(key, value.toString())
+          }
+        }
       })
 
-      if (response.data.success) {
-        withdrawals.value = response.data.data
-        pagination.value = response.data.pagination
-        summary.value = response.data.summary
+      const url = `/admin/withdrawals${queryParams.toString() ? `?${queryParams.toString()}` : ''}`
+      console.log('🔄 [Withdrawals Store] Fetching:', url)
+
+      const response = await $api(url)
+
+      if (response?.success) {
+        withdrawals.value = response.data || []
+        pagination.value = response.pagination || {
+          current_page: 1,
+          last_page: 1,
+          per_page: 15,
+          total: 0,
+          from: 0,
+          to: 0,
+        }
+        summary.value = response.summary || null
+        console.log('✅ [Withdrawals Store] Data loaded:', withdrawals.value.length, 'withdrawals')
       } else {
-        error.value = response.data.message || 'Erreur lors du chargement des retraits'
+        error.value = response?.message || 'Erreur lors du chargement des retraits'
       }
     } catch (err: any) {
-      error.value = err.response?.data?.message || 'Erreur lors du chargement des retraits'
-      console.error('Error fetching withdrawals:', err)
+      error.value = err.data?.message || err.message || 'Erreur lors du chargement des retraits'
+      console.error('🚫 [Withdrawals Store] Error fetching withdrawals:', err)
     } finally {
       loading.value = false
     }
@@ -190,18 +208,21 @@ export const useWithdrawalsStore = defineStore('withdrawals', () => {
       loading.value = true
       error.value = null
 
-      const response = await api.get(`/admin/withdrawals/${id}`)
+      console.log('🔄 [Withdrawals Store] Fetching withdrawal:', id)
 
-      if (response.data.success) {
-        currentWithdrawal.value = response.data.data
-        return { success: true, data: response.data.data }
+      const response = await $api(`/admin/withdrawals/${id}`)
+
+      if (response?.success) {
+        currentWithdrawal.value = response.data
+        console.log('✅ [Withdrawals Store] Withdrawal loaded:', response.data?.id)
+        return { success: true, data: response.data }
       } else {
-        error.value = response.data.message || 'Erreur lors du chargement du retrait'
+        error.value = response?.message || 'Erreur lors du chargement du retrait'
         return { success: false, message: error.value }
       }
     } catch (err: any) {
-      error.value = err.response?.data?.message || 'Erreur lors du chargement du retrait'
-      console.error('Error fetching withdrawal:', err)
+      error.value = err.data?.message || err.message || 'Erreur lors du chargement du retrait'
+      console.error('🚫 [Withdrawals Store] Error fetching withdrawal:', err)
       return { success: false, message: error.value }
     } finally {
       loading.value = false
@@ -213,19 +234,22 @@ export const useWithdrawalsStore = defineStore('withdrawals', () => {
       loading.value = true
       error.value = null
 
-      const response = await api.post('/admin/withdrawals', data)
+      const response = await $api('/admin/withdrawals', {
+        method: 'POST',
+        body: data
+      })
 
-      if (response.data.success) {
+      if (response?.success) {
         // Refresh the list
         await fetchList()
-        return { success: true, data: response.data.data, message: response.data.message }
+        return { success: true, data: response.data, message: response.message }
       } else {
-        error.value = response.data.message || 'Erreur lors de la création du retrait'
+        error.value = response?.message || 'Erreur lors de la création du retrait'
         return { success: false, message: error.value }
       }
     } catch (err: any) {
-      error.value = err.response?.data?.message || 'Erreur lors de la création du retrait'
-      console.error('Error creating withdrawal:', err)
+      error.value = err.data?.message || err.message || 'Erreur lors de la création du retrait'
+      console.error('🚫 [Withdrawals Store] Error creating withdrawal:', err)
       return { success: false, message: error.value }
     } finally {
       loading.value = false
@@ -237,21 +261,24 @@ export const useWithdrawalsStore = defineStore('withdrawals', () => {
       loading.value = true
       error.value = null
 
-      const response = await api.post(`/admin/withdrawals/${id}/attach-commissions`, data)
+      const response = await $api(`/admin/withdrawals/${id}/attach-commissions`, {
+        method: 'POST',
+        body: data
+      })
 
-      if (response.data.success) {
+      if (response?.success) {
         // Refresh current withdrawal if it's the one being updated
         if (currentWithdrawal.value?.id === id) {
           await fetchOne(id)
         }
-        return { success: true, data: response.data.data, message: response.data.message }
+        return { success: true, data: response.data.data, message: response.message }
       } else {
-        error.value = response.data.message || 'Erreur lors de l\'attachement des commissions'
+        error.value = response?.message || 'Erreur lors de l\'attachement des commissions'
         return { success: false, message: error.value }
       }
     } catch (err: any) {
-      error.value = err.response?.data?.message || 'Erreur lors de l\'attachement des commissions'
-      console.error('Error attaching commissions:', err)
+      error.value = err.data?.message || err.message || 'Erreur lors de l\'attachement des commissions'
+      console.error('🚫 [Withdrawals Store] Error attaching commissions:', err)
       return { success: false, message: error.value }
     } finally {
       loading.value = false
@@ -263,21 +290,24 @@ export const useWithdrawalsStore = defineStore('withdrawals', () => {
       loading.value = true
       error.value = null
 
-      const response = await api.post(`/admin/withdrawals/${id}/detach-commissions`, data)
+      const response = await $api(`/admin/withdrawals/${id}/detach-commissions`, {
+        method: 'POST',
+        body: data
+      })
 
-      if (response.data.success) {
+      if (response?.success) {
         // Refresh current withdrawal if it's the one being updated
         if (currentWithdrawal.value?.id === id) {
           await fetchOne(id)
         }
-        return { success: true, data: response.data.data, message: response.data.message }
+        return { success: true, data: response.data.data, message: response.message }
       } else {
-        error.value = response.data.message || 'Erreur lors du détachement des commissions'
+        error.value = response?.message || 'Erreur lors du détachement des commissions'
         return { success: false, message: error.value }
       }
     } catch (err: any) {
-      error.value = err.response?.data?.message || 'Erreur lors du détachement des commissions'
-      console.error('Error detaching commissions:', err)
+      error.value = err.data?.message || err.message || 'Erreur lors du détachement des commissions'
+      console.error('🚫 [Withdrawals Store] Error detaching commissions:', err)
       return { success: false, message: error.value }
     } finally {
       loading.value = false
@@ -289,9 +319,12 @@ export const useWithdrawalsStore = defineStore('withdrawals', () => {
       loading.value = true
       error.value = null
 
-      const response = await api.post(`/admin/withdrawals/${id}/approve`, data || {})
+      const response = await $api(`/admin/withdrawals/${id}/approve`, {
+        method: 'POST',
+        body: data || {}
+      })
 
-      if (response.data.success) {
+      if (response?.success) {
         // Update the withdrawal in the list
         const index = withdrawals.value.findIndex(w => w.id === id)
         if (index !== -1) {
@@ -301,14 +334,14 @@ export const useWithdrawalsStore = defineStore('withdrawals', () => {
         if (currentWithdrawal.value?.id === id) {
           currentWithdrawal.value = response.data.data
         }
-        return { success: true, data: response.data.data, message: response.data.message }
+        return { success: true, data: response.data.data, message: response.message }
       } else {
-        error.value = response.data.message || 'Erreur lors de l\'approbation du retrait'
+        error.value = response?.message || 'Erreur lors de l\'approbation du retrait'
         return { success: false, message: error.value }
       }
     } catch (err: any) {
-      error.value = err.response?.data?.message || 'Erreur lors de l\'approbation du retrait'
-      console.error('Error approving withdrawal:', err)
+      error.value = err.data?.message || err.message || 'Erreur lors de l\'approbation du retrait'
+      console.error('🚫 [Withdrawals Store] Error approving withdrawal:', err)
       return { success: false, message: error.value }
     } finally {
       loading.value = false
@@ -320,9 +353,12 @@ export const useWithdrawalsStore = defineStore('withdrawals', () => {
       loading.value = true
       error.value = null
 
-      const response = await api.post(`/admin/withdrawals/${id}/reject`, data)
+      const response = await $api(`/admin/withdrawals/${id}/reject`, {
+        method: 'POST',
+        body: data
+      })
 
-      if (response.data.success) {
+      if (response?.success) {
         // Update the withdrawal in the list
         const index = withdrawals.value.findIndex(w => w.id === id)
         if (index !== -1) {
@@ -351,26 +387,29 @@ export const useWithdrawalsStore = defineStore('withdrawals', () => {
       loading.value = true
       error.value = null
 
-      const response = await api.post(`/admin/withdrawals/${id}/mark-in-payment`, data || {})
+      const response = await $api(`/admin/withdrawals/${id}/mark-in-payment`, {
+        method: 'POST',
+        body: data || {}
+      })
 
-      if (response.data.success) {
+      if (response?.success) {
         // Update the withdrawal in the list
         const index = withdrawals.value.findIndex(w => w.id === id)
         if (index !== -1) {
-          withdrawals.value[index] = response.data.data
+          withdrawals.value[index] = response.data
         }
         // Update current withdrawal if it's the one being updated
         if (currentWithdrawal.value?.id === id) {
-          currentWithdrawal.value = response.data.data
+          currentWithdrawal.value = response.data
         }
-        return { success: true, data: response.data.data, message: response.data.message }
+        return { success: true, data: response.data, message: response.message }
       } else {
-        error.value = response.data.message || 'Erreur lors du marquage en cours de paiement'
+        error.value = response?.message || 'Erreur lors du marquage en cours de paiement'
         return { success: false, message: error.value }
       }
     } catch (err: any) {
-      error.value = err.response?.data?.message || 'Erreur lors du marquage en cours de paiement'
-      console.error('Error marking withdrawal in payment:', err)
+      error.value = err.data?.message || err.message || 'Erreur lors du marquage en cours de paiement'
+      console.error('🚫 [Withdrawals Store] Error marking withdrawal in payment:', err)
       return { success: false, message: error.value }
     } finally {
       loading.value = false
@@ -388,30 +427,29 @@ export const useWithdrawalsStore = defineStore('withdrawals', () => {
       if (data?.paid_at) formData.append('paid_at', data.paid_at)
       if (data?.evidence) formData.append('evidence', data.evidence)
 
-      const response = await api.post(`/admin/withdrawals/${id}/mark-paid`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
+      const response = await $api(`/admin/withdrawals/${id}/mark-paid`, {
+        method: 'POST',
+        body: formData
       })
 
-      if (response.data.success) {
+      if (response?.success) {
         // Update the withdrawal in the list
         const index = withdrawals.value.findIndex(w => w.id === id)
         if (index !== -1) {
-          withdrawals.value[index] = response.data.data
+          withdrawals.value[index] = response.data
         }
         // Update current withdrawal if it's the one being updated
         if (currentWithdrawal.value?.id === id) {
-          currentWithdrawal.value = response.data.data
+          currentWithdrawal.value = response.data
         }
-        return { success: true, data: response.data.data, message: response.data.message }
+        return { success: true, data: response.data, message: response.message }
       } else {
-        error.value = response.data.message || 'Erreur lors du marquage comme payé'
+        error.value = response?.message || 'Erreur lors du marquage comme payé'
         return { success: false, message: error.value }
       }
     } catch (err: any) {
-      error.value = err.response?.data?.message || 'Erreur lors du marquage comme payé'
-      console.error('Error marking withdrawal as paid:', err)
+      error.value = err.data?.message || err.message || 'Erreur lors du marquage comme payé'
+      console.error('🚫 [Withdrawals Store] Error marking withdrawal as paid:', err)
       return { success: false, message: error.value }
     } finally {
       loading.value = false
@@ -423,19 +461,28 @@ export const useWithdrawalsStore = defineStore('withdrawals', () => {
       loading.value = true
       error.value = null
 
-      const response = await api.get(`/admin/withdrawals/users/${userId}/eligible-commissions`, {
-        params: filters || {},
-      })
+      // Build query string for filters
+      const queryParams = new URLSearchParams()
+      if (filters) {
+        Object.entries(filters).forEach(([key, value]) => {
+          if (value !== undefined && value !== null && value !== '') {
+            queryParams.append(key, value.toString())
+          }
+        })
+      }
 
-      if (response.data.success) {
-        return { success: true, data: response.data.data }
+      const url = `/admin/withdrawals/users/${userId}/eligible-commissions${queryParams.toString() ? `?${queryParams.toString()}` : ''}`
+      const response = await $api(url)
+
+      if (response?.success) {
+        return { success: true, data: response.data }
       } else {
-        error.value = response.data.message || 'Erreur lors du chargement des commissions éligibles'
+        error.value = response?.message || 'Erreur lors du chargement des commissions éligibles'
         return { success: false, message: error.value }
       }
     } catch (err: any) {
-      error.value = err.response?.data?.message || 'Erreur lors du chargement des commissions éligibles'
-      console.error('Error fetching eligible commissions:', err)
+      error.value = err.data?.message || err.message || 'Erreur lors du chargement des commissions éligibles'
+      console.error('🚫 [Withdrawals Store] Error fetching eligible commissions:', err)
       return { success: false, message: error.value }
     } finally {
       loading.value = false
@@ -445,20 +492,38 @@ export const useWithdrawalsStore = defineStore('withdrawals', () => {
   const exportCsv = async (filters?: Partial<WithdrawalFilters>) => {
     try {
       const params = { ...filters }
-      const response = await api.get('/admin/withdrawals/export', {
-        params,
-        responseType: 'blob',
+      // For file downloads, we need to use fetch directly
+      const token = localStorage.getItem('auth_token')
+      const queryParams = new URLSearchParams()
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+          queryParams.append(key, value.toString())
+        }
       })
 
+      const apiUrl = `/admin/withdrawals/export${queryParams.toString() ? `?${queryParams.toString()}` : ''}`
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '/api'}${apiUrl}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json',
+        },
+      })
+
+      if (!response.ok) {
+        throw new Error('Export failed')
+      }
+
+      const blob = await response.blob()
+
       // Create download link
-      const url = window.URL.createObjectURL(new Blob([response.data]))
+      const downloadUrl = window.URL.createObjectURL(blob)
       const link = document.createElement('a')
-      link.href = url
+      link.href = downloadUrl
       link.setAttribute('download', `withdrawals_${new Date().toISOString().split('T')[0]}.csv`)
       document.body.appendChild(link)
       link.click()
       link.remove()
-      window.URL.revokeObjectURL(url)
+      window.URL.revokeObjectURL(downloadUrl)
 
       return { success: true, message: 'Export terminé avec succès' }
     } catch (err: any) {

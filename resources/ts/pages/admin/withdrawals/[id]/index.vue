@@ -31,7 +31,15 @@ const { showSuccess, showError } = useNotifications()
 const { currentWithdrawal, loading } = storeToRefs(withdrawalsStore)
 
 // Local state
-const withdrawalId = computed(() => route.params.id as string)
+const withdrawalId = computed(() => {
+  const id = route.params.id
+  if (!id || typeof id !== 'string' || id.trim() === '') {
+    console.error('🚫 [Withdrawal Detail] Invalid withdrawal ID:', id)
+    router.push('/admin/withdrawals').catch(console.error)
+    return ''
+  }
+  return id
+})
 const selectedCommissions = ref<string[]>([])
 
 // Action dialog state
@@ -66,9 +74,16 @@ const canManageCommissions = computed(() => {
 
 // Methods
 const fetchWithdrawal = async () => {
-  const result = await withdrawalsStore.fetchOne(withdrawalId.value)
+  const id = withdrawalId.value
+  if (!id) {
+    showError('ID de retrait invalide')
+    router.push('/admin/withdrawals')
+    return
+  }
+
+  const result = await withdrawalsStore.fetchOne(id)
   if (!result.success) {
-    showError(result.message)
+    showError(result.message || 'Erreur lors du chargement du retrait')
     router.push('/admin/withdrawals')
   }
 }
@@ -402,7 +417,7 @@ onMounted(() => {
           <!-- Date -->
           <template #item.commission.created_at="{ item }">
             <div class="text-body-2">
-              {{ new Date(item.commission?.created_at).toLocaleDateString() }}
+              {{ item.commission?.created_at ? new Date(item.commission.created_at).toLocaleDateString() : '-' }}
             </div>
           </template>
 
@@ -410,8 +425,9 @@ onMounted(() => {
           <template #item.actions="{ item }">
             <ActionIcon
               icon="tabler-eye"
+              label="Voir"
               tooltip="Voir la commission"
-              @click="$router.push(`/admin/commissions/${item.commission?.id}`)"
+              @click="router.push(`/admin/commissions/${item.commission?.id}`)"
             />
           </template>
 
