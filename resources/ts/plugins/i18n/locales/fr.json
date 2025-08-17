@@ -1167,5 +1167,10 @@
   "not_required": "Non requis",
   "pending": "En attente",
   "approved": "Approuvé",
-  "rejected": "Rejeté"
+  "rejected": "Rejeté",
+
+  // Withdrawals and Vuetify stepper keys
+  "Retraits": "Retraits",
+  "$vuetify.stepper.prev": "Précédent",
+  "$vuetify.stepper.next": "Suivant"
 }
