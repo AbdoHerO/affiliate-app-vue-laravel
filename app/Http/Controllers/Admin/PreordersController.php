@@ -4,12 +4,16 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Commande;
+use App\Services\CommissionService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 
 class PreordersController extends Controller
 {
+    public function __construct(
+        protected CommissionService $commissionService
+    ) {}
     /**
      * Display a listing of pre-orders (orders not yet shipped).
      */
@@ -215,6 +219,7 @@ class PreordersController extends Controller
         // Update orders
         $updated = [];
         foreach ($orders as $order) {
+            $oldStatus = $order->statut;
             $order->statut = $status;
 
             if ($note) {
@@ -227,6 +232,10 @@ class PreordersController extends Controller
             }
 
             $order->save();
+
+            // Handle commission calculation
+            $this->handleCommissionStatusChange($order, $oldStatus, $status);
+
             $updated[] = $order->load([
                 'boutique:id,nom',
                 'affiliate:id,nom_complet,email',
@@ -240,6 +249,35 @@ class PreordersController extends Controller
             'message' => count($updated) . ' commande(s) mise(s) à jour',
             'data' => $updated
         ]);
+    }
+
+    /**
+     * Handle commission calculation based on order status change
+     */
+    protected function handleCommissionStatusChange(Commande $order, string $oldStatus, string $newStatus): void
+    {
+        try {
+            $triggerStatus = \App\Models\AppSetting::get('commission.trigger_status', 'livree');
+            $cancelStatuses = ['retournee', 'refusee', 'annulee'];
+
+            // If order reaches trigger status, calculate commissions
+            if ($newStatus === $triggerStatus && $oldStatus !== $triggerStatus) {
+                $this->commissionService->calculateForOrder($order);
+            }
+
+            // If order is canceled/returned, apply return policy
+            if (in_array($newStatus, $cancelStatuses) && !in_array($oldStatus, $cancelStatuses)) {
+                $this->commissionService->applyReturnPolicy($order);
+            }
+        } catch (\Exception $e) {
+            // Log error but don't fail the order status change
+            \Illuminate\Support\Facades\Log::error('Commission handling failed for order status change', [
+                'order_id' => $order->id,
+                'old_status' => $oldStatus,
+                'new_status' => $newStatus,
+                'error' => $e->getMessage()
+            ]);
+        }
     }
 
     /**
@@ -337,6 +375,8 @@ class PreordersController extends Controller
         $note = $request->input('note');
         $increment = $request->input('increment', false);
 
+        $oldStatus = $order->statut;
+
         // Use transaction for data integrity
         DB::transaction(function () use ($order, $status, $note, $increment) {
             $order->statut = $status;
@@ -352,6 +392,9 @@ class PreordersController extends Controller
 
             $order->save();
         });
+
+        // Handle commission calculation based on status change
+        $this->handleCommissionStatusChange($order, $oldStatus, $status);
 
         return response()->json([
             'success' => true,

@@ -26,6 +26,7 @@ use App\Http\Controllers\Admin\UsersApprovalController;
 use App\Http\Controllers\Admin\VariantAttributController;
 use App\Http\Controllers\Admin\VariantValeurController;
 use App\Http\Controllers\Admin\TestController;
+use App\Http\Controllers\Admin\CommissionsController;
 use App\Http\Controllers\Public\ProduitController as PublicProduitController;
 use App\Http\Controllers\Public\AffiliateSignupController;
 use Illuminate\Http\Request;
@@ -277,6 +278,20 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('affiliate-applications/{id}/approve', [AffiliateApplicationsController::class, 'approve']);
         Route::post('affiliate-applications/{id}/refuse', [AffiliateApplicationsController::class, 'refuse']);
         Route::post('affiliate-applications/{id}/resend-verification', [AffiliateApplicationsController::class, 'resendVerification']);
+
+        // Commissions Management
+        Route::prefix('commissions')->group(function () {
+            Route::get('/', [CommissionsController::class, 'index']);
+            Route::get('/summary', [CommissionsController::class, 'summary']);
+            Route::get('/export', [CommissionsController::class, 'export']);
+            Route::get('/{id}', [CommissionsController::class, 'show']);
+            Route::post('/{id}/approve', [CommissionsController::class, 'approve']);
+            Route::post('/{id}/reject', [CommissionsController::class, 'reject']);
+            Route::post('/{id}/adjust', [CommissionsController::class, 'adjust']);
+            Route::post('/bulk/approve', [CommissionsController::class, 'bulkApprove']);
+            Route::post('/bulk/reject', [CommissionsController::class, 'bulkReject']);
+            Route::post('/recalc/{commandeId}', [CommissionsController::class, 'recalculate']);
+        });
 
         // OzonExpress Integration Management
         Route::prefix('integrations/ozon')->group(function () {

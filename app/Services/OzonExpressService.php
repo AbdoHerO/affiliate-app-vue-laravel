@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Commande;
 use App\Models\ShippingParcel;
 use App\Services\OzonSettingsService;
+use App\Services\CommissionService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -208,6 +209,22 @@ class OzonExpressService
                 $commande->update([
                     'statut' => 'expediee', // Changed from current status to shipped
                 ]);
+
+                // Handle commission calculation for status change
+                try {
+                    $commissionService = app(CommissionService::class);
+                    $triggerStatus = \App\Models\AppSetting::get('commission.trigger_status', 'livree');
+
+                    if ('expediee' === $triggerStatus && $oldStatus !== 'expediee') {
+                        $commissionService->calculateForOrder($commande);
+                    }
+                } catch (\Exception $commissionError) {
+                    // Log commission error but don't fail the shipping
+                    Log::warning('Commission calculation failed during shipping', [
+                        'commande_id' => $commande->id,
+                        'error' => $commissionError->getMessage()
+                    ]);
+                }
 
                 DB::commit();
 
