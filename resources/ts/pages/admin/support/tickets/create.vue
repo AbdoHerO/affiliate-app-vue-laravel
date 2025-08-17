@@ -6,7 +6,6 @@ import { storeToRefs } from 'pinia'
 import { useTicketsStore } from '@/stores/admin/tickets'
 import { useUsersStore } from '@/stores/admin/users'
 import { useSafeNavigation } from '@/composables/useSafeNavigation'
-import TicketForm from '@/components/admin/tickets/TicketForm.vue'
 
 // Define page meta
 definePage({
@@ -94,15 +93,6 @@ try {
       cancelText: 'Continue Editing',
       icon: 'tabler-x',
       color: 'warning',
-    }),
-    save: () => ({
-      title: 'Save Ticket',
-      text: 'Are you sure you want to create this ticket?',
-      type: 'success',
-      confirmText: 'Create Ticket',
-      cancelText: 'Keep Editing',
-      icon: 'tabler-check',
-      color: 'success',
     })
   }
 }
@@ -219,6 +209,34 @@ const getTranslation = (key: string, fallback?: string) => {
   }
 }
 
+// Safe data loading functions
+const loadTicketCategories = async () => {
+  try {
+    console.log('🎫 [Create Ticket] Loading ticket categories...')
+    if (ticketsStore.fetchCategories) {
+      await ticketsStore.fetchCategories()
+      console.log('✅ [Create Ticket] Categories loaded successfully')
+    }
+  } catch (error) {
+    console.error('🚫 [Create Ticket] Error loading categories:', error)
+    // Don't throw - just log the error
+  }
+}
+
+const loadUsers = async () => {
+  try {
+    console.log('🎫 [Create Ticket] Loading users...')
+    if (usersStore.fetchUsers) {
+      await usersStore.fetchUsers({ per_page: 100 }) // Load enough users for selection
+      console.log('✅ [Create Ticket] Users loaded successfully')
+    }
+  } catch (error) {
+    console.error('🚫 [Create Ticket] Error loading users:', error)
+    // Don't throw - just log the error and continue
+    // The UI will show empty dropdowns but won't crash
+  }
+}
+
 // Methods
 const handleSubmit = async () => {
   if (!canSubmit.value) {
@@ -295,22 +313,6 @@ const handleCancel = async () => {
   }
 }
 
-const handleUserSearch = async (query: string) => {
-  try {
-    if (!query || query.length < 2) {
-      return []
-    }
-
-    console.log('🔍 [Create Ticket] Searching users:', query)
-    const results = await usersStore.searchUsers(query)
-    return results || []
-
-  } catch (error) {
-    console.error('🚫 [Create Ticket] Error searching users:', error)
-    return []
-  }
-}
-
 // Lifecycle
 onMounted(async () => {
   if (isDestroyed.value) return
@@ -319,13 +321,26 @@ onMounted(async () => {
     console.log('🎫 [Create Ticket] Component mounted, initializing data...')
     isLoading.value = true
 
-    // Load initial data
-    await Promise.allSettled([
-      ticketsStore.fetchCategories?.() || Promise.resolve(),
-      usersStore.fetchUsers?.() || Promise.resolve()
-    ])
+    // Load initial data with individual error handling
+    const dataLoadingPromises = [
+      loadTicketCategories(),
+      loadUsers()
+    ]
 
-    console.log('✅ [Create Ticket] Initial data loaded successfully')
+    // Use Promise.allSettled to continue even if some requests fail
+    const results = await Promise.allSettled(dataLoadingPromises)
+    
+    // Log results for debugging
+    results.forEach((result, index) => {
+      const operation = ['categories', 'users'][index]
+      if (result.status === 'fulfilled') {
+        console.log(`✅ [Create Ticket] ${operation} loaded successfully`)
+      } else {
+        console.warn(`⚠️ [Create Ticket] ${operation} failed to load:`, result.reason)
+      }
+    })
+
+    console.log('✅ [Create Ticket] Component initialization completed')
 
   } catch (error) {
     console.error('🚫 [Create Ticket] Error during component initialization:', error)
@@ -442,13 +457,14 @@ watch(() => router.currentRoute.value, (newRoute) => {
                 <v-select
                   v-model="ticketForm.user_id"
                   :items="safeUsers"
-                  item-title="name"
+                  item-title="nom_complet"
                   item-value="id"
                   :label="getTranslation('tickets.form.user', 'User')"
                   variant="outlined"
                   required
                   :rules="[v => !!v || 'User is required']"
                   :loading="usersLoading"
+                  :no-data-text="getTranslation('common.no_data', 'No users available')"
                 />
               </v-col>
 
@@ -462,6 +478,7 @@ watch(() => router.currentRoute.value, (newRoute) => {
                   :label="getTranslation('tickets.form.category', 'Category')"
                   variant="outlined"
                   clearable
+                  :no-data-text="getTranslation('common.no_data', 'No categories available')"
                 />
               </v-col>
 
@@ -494,12 +511,13 @@ watch(() => router.currentRoute.value, (newRoute) => {
                 <v-select
                   v-model="ticketForm.assignee_id"
                   :items="safeUsers"
-                  item-title="name"
+                  item-title="nom_complet"
                   item-value="id"
                   :label="getTranslation('tickets.form.assignee', 'Assignee')"
                   variant="outlined"
                   clearable
                   :loading="usersLoading"
+                  :no-data-text="getTranslation('common.no_data', 'No users available')"
                 />
               </v-col>
             </v-row>
