@@ -883,6 +883,14 @@
   "tickets.form.status": "الحالة",
   "tickets.form.assignee": "المُكلف",
 
+  // Additional support ticket interface keys
+  "loading": "جاري التحميل...",
+  "loading_ticket": "جاري تحميل التذكرة...",
+  "add_message": "إضافة رسالة",
+  "message": "رسالة",
+  "drag_drop_files": "اسحب وأفلت الملفات هنا",
+  "browse": "تصفح",
+
   // ===========================================
   // تذاكر الدعم
   // ===========================================

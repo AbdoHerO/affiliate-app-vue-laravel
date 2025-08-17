@@ -1187,6 +1187,14 @@
   "tickets.form.status": "Statut",
   "tickets.form.assignee": "Assigné à",
 
+  // Additional support ticket interface keys
+  "loading": "Chargement...",
+  "loading_ticket": "Chargement du ticket...",
+  "add_message": "Ajouter un Message",
+  "message": "Message",
+  "drag_drop_files": "Glissez-déposez les fichiers ici",
+  "browse": "Parcourir",
+
   // ===========================================
   // TICKETS DE SUPPORT
   // ===========================================

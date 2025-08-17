@@ -1300,6 +1300,14 @@
   "tickets.form.status": "Status",
   "tickets.form.assignee": "Assignee",
 
+  // Additional support ticket interface keys
+  "loading": "Loading...",
+  "loading_ticket": "Loading ticket...",
+  "add_message": "Add Message",
+  "message": "Message",
+  "drag_drop_files": "Drag & drop files here",
+  "browse": "Browse",
+
   // ===========================================
   // SUPPORT TICKETS
   // ===========================================
