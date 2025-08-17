@@ -9,17 +9,23 @@ export function setupRouterGuards(router: Router) {
   // Global before guard - runs before every route navigation
   router.beforeEach(async (to, from, next) => {
     try {
-      // Add safety checks for route object
-      if (!to || !to.path || to.path === undefined) {
+      // Enhanced safety checks for route object
+      if (!to || typeof to !== 'object') {
         console.error('🚫 [Route Guard] Invalid route object:', to)
         return next('/')
       }
 
-      // Safe string operations
-      const routePath = to.path || ''
+      // Ensure path exists and is a string
+      const routePath = to.path?.toString() || ''
       const routeName = to.name?.toString() || ''
-      const fromPath = from?.path || ''
+      const fromPath = from?.path?.toString() || ''
       const fromName = from?.name?.toString() || ''
+
+      // Extra validation for route path
+      if (!routePath || typeof routePath !== 'string') {
+        console.error('🚫 [Route Guard] Invalid route path:', routePath)
+        return next('/')
+      }
 
       console.log('🛡️ [Route Guard] Navigating:', fromName, fromPath, '→', routeName, routePath)
 
@@ -28,7 +34,12 @@ export function setupRouterGuards(router: Router) {
       // Initialize auth if not already done
       if (!authStore.isInitialized) {
         console.log('🔄 [Route Guard] Initializing auth store...')
-        authStore.initializeAuth()
+        try {
+          authStore.initializeAuth()
+        } catch (authError) {
+          console.error('🚫 [Route Guard] Auth initialization failed:', authError)
+          return next('/login')
+        }
       }
 
       // Check if route requires authentication
@@ -100,10 +111,14 @@ export function setupRouterGuards(router: Router) {
       console.error('🚫 [Route Guard] Target route:', to)
       console.error('🚫 [Route Guard] Source route:', from)
 
-      // Fallback navigation
-      if (to?.path?.includes('/admin/withdrawals')) {
-        return next('/admin/withdrawals')
-      } else if (to?.path?.includes('/admin')) {
+      // Enhanced error handling for specific route patterns
+      const targetPath = to?.path?.toString() || ''
+      
+      // Handle tickets routes specifically
+      if (targetPath.includes('/admin/support/tickets')) {
+        console.log('🔄 [Route Guard] Handling tickets route error')
+        return next('/admin/support/tickets')
+      } else if (targetPath.includes('/admin')) {
         return next('/admin/dashboard')
       } else {
         return next('/')
@@ -122,52 +137,79 @@ export function setupRouterGuards(router: Router) {
     }
   })
 
-  // Global error handler
+  // Enhanced global error handler
   router.onError((error, to, from) => {
     console.error('🚫 [Route Guard] Navigation error:', error)
     console.error('🚫 [Route Guard] Target route:', to)
     console.error('🚫 [Route Guard] Source route:', from)
 
-    // Handle specific navigation errors
-    if (error.message?.includes('startsWith')) {
-      console.error('🚫 [Route Guard] startsWith error detected - route path is undefined')
+    const errorMessage = error?.message || ''
+    const targetPath = to?.path?.toString() || ''
 
-      // Attempt to recover by redirecting to a safe route
-      if (to?.path?.includes('/admin/withdrawals')) {
-        router.push('/admin/withdrawals').catch(console.error)
-      } else if (to?.path?.includes('/admin')) {
-        router.push('/admin/dashboard').catch(console.error)
+    // Handle specific navigation errors
+    if (errorMessage.includes('startsWith') || errorMessage.includes('Cannot read properties of undefined')) {
+      console.error('🚫 [Route Guard] Path/property access error detected')
+
+      // Determine safe fallback route
+      let fallbackRoute = '/admin/dashboard'
+      
+      if (targetPath.includes('/admin/support/tickets')) {
+        fallbackRoute = '/admin/support/tickets'
+      } else if (targetPath.includes('/admin/withdrawals')) {
+        fallbackRoute = '/admin/withdrawals'
+      } else if (targetPath.includes('/admin')) {
+        fallbackRoute = '/admin/dashboard'
       } else {
-        router.push('/').catch(console.error)
+        fallbackRoute = '/'
       }
-    } else if (error.message?.includes('emitsOptions')) {
+
+      // Navigate with delay to prevent immediate re-error
+      setTimeout(() => {
+        console.log('🔄 [Route Guard] Attempting fallback navigation to:', fallbackRoute)
+        router.push(fallbackRoute).catch((retryError) => {
+          console.error('🚫 [Route Guard] Fallback navigation failed:', retryError)
+          // Ultimate fallback
+          window.location.href = '/admin/dashboard'
+        })
+      }, 100)
+      
+    } else if (errorMessage.includes('emitsOptions')) {
       console.error('🚫 [Route Guard] Component lifecycle error detected - emitsOptions is null')
 
       // This is usually a Vue component cleanup issue during navigation
-      // Try to navigate to the target route after a short delay
+      // Try to navigate to the target route after a longer delay to allow cleanup
       setTimeout(() => {
-        if (to?.path) {
+        if (to?.path && typeof to.path === 'string') {
           console.log('🔄 [Route Guard] Retrying navigation after emitsOptions error')
           router.push(to.path).catch((retryError) => {
             console.error('🚫 [Route Guard] Retry navigation failed:', retryError)
-            // Final fallback
-            router.push('/admin/dashboard').catch(console.error)
+            // Final fallback based on target path
+            if (targetPath.includes('/admin/support/tickets')) {
+              router.push('/admin/support/tickets').catch(() => {
+                window.location.href = '/admin/support/tickets'
+              })
+            } else {
+              router.push('/admin/dashboard').catch(() => {
+                window.location.href = '/admin/dashboard'
+              })
+            }
           })
         }
-      }, 100)
-    } else if (error.message?.includes('Cannot read properties of undefined')) {
-      console.error('🚫 [Route Guard] Undefined property access error')
+      }, 200)
+      
+    } else if (errorMessage.includes('Cannot read properties of null')) {
+      console.error('🚫 [Route Guard] Null property access error')
 
-      // General undefined property error - try safe navigation
-      if (to?.path?.includes('/admin/withdrawals')) {
-        setTimeout(() => {
-          router.push('/admin/withdrawals').catch(console.error)
-        }, 50)
-      } else if (to?.path?.includes('/admin')) {
-        setTimeout(() => {
-          router.push('/admin/dashboard').catch(console.error)
-        }, 50)
-      }
+      // Handle null property errors with immediate safe navigation
+      const safeRoute = targetPath.includes('/admin/support/tickets') 
+        ? '/admin/support/tickets' 
+        : '/admin/dashboard'
+        
+      setTimeout(() => {
+        router.push(safeRoute).catch(() => {
+          window.location.href = safeRoute
+        })
+      }, 50)
     }
   })
 }

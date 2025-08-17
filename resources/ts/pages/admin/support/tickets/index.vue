@@ -1,16 +1,16 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch, nextTick, onBeforeUnmount } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useTicketsStore } from '@/stores/admin/tickets'
-import { useQuickConfirm } from '@/composables/useConfirmAction'
 import TicketStatusBadge from '@/components/admin/tickets/TicketStatusBadge.vue'
 import TicketPriorityBadge from '@/components/admin/tickets/TicketPriorityBadge.vue'
 import TicketAssigneeSelect from '@/components/admin/tickets/TicketAssigneeSelect.vue'
 import ConfirmActionDialog from '@/components/common/ConfirmActionDialog.vue'
 import SoftDeleteFilter from '@/components/common/SoftDeleteFilter.vue'
 
+// Define page meta
 definePage({
   meta: {
     requiresAuth: true,
@@ -18,646 +18,924 @@ definePage({
   },
 })
 
+// Initialize composables with enhanced error handling
 const router = useRouter()
 const { t } = useI18n()
-const ticketsStore = useTicketsStore()
-const { confirm, presets } = useQuickConfirm()
+
+// Initialize store and composables safely with detailed error catching
+let ticketsStore: ReturnType<typeof useTicketsStore>
+let confirm: any
+let presets: any
+
+try {
+  console.log('🎫 [Tickets] Initializing tickets store...')
+  ticketsStore = useTicketsStore()
+  console.log('✅ [Tickets] Tickets store initialized successfully')
+} catch (error) {
+  console.error('🚫 [Tickets] Error initializing tickets store:', error)
+  // Create fallback store
+  ticketsStore = {
+    tickets: ref([]),
+    loading: ref(false),
+    pagination: ref({ current_page: 1, per_page: 15, total: 0 }),
+    filters: ref({}),
+    statistics: ref(null),
+    hasTickets: ref(false),
+    totalTickets: ref(0),
+    fetchTickets: () => Promise.resolve(),
+    fetchStatistics: () => Promise.resolve(),
+    assignTicket: () => Promise.resolve(),
+    changeStatus: () => Promise.resolve(),
+    deleteTicket: () => Promise.resolve(),
+    bulkAction: () => Promise.resolve(),
+  } as any
+}
+
+// Initialize confirm composable with better error handling
+try {
+  console.log('🎫 [Tickets] Initializing confirm composable...')
+  
+  // Try to import the composable dynamically to catch import errors
+  const { useQuickConfirm } = await import('@/composables/useConfirmAction')
+  const confirmComposable = useQuickConfirm()
+  
+  if (confirmComposable && typeof confirmComposable === 'object') {
+    confirm = confirmComposable.confirm || (() => Promise.resolve(true))
+    presets = confirmComposable.presets || { 
+      delete: () => ({ title: 'Confirm Delete', text: 'Are you sure?' }), 
+      bulkDelete: () => ({ title: 'Confirm Bulk Delete', text: 'Are you sure?' }) 
+    }
+    console.log('✅ [Tickets] Confirm composable initialized successfully')
+  } else {
+    throw new Error('useQuickConfirm returned invalid object')
+  }
+} catch (error) {
+  console.error('🚫 [Tickets] Error initializing confirm composable:', error)
+  
+  // Create safe fallback implementations
+  confirm = async (options?: any) => {
+    console.log('🔄 [Tickets] Using fallback confirm dialog')
+    // Use native browser confirm as fallback
+    const message = options?.text || options?.title || 'Are you sure?'
+    return window.confirm(message)
+  }
+  
+  presets = {
+    delete: (type?: string, name?: string) => ({
+      title: `Delete ${type || 'item'}`,
+      text: `Are you sure you want to delete ${name ? `"${name}"` : 'this item'}?`,
+      type: 'error',
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      icon: 'tabler-trash',
+      color: 'error',
+    }),
+    bulkDelete: (type?: string, count?: number) => ({
+      title: `Delete ${count || 0} ${type || 'items'}`,
+      text: `Are you sure you want to delete ${count || 0} ${type || 'items'}?`,
+      type: 'error',
+      confirmText: 'Delete All',
+      cancelText: 'Cancel',
+      icon: 'tabler-trash',
+      color: 'error',
+    })
+  }
+}
+
+// Component cleanup flag
+const isDestroyed = ref(false)
 
 // State
 const selectedTickets = ref<string[]>([])
 const showFilters = ref(false)
 const bulkAssigneeId = ref<string | null>(null)
 const bulkStatus = ref('')
+const isLoading = ref(true)
+const hasError = ref(false)
+const errorMessage = ref('')
 
-// Computed
-const {
-  tickets,
-  loading,
-  pagination,
-  filters,
-  statistics,
-  hasTickets,
-  totalTickets,
-} = storeToRefs(ticketsStore)
+// Store refs with enhanced error handling
+let tickets: any, loading: any, pagination: any, filters: any, statistics: any, hasTickets: any, totalTickets: any
 
-// Filter options
+try {
+  console.log('🎫 [Tickets] Accessing store refs...')
+  const storeRefs = storeToRefs(ticketsStore)
+  tickets = storeRefs.tickets
+  loading = storeRefs.loading
+  pagination = storeRefs.pagination
+  filters = storeRefs.filters
+  statistics = storeRefs.statistics
+  hasTickets = storeRefs.hasTickets
+  totalTickets = storeRefs.totalTickets
+  console.log('✅ [Tickets] Store refs accessed successfully')
+} catch (error) {
+  console.error('🚫 [Tickets] Error accessing store refs:', error)
+  // Fallback refs
+  tickets = ref([])
+  loading = ref(false)
+  pagination = ref({ current_page: 1, per_page: 15, total: 0 })
+  filters = ref({})
+  statistics = ref(null)
+  hasTickets = ref(false)
+  totalTickets = ref(0)
+}
+
+// Safe computed properties
+const safeStatistics = computed(() => {
+  try {
+    return statistics?.value || null
+  } catch (error) {
+    console.error('🚫 [Tickets] Error accessing statistics:', error)
+    return null
+  }
+})
+
+const safeTickets = computed(() => {
+  try {
+    return tickets?.value || []
+  } catch (error) {
+    console.error('🚫 [Tickets] Error accessing tickets:', error)
+    return []
+  }
+})
+
+const safeLoading = computed(() => {
+  try {
+    return loading?.value || false
+  } catch (error) {
+    console.error('🚫 [Tickets] Error accessing loading state:', error)
+    return false
+  }
+})
+
+// Filter options with safe translations
+const getTranslation = (key: string, fallback?: string) => {
+  try {
+    return t(key)
+  } catch (error) {
+    console.error(`🚫 [Tickets] Translation error for key: ${key}`, error)
+    return fallback || key
+  }
+}
+
 const statusOptions = [
-  { title: t('ticket_status_open'), value: 'open' },
-  { title: t('ticket_status_pending'), value: 'pending' },
-  { title: t('ticket_status_waiting_user'), value: 'waiting_user' },
-  { title: t('ticket_status_waiting_third_party'), value: 'waiting_third_party' },
-  { title: t('ticket_status_resolved'), value: 'resolved' },
-  { title: t('ticket_status_closed'), value: 'closed' },
+  { title: getTranslation('ticket_status_open', 'Open'), value: 'open' },
+  { title: getTranslation('ticket_status_pending', 'Pending'), value: 'pending' },
+  { title: getTranslation('ticket_status_waiting_user', 'Waiting User'), value: 'waiting_user' },
+  { title: getTranslation('ticket_status_waiting_third_party', 'Waiting Third Party'), value: 'waiting_third_party' },
+  { title: getTranslation('ticket_status_resolved', 'Resolved'), value: 'resolved' },
+  { title: getTranslation('ticket_status_closed', 'Closed'), value: 'closed' },
 ]
 
 const priorityOptions = [
-  { title: t('ticket_priority_low'), value: 'low' },
-  { title: t('ticket_priority_normal'), value: 'normal' },
-  { title: t('ticket_priority_high'), value: 'high' },
-  { title: t('ticket_priority_urgent'), value: 'urgent' },
+  { title: getTranslation('ticket_priority_low', 'Low'), value: 'low' },
+  { title: getTranslation('ticket_priority_normal', 'Normal'), value: 'normal' },
+  { title: getTranslation('ticket_priority_high', 'High'), value: 'high' },
+  { title: getTranslation('ticket_priority_urgent', 'Urgent'), value: 'urgent' },
 ]
 
 const categoryOptions = [
-  { title: t('ticket_category_general'), value: 'general' },
-  { title: t('ticket_category_orders'), value: 'orders' },
-  { title: t('ticket_category_payments'), value: 'payments' },
-  { title: t('ticket_category_commissions'), value: 'commissions' },
-  { title: t('ticket_category_kyc'), value: 'kyc' },
-  { title: t('ticket_category_technical'), value: 'technical' },
-  { title: t('ticket_category_other'), value: 'other' },
+  { title: getTranslation('ticket_category_general', 'General'), value: 'general' },
+  { title: getTranslation('ticket_category_orders', 'Orders'), value: 'orders' },
+  { title: getTranslation('ticket_category_payments', 'Payments'), value: 'payments' },
+  { title: getTranslation('ticket_category_commissions', 'Commissions'), value: 'commissions' },
+  { title: getTranslation('ticket_category_kyc', 'KYC'), value: 'kyc' },
+  { title: getTranslation('ticket_category_technical', 'Technical'), value: 'technical' },
+  { title: getTranslation('ticket_category_other', 'Other'), value: 'other' },
 ]
 
 const sortOptions = [
-  { title: t('sort_last_activity'), value: 'last_activity_at' },
-  { title: t('sort_created_date'), value: 'created_at' },
-  { title: t('sort_subject'), value: 'subject' },
-  { title: t('sort_priority'), value: 'priority' },
-  { title: t('sort_status'), value: 'status' },
+  { title: getTranslation('sort_last_activity', 'Last Activity'), value: 'last_activity_at' },
+  { title: getTranslation('sort_created_date', 'Created Date'), value: 'created_at' },
+  { title: getTranslation('sort_subject', 'Subject'), value: 'subject' },
+  { title: getTranslation('sort_priority', 'Priority'), value: 'priority' },
+  { title: getTranslation('sort_status', 'Status'), value: 'status' },
 ]
 
 // Table headers
 const headers = [
   { title: '', key: 'select', sortable: false, width: 48 },
-  { title: t('ticket_ref'), key: 'id', sortable: false, width: 120 },
-  { title: t('subject'), key: 'subject', sortable: true },
-  { title: t('category'), key: 'category', sortable: true, width: 120 },
-  { title: t('priority'), key: 'priority', sortable: true, width: 100 },
-  { title: t('status'), key: 'status', sortable: true, width: 120 },
-  { title: t('requester'), key: 'requester', sortable: false, width: 180 },
-  { title: t('assignee'), key: 'assignee', sortable: false, width: 180 },
-  { title: t('last_activity'), key: 'last_activity_at', sortable: true, width: 150 },
-  { title: t('actions'), key: 'actions', sortable: false, width: 120 },
+  { title: getTranslation('ticket_ref', 'Ticket #'), key: 'id', sortable: false, width: 120 },
+  { title: getTranslation('subject', 'Subject'), key: 'subject', sortable: true },
+  { title: getTranslation('category', 'Category'), key: 'category', sortable: true, width: 120 },
+  { title: getTranslation('priority', 'Priority'), key: 'priority', sortable: true, width: 100 },
+  { title: getTranslation('status', 'Status'), key: 'status', sortable: true, width: 120 },
+  { title: getTranslation('requester', 'Requester'), key: 'requester', sortable: false, width: 180 },
+  { title: getTranslation('assignee', 'Assignee'), key: 'assignee', sortable: false, width: 180 },
+  { title: getTranslation('last_activity', 'Last Activity'), key: 'last_activity_at', sortable: true, width: 150 },
+  { title: getTranslation('actions', 'Actions'), key: 'actions', sortable: false, width: 120 },
 ]
 
-// Methods
+// Safe methods
 const fetchData = async () => {
-  await Promise.all([
-    ticketsStore.fetchTickets(),
-    ticketsStore.fetchStatistics(),
-  ])
+  if (isDestroyed.value) return
+  
+  try {
+    isLoading.value = true
+    hasError.value = false
+    errorMessage.value = ''
+
+    if (ticketsStore && typeof ticketsStore.fetchTickets === 'function') {
+      await Promise.all([
+        ticketsStore.fetchTickets(),
+        ticketsStore.fetchStatistics?.() || Promise.resolve(),
+      ])
+    }
+  } catch (error) {
+    console.error('Error fetching tickets data:', error)
+    hasError.value = true
+    errorMessage.value = 'Failed to load tickets data'
+  } finally {
+    if (!isDestroyed.value) {
+      isLoading.value = false
+    }
+  }
 }
 
 const handleSearch = (query: string) => {
-  ticketsStore.fetchTickets({ q: query, page: 1 })
+  if (isDestroyed.value) return
+  try {
+    ticketsStore?.fetchTickets?.({ q: query, page: 1 })
+  } catch (error) {
+    console.error('Error handling search:', error)
+  }
 }
 
 const handleFilterChange = () => {
-  ticketsStore.fetchTickets({ page: 1 })
+  if (isDestroyed.value) return
+  try {
+    ticketsStore?.fetchTickets?.({ page: 1 })
+  } catch (error) {
+    console.error('Error handling filter change:', error)
+  }
 }
 
 const clearFilters = () => {
-  filters.value = {
-    page: 1,
-    per_page: 15,
-    sort: 'last_activity_at',
-    dir: 'desc',
+  if (isDestroyed.value) return
+  try {
+    if (filters?.value) {
+      filters.value = {
+        page: 1,
+        per_page: 15,
+        sort: 'last_activity_at',
+        dir: 'desc',
+      }
+    }
+    ticketsStore?.fetchTickets?.()
+  } catch (error) {
+    console.error('Error clearing filters:', error)
   }
-  ticketsStore.fetchTickets()
 }
 
 const handleSort = ({ key, order }: { key: string, order: string }) => {
-  ticketsStore.fetchTickets({
-    sort: key,
-    dir: order === 'asc' ? 'asc' : 'desc',
-    page: 1,
-  })
-}
-
-const handlePageChange = (page: number) => {
-  ticketsStore.fetchTickets({ page })
-}
-
-const viewTicket = (ticket: any) => {
-  router.push(`/admin/support/tickets/${ticket.id}`)
-}
-
-const createTicket = () => {
-  router.push('/admin/support/tickets/create')
-}
-
-const assignTicket = async (ticketId: string, assigneeId: string | null) => {
-  await ticketsStore.assignTicket(ticketId, assigneeId)
-}
-
-const changeTicketStatus = async (ticketId: string, status: string) => {
-  await ticketsStore.changeStatus(ticketId, status)
-}
-
-const deleteTicket = async (ticket: any) => {
-  const confirmed = await confirm(presets.delete('ticket', ticket.subject))
-  if (confirmed) {
-    await ticketsStore.deleteTicket(ticket.id)
+  if (isDestroyed.value) return
+  try {
+    ticketsStore?.fetchTickets?.({
+      sort: key,
+      dir: order === 'asc' ? 'asc' : 'desc',
+      page: 1,
+    })
+  } catch (error) {
+    console.error('Error handling sort:', error)
   }
 }
 
-// Bulk actions
-const handleBulkAssign = async () => {
-  if (selectedTickets.value.length === 0 || !bulkAssigneeId.value) return
-  
-  const confirmed = await confirm({
-    title: t('confirm_bulk_assign_title'),
-    text: t('confirm_bulk_assign_text', { count: selectedTickets.value.length }),
-    type: 'info',
-    confirmText: t('assign'),
-    cancelText: t('cancel'),
-    icon: 'tabler-user-check',
-    color: 'primary',
-  })
+const handlePageChange = (page: number) => {
+  if (isDestroyed.value) return
+  try {
+    ticketsStore?.fetchTickets?.({ page })
+  } catch (error) {
+    console.error('Error handling page change:', error)
+  }
+}
 
-  if (confirmed) {
-    await ticketsStore.bulkAction('assign', selectedTickets.value, {
-      assignee_id: bulkAssigneeId.value
+const viewTicket = (ticket: any) => {
+  if (isDestroyed.value) return
+  try {
+    router.push(`/admin/support/tickets/${ticket.id}`)
+  } catch (error) {
+    console.error('Error navigating to ticket:', error)
+  }
+}
+
+const createTicket = () => {
+  if (isDestroyed.value) return
+  try {
+    router.push('/admin/support/tickets/create')
+  } catch (error) {
+    console.error('Error navigating to create ticket:', error)
+  }
+}
+
+const assignTicket = async (ticketId: string, assigneeId: string | null) => {
+  if (isDestroyed.value) return
+  try {
+    await ticketsStore?.assignTicket?.(ticketId, assigneeId)
+  } catch (error) {
+    console.error('Error assigning ticket:', error)
+  }
+}
+
+const changeTicketStatus = async (ticketId: string, status: string) => {
+  if (isDestroyed.value) return
+  try {
+    await ticketsStore?.changeStatus?.(ticketId, status)
+  } catch (error) {
+    console.error('Error changing ticket status:', error)
+  }
+}
+
+const deleteTicket = async (ticket: any) => {
+  if (isDestroyed.value) return
+  try {
+    const confirmed = await confirm?.(presets?.delete?.('ticket', ticket.subject) || {})
+    if (confirmed) {
+      await ticketsStore?.deleteTicket?.(ticket.id)
+    }
+  } catch (error) {
+    console.error('Error deleting ticket:', error)
+  }
+}
+
+// Bulk actions with error handling
+const handleBulkAssign = async () => {
+  if (isDestroyed.value || selectedTickets.value.length === 0 || !bulkAssigneeId.value) return
+  
+  try {
+    const confirmed = await confirm?.({
+      title: getTranslation('confirm_bulk_assign_title', 'Confirm Bulk Assign'),
+      text: getTranslation('confirm_bulk_assign_text', `Assign ${selectedTickets.value.length} tickets?`),
+      type: 'info',
+      confirmText: getTranslation('assign', 'Assign'),
+      cancelText: getTranslation('cancel', 'Cancel'),
+      icon: 'tabler-user-check',
+      color: 'primary',
     })
-    selectedTickets.value = []
-    bulkAssigneeId.value = null
+
+    if (confirmed) {
+      await ticketsStore?.bulkAction?.('assign', selectedTickets.value, {
+        assignee_id: bulkAssigneeId.value
+      })
+      selectedTickets.value = []
+      bulkAssigneeId.value = null
+    }
+  } catch (error) {
+    console.error('Error in bulk assign:', error)
   }
 }
 
 const handleBulkStatusChange = async () => {
-  if (selectedTickets.value.length === 0 || !bulkStatus.value) return
+  if (isDestroyed.value || selectedTickets.value.length === 0 || !bulkStatus.value) return
   
-  const confirmed = await confirm({
-    title: t('confirm_bulk_status_title'),
-    text: t('confirm_bulk_status_text', { count: selectedTickets.value.length }),
-    type: 'warning',
-    confirmText: t('change_status'),
-    cancelText: t('cancel'),
-    icon: 'tabler-edit',
-    color: 'warning',
-  })
-
-  if (confirmed) {
-    await ticketsStore.bulkAction('status', selectedTickets.value, {
-      status: bulkStatus.value
+  try {
+    const confirmed = await confirm?.({
+      title: getTranslation('confirm_bulk_status_title', 'Confirm Status Change'),
+      text: getTranslation('confirm_bulk_status_text', `Change status of ${selectedTickets.value.length} tickets?`),
+      type: 'warning',
+      confirmText: getTranslation('change_status', 'Change Status'),
+      cancelText: getTranslation('cancel', 'Cancel'),
+      icon: 'tabler-edit',
+      color: 'warning',
     })
-    selectedTickets.value = []
-    bulkStatus.value = ''
+
+    if (confirmed) {
+      await ticketsStore?.bulkAction?.('status', selectedTickets.value, {
+        status: bulkStatus.value
+      })
+      selectedTickets.value = []
+      bulkStatus.value = ''
+    }
+  } catch (error) {
+    console.error('Error in bulk status change:', error)
   }
 }
 
 const handleBulkDelete = async () => {
-  if (selectedTickets.value.length === 0) return
+  if (isDestroyed.value || selectedTickets.value.length === 0) return
   
-  const confirmed = await confirm(presets.bulkDelete('tickets', selectedTickets.value.length))
-  if (confirmed) {
-    await ticketsStore.bulkAction('delete', selectedTickets.value)
-    selectedTickets.value = []
+  try {
+    const confirmed = await confirm?.(presets?.bulkDelete?.('tickets', selectedTickets.value.length) || {})
+    if (confirmed) {
+      await ticketsStore?.bulkAction?.('delete', selectedTickets.value)
+      selectedTickets.value = []
+    }
+  } catch (error) {
+    console.error('Error in bulk delete:', error)
   }
 }
 
-// Watchers
-watch(() => filters.value, handleFilterChange, { deep: true })
+// Watchers with error handling
+watch(() => filters?.value, handleFilterChange, { deep: true })
 
-// Lifecycle
-onMounted(() => {
-  fetchData()
+// Lifecycle with comprehensive error handling
+onMounted(async () => {
+  try {
+    console.log('🎫 [Tickets] Component mounting...')
+    await nextTick() // Ensure component is fully mounted
+    
+    if (!isDestroyed.value) {
+      await fetchData()
+      console.log('🎫 [Tickets] Component mounted successfully')
+    }
+  } catch (error) {
+    console.error('🚫 [Tickets] Error during component mount:', error)
+    hasError.value = true
+    errorMessage.value = 'Failed to initialize tickets page'
+    
+    // Try to navigate to a safe route after a delay
+    setTimeout(() => {
+      if (!isDestroyed.value) {
+        router.push('/admin/dashboard').catch(console.error)
+      }
+    }, 2000)
+  }
+})
+
+onBeforeUnmount(() => {
+  console.log('🎫 [Tickets] Component unmounting...')
+  isDestroyed.value = true
+  
+  // Clear any pending operations
+  selectedTickets.value = []
+  bulkAssigneeId.value = null
+  bulkStatus.value = ''
 })
 </script>
 
 <template>
   <div>
-    <!-- Page Header -->
-    <div class="d-flex justify-space-between align-center mb-6">
-      <div>
-        <h1 class="text-h4 font-weight-bold mb-1">
-          {{ t('support_tickets') }}
-        </h1>
-        <p class="text-body-1 text-medium-emphasis mb-0">
-          {{ t('support_tickets_description') }}
-        </p>
-      </div>
-      
-      <VBtn
-        color="primary"
-        @click="createTicket"
-      >
-        <VIcon icon="tabler-plus" class="me-2" />
-        {{ t('create_ticket_admin') }}
-      </VBtn>
+    <!-- Error State -->
+    <VAlert
+      v-if="hasError"
+      type="error"
+      variant="tonal"
+      class="mb-6"
+    >
+      <VAlertTitle>{{ getTranslation('error', 'Error') }}</VAlertTitle>
+      {{ errorMessage }}
+      <template #append>
+        <VBtn
+          size="small"
+          variant="outlined"
+          @click="fetchData"
+        >
+          {{ getTranslation('retry', 'Retry') }}
+        </VBtn>
+      </template>
+    </VAlert>
+
+    <!-- Loading State -->
+    <div v-if="isLoading && !hasError" class="d-flex justify-center align-center" style="min-height: 400px;">
+      <VProgressCircular indeterminate color="primary" size="64" />
+      <span class="ms-4">{{ getTranslation('loading_tickets', 'Loading tickets...') }}</span>
     </div>
 
-    <!-- Statistics Cards -->
-    <VRow v-if="statistics" class="mb-6">
-      <VCol cols="12" sm="6" md="2">
-        <VCard>
-          <VCardText class="text-center">
-            <VIcon icon="tabler-ticket" size="32" color="info" class="mb-2" />
-            <div class="text-h5 font-weight-bold">{{ statistics.open }}</div>
-            <div class="text-body-2 text-medium-emphasis">{{ t('open_tickets') }}</div>
-          </VCardText>
-        </VCard>
-      </VCol>
+    <!-- Main Content -->
+    <div v-else-if="!hasError">
+      <!-- Page Header -->
+      <div class="d-flex justify-space-between align-center mb-6">
+        <div>
+          <h1 class="text-h4 font-weight-bold mb-1">
+            {{ getTranslation('support_tickets', 'Support Tickets') }}
+          </h1>
+          <p class="text-body-1 text-medium-emphasis mb-0">
+            {{ getTranslation('support_tickets_description', 'Manage customer support tickets') }}
+          </p>
+        </div>
+        
+        <VBtn
+          color="primary"
+          @click="createTicket"
+        >
+          <VIcon icon="tabler-plus" class="me-2" />
+          {{ getTranslation('create_ticket_admin', 'Create Ticket') }}
+        </VBtn>
+      </div>
 
-      <VCol cols="12" sm="6" md="2">
-        <VCard>
-          <VCardText class="text-center">
-            <VIcon icon="tabler-check" size="32" color="success" class="mb-2" />
-            <div class="text-h5 font-weight-bold">{{ statistics.resolved }}</div>
-            <div class="text-body-2 text-medium-emphasis">{{ t('resolved_tickets') }}</div>
-          </VCardText>
-        </VCard>
-      </VCol>
+      <!-- Statistics Cards -->
+      <VRow v-if="safeStatistics" class="mb-6">
+        <VCol cols="12" sm="6" md="2">
+          <VCard>
+            <VCardText class="text-center">
+              <VIcon icon="tabler-ticket" size="32" color="info" class="mb-2" />
+              <div class="text-h5 font-weight-bold">{{ safeStatistics.open || 0 }}</div>
+              <div class="text-body-2 text-medium-emphasis">{{ getTranslation('open_tickets', 'Open') }}</div>
+            </VCardText>
+          </VCard>
+        </VCol>
 
-      <VCol cols="12" sm="6" md="2">
-        <VCard>
-          <VCardText class="text-center">
-            <VIcon icon="tabler-x" size="32" color="secondary" class="mb-2" />
-            <div class="text-h5 font-weight-bold">{{ statistics.closed }}</div>
-            <div class="text-body-2 text-medium-emphasis">{{ t('closed_tickets') }}</div>
-          </VCardText>
-        </VCard>
-      </VCol>
+        <VCol cols="12" sm="6" md="2">
+          <VCard>
+            <VCardText class="text-center">
+              <VIcon icon="tabler-check" size="32" color="success" class="mb-2" />
+              <div class="text-h5 font-weight-bold">{{ safeStatistics.resolved || 0 }}</div>
+              <div class="text-body-2 text-medium-emphasis">{{ getTranslation('resolved_tickets', 'Resolved') }}</div>
+            </VCardText>
+          </VCard>
+        </VCol>
 
-      <VCol cols="12" sm="6" md="2">
-        <VCard>
-          <VCardText class="text-center">
-            <VIcon icon="tabler-user-x" size="32" color="warning" class="mb-2" />
-            <div class="text-h5 font-weight-bold">{{ statistics.unassigned }}</div>
-            <div class="text-body-2 text-medium-emphasis">{{ t('unassigned_tickets') }}</div>
-          </VCardText>
-        </VCard>
-      </VCol>
+        <VCol cols="12" sm="6" md="2">
+          <VCard>
+            <VCardText class="text-center">
+              <VIcon icon="tabler-x" size="32" color="secondary" class="mb-2" />
+              <div class="text-h5 font-weight-bold">{{ safeStatistics.closed || 0 }}</div>
+              <div class="text-body-2 text-medium-emphasis">{{ getTranslation('closed_tickets', 'Closed') }}</div>
+            </VCardText>
+          </VCard>
+        </VCol>
 
-      <VCol cols="12" sm="6" md="2">
-        <VCard>
-          <VCardText class="text-center">
-            <VIcon icon="tabler-alert-triangle" size="32" color="error" class="mb-2" />
-            <div class="text-h5 font-weight-bold">{{ statistics.high_priority }}</div>
-            <div class="text-body-2 text-medium-emphasis">{{ t('high_priority_tickets') }}</div>
-          </VCardText>
-        </VCard>
-      </VCol>
+        <VCol cols="12" sm="6" md="2">
+          <VCard>
+            <VCardText class="text-center">
+              <VIcon icon="tabler-user-x" size="32" color="warning" class="mb-2" />
+              <div class="text-h5 font-weight-bold">{{ safeStatistics.unassigned || 0 }}</div>
+              <div class="text-body-2 text-medium-emphasis">{{ getTranslation('unassigned_tickets', 'Unassigned') }}</div>
+            </VCardText>
+          </VCard>
+        </VCol>
 
-      <VCol cols="12" sm="6" md="2">
-        <VCard>
-          <VCardText class="text-center">
-            <VIcon icon="tabler-sum" size="32" color="primary" class="mb-2" />
-            <div class="text-h5 font-weight-bold">{{ statistics.total }}</div>
-            <div class="text-body-2 text-medium-emphasis">{{ t('total_tickets') }}</div>
-          </VCardText>
-        </VCard>
-      </VCol>
-    </VRow>
+        <VCol cols="12" sm="6" md="2">
+          <VCard>
+            <VCardText class="text-center">
+              <VIcon icon="tabler-alert-triangle" size="32" color="error" class="mb-2" />
+              <div class="text-h5 font-weight-bold">{{ safeStatistics.high_priority || 0 }}</div>
+              <div class="text-body-2 text-medium-emphasis">{{ getTranslation('high_priority_tickets', 'High Priority') }}</div>
+            </VCardText>
+          </VCard>
+        </VCol>
 
-    <!-- Filters and Search -->
-    <VCard class="mb-6">
-      <VCardText>
-        <VRow>
-          <!-- Search -->
-          <VCol cols="12" md="4">
-            <VTextField
-              :model-value="filters.q"
-              :label="t('search_tickets')"
-              :placeholder="t('search_placeholder')"
-              variant="outlined"
-              density="compact"
-              prepend-inner-icon="tabler-search"
-              clearable
-              @update:model-value="handleSearch"
-            />
-          </VCol>
+        <VCol cols="12" sm="6" md="2">
+          <VCard>
+            <VCardText class="text-center">
+              <VIcon icon="tabler-sum" size="32" color="primary" class="mb-2" />
+              <div class="text-h5 font-weight-bold">{{ safeStatistics.total || 0 }}</div>
+              <div class="text-body-2 text-medium-emphasis">{{ getTranslation('total_tickets', 'Total') }}</div>
+            </VCardText>
+          </VCard>
+        </VCol>
+      </VRow>
 
-          <!-- Quick Filters -->
-          <VCol cols="12" md="8">
-            <div class="d-flex align-center gap-3 flex-wrap">
-              <VBtn
+      <!-- Filters and Search -->
+      <VCard class="mb-6">
+        <VCardText>
+          <VRow>
+            <!-- Search -->
+            <VCol cols="12" md="4">
+              <VTextField
+                :model-value="filters?.q || ''"
+                :label="getTranslation('search_tickets', 'Search tickets')"
+                :placeholder="getTranslation('search_placeholder', 'Search by subject, ID...')"
                 variant="outlined"
-                size="small"
-                :color="showFilters ? 'primary' : 'default'"
-                @click="showFilters = !showFilters"
-              >
-                <VIcon icon="tabler-filter" class="me-2" />
-                {{ t('filters') }}
-              </VBtn>
+                density="compact"
+                prepend-inner-icon="tabler-search"
+                clearable
+                @update:model-value="handleSearch"
+              />
+            </VCol>
 
-              <VBtn
-                variant="outlined"
-                size="small"
-                @click="clearFilters"
-              >
-                <VIcon icon="tabler-x" class="me-2" />
-                {{ t('clear_filters') }}
-              </VBtn>
-
-              <VSpacer />
-
-              <!-- Bulk Actions -->
-              <div v-if="selectedTickets.length > 0" class="d-flex align-center gap-2">
-                <VChip color="primary" size="small">
-                  {{ t('selected_count', { count: selectedTickets.length }) }}
-                </VChip>
-
+            <!-- Quick Filters -->
+            <VCol cols="12" md="8">
+              <div class="d-flex align-center gap-3 flex-wrap">
                 <VBtn
                   variant="outlined"
                   size="small"
-                  color="primary"
-                  @click="handleBulkAssign"
+                  :color="showFilters ? 'primary' : 'default'"
+                  @click="showFilters = !showFilters"
                 >
-                  <VIcon icon="tabler-user-check" class="me-2" />
-                  {{ t('assign') }}
+                  <VIcon icon="tabler-filter" class="me-2" />
+                  {{ getTranslation('filters', 'Filters') }}
                 </VBtn>
 
                 <VBtn
                   variant="outlined"
                   size="small"
-                  color="warning"
-                  @click="handleBulkStatusChange"
+                  @click="clearFilters"
                 >
-                  <VIcon icon="tabler-edit" class="me-2" />
-                  {{ t('change_status') }}
+                  <VIcon icon="tabler-x" class="me-2" />
+                  {{ getTranslation('clear_filters', 'Clear') }}
                 </VBtn>
 
-                <VBtn
-                  variant="outlined"
-                  size="small"
-                  color="error"
-                  @click="handleBulkDelete"
-                >
-                  <VIcon icon="tabler-trash" class="me-2" />
-                  {{ t('delete') }}
-                </VBtn>
+                <VSpacer />
+
+                <!-- Bulk Actions -->
+                <div v-if="selectedTickets.length > 0" class="d-flex align-center gap-2">
+                  <VChip color="primary" size="small">
+                    {{ getTranslation('selected_count', `${selectedTickets.length} selected`) }}
+                  </VChip>
+
+                  <VBtn
+                    variant="outlined"
+                    size="small"
+                    color="primary"
+                    @click="handleBulkAssign"
+                  >
+                    <VIcon icon="tabler-user-check" class="me-2" />
+                    {{ getTranslation('assign', 'Assign') }}
+                  </VBtn>
+
+                  <VBtn
+                    variant="outlined"
+                    size="small"
+                    color="warning"
+                    @click="handleBulkStatusChange"
+                  >
+                    <VIcon icon="tabler-edit" class="me-2" />
+                    {{ getTranslation('change_status', 'Change Status') }}
+                  </VBtn>
+
+                  <VBtn
+                    variant="outlined"
+                    size="small"
+                    color="error"
+                    @click="handleBulkDelete"
+                  >
+                    <VIcon icon="tabler-trash" class="me-2" />
+                    {{ getTranslation('delete', 'Delete') }}
+                  </VBtn>
+                </div>
               </div>
-            </div>
-          </VCol>
-        </VRow>
-
-        <!-- Advanced Filters -->
-        <VExpandTransition>
-          <VRow v-if="showFilters" class="mt-4">
-            <VCol cols="12" md="3">
-              <VSelect
-                v-model="filters.status"
-                :items="statusOptions"
-                :label="t('status')"
-                variant="outlined"
-                density="compact"
-                multiple
-                clearable
-              />
-            </VCol>
-
-            <VCol cols="12" md="3">
-              <VSelect
-                v-model="filters.priority"
-                :items="priorityOptions"
-                :label="t('priority')"
-                variant="outlined"
-                density="compact"
-                multiple
-                clearable
-              />
-            </VCol>
-
-            <VCol cols="12" md="3">
-              <VSelect
-                v-model="filters.category"
-                :items="categoryOptions"
-                :label="t('category')"
-                variant="outlined"
-                density="compact"
-                clearable
-              />
-            </VCol>
-
-            <VCol cols="12" md="3">
-              <TicketAssigneeSelect
-                v-model="filters.assignee_id"
-                :label="t('assignee')"
-                variant="outlined"
-                density="compact"
-                clearable
-              />
             </VCol>
           </VRow>
-        </VExpandTransition>
-      </VCardText>
-    </VCard>
 
-    <!-- Data Table -->
-    <VCard>
-      <VDataTableServer
-        v-model="selectedTickets"
-        :headers="headers"
-        :items="tickets"
-        :loading="loading"
-        :items-length="totalTickets"
-        :items-per-page="pagination.per_page"
-        :page="pagination.current_page"
-        item-value="id"
-        show-select
-        @update:options="handleSort"
-        @update:page="handlePageChange"
-      >
-        <!-- Ticket Reference -->
-        <template #item.id="{ item }">
-          <VBtn
-            variant="text"
-            size="small"
-            color="primary"
-            @click="viewTicket(item)"
-          >
-            #{{ item.id.slice(-8) }}
-          </VBtn>
-        </template>
+          <!-- Advanced Filters -->
+          <VExpandTransition>
+            <VRow v-if="showFilters" class="mt-4">
+              <VCol cols="12" md="3">
+                <VSelect
+                  v-model="filters.status"
+                  :items="statusOptions"
+                  :label="getTranslation('status', 'Status')"
+                  variant="outlined"
+                  density="compact"
+                  multiple
+                  clearable
+                />
+              </VCol>
 
-        <!-- Subject -->
-        <template #item.subject="{ item }">
-          <div class="d-flex flex-column">
-            <span class="font-weight-medium cursor-pointer" @click="viewTicket(item)">
-              {{ item.subject }}
-            </span>
-            <div v-if="item.messages_count" class="text-caption text-medium-emphasis">
-              {{ t('messages_count', { count: item.messages_count }) }}
-            </div>
-          </div>
-        </template>
+              <VCol cols="12" md="3">
+                <VSelect
+                  v-model="filters.priority"
+                  :items="priorityOptions"
+                  :label="getTranslation('priority', 'Priority')"
+                  variant="outlined"
+                  density="compact"
+                  multiple
+                  clearable
+                />
+              </VCol>
 
-        <!-- Category -->
-        <template #item.category="{ item }">
-          <VChip size="small" variant="tonal">
-            {{ t(`ticket_category_${item.category}`) }}
-          </VChip>
-        </template>
+              <VCol cols="12" md="3">
+                <VSelect
+                  v-model="filters.category"
+                  :items="categoryOptions"
+                  :label="getTranslation('category', 'Category')"
+                  variant="outlined"
+                  density="compact"
+                  clearable
+                />
+              </VCol>
 
-        <!-- Priority -->
-        <template #item.priority="{ item }">
-          <TicketPriorityBadge :priority="item.priority" show-icon />
-        </template>
+              <VCol cols="12" md="3">
+                <TicketAssigneeSelect
+                  v-model="filters.assignee_id"
+                  :label="getTranslation('assignee', 'Assignee')"
+                  variant="outlined"
+                  density="compact"
+                  clearable
+                />
+              </VCol>
+            </VRow>
+          </VExpandTransition>
+        </VCardText>
+      </VCard>
 
-        <!-- Status -->
-        <template #item.status="{ item }">
-          <TicketStatusBadge :status="item.status" />
-        </template>
-
-        <!-- Requester -->
-        <template #item.requester="{ item }">
-          <div v-if="item.requester" class="d-flex align-center">
-            <VAvatar size="32" class="me-2">
-              <VImg
-                v-if="item.requester.photo_profil"
-                :src="item.requester.photo_profil"
-                :alt="item.requester.nom_complet"
-              />
-              <VIcon v-else icon="tabler-user" size="18" />
-            </VAvatar>
-            <div class="d-flex flex-column">
-              <span class="text-body-2 font-weight-medium">
-                {{ item.requester.nom_complet }}
-              </span>
-              <span class="text-caption text-medium-emphasis">
-                {{ item.requester.email }}
-              </span>
-            </div>
-          </div>
-        </template>
-
-        <!-- Assignee -->
-        <template #item.assignee="{ item }">
-          <div v-if="item.assignee" class="d-flex align-center">
-            <VAvatar size="32" class="me-2">
-              <VImg
-                v-if="item.assignee.photo_profil"
-                :src="item.assignee.photo_profil"
-                :alt="item.assignee.nom_complet"
-              />
-              <VIcon v-else icon="tabler-user" size="18" />
-            </VAvatar>
-            <div class="d-flex flex-column">
-              <span class="text-body-2 font-weight-medium">
-                {{ item.assignee.nom_complet }}
-              </span>
-              <span class="text-caption text-medium-emphasis">
-                {{ item.assignee.email }}
-              </span>
-            </div>
-          </div>
-          <VChip v-else size="small" variant="outlined" color="warning">
-            {{ t('unassigned') }}
-          </VChip>
-        </template>
-
-        <!-- Last Activity -->
-        <template #item.last_activity_at="{ item }">
-          <div class="d-flex flex-column">
-            <span class="text-body-2">
-              {{ new Date(item.last_activity_at).toLocaleDateString() }}
-            </span>
-            <span class="text-caption text-medium-emphasis">
-              {{ new Date(item.last_activity_at).toLocaleTimeString() }}
-            </span>
-          </div>
-        </template>
-
-        <!-- Actions -->
-        <template #item.actions="{ item }">
-          <VMenu>
-            <template #activator="{ props }">
-              <VBtn
-                icon="tabler-dots-vertical"
-                variant="text"
-                size="small"
-                v-bind="props"
-              />
-            </template>
-
-            <VList>
-              <VListItem @click="viewTicket(item)">
-                <template #prepend>
-                  <VIcon icon="tabler-eye" />
-                </template>
-                <VListItemTitle>{{ t('view') }}</VListItemTitle>
-              </VListItem>
-
-              <VListItem @click="assignTicket(item.id, null)">
-                <template #prepend>
-                  <VIcon icon="tabler-user-check" />
-                </template>
-                <VListItemTitle>{{ t('assign') }}</VListItemTitle>
-              </VListItem>
-
-              <VDivider />
-
-              <VListItem @click="changeTicketStatus(item.id, 'resolved')">
-                <template #prepend>
-                  <VIcon icon="tabler-check" />
-                </template>
-                <VListItemTitle>{{ t('mark_resolved') }}</VListItemTitle>
-              </VListItem>
-
-              <VListItem @click="changeTicketStatus(item.id, 'closed')">
-                <template #prepend>
-                  <VIcon icon="tabler-x" />
-                </template>
-                <VListItemTitle>{{ t('mark_closed') }}</VListItemTitle>
-              </VListItem>
-
-              <VDivider />
-
-              <VListItem @click="deleteTicket(item)" class="text-error">
-                <template #prepend>
-                  <VIcon icon="tabler-trash" />
-                </template>
-                <VListItemTitle>{{ t('delete') }}</VListItemTitle>
-              </VListItem>
-            </VList>
-          </VMenu>
-        </template>
-
-        <!-- No Data -->
-        <template #no-data>
-          <div class="text-center py-8">
-            <VIcon icon="tabler-ticket-off" size="64" class="mb-4" color="disabled" />
-            <h3 class="text-h6 mb-2">{{ t('no_tickets_found') }}</h3>
-            <p class="text-body-2 text-medium-emphasis mb-4">
-              {{ t('no_tickets_description') }}
-            </p>
-            <VBtn color="primary" @click="createTicket">
-              <VIcon icon="tabler-plus" class="me-2" />
-              {{ t('create_first_ticket') }}
+      <!-- Data Table -->
+      <VCard>
+        <VDataTableServer
+          v-model="selectedTickets"
+          :headers="headers"
+          :items="safeTickets"
+          :loading="safeLoading"
+          :items-length="totalTickets || 0"
+          :items-per-page="pagination?.per_page || 15"
+          :page="pagination?.current_page || 1"
+          item-value="id"
+          show-select
+          @update:options="handleSort"
+          @update:page="handlePageChange"
+        >
+          <!-- Ticket Reference -->
+          <template #item.id="{ item }">
+            <VBtn
+              variant="text"
+              size="small"
+              color="primary"
+              @click="viewTicket(item)"
+            >
+              #{{ item.id?.toString().slice(-8) || 'N/A' }}
             </VBtn>
-          </div>
-        </template>
-      </VDataTableServer>
-    </VCard>
+          </template>
 
-    <!-- Bulk Action Dialogs -->
-    <VDialog v-model="bulkAssigneeId" max-width="400">
-      <VCard>
-        <VCardTitle>{{ t('bulk_assign_tickets') }}</VCardTitle>
-        <VCardText>
-          <TicketAssigneeSelect
-            v-model="bulkAssigneeId"
-            :label="t('select_assignee')"
-          />
-        </VCardText>
-        <VCardActions>
-          <VSpacer />
-          <VBtn @click="bulkAssigneeId = null">{{ t('cancel') }}</VBtn>
-          <VBtn color="primary" @click="handleBulkAssign">{{ t('assign') }}</VBtn>
-        </VCardActions>
-      </VCard>
-    </VDialog>
+          <!-- Subject -->
+          <template #item.subject="{ item }">
+            <div class="d-flex flex-column">
+              <span class="font-weight-medium cursor-pointer" @click="viewTicket(item)">
+                {{ item.subject || 'No Subject' }}
+              </span>
+              <div v-if="item.messages_count" class="text-caption text-medium-emphasis">
+                {{ getTranslation('messages_count', `${item.messages_count} messages`) }}
+              </div>
+            </div>
+          </template>
 
-    <VDialog v-model="bulkStatus" max-width="400">
-      <VCard>
-        <VCardTitle>{{ t('bulk_change_status') }}</VCardTitle>
-        <VCardText>
-          <VSelect
-            v-model="bulkStatus"
-            :items="statusOptions"
-            :label="t('select_status')"
-            variant="outlined"
-          />
-        </VCardText>
-        <VCardActions>
-          <VSpacer />
-          <VBtn @click="bulkStatus = ''">{{ t('cancel') }}</VBtn>
-          <VBtn color="primary" @click="handleBulkStatusChange">{{ t('change_status') }}</VBtn>
-        </VCardActions>
+          <!-- Category -->
+          <template #item.category="{ item }">
+            <VChip size="small" variant="tonal">
+              {{ getTranslation(`ticket_category_${item.category}`, item.category) }}
+            </VChip>
+          </template>
+
+          <!-- Priority -->
+          <template #item.priority="{ item }">
+            <TicketPriorityBadge :priority="item.priority" show-icon />
+          </template>
+
+          <!-- Status -->
+          <template #item.status="{ item }">
+            <TicketStatusBadge :status="item.status" />
+          </template>
+
+          <!-- Requester -->
+          <template #item.requester="{ item }">
+            <div v-if="item.requester" class="d-flex align-center">
+              <VAvatar size="32" class="me-2">
+                <VImg
+                  v-if="item.requester.photo_profil"
+                  :src="item.requester.photo_profil"
+                  :alt="item.requester.nom_complet"
+                />
+                <VIcon v-else icon="tabler-user" size="18" />
+              </VAvatar>
+              <div class="d-flex flex-column">
+                <span class="text-body-2 font-weight-medium">
+                  {{ item.requester.nom_complet }}
+                </span>
+                <span class="text-caption text-medium-emphasis">
+                  {{ item.requester.email }}
+                </span>
+              </div>
+            </div>
+          </template>
+
+          <!-- Assignee -->
+          <template #item.assignee="{ item }">
+            <div v-if="item.assignee" class="d-flex align-center">
+              <VAvatar size="32" class="me-2">
+                <VImg
+                  v-if="item.assignee.photo_profil"
+                  :src="item.assignee.photo_profil"
+                  :alt="item.assignee.nom_complet"
+                />
+                <VIcon v-else icon="tabler-user" size="18" />
+              </VAvatar>
+              <div class="d-flex flex-column">
+                <span class="text-body-2 font-weight-medium">
+                  {{ item.assignee.nom_complet }}
+                </span>
+                <span class="text-caption text-medium-emphasis">
+                  {{ item.assignee.email }}
+                </span>
+              </div>
+            </div>
+            <VChip v-else size="small" variant="outlined" color="warning">
+                            {{ getTranslation('unassigned', 'Unassigned') }}
+            </VChip>
+          </template>
+
+          <!-- Last Activity -->
+          <template #item.last_activity_at="{ item }">
+            <div class="d-flex flex-column">
+              <span class="text-body-2">
+                {{ new Date(item.last_activity_at).toLocaleDateString() }}
+              </span>
+              <span class="text-caption text-medium-emphasis">
+                {{ new Date(item.last_activity_at).toLocaleTimeString() }}
+              </span>
+            </div>
+          </template>
+
+          <!-- Actions -->
+          <template #item.actions="{ item }">
+            <VMenu>
+              <template #activator="{ props }">
+                <VBtn
+                  icon="tabler-dots-vertical"
+                  variant="text"
+                  size="small"
+                  v-bind="props"
+                />
+              </template>
+
+              <VList>
+                <VListItem @click="viewTicket(item)">
+                  <template #prepend>
+                    <VIcon icon="tabler-eye" />
+                  </template>
+                  <VListItemTitle>{{ getTranslation('view', 'View') }}</VListItemTitle>
+                </VListItem>
+
+                <VListItem @click="assignTicket(item.id, null)">
+                  <template #prepend>
+                    <VIcon icon="tabler-user-check" />
+                  </template>
+                  <VListItemTitle>{{ getTranslation('assign', 'Assign') }}</VListItemTitle>
+                </VListItem>
+
+                <VDivider />
+
+                <VListItem @click="changeTicketStatus(item.id, 'resolved')">
+                  <template #prepend>
+                    <VIcon icon="tabler-check" />
+                  </template>
+                  <VListItemTitle>{{ getTranslation('mark_resolved', 'Mark Resolved') }}</VListItemTitle>
+                </VListItem>
+
+                <VListItem @click="changeTicketStatus(item.id, 'closed')">
+                  <template #prepend>
+                    <VIcon icon="tabler-x" />
+                  </template>
+                  <VListItemTitle>{{ getTranslation('mark_closed', 'Mark Closed') }}</VListItemTitle>
+                </VListItem>
+
+                <VDivider />
+
+                <VListItem @click="deleteTicket(item)" class="text-error">
+                  <template #prepend>
+                    <VIcon icon="tabler-trash" />
+                  </template>
+                  <VListItemTitle>{{ getTranslation('delete', 'Delete') }}</VListItemTitle>
+                </VListItem>
+              </VList>
+            </VMenu>
+          </template>
+
+          <!-- No Data -->
+          <template #no-data>
+            <div class="text-center py-8">
+              <VIcon icon="tabler-ticket-off" size="64" class="mb-4" color="disabled" />
+              <h3 class="text-h6 mb-2">{{ getTranslation('no_tickets_found', 'No tickets found') }}</h3>
+              <p class="text-body-2 text-medium-emphasis mb-4">
+                {{ getTranslation('no_tickets_description', 'No tickets match your current filters') }}
+              </p>
+              <VBtn color="primary" @click="createTicket">
+                <VIcon icon="tabler-plus" class="me-2" />
+                {{ getTranslation('create_first_ticket', 'Create First Ticket') }}
+              </VBtn>
+            </div>
+          </template>
+        </VDataTableServer>
       </VCard>
-    </VDialog>
+
+      <!-- Bulk Action Dialogs -->
+      <VDialog v-model="bulkAssigneeId" max-width="400">
+        <VCard>
+          <VCardTitle>{{ getTranslation('bulk_assign_tickets', 'Bulk Assign Tickets') }}</VCardTitle>
+          <VCardText>
+            <TicketAssigneeSelect
+              v-model="bulkAssigneeId"
+              :label="getTranslation('select_assignee', 'Select Assignee')"
+            />
+          </VCardText>
+          <VCardActions>
+            <VSpacer />
+            <VBtn @click="bulkAssigneeId = null">{{ getTranslation('cancel', 'Cancel') }}</VBtn>
+            <VBtn color="primary" @click="handleBulkAssign">{{ getTranslation('assign', 'Assign') }}</VBtn>
+          </VCardActions>
+        </VCard>
+      </VDialog>
+
+      <VDialog v-model="bulkStatus" max-width="400">
+        <VCard>
+          <VCardTitle>{{ getTranslation('bulk_change_status', 'Bulk Change Status') }}</VCardTitle>
+          <VCardText>
+            <VSelect
+              v-model="bulkStatus"
+              :items="statusOptions"
+              :label="getTranslation('select_status', 'Select Status')"
+              variant="outlined"
+            />
+          </VCardText>
+          <VCardActions>
+            <VSpacer />
+            <VBtn @click="bulkStatus = ''">{{ getTranslation('cancel', 'Cancel') }}</VBtn>
+            <VBtn color="primary" @click="handleBulkStatusChange">{{ getTranslation('change_status', 'Change Status') }}</VBtn>
+          </VCardActions>
+        </VCard>
+      </VDialog>
+    </div>
 
     <!-- Confirm Dialog -->
     <ConfirmActionDialog />
   </div>
 </template>
+

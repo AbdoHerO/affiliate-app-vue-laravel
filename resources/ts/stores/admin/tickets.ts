@@ -195,30 +195,62 @@ export const useTicketsStore = defineStore('admin-tickets', () => {
     error.value = null
   }
 
+  // Add error boundary wrapper for store methods
+  const withErrorBoundary = <T extends (...args: any[]) => any>(fn: T): T => {
+    return ((...args: any[]) => {
+      try {
+        const result = fn(...args)
+        if (result instanceof Promise) {
+          return result.catch((error) => {
+            console.error('Store method error:', error)
+            throw error
+          })
+        }
+        return result
+      } catch (error) {
+        console.error('Store method error:', error)
+        throw error
+      }
+    }) as T
+  }
+
   // Fetch tickets list
-  const fetchTickets = async (newFilters: Partial<TicketFilters> = {}) => {
+  // Wrap the fetchTickets method
+  const fetchTickets = withErrorBoundary(async (newFilters: Partial<TicketFilters> = {}) => {
     loading.value = true
     clearError()
 
     try {
-      // Merge filters
-      const mergedFilters = { ...filters.value, ...newFilters }
+      // Merge filters safely
+      const mergedFilters = { 
+        ...filters.value, 
+        ...newFilters 
+      }
       filters.value = mergedFilters
 
       const response = await api.get('/admin/tickets', { params: mergedFilters })
       
       if (response.data.success) {
-        tickets.value = response.data.data
-        pagination.value = response.data.pagination
+        tickets.value = response.data.data || []
+        pagination.value = response.data.pagination || {
+          current_page: 1,
+          last_page: 1,
+          per_page: 15,
+          total: 0,
+          from: 0,
+          to: 0,
+        }
       } else {
         setError(response.data.message || 'Failed to fetch tickets')
       }
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to fetch tickets')
+      const errorMessage = err.response?.data?.message || err.message || 'Failed to fetch tickets'
+      setError(errorMessage)
+      console.error('Fetch tickets error:', err)
     } finally {
       loading.value = false
     }
-  }
+  })
 
   // Fetch statistics
   const fetchStatistics = async () => {
