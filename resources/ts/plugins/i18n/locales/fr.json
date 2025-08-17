@@ -1172,5 +1172,158 @@
   // Withdrawals and Vuetify stepper keys
   "Retraits": "Retraits",
   "$vuetify.stepper.prev": "Précédent",
-  "$vuetify.stepper.next": "Suivant"
+  "$vuetify.stepper.next": "Suivant",
+
+  // ===========================================
+  // TICKETS DE SUPPORT
+  // ===========================================
+
+  // Navigation
+  "nav_support": "Support",
+  "nav_support_tickets": "Tickets de Support",
+
+  // Titres de pages
+  "support_tickets": "Tickets de Support",
+  "support_tickets_description": "Gérer les tickets de support client et les communications",
+  "create_ticket": "Créer un Ticket",
+  "create_ticket_admin": "Créer un Ticket de Support",
+  "create_ticket_description": "Créer un nouveau ticket de support pour un utilisateur",
+  "create_ticket_admin_description": "Créer un ticket au nom d'un utilisateur ou pour un suivi interne",
+  "ticket_details": "Détails du Ticket",
+
+  // Propriétés des tickets
+  "ticket_ref": "Réf",
+  "ticket_subject": "Sujet",
+  "ticket_category": "Catégorie",
+  "ticket_priority": "Priorité",
+  "ticket_status": "Statut",
+  "ticket_requester": "Demandeur",
+  "ticket_assignee": "Assigné à",
+  "subject": "Sujet",
+  "category": "Catégorie",
+  "priority": "Priorité",
+  "status": "Statut",
+  "requester": "Demandeur",
+  "assignee": "Assigné à",
+  "last_activity": "Dernière Activité",
+  "first_response": "Première Réponse",
+  "resolved": "Résolu",
+  "created": "Créé",
+  "people": "Personnes",
+  "related_items": "Éléments Liés",
+  "ticket_information": "Informations du Ticket",
+
+  // Statuts des tickets
+  "ticket_status_open": "Ouvert",
+  "ticket_status_pending": "En Attente",
+  "ticket_status_waiting_user": "En Attente Utilisateur",
+  "ticket_status_waiting_third_party": "En Attente Tiers",
+  "ticket_status_resolved": "Résolu",
+  "ticket_status_closed": "Fermé",
+
+  // Priorités des tickets
+  "ticket_priority_low": "Faible",
+  "ticket_priority_normal": "Normale",
+  "ticket_priority_high": "Élevée",
+  "ticket_priority_urgent": "Urgente",
+
+  // Catégories des tickets
+  "ticket_category_general": "Général",
+  "ticket_category_orders": "Commandes",
+  "ticket_category_payments": "Paiements",
+  "ticket_category_commissions": "Commissions",
+  "ticket_category_kyc": "KYC",
+  "ticket_category_technical": "Technique",
+  "ticket_category_other": "Autre",
+
+  // Messages
+  "messages": "Messages",
+  "message_type": "Type de Message",
+  "message_body": "Corps du Message",
+  "message_type_public": "Public",
+  "message_type_internal": "Interne",
+  "message_body_placeholder": "Tapez votre message ici...",
+  "send_message": "Envoyer le Message",
+  "attachments": "Pièces Jointes",
+  "attachment_limits": "Maximum {max} fichiers, {size} chacun",
+  "keyboard_shortcut_hint": "Appuyez sur Ctrl+Entrée pour envoyer",
+  "internal": "Interne",
+  "public": "Public",
+  "no_messages": "Aucun Message",
+  "no_messages_description": "Ce ticket n'a pas encore de messages.",
+
+  // Statistiques
+  "open_tickets": "Ouverts",
+  "resolved_tickets": "Résolus",
+  "closed_tickets": "Fermés",
+  "unassigned_tickets": "Non Assignés",
+  "high_priority_tickets": "Priorité Élevée",
+  "total_tickets": "Total",
+
+  // Actions
+  "assign": "Assigner",
+  "assign_ticket": "Assigner le Ticket",
+  "change_status": "Changer le Statut",
+  "delete_ticket": "Supprimer le Ticket",
+  "mark_resolved": "Marquer comme Résolu",
+  "mark_closed": "Marquer comme Fermé",
+  "unassigned": "Non Assigné",
+  "select_assignee": "Sélectionner un Assigné",
+  "select_status": "Sélectionner un Statut",
+  "select_requester": "Sélectionner un Demandeur",
+
+  // Recherche et filtres
+  "search_tickets": "Rechercher des tickets",
+  "search_placeholder": "Rechercher par sujet ou contenu de message...",
+  "filters": "Filtres",
+  "clear_filters": "Effacer les Filtres",
+  "sort_last_activity": "Dernière Activité",
+  "sort_created_date": "Date de Création",
+  "sort_subject": "Sujet",
+  "sort_priority": "Priorité",
+  "sort_status": "Statut",
+
+  // Actions en lot
+  "selected_count": "{count} sélectionné(s)",
+  "bulk_assign_tickets": "Assigner les Tickets en Lot",
+  "bulk_change_status": "Changer le Statut en Lot",
+  "confirm_bulk_assign_title": "Assigner les Tickets",
+  "confirm_bulk_assign_text": "Êtes-vous sûr de vouloir assigner {count} tickets ?",
+  "confirm_bulk_status_title": "Changer le Statut",
+  "confirm_bulk_status_text": "Êtes-vous sûr de vouloir changer le statut de {count} tickets ?",
+
+  // Formulaire
+  "subject_placeholder": "Entrez le sujet du ticket...",
+  "first_message": "Premier Message",
+  "add_first_message": "Ajouter un Premier Message",
+  "actions": "Actions",
+  "help": "Aide",
+  "ticket_type": "Type de Ticket",
+  "ticket_type_on_behalf": "Au Nom de l'Utilisateur",
+  "ticket_type_internal": "Ticket Interne",
+  "ticket_type_on_behalf_desc": "Créer un ticket pour un utilisateur qui a contacté par téléphone/email",
+  "ticket_type_internal_desc": "Créer un ticket interne pour le suivi de l'équipe admin",
+  "create_ticket_help_1": "Remplissez les détails du ticket et sélectionnez le demandeur.",
+  "create_ticket_help_2": "Ajoutez optionnellement un premier message pour commencer la conversation.",
+  "create_ticket_help_3": "Vous pourrez ajouter des éléments liés et des pièces jointes plus tard.",
+  "create_ticket_admin_help_1": "Choisissez le type de ticket : au nom d'un utilisateur ou suivi interne.",
+  "create_ticket_admin_help_2": "Pour les tickets 'Au Nom', sélectionnez l'utilisateur réel qui a besoin d'aide.",
+  "create_ticket_admin_help_3": "Pour les tickets 'Internes', vous serez défini comme demandeur.",
+
+  // Temps
+  "just_now": "À l'instant",
+  "hours_ago": "Il y a {count} heure | Il y a {count} heures",
+  "days_ago": "Il y a {count} jour | Il y a {count} jours",
+  "messages_count": "{count} message | {count} messages",
+  "created_by": "Créé par",
+
+  // États vides
+  "no_tickets_found": "Aucun Ticket Trouvé",
+  "no_tickets_description": "Aucun ticket ne correspond à vos filtres actuels.",
+  "create_first_ticket": "Créer le Premier Ticket",
+  "ticket_not_found": "Ticket Non Trouvé",
+  "ticket_not_found_description": "Le ticket que vous recherchez n'existe pas ou a été supprimé.",
+  "back_to_tickets": "Retour aux Tickets",
+  "no_users_found": "Aucun utilisateur trouvé",
+  "type_to_search": "Tapez pour rechercher des utilisateurs"
 }

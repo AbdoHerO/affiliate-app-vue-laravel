@@ -139,6 +139,17 @@ export function useNavigation() {
             ],
           },
           {
+            title: t('nav_support'),
+            icon: { icon: 'tabler-headset' },
+            children: [
+              {
+                title: t('nav_support_tickets'),
+                to: 'admin-support-tickets',
+                icon: { icon: 'tabler-ticket' },
+              },
+            ],
+          },
+          {
             title: t('nav_reports_analytics'),
             icon: { icon: 'tabler-chart-bar' },
             children: [

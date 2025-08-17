@@ -27,6 +27,8 @@ use App\Http\Controllers\Admin\VariantAttributController;
 use App\Http\Controllers\Admin\VariantValeurController;
 use App\Http\Controllers\Admin\TestController;
 use App\Http\Controllers\Admin\CommissionsController;
+use App\Http\Controllers\Admin\TicketsController;
+use App\Http\Controllers\Admin\TicketMessagesController;
 use App\Http\Controllers\Public\ProduitController as PublicProduitController;
 use App\Http\Controllers\Public\AffiliateSignupController;
 use Illuminate\Http\Request;
@@ -307,6 +309,25 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::post('/{id}/mark-in-payment', [\App\Http\Controllers\Admin\WithdrawalsController::class, 'markInPayment']);
             Route::post('/{id}/mark-paid', [\App\Http\Controllers\Admin\WithdrawalsController::class, 'markPaid']);
             Route::get('/users/{user_id}/eligible-commissions', [\App\Http\Controllers\Admin\WithdrawalsController::class, 'getEligibleCommissions']);
+        });
+
+        // Support Tickets Management
+        Route::prefix('tickets')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Admin\TicketsController::class, 'index']);
+            Route::get('/statistics', [\App\Http\Controllers\Admin\TicketsController::class, 'statistics']);
+            Route::post('/', [\App\Http\Controllers\Admin\TicketsController::class, 'store']);
+            Route::get('/{ticket}', [\App\Http\Controllers\Admin\TicketsController::class, 'show']);
+            Route::post('/{ticket}', [\App\Http\Controllers\Admin\TicketsController::class, 'update']);
+            Route::post('/{ticket}/assign', [\App\Http\Controllers\Admin\TicketsController::class, 'assign']);
+            Route::post('/{ticket}/status', [\App\Http\Controllers\Admin\TicketsController::class, 'changeStatus']);
+            Route::delete('/{ticket}', [\App\Http\Controllers\Admin\TicketsController::class, 'destroy']);
+            Route::post('/bulk-action', [\App\Http\Controllers\Admin\TicketsController::class, 'bulkAction']);
+
+            // Ticket Messages
+            Route::get('/{ticket}/messages', [\App\Http\Controllers\Admin\TicketMessagesController::class, 'index']);
+            Route::post('/{ticket}/messages', [\App\Http\Controllers\Admin\TicketMessagesController::class, 'store']);
+            Route::get('/{ticket}/messages/{message}', [\App\Http\Controllers\Admin\TicketMessagesController::class, 'show']);
+            Route::delete('/{ticket}/messages/{message}', [\App\Http\Controllers\Admin\TicketMessagesController::class, 'destroy']);
         });
 
         // OzonExpress Integration Management

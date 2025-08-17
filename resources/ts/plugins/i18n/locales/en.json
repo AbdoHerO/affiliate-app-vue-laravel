@@ -1285,5 +1285,158 @@
   // Withdrawals and Vuetify stepper keys
   "Retraits": "Withdrawals",
   "$vuetify.stepper.prev": "Previous",
-  "$vuetify.stepper.next": "Next"
+  "$vuetify.stepper.next": "Next",
+
+  // ===========================================
+  // SUPPORT TICKETS
+  // ===========================================
+
+  // Navigation
+  "nav_support": "Support",
+  "nav_support_tickets": "Support Tickets",
+
+  // Page titles
+  "support_tickets": "Support Tickets",
+  "support_tickets_description": "Manage customer support tickets and communications",
+  "create_ticket": "Create Ticket",
+  "create_ticket_admin": "Create Support Ticket",
+  "create_ticket_description": "Create a new support ticket for a user",
+  "create_ticket_admin_description": "Create a ticket on behalf of a user or for internal tracking",
+  "ticket_details": "Ticket Details",
+
+  // Ticket properties
+  "ticket_ref": "Ref",
+  "ticket_subject": "Subject",
+  "ticket_category": "Category",
+  "ticket_priority": "Priority",
+  "ticket_status": "Status",
+  "ticket_requester": "Requester",
+  "ticket_assignee": "Assignee",
+  "subject": "Subject",
+  "category": "Category",
+  "priority": "Priority",
+  "status": "Status",
+  "requester": "Requester",
+  "assignee": "Assignee",
+  "last_activity": "Last Activity",
+  "first_response": "First Response",
+  "resolved": "Resolved",
+  "created": "Created",
+  "people": "People",
+  "related_items": "Related Items",
+  "ticket_information": "Ticket Information",
+
+  // Ticket statuses
+  "ticket_status_open": "Open",
+  "ticket_status_pending": "Pending",
+  "ticket_status_waiting_user": "Waiting User",
+  "ticket_status_waiting_third_party": "Waiting Third Party",
+  "ticket_status_resolved": "Resolved",
+  "ticket_status_closed": "Closed",
+
+  // Ticket priorities
+  "ticket_priority_low": "Low",
+  "ticket_priority_normal": "Normal",
+  "ticket_priority_high": "High",
+  "ticket_priority_urgent": "Urgent",
+
+  // Ticket categories
+  "ticket_category_general": "General",
+  "ticket_category_orders": "Orders",
+  "ticket_category_payments": "Payments",
+  "ticket_category_commissions": "Commissions",
+  "ticket_category_kyc": "KYC",
+  "ticket_category_technical": "Technical",
+  "ticket_category_other": "Other",
+
+  // Messages
+  "messages": "Messages",
+  "message_type": "Message Type",
+  "message_body": "Message Body",
+  "message_type_public": "Public",
+  "message_type_internal": "Internal",
+  "message_body_placeholder": "Type your message here...",
+  "send_message": "Send Message",
+  "attachments": "Attachments",
+  "attachment_limits": "Maximum {max} files, {size} each",
+  "keyboard_shortcut_hint": "Press Ctrl+Enter to send",
+  "internal": "Internal",
+  "public": "Public",
+  "no_messages": "No Messages",
+  "no_messages_description": "This ticket doesn't have any messages yet.",
+
+  // Statistics
+  "open_tickets": "Open",
+  "resolved_tickets": "Resolved",
+  "closed_tickets": "Closed",
+  "unassigned_tickets": "Unassigned",
+  "high_priority_tickets": "High Priority",
+  "total_tickets": "Total",
+
+  // Actions
+  "assign": "Assign",
+  "assign_ticket": "Assign Ticket",
+  "change_status": "Change Status",
+  "delete_ticket": "Delete Ticket",
+  "mark_resolved": "Mark Resolved",
+  "mark_closed": "Mark Closed",
+  "unassigned": "Unassigned",
+  "select_assignee": "Select Assignee",
+  "select_status": "Select Status",
+  "select_requester": "Select Requester",
+
+  // Search and filters
+  "search_tickets": "Search tickets",
+  "search_placeholder": "Search by subject or message content...",
+  "filters": "Filters",
+  "clear_filters": "Clear Filters",
+  "sort_last_activity": "Last Activity",
+  "sort_created_date": "Created Date",
+  "sort_subject": "Subject",
+  "sort_priority": "Priority",
+  "sort_status": "Status",
+
+  // Bulk actions
+  "selected_count": "{count} selected",
+  "bulk_assign_tickets": "Bulk Assign Tickets",
+  "bulk_change_status": "Bulk Change Status",
+  "confirm_bulk_assign_title": "Assign Tickets",
+  "confirm_bulk_assign_text": "Are you sure you want to assign {count} tickets?",
+  "confirm_bulk_status_title": "Change Status",
+  "confirm_bulk_status_text": "Are you sure you want to change the status of {count} tickets?",
+
+  // Form
+  "subject_placeholder": "Enter ticket subject...",
+  "first_message": "First Message",
+  "add_first_message": "Add First Message",
+  "actions": "Actions",
+  "help": "Help",
+  "ticket_type": "Ticket Type",
+  "ticket_type_on_behalf": "On Behalf of User",
+  "ticket_type_internal": "Internal Ticket",
+  "ticket_type_on_behalf_desc": "Create a ticket for a user who contacted via phone/email",
+  "ticket_type_internal_desc": "Create an internal ticket for admin team tracking",
+  "create_ticket_help_1": "Fill in the ticket details and select the requester.",
+  "create_ticket_help_2": "Optionally add a first message to start the conversation.",
+  "create_ticket_help_3": "You can add related items and attachments later.",
+  "create_ticket_admin_help_1": "Choose ticket type: on behalf of a user or internal tracking.",
+  "create_ticket_admin_help_2": "For 'On Behalf' tickets, select the actual user who needs help.",
+  "create_ticket_admin_help_3": "For 'Internal' tickets, you will be set as the requester.",
+
+  // Time
+  "just_now": "Just now",
+  "hours_ago": "{count} hour ago | {count} hours ago",
+  "days_ago": "{count} day ago | {count} days ago",
+  "messages_count": "{count} message | {count} messages",
+  "created_by": "Created by",
+
+  // Empty states
+  "no_tickets_found": "No Tickets Found",
+  "no_tickets_description": "No tickets match your current filters.",
+  "create_first_ticket": "Create First Ticket",
+  "ticket_not_found": "Ticket Not Found",
+  "ticket_not_found_description": "The ticket you're looking for doesn't exist or has been deleted.",
+  "back_to_tickets": "Back to Tickets",
+  "no_users_found": "No users found",
+  "type_to_search": "Type to search users"
 }

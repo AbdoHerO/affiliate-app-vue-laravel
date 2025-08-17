@@ -70,6 +70,12 @@ class DatabaseSeeder extends Seeder
             FinalWithdrawalSeeder::class,          // Final 2 withdrawals to reach 10 total
         ]);
 
+        // 8. SUPPORT: Support tickets and communications
+        $this->command->info('🎧 Step 8: Support System');
+        $this->call([
+            TicketSeeder::class,
+        ]);
+
         $this->command->info('');
         $this->command->info('✅ Complete database seeding finished!');
         $this->command->info('🎯 Your system is ready for testing with comprehensive data.');
