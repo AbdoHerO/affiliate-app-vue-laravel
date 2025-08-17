@@ -20,7 +20,7 @@ const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const { showSuccess, showError } = useNotifications()
-const { quickConfirm } = useQuickConfirm()
+const { confirm } = useQuickConfirm()
 
 // Store
 const commissionsStore = useCommissionsStore()
@@ -44,17 +44,25 @@ const commission = computed(() => currentCommission.value)
 
 // Methods
 const fetchCommission = async () => {
-  await commissionsStore.fetchCommission(route.params.id as string)
+  try {
+    console.log('🔍 Fetching commission:', route.params.id)
+    await commissionsStore.fetchCommission(route.params.id as string)
+    console.log('✅ Commission fetched successfully')
+  } catch (error) {
+    console.error('❌ Error fetching commission:', error)
+    showError('Erreur lors du chargement de la commission')
+  }
 }
 
 const handleApprove = async () => {
   if (!commission.value) return
 
-  const confirmed = await quickConfirm({
+  const confirmed = await confirm({
     title: 'Approuver la commission',
-    message: `Êtes-vous sûr de vouloir approuver cette commission de ${commission.value.amount} ${commission.value.currency} ?`,
+    text: `Êtes-vous sûr de vouloir approuver cette commission de ${commission.value.amount} ${commission.value.currency} ?`,
     confirmText: 'Approuver',
-    confirmColor: 'success',
+    color: 'success',
+    type: 'success',
   })
 
   if (confirmed) {
@@ -117,7 +125,20 @@ const goBack = () => {
 
 // Load data on mount
 onMounted(async () => {
-  await fetchCommission()
+  console.log('🚀 Commission detail page mounted, ID:', route.params.id)
+
+  // Check if ID is valid
+  if (!route.params.id || route.params.id === 'undefined') {
+    console.error('❌ Invalid commission ID:', route.params.id)
+    showError('ID de commission invalide')
+    router.push('/admin/commissions')
+    return
+  }
+
+  // Add a small delay to ensure everything is initialized
+  setTimeout(async () => {
+    await fetchCommission()
+  }, 100)
 })
 </script>
 

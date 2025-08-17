@@ -89,11 +89,21 @@ const handleTableUpdate = async (options: any) => {
   await commissionsStore.fetchCommissions(newFilters)
 }
 
-const handleView = (commission: Commission) => {
+const handleView = (commission: Commission, event?: Event) => {
   console.log('🔍 handleView called for commission:', commission.id)
+
+  // Prevent any potential event bubbling
+  if (event) {
+    event.preventDefault()
+    event.stopPropagation()
+  }
+
+  const targetPath = `/admin/commissions/${commission.id}`
+  console.log('🎯 Navigating to:', targetPath)
+
   try {
-    // Use simple path navigation for now
-    router.push(`/admin/commissions/${commission.id}`)
+    // Simple router push
+    router.push(targetPath)
     console.log('✅ Navigation initiated')
   } catch (error) {
     console.error('❌ Navigation error:', error)
@@ -105,16 +115,27 @@ const handleApprove = async (commission: Commission) => {
   console.log('✅ handleApprove called for commission:', commission.id)
 
   try {
-    // Temporarily skip confirm dialog for testing
-    console.log('🚀 Calling approveCommission directly...')
-    const result = await commissionsStore.approveCommission(commission.id)
-    console.log('📊 Result:', result)
+    const confirmed = await confirm({
+      title: 'Approuver la commission',
+      text: `Êtes-vous sûr de vouloir approuver cette commission de ${commission.amount} ${commission.currency} ?`,
+      confirmText: 'Approuver',
+      color: 'success',
+      type: 'success',
+    })
 
-    if (result.success) {
-      showSuccess(result.message)
-      await fetchCommissions()
-    } else {
-      showError(result.message)
+    console.log('🔔 Confirm dialog result:', confirmed)
+
+    if (confirmed) {
+      console.log('🚀 Calling approveCommission...')
+      const result = await commissionsStore.approveCommission(commission.id)
+      console.log('📊 Result:', result)
+
+      if (result.success) {
+        showSuccess(result.message)
+        await fetchCommissions()
+      } else {
+        showError(result.message)
+      }
     }
   } catch (error) {
     console.error('❌ Error in handleApprove:', error)

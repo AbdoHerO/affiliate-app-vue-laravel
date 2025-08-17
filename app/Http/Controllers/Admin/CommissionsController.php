@@ -96,17 +96,33 @@ class CommissionsController extends Controller
      */
     public function show(string $id): JsonResponse
     {
-        $commission = CommissionAffilie::with([
-            'affiliate:id,nom_complet,email,telephone',
-            'commande:id,statut,total_ttc,created_at,notes',
-            'commande.articles.produit:id,titre,prix_vente',
-            'commandeArticle.produit:id,titre,prix_vente'
-        ])->findOrFail($id);
+        try {
+            \Log::info('CommissionsController::show called with ID: ' . $id);
 
-        return response()->json([
-            'success' => true,
-            'data' => new CommissionResource($commission)
-        ]);
+            $commission = CommissionAffilie::with([
+                'affiliate:id,nom_complet,email,telephone',
+                'commande:id,statut,total_ttc,created_at,notes',
+                'commandeArticle.produit:id,titre,prix_vente'
+            ])->findOrFail($id);
+
+            \Log::info('Commission found: ' . $commission->id);
+
+            $resource = new CommissionResource($commission);
+            \Log::info('Commission resource created successfully');
+
+            return response()->json([
+                'success' => true,
+                'data' => $resource
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error in CommissionsController::show: ' . $e->getMessage());
+            \Log::error('Stack trace: ' . $e->getTraceAsString());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors du chargement de la commission: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 
     /**

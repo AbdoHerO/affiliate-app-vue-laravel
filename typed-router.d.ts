@@ -60,7 +60,6 @@ declare module 'vue-router/auto-routes' {
     'login': RouteRecordInfo<'login', '/login', Record<never, never>, Record<never, never>>,
     'pslug': RouteRecordInfo<'pslug', '/p/:slug', { slug: ParamValue<true> }, { slug: ParamValue<false> }>,
     'profile': RouteRecordInfo<'profile', '/profile', Record<never, never>, Record<never, never>>,
-    'test-action-icon': RouteRecordInfo<'test-action-icon', '/test-action-icon', Record<never, never>, Record<never, never>>,
     'test-auth': RouteRecordInfo<'test-auth', '/test-auth', Record<never, never>, Record<never, never>>,
     'unauthorized': RouteRecordInfo<'unauthorized', '/unauthorized', Record<never, never>, Record<never, never>>,
   }

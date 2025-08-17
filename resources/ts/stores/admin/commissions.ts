@@ -147,20 +147,24 @@ export const useCommissionsStore = defineStore('commissions', () => {
   }
 
   const fetchCommission = async (id: string) => {
+    console.log('🔍 Store: fetchCommission called with ID:', id)
     loading.value = true
     error.value = null
 
     try {
+      console.log('🌐 Making API call to:', `/api/admin/commissions/${id}`)
       const response = await axios.get(`/api/admin/commissions/${id}`)
+      console.log('📡 Raw API response:', response)
 
       if (response.data.success) {
+        console.log('✅ Commission data received:', response.data.data)
         currentCommission.value = response.data.data
       } else {
         throw new Error(response.data.message || 'Failed to fetch commission')
       }
     } catch (err: any) {
+      console.error('❌ Store: fetchCommission error:', err)
       error.value = err.response?.data?.message || err.message || 'Failed to fetch commission'
-      console.error('Error fetching commission:', err)
     } finally {
       loading.value = false
     }
