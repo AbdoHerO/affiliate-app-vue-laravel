@@ -275,9 +275,14 @@ class WithdrawalService
      */
     public function uploadEvidence(UploadedFile $file): string
     {
+        // Ensure the withdrawals directory exists
+        if (!Storage::disk('public')->exists('withdrawals')) {
+            Storage::disk('public')->makeDirectory('withdrawals');
+        }
+
         $filename = time() . '_' . $file->getClientOriginalName();
-        $path = $file->storeAs('withdrawals', $filename, 'local');
-        
+        $path = $file->storeAs('withdrawals', $filename, 'public');
+
         return $path;
     }
 

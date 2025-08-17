@@ -75,10 +75,17 @@ const fetchUsers = async (search?: string) => {
     params.append('role', 'affiliate') // Only affiliates can have withdrawals
 
     const url = `/admin/users${params.toString() ? `?${params.toString()}` : ''}`
+    console.log('🔍 [Create Withdrawal] Fetching users from:', url)
     const response = await $api(url)
+
+    console.log('📥 [Create Withdrawal] API Response:', response)
 
     if (response?.success) {
       users.value = response.data?.users || []
+      console.log('✅ [Create Withdrawal] Users loaded:', users.value.length)
+    } else {
+      console.error('❌ [Create Withdrawal] API returned error:', response)
+      showError(response?.message || 'Erreur lors du chargement des utilisateurs')
     }
   } catch (error) {
     console.error('🚫 [Create Withdrawal] Error fetching users:', error)
@@ -234,6 +241,7 @@ fetchUsers()
                   :error="hasError('user_id')"
                   :error-messages="getError('user_id')"
                   @update:search="fetchUsers"
+                  @click:control="fetchUsers"
                   class="mb-4"
                 >
                   <template #item="{ props, item }">

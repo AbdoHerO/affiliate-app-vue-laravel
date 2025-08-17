@@ -74,16 +74,22 @@ const canManageCommissions = computed(() => {
 
 // Methods
 const fetchWithdrawal = async () => {
-  const id = withdrawalId.value
-  if (!id) {
-    showError('ID de retrait invalide')
-    router.push('/admin/withdrawals')
-    return
-  }
+  try {
+    const id = withdrawalId.value
+    if (!id) {
+      showError('ID de retrait invalide')
+      router.push('/admin/withdrawals')
+      return
+    }
 
-  const result = await withdrawalsStore.fetchOne(id)
-  if (!result.success) {
-    showError(result.message || 'Erreur lors du chargement du retrait')
+    const result = await withdrawalsStore.fetchOne(id)
+    if (!result.success) {
+      showError(result.message || 'Erreur lors du chargement du retrait')
+      router.push('/admin/withdrawals')
+    }
+  } catch (error) {
+    console.error('Error fetching withdrawal:', error)
+    showError('Erreur lors du chargement du retrait')
     router.push('/admin/withdrawals')
   }
 }
@@ -98,8 +104,21 @@ const openActionDialog = (action: typeof actionDialog.value.action) => {
   }
 }
 
-const handleActionSuccess = () => {
-  fetchWithdrawal()
+const handleActionSuccess = async () => {
+  try {
+    // Close dialog first
+    actionDialog.value.isVisible = false
+    actionDialog.value.withdrawal = null
+
+    // Refresh data
+    await fetchWithdrawal()
+
+    // Show success message
+    showSuccess('Action effectuée avec succès')
+  } catch (error) {
+    console.error('Error handling action success:', error)
+    showError('Erreur lors de la mise à jour des données')
+  }
 }
 
 const detachCommissions = async () => {
