@@ -1174,6 +1174,19 @@
   "$vuetify.stepper.prev": "Précédent",
   "$vuetify.stepper.next": "Suivant",
 
+  // Support ticket system keys (missing from console warnings)
+  "Support": "Support",
+  "Tickets de Support": "Tickets de Support",
+  "tickets.form.title": "Titre",
+  "tickets.form.title_placeholder": "Saisir le titre du ticket",
+  "tickets.form.description": "Description",
+  "tickets.form.description_placeholder": "Saisir la description du ticket",
+  "tickets.form.user": "Utilisateur",
+  "tickets.form.category": "Catégorie",
+  "tickets.form.priority": "Priorité",
+  "tickets.form.status": "Statut",
+  "tickets.form.assignee": "Assigné à",
+
   // ===========================================
   // TICKETS DE SUPPORT
   // ===========================================

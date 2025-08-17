@@ -1287,6 +1287,19 @@
   "$vuetify.stepper.prev": "Previous",
   "$vuetify.stepper.next": "Next",
 
+  // Support ticket system keys (missing from console warnings)
+  "Support": "Support",
+  "Tickets de Support": "Support Tickets",
+  "tickets.form.title": "Title",
+  "tickets.form.title_placeholder": "Enter ticket title",
+  "tickets.form.description": "Description",
+  "tickets.form.description_placeholder": "Enter ticket description",
+  "tickets.form.user": "User",
+  "tickets.form.category": "Category",
+  "tickets.form.priority": "Priority",
+  "tickets.form.status": "Status",
+  "tickets.form.assignee": "Assignee",
+
   // ===========================================
   // SUPPORT TICKETS
   // ===========================================

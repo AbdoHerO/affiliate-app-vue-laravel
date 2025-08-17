@@ -870,6 +870,19 @@
   "$vuetify.stepper.prev": "السابق",
   "$vuetify.stepper.next": "التالي",
 
+  // Support ticket system keys (missing from console warnings)
+  "Support": "الدعم",
+  "Tickets de Support": "تذاكر الدعم",
+  "tickets.form.title": "العنوان",
+  "tickets.form.title_placeholder": "أدخل عنوان التذكرة",
+  "tickets.form.description": "الوصف",
+  "tickets.form.description_placeholder": "أدخل وصف التذكرة",
+  "tickets.form.user": "المستخدم",
+  "tickets.form.category": "الفئة",
+  "tickets.form.priority": "الأولوية",
+  "tickets.form.status": "الحالة",
+  "tickets.form.assignee": "المُكلف",
+
   // ===========================================
   // تذاكر الدعم
   // ===========================================
