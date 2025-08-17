@@ -51,6 +51,22 @@ const actionDialog = ref({
   action: 'approve' as 'approve' | 'reject' | 'mark_in_payment' | 'mark_paid',
 })
 
+// Utils
+const prune = <T extends Record<string, any>>(obj: T): Partial<T> => {
+  return Object.fromEntries(
+    Object.entries(obj).filter(([_, v]) => {
+      if (v === '' || v === null || v === undefined) return false
+      if (Array.isArray(v) && v.length === 0) return false
+      return true
+    })
+  ) as Partial<T>
+}
+
+const DEFAULT_SORT = 'created_at'
+const DEFAULT_DIR = 'desc'
+
+
+
 // Computed
 const breadcrumbItems = computed(() => [
   { title: 'Dashboard', to: '/admin/dashboard' },
@@ -83,12 +99,14 @@ const tableHeaders = [
 ]
 
 const hasFilters = computed(() => {
-  return searchQuery.value || 
-         selectedStatuses.value.length > 0 || 
-         selectedUserId.value || 
-         selectedMethod.value || 
-         dateFrom.value || 
-         dateTo.value
+  return Boolean(
+    searchQuery.value?.trim() ||
+    selectedStatuses.value.length > 0 ||
+    selectedUserId.value ||
+    selectedMethod.value ||
+    dateFrom.value ||
+    dateTo.value
+  )
 })
 
 const isAllSelected = computed(() => {
@@ -107,24 +125,46 @@ const isSomeSelected = computed(() => {
 
 // Methods
 const fetchWithdrawals = async () => {
-  const filterParams: WithdrawalFilters = {
+  const full: WithdrawalFilters = {
     page: pagination.value.current_page,
     per_page: pagination.value.per_page,
-    sort: filters.value.sort,
-    dir: filters.value.dir,
+    sort: filters.value?.sort || DEFAULT_SORT,
+    dir: filters.value?.dir || DEFAULT_DIR,
+
+    // local UI state (these may be empty; prune will remove them)
+    q: searchQuery.value,
+    status: selectedStatuses.value,
+    user_id: selectedUserId.value,
+    method: selectedMethod.value,
+    date_from: dateFrom.value,
+    date_to: dateTo.value,
   }
 
-  if (searchQuery.value) filterParams.q = searchQuery.value
-  if (selectedStatuses.value.length > 0) filterParams.status = selectedStatuses.value
-  if (selectedUserId.value) filterParams.user_id = selectedUserId.value
-  if (selectedMethod.value) filterParams.method = selectedMethod.value
-  if (dateFrom.value) filterParams.date_from = dateFrom.value
-  if (dateTo.value) filterParams.date_to = dateTo.value
+  const filterParams = prune(full)
+  console.log('🔍 Fetching withdrawals with filters:', filterParams)
 
-  await withdrawalsStore.fetchList(filterParams)
+  try {
+    await withdrawalsStore.fetchList(filterParams)
+    console.log('✅ Withdrawals fetched successfully:', withdrawals.value.length, 'items')
+  } catch (error) {
+    console.error('❌ Error fetching withdrawals:', error)
+  }
 }
 
-const clearFilters = () => {
+const clearFilters = async () => {
+  // Clear search timeout if active
+  if (searchTimeout) {
+    clearTimeout(searchTimeout)
+    searchTimeout = null
+  }
+
+  // Clear fetch timer if active
+  if (fetchTimer) {
+    clearTimeout(fetchTimer)
+    fetchTimer = undefined
+  }
+
+  // Reset all filter values
   searchQuery.value = ''
   selectedStatuses.value = []
   selectedUserId.value = ''
@@ -132,7 +172,16 @@ const clearFilters = () => {
   dateFrom.value = ''
   dateTo.value = ''
   selectedWithdrawals.value = []
-  fetchWithdrawals()
+
+  // reset paging + sort
+  pagination.value.current_page = 1
+  pagination.value.per_page = pagination.value.per_page || 10
+
+  // Reset store filters
+  withdrawalsStore.resetFilters()
+
+  // Fetch fresh data
+  await fetchWithdrawals()
 }
 
 const toggleSelectAll = () => {
@@ -218,12 +267,24 @@ const createWithdrawal = () => {
   router.push('/admin/withdrawals/create')
 }
 
+// Debounced search
+let searchTimeout: NodeJS.Timeout | null = null
+
+// Debounced fetch to avoid racing payloads
+let fetchTimer: number | undefined
+const scheduleFetch = () => {
+  if (fetchTimer) clearTimeout(fetchTimer)
+  // 250–400ms is a good UX sweet spot
+  fetchTimer = window.setTimeout(() => {
+    pagination.value.current_page = 1
+    fetchWithdrawals()
+  }, 300)
+}
+
+
+
 // Watchers
-watch([searchQuery, selectedStatuses, selectedUserId, selectedMethod, dateFrom, dateTo], () => {
-  // Reset to first page when filters change
-  pagination.value.current_page = 1
-  fetchWithdrawals()
-}, { deep: true })
+watch([searchQuery, selectedStatuses, selectedUserId, selectedMethod, dateFrom, dateTo], scheduleFetch, { deep: true })
 
 // Lifecycle
 onMounted(() => {
@@ -322,9 +383,12 @@ onMounted(() => {
           <VCol cols="12" md="3">
             <VTextField
               v-model="searchQuery"
-              label="Rechercher..."
+              label="Rechercher par nom, email ou référence..."
               prepend-inner-icon="tabler-search"
+              :loading="loading"
               clearable
+              hint="Recherche dans le nom, email de l'affilié ou référence de paiement"
+              persistent-hint
             />
           </VCol>
           <VCol cols="12" md="3">
@@ -361,20 +425,64 @@ onMounted(() => {
           </VCol>
         </VRow>
 
-        <VRow v-if="hasFilters" class="mt-2">
+        <!-- Active Filters Display -->
+        <VRow v-if="hasFilters" class="mt-4">
           <VCol cols="12">
-            <VBtn
-              variant="tonal"
-              color="error"
-              size="small"
-              @click="clearFilters"
-            >
-              Effacer les filtres
-            </VBtn>
+            <div class="d-flex align-center gap-2 flex-wrap">
+              <VChip
+                color="primary"
+                variant="tonal"
+                size="small"
+              >
+                {{ Object.values({
+                  search: searchQuery?.trim(),
+                  statuses: selectedStatuses.length,
+                  user: selectedUserId,
+                  method: selectedMethod,
+                  dateFrom,
+                  dateTo
+                }).filter(Boolean).length }} filtre(s) actif(s)
+              </VChip>
+
+              <!-- Show individual active filters -->
+              <VChip
+                v-if="searchQuery?.trim()"
+                color="info"
+                variant="outlined"
+                size="small"
+                closable
+                @click:close="searchQuery = ''"
+              >
+                Recherche: "{{ searchQuery.trim() }}"
+              </VChip>
+
+              <VChip
+                v-if="selectedStatuses.length > 0"
+                color="info"
+                variant="outlined"
+                size="small"
+                closable
+                @click:close="selectedStatuses = []"
+              >
+                Statuts: {{ selectedStatuses.length }}
+              </VChip>
+
+              <VBtn
+                variant="tonal"
+                color="error"
+                size="small"
+                prepend-icon="tabler-filter-x"
+                @click="clearFilters"
+              >
+                Effacer tous les filtres
+              </VBtn>
+            </div>
           </VCol>
         </VRow>
       </VCardText>
     </VCard>
+
+
 
     <!-- Data Table -->
     <VCard>

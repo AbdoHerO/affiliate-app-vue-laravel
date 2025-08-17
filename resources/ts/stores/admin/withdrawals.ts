@@ -153,19 +153,32 @@ export const useWithdrawalsStore = defineStore('withdrawals', () => {
   const hasWithdrawals = computed(() => withdrawals.value.length > 0)
   const isLoading = computed(() => loading.value)
 
+  // Utils
+  const prune = <T extends Record<string, any>>(obj: T): Partial<T> => {
+    return Object.fromEntries(
+      Object.entries(obj).filter(([_, v]) => {
+        if (v === '' || v === null || v === undefined) return false
+        if (Array.isArray(v) && v.length === 0) return false
+        return true
+      })
+    ) as Partial<T>
+  }
+
   // Actions
   const fetchList = async (newFilters?: Partial<WithdrawalFilters>) => {
     try {
       loading.value = true
       error.value = null
 
+      // Replace filters instead of merging to avoid stale values
       if (newFilters) {
-        Object.assign(filters.value, newFilters)
+        filters.value = { ...newFilters }
       }
 
-      // Build query string for the API call
+      // Build query from ONLY current filters and prune empties
+      const params = prune(filters.value)
       const queryParams = new URLSearchParams()
-      Object.entries(filters.value).forEach(([key, value]) => {
+      Object.entries(params).forEach(([key, value]) => {
         if (value !== undefined && value !== null && value !== '') {
           if (Array.isArray(value)) {
             value.forEach(v => queryParams.append(`${key}[]`, v.toString()))
@@ -177,21 +190,27 @@ export const useWithdrawalsStore = defineStore('withdrawals', () => {
 
       const url = `/admin/withdrawals${queryParams.toString() ? `?${queryParams.toString()}` : ''}`
       console.log('🔄 [Withdrawals Store] Fetching:', url)
+      console.log('📋 [Withdrawals Store] Applied filters:', filters.value)
 
       const response = await $api(url)
+      console.log('📥 [Withdrawals Store] Raw response:', response)
 
       if (response?.success) {
         withdrawals.value = response.data || []
-        pagination.value = response.pagination || {
-          current_page: 1,
-          last_page: 1,
-          per_page: 15,
-          total: 0,
-          from: 0,
-          to: 0,
+
+        // Update pagination
+        if (response.pagination) {
+          Object.assign(pagination.value, response.pagination)
         }
-        summary.value = response.summary || null
+
+        // Update summary
+        if (response.summary && summary.value) {
+          Object.assign(summary.value, response.summary)
+        }
+
         console.log('✅ [Withdrawals Store] Data loaded:', withdrawals.value.length, 'withdrawals')
+        console.log('📄 [Withdrawals Store] Pagination:', pagination.value)
+        console.log('📊 [Withdrawals Store] Summary:', summary.value)
       } else {
         error.value = response?.message || 'Erreur lors du chargement des retraits'
       }
@@ -548,6 +567,10 @@ export const useWithdrawalsStore = defineStore('withdrawals', () => {
     }
   }
 
+  const resetFilters = () => {
+    filters.value = { sort: 'created_at', dir: 'desc', page: 1, per_page: 15 }
+  }
+
   // Reset state
   const resetState = () => {
     withdrawals.value = []
@@ -596,6 +619,7 @@ export const useWithdrawalsStore = defineStore('withdrawals', () => {
     markPaid,
     fetchEligibleCommissions,
     exportCsv,
+    resetFilters,
     resetState,
   }
 })
