@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, nextTick } from 'vue'
 import { useWithdrawalsStore } from '@/stores/admin/withdrawals'
 import { useNotifications } from '@/composables/useNotifications'
 
@@ -53,6 +53,9 @@ const localSelectedCommissions = ref<string[]>([...props.selectedCommissions])
 const localMode = ref(props.mode)
 const localTargetAmount = ref(props.targetAmount)
 
+// Flag to prevent recursive updates
+const isUpdatingFromProps = ref(false)
+
 // Computed
 const filteredCommissions = computed(() => {
   if (!search.value) return commissions.value
@@ -86,7 +89,14 @@ const isSomeSelected = computed(() => {
 
 // Watch for prop changes
 watch(() => props.selectedCommissions, (newVal) => {
+  console.log('📥 Received prop change:', newVal)
+  isUpdatingFromProps.value = true
   localSelectedCommissions.value = [...newVal]
+  // Reset flag on next tick to allow local changes
+  nextTick(() => {
+    isUpdatingFromProps.value = false
+    console.log('✅ Prop update complete, local changes allowed')
+  })
 }, { deep: true })
 
 watch(() => props.mode, (newVal) => {
@@ -97,9 +107,14 @@ watch(() => props.targetAmount, (newVal) => {
   localTargetAmount.value = newVal
 })
 
-// Watch for local changes and emit
+// Watch for local changes and emit (but not when updating from props)
 watch(localSelectedCommissions, (newVal) => {
-  emit('update:selectedCommissions', newVal)
+  if (!isUpdatingFromProps.value) {
+    console.log('📤 Emitting selection change to parent:', newVal)
+    emit('update:selectedCommissions', newVal)
+  } else {
+    console.log('🔄 Skipping emit - updating from props')
+  }
 }, { deep: true })
 
 watch(localMode, (newVal) => {
@@ -117,10 +132,10 @@ const fetchCommissions = async () => {
   loading.value = true
   try {
     const result = await withdrawalsStore.fetchEligibleCommissions(props.userId)
-    if (result.success) {
+    if (result.success && result.data) {
       commissions.value = result.data.data || []
     } else {
-      showError(result.message)
+      showError(result.message || 'Erreur lors du chargement des commissions')
     }
   } catch (error) {
     showError('Erreur lors du chargement des commissions')
