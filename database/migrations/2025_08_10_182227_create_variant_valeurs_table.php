@@ -12,8 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('variant_valeurs', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('attribut_id')->constrained('variant_attributs')->onDelete('cascade');
+            $table->uuid('id')->primary();
+            $table->uuid('attribut_id');
+            $table->foreign('attribut_id')->references('id')->on('variant_attributs')->onDelete('cascade');
             $table->string('code');
             $table->string('libelle');
             $table->boolean('actif')->default(true);

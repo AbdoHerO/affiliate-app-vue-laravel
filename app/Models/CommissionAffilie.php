@@ -206,4 +206,12 @@ class CommissionAffilie extends Model
     {
         return in_array($this->status, [self::STATUS_CALCULATED, self::STATUS_ELIGIBLE, self::STATUS_APPROVED]);
     }
+
+    /**
+     * Get the withdrawal this commission is paid through
+     */
+    public function paidWithdrawal(): BelongsTo
+    {
+        return $this->belongsTo(Withdrawal::class, 'paid_withdrawal_id');
+    }
 }

@@ -12,8 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('produit_variantes', function (Blueprint $table) {
-            $table->foreignId('attribut_id')->nullable()->constrained('variant_attributs')->onDelete('set null');
-            $table->foreignId('valeur_id')->nullable()->constrained('variant_valeurs')->onDelete('set null');
+            $table->uuid('attribut_id')->nullable();
+            $table->uuid('valeur_id')->nullable();
+            $table->foreign('attribut_id')->references('id')->on('variant_attributs')->onDelete('set null');
+            $table->foreign('valeur_id')->references('id')->on('variant_valeurs')->onDelete('set null');
 
             // Unique constraint to prevent duplicate combinations per product
             $table->unique(['produit_id', 'attribut_id', 'valeur_id'], 'unique_product_variant_combination');

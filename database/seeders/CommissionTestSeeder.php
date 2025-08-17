@@ -202,7 +202,6 @@ class CommissionTestSeeder extends Seeder
                 [
                     'nom_complet' => "Client Test {$i}",
                     'email' => "client{$i}@test.com",
-                    'ville' => 'Casablanca',
                 ]
             );
             
@@ -214,7 +213,6 @@ class CommissionTestSeeder extends Seeder
                     'ville' => 'Casablanca',
                     'pays' => 'Maroc',
                     'code_postal' => '20000',
-                    'telephone' => $client->telephone,
                 ]
             );
             
