@@ -228,14 +228,22 @@ const loadAdminUsers = async () => {
       role: 'admin'
     })
 
-    const response = await $api(`/admin/users?${params.toString()}`)
+    const url = `/admin/users?${params.toString()}`
+    console.log('🔍 [Create Ticket] Loading admin users from:', url)
+
+    const response = await $api(url)
     console.log('🔍 [Create Ticket] Admin users response:', response)
+    console.log('🔍 [Create Ticket] Total users returned:', response?.users?.length || 0)
 
     if (response?.users && Array.isArray(response.users)) {
-      // Filter only users with admin role (double check)
+      // Filter only users with admin role (double check on frontend)
       const adminOnlyUsers = response.users.filter((user: any) => {
-        return user.roles && user.roles.some((role: any) => role.name === 'admin')
+        const hasAdminRole = user.roles && user.roles.some((role: any) => role.name === 'admin')
+        console.log(`🔍 User ${user.nom_complet} has admin role:`, hasAdminRole)
+        return hasAdminRole
       })
+
+      console.log('🔍 [Create Ticket] Admin users after filtering:', adminOnlyUsers.length)
 
       adminUsers.value = adminOnlyUsers.map((user: any) => ({
         ...user,
@@ -243,12 +251,13 @@ const loadAdminUsers = async () => {
         email: user.email || ''
       }))
 
-      console.log('✅ [Create Ticket] Admin users loaded:', adminUsers.value.length)
+      console.log('✅ [Create Ticket] Final admin users for dropdown:', adminUsers.value)
     } else {
+      console.log('❌ [Create Ticket] No users in response')
       adminUsers.value = []
     }
   } catch (error) {
-    console.error('Failed to load admin users:', error)
+    console.error('❌ [Create Ticket] Failed to load admin users:', error)
     adminUsers.value = []
   } finally {
     adminUsersLoading.value = false
@@ -257,8 +266,11 @@ const loadAdminUsers = async () => {
 
 // Search admin users function
 const searchAdminUsers = async (query: string) => {
+  console.log('🔍 [Create Ticket] Search triggered with query:', query)
+
   if (!query || query.length < 2) {
     // If no query, load initial admin users
+    console.log('🔍 [Create Ticket] No query, loading initial admin users')
     await loadAdminUsers()
     return
   }
@@ -271,14 +283,20 @@ const searchAdminUsers = async (query: string) => {
       role: 'admin'
     })
 
-    const response = await $api(`/admin/users?${params.toString()}`)
+    const url = `/admin/users?${params.toString()}`
+    console.log('🔍 [Create Ticket] Searching admin users from:', url)
+
+    const response = await $api(url)
     console.log('🔍 [Create Ticket] Search admin users response:', response)
 
     if (response?.users && Array.isArray(response.users)) {
       // Filter only users with admin role (double check)
       const adminOnlyUsers = response.users.filter((user: any) => {
-        return user.roles && user.roles.some((role: any) => role.name === 'admin')
+        const hasAdminRole = user.roles && user.roles.some((role: any) => role.name === 'admin')
+        return hasAdminRole
       })
+
+      console.log('🔍 [Create Ticket] Admin users found in search:', adminOnlyUsers.length)
 
       adminUsers.value = adminOnlyUsers.map((user: any) => ({
         ...user,
@@ -289,7 +307,7 @@ const searchAdminUsers = async (query: string) => {
       adminUsers.value = []
     }
   } catch (error) {
-    console.error('Failed to search admin users:', error)
+    console.error('❌ [Create Ticket] Failed to search admin users:', error)
     adminUsers.value = []
   } finally {
     adminUsersLoading.value = false
@@ -441,7 +459,8 @@ onMounted(async () => {
     // Load initial data with individual error handling
     const dataLoadingPromises = [
       loadTicketCategories(),
-      loadUsers()
+      loadUsers(),
+      loadAdminUsers()
     ]
 
     // Use Promise.allSettled to continue even if some requests fail
@@ -636,6 +655,7 @@ watch(() => router.currentRoute.value, (newRoute) => {
                   item-value="id"
                   placeholder="Search admin users..."
                   @update:search="searchAdminUsers"
+                  @focus="loadAdminUsers"
                 >
                   <template #item="{ props: itemProps, item }">
                     <v-list-item v-bind="itemProps">
