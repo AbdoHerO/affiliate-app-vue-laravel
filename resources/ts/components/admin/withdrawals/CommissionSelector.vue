@@ -313,7 +313,7 @@ watch(() => props.userId, fetchCommissions, { immediate: true })
                   <div class="text-caption text-medium-emphasis">{{ commission.produit?.titre }}</div>
                 </VCol>
                 <VCol cols="2">
-                  <div class="text-body-2 font-weight-medium">{{ commission.amount }} MAD</div>
+                  <div class="text-body-2 font-weight-medium">{{ Number(commission.amount).toFixed(2) }} MAD</div>
                 </VCol>
                 <VCol cols="2">
                   <VChip
@@ -344,7 +344,7 @@ watch(() => props.userId, fetchCommissions, { immediate: true })
             <div class="text-h6">{{ localSelectedCommissions.length }} commission(s) sélectionnée(s)</div>
           </VCol>
           <VCol cols="12" md="6" class="text-md-end">
-            <div class="text-h6">Total: {{ totalSelectedAmount.toFixed(2) }} MAD</div>
+            <div class="text-h6">Total: {{ Number(totalSelectedAmount).toFixed(2) }} MAD</div>
           </VCol>
         </VRow>
       </VCardText>

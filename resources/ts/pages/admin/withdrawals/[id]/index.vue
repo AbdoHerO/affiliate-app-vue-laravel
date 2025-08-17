@@ -238,7 +238,7 @@ onMounted(() => {
               <VRow>
                 <VCol cols="6">
                   <div class="text-caption text-medium-emphasis">Montant</div>
-                  <div class="text-h6 font-weight-bold">{{ currentWithdrawal.amount.toFixed(2) }} MAD</div>
+                  <div class="text-h6 font-weight-bold">{{ Number(currentWithdrawal.amount).toFixed(2) }} MAD</div>
                 </VCol>
                 <VCol cols="6">
                   <div class="text-caption text-medium-emphasis">Méthode</div>
@@ -399,7 +399,7 @@ onMounted(() => {
           <!-- Amount -->
           <template #item.amount="{ item }">
             <div class="text-body-2 font-weight-medium">
-              {{ item.amount.toFixed(2) }} MAD
+              {{ Number(item.amount).toFixed(2) }} MAD
             </div>
           </template>
 

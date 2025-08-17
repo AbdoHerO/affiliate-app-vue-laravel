@@ -272,7 +272,7 @@ fetchUsers()
                     </div>
                     <div v-if="selectionMode === 'auto'" class="mb-2">
                       <strong>Montant cible:</strong> 
-                      {{ targetAmount.toFixed(2) }} MAD
+                      {{ Number(targetAmount).toFixed(2) }} MAD
                     </div>
                     <div class="mb-2">
                       <strong>Commissions sélectionnées:</strong> 

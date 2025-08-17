@@ -221,12 +221,12 @@ onMounted(() => {
           <VCardText>
             <div class="d-flex justify-space-between align-center">
               <div>
-                <div class="text-h6">{{ summary.pending.count }}</div>
+                <div class="text-h6">{{ summary?.pending?.count || 0 }}</div>
                 <div class="text-body-2">En attente</div>
               </div>
               <VIcon icon="tabler-clock" size="32" />
             </div>
-            <div class="text-caption mt-2">{{ summary.pending.amount.toFixed(2) }} MAD</div>
+            <div class="text-caption mt-2">{{ Number(summary?.pending?.amount || 0).toFixed(2) }} MAD</div>
           </VCardText>
         </VCard>
       </VCol>
@@ -235,12 +235,12 @@ onMounted(() => {
           <VCardText>
             <div class="d-flex justify-space-between align-center">
               <div>
-                <div class="text-h6">{{ summary.approved.count }}</div>
+                <div class="text-h6">{{ summary?.approved?.count || 0 }}</div>
                 <div class="text-body-2">Approuvés</div>
               </div>
               <VIcon icon="tabler-check" size="32" />
             </div>
-            <div class="text-caption mt-2">{{ summary.approved.amount.toFixed(2) }} MAD</div>
+            <div class="text-caption mt-2">{{ Number(summary?.approved?.amount || 0).toFixed(2) }} MAD</div>
           </VCardText>
         </VCard>
       </VCol>
@@ -249,12 +249,12 @@ onMounted(() => {
           <VCardText>
             <div class="d-flex justify-space-between align-center">
               <div>
-                <div class="text-h6">{{ summary.in_payment.count }}</div>
+                <div class="text-h6">{{ summary?.in_payment?.count || 0 }}</div>
                 <div class="text-body-2">En cours</div>
               </div>
               <VIcon icon="tabler-credit-card" size="32" />
             </div>
-            <div class="text-caption mt-2">{{ summary.in_payment.amount.toFixed(2) }} MAD</div>
+            <div class="text-caption mt-2">{{ Number(summary?.in_payment?.amount || 0).toFixed(2) }} MAD</div>
           </VCardText>
         </VCard>
       </VCol>
@@ -263,12 +263,12 @@ onMounted(() => {
           <VCardText>
             <div class="d-flex justify-space-between align-center">
               <div>
-                <div class="text-h6">{{ summary.paid.count }}</div>
+                <div class="text-h6">{{ summary?.paid?.count || 0 }}</div>
                 <div class="text-body-2">Payés</div>
               </div>
               <VIcon icon="tabler-check-circle" size="32" />
             </div>
-            <div class="text-caption mt-2">{{ summary.paid.amount.toFixed(2) }} MAD</div>
+            <div class="text-caption mt-2">{{ Number(summary?.paid?.amount || 0).toFixed(2) }} MAD</div>
           </VCardText>
         </VCard>
       </VCol>
@@ -407,7 +407,7 @@ onMounted(() => {
         <!-- Amount Column -->
         <template #item.amount="{ item }">
           <div class="text-body-2 font-weight-medium">
-            {{ item.amount.toFixed(2) }} MAD
+            {{ Number(item.amount).toFixed(2) }} MAD
           </div>
         </template>
 
@@ -448,7 +448,7 @@ onMounted(() => {
             <!-- View -->
             <ActionIcon
               icon="tabler-eye"
-              tooltip="Voir les détails"
+              label="Voir les détails"
               @click="viewWithdrawal(item)"
             />
 
@@ -456,8 +456,8 @@ onMounted(() => {
             <ActionIcon
               v-if="item.can_approve"
               icon="tabler-check"
-              tooltip="Approuver"
-              color="success"
+              label="Approuver"
+              variant="success"
               @click="openActionDialog(item, 'approve')"
             />
 
@@ -465,8 +465,8 @@ onMounted(() => {
             <ActionIcon
               v-if="item.can_reject"
               icon="tabler-x"
-              tooltip="Rejeter"
-              color="error"
+              label="Rejeter"
+              variant="danger"
               @click="openActionDialog(item, 'reject')"
             />
 
@@ -474,8 +474,8 @@ onMounted(() => {
             <ActionIcon
               v-if="item.can_mark_in_payment"
               icon="tabler-clock"
-              tooltip="Marquer en cours de paiement"
-              color="primary"
+              label="Marquer en cours de paiement"
+              variant="primary"
               @click="openActionDialog(item, 'mark_in_payment')"
             />
 
@@ -483,8 +483,8 @@ onMounted(() => {
             <ActionIcon
               v-if="item.can_mark_paid"
               icon="tabler-credit-card"
-              tooltip="Marquer comme payé"
-              color="success"
+              label="Marquer comme payé"
+              variant="success"
               @click="openActionDialog(item, 'mark_paid')"
             />
           </div>

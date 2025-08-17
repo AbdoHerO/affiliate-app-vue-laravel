@@ -34,7 +34,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             BoutiqueSeeder::class,
             CategorieSeeder::class,
-            // VariantCatalogSeeder::class, // Temporarily disabled due to UUID migration issues
+            VariantCatalogSeeder::class,
             ComprehensiveProductSeeder::class,
         ]);
 
@@ -57,12 +57,17 @@ class DatabaseSeeder extends Seeder
             OrdersE2ETestSeeder::class,  // Comprehensive order scenarios
         ]);
 
-        // 6. COMMISSIONS & PAYMENTS: Skip for now due to data dependencies
-        $this->command->info('💰 Step 6: Commissions & Payments (Manual setup required)');
-        $this->command->warn('⚠️  Commission and withdrawal seeders require manual setup.');
-        $this->command->info('   Run these commands separately after initial setup:');
-        $this->command->info('   • php artisan db:seed --class=CommissionTestSeeder');
-        $this->command->info('   • php artisan db:seed --class=WithdrawalDemoSeeder');
+        // 6. COMMISSIONS: Commission calculations
+        $this->command->info('💰 Step 6: Commissions');
+        $this->call([
+            CommissionTestSeeder::class,
+        ]);
+
+        // 7. PAYMENTS & WITHDRAWALS: Complete payment system
+        $this->command->info('🏦 Step 7: Payments & Withdrawals');
+        $this->call([
+            WithdrawalDemoSeeder::class,  // Demo scenarios for testing
+        ]);
 
         $this->command->info('');
         $this->command->info('✅ Complete database seeding finished!');
