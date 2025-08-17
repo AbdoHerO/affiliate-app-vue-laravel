@@ -21,7 +21,7 @@ definePage({
 const { t } = useI18n()
 const router = useRouter()
 const { showSuccess, showError } = useNotifications()
-const { quickConfirm } = useQuickConfirm()
+const { confirm } = useQuickConfirm()
 
 // Store
 const commissionsStore = useCommissionsStore()
@@ -90,30 +90,35 @@ const handleTableUpdate = async (options: any) => {
 }
 
 const handleView = (commission: Commission) => {
-  console.log('Navigating to commission detail:', commission.id)
+  console.log('🔍 handleView called for commission:', commission.id)
   try {
+    // Use simple path navigation for now
     router.push(`/admin/commissions/${commission.id}`)
+    console.log('✅ Navigation initiated')
   } catch (error) {
-    console.error('Navigation error:', error)
+    console.error('❌ Navigation error:', error)
     showError('Erreur de navigation vers les détails de la commission')
   }
 }
 
 const handleApprove = async (commission: Commission) => {
-  const confirmed = await quickConfirm({
-    title: 'Approuver la commission',
-    message: `Êtes-vous sûr de vouloir approuver cette commission de ${commission.amount} ${commission.currency} ?`,
-    confirmText: 'Approuver',
-    confirmColor: 'success',
-  })
+  console.log('✅ handleApprove called for commission:', commission.id)
 
-  if (confirmed) {
+  try {
+    // Temporarily skip confirm dialog for testing
+    console.log('🚀 Calling approveCommission directly...')
     const result = await commissionsStore.approveCommission(commission.id)
+    console.log('📊 Result:', result)
+
     if (result.success) {
       showSuccess(result.message)
+      await fetchCommissions()
     } else {
       showError(result.message)
     }
+  } catch (error) {
+    console.error('❌ Error in handleApprove:', error)
+    showError('Erreur lors de l\'approbation de la commission')
   }
 }
 
@@ -161,11 +166,12 @@ const handleAdjust = async () => {
 const handleBulkApprove = async () => {
   if (selectedCommissions.value.length === 0) return
 
-  const confirmed = await quickConfirm({
+  const confirmed = await confirm({
     title: 'Approbation en lot',
-    message: `Approuver ${selectedCommissions.value.length} commission(s) sélectionnée(s) ?`,
+    text: `Approuver ${selectedCommissions.value.length} commission(s) sélectionnée(s) ?`,
     confirmText: 'Approuver tout',
-    confirmColor: 'success',
+    color: 'success',
+    type: 'success',
   })
 
   if (confirmed) {
@@ -213,9 +219,13 @@ const clearFilters = () => {
 }
 
 // Watchers
+let searchTimeout: NodeJS.Timeout
 watch(() => filters.value.q, () => {
-  fetchCommissions(1)
-}, { debounce: 500 })
+  clearTimeout(searchTimeout)
+  searchTimeout = setTimeout(() => {
+    fetchCommissions(1)
+  }, 500)
+})
 
 watch(() => [filters.value.status, filters.value.eligible_only], () => {
   fetchCommissions(1)

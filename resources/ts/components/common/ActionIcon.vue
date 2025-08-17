@@ -30,17 +30,21 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<Emits>()
 
 const { t } = useI18n()
-const { quickConfirm } = useQuickConfirm()
+const { confirm } = useQuickConfirm()
 
 // Computed properties
 const tooltipText = computed(() => {
-  // Try to translate as i18n key first, fallback to plain text
-  try {
-    const translated = t(props.label)
-    return translated !== props.label ? translated : props.label
-  } catch {
-    return props.label
+  // Check if it's an i18n key (contains dots) or plain text
+  if (props.label.includes('.')) {
+    try {
+      const translated = t(props.label)
+      // If translation returns the same key, it means translation failed
+      return translated === props.label ? props.label.split('.').pop() || props.label : translated
+    } catch {
+      return props.label.split('.').pop() || props.label
+    }
   }
+  return props.label
 })
 
 const buttonColor = computed(() => {
@@ -58,25 +62,36 @@ const buttonColor = computed(() => {
   }
 })
 
-const buttonVariant = computed(() => {
-  return props.variant === 'danger' ? 'text' : 'text'
+const buttonVariant = computed((): 'flat' | 'text' | 'elevated' | 'tonal' | 'outlined' | 'plain' => {
+  return 'text'
 })
 
 // Methods
 const handleClick = async (event: MouseEvent) => {
-  if (props.disabled || props.loading) return
+  console.log('🖱️ ActionIcon clicked:', props.label, props.icon)
 
-  if (props.confirm) {
-    const confirmed = await quickConfirm({
-      title: props.confirmTitle || t('actions.confirm_delete'),
-      message: props.confirmMessage || t('actions.confirm_delete_message'),
-      confirmText: t('actions.delete'),
-      confirmColor: 'error',
-    })
-
-    if (!confirmed) return
+  if (props.disabled || props.loading) {
+    console.log('⚠️ ActionIcon disabled or loading, ignoring click')
+    return
   }
 
+  if (props.confirm) {
+    console.log('🔔 ActionIcon showing confirm dialog')
+    const confirmed = await confirm({
+      title: props.confirmTitle || t('actions.confirm_delete'),
+      text: props.confirmMessage || t('actions.confirm_delete_message'),
+      confirmText: t('actions.delete'),
+      color: 'error',
+      type: 'danger',
+    })
+
+    if (!confirmed) {
+      console.log('❌ ActionIcon confirm dialog cancelled')
+      return
+    }
+  }
+
+  console.log('✅ ActionIcon emitting click event')
   emit('click', event)
 }
 
