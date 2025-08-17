@@ -27,6 +27,7 @@ class TicketService
                 'category' => $data['category'],
                 'priority' => $data['priority'],
                 'requester_id' => $data['requester_id'],
+                'assignee_id' => $data['assignee_id'] ?? null,
                 'last_activity_at' => now(),
             ]);
 

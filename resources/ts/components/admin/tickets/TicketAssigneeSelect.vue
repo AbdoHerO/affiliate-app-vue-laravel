@@ -64,8 +64,16 @@ const searchUsers = async (query: string) => {
     })
 
     // Handle the correct API response format
-    if (response.data.users) {
-      users.value = response.data.users
+    if (response.data && response.data.users && Array.isArray(response.data.users)) {
+      // Ensure each user has the required fields
+      users.value = response.data.users.map((user: any) => ({
+        ...user,
+        nom_complet: user.nom_complet || user.name || 'Unknown User',
+        email: user.email || '',
+        photo_profil: user.photo_profil || null
+      }))
+    } else {
+      users.value = []
     }
   } catch (error) {
     console.error('Failed to search users:', error)
@@ -87,11 +95,20 @@ const loadAdminUsers = async () => {
     })
 
     // Handle the correct API response format
-    if (response.data.users) {
-      users.value = response.data.users
+    if (response.data && response.data.users && Array.isArray(response.data.users)) {
+      // Ensure each user has the required fields
+      users.value = response.data.users.map((user: any) => ({
+        ...user,
+        nom_complet: user.nom_complet || user.name || 'Unknown User',
+        email: user.email || '',
+        photo_profil: user.photo_profil || null
+      }))
+    } else {
+      users.value = []
     }
   } catch (error) {
     console.error('Failed to load admin users:', error)
+    users.value = []
   } finally {
     loading.value = false
   }
@@ -160,9 +177,9 @@ const handleSelection = (user: User | null) => {
         <template #prepend>
           <VAvatar size="32">
             <VImg
-              v-if="item.raw.photo_profil"
+              v-if="item.raw.photo_profil && typeof item.raw.photo_profil === 'string'"
               :src="item.raw.photo_profil"
-              :alt="item.raw.nom_complet"
+              :alt="item.raw.nom_complet || 'User'"
             />
             <VIcon
               v-else
@@ -172,8 +189,8 @@ const handleSelection = (user: User | null) => {
           </VAvatar>
         </template>
         
-        <VListItemTitle>{{ item.raw.nom_complet }}</VListItemTitle>
-        <VListItemSubtitle>{{ item.raw.email }}</VListItemSubtitle>
+        <VListItemTitle>{{ item.raw?.nom_complet || 'Unknown User' }}</VListItemTitle>
+        <VListItemSubtitle>{{ item.raw?.email || '' }}</VListItemSubtitle>
       </VListItem>
     </template>
 
@@ -181,9 +198,9 @@ const handleSelection = (user: User | null) => {
       <div class="d-flex align-center">
         <VAvatar size="24" class="me-2">
           <VImg
-            v-if="item.raw.photo_profil"
+            v-if="item.raw.photo_profil && typeof item.raw.photo_profil === 'string'"
             :src="item.raw.photo_profil"
-            :alt="item.raw.nom_complet"
+            :alt="item.raw.nom_complet || 'User'"
           />
           <VIcon
             v-else
@@ -191,7 +208,7 @@ const handleSelection = (user: User | null) => {
             size="14"
           />
         </VAvatar>
-        <span>{{ item.raw.nom_complet }}</span>
+        <span>{{ item.raw.nom_complet || 'Unknown User' }}</span>
       </div>
     </template>
 

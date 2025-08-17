@@ -5,6 +5,7 @@ import { useI18n } from 'vue-i18n'
 import { $api } from '@/utils/api'
 import { useNotifications } from '@/composables/useNotifications'
 import { useSafeNavigation } from '@/composables/useSafeNavigation'
+// Remove unused import for now
 
 // Define page meta
 definePage({
@@ -71,6 +72,8 @@ const loading = ref(false)
 const categories = ref<Array<{ value: string; title: string }>>([])
 const users = ref<any[]>([])
 const usersLoading = ref(false)
+const adminUsers = ref<any[]>([])
+const adminUsersLoading = ref(false)
 
 // State
 const isLoading = ref(false)
@@ -213,6 +216,83 @@ const loadUsers = async (search?: string) => {
     showError('Error loading users')
   } finally {
     usersLoading.value = false
+  }
+}
+
+// Load initial admin users
+const loadAdminUsers = async () => {
+  adminUsersLoading.value = true
+  try {
+    const params = new URLSearchParams({
+      per_page: '50',
+      role: 'admin'
+    })
+
+    const response = await $api(`/admin/users?${params.toString()}`)
+    console.log('🔍 [Create Ticket] Admin users response:', response)
+
+    if (response?.users && Array.isArray(response.users)) {
+      // Filter only users with admin role (double check)
+      const adminOnlyUsers = response.users.filter((user: any) => {
+        return user.roles && user.roles.some((role: any) => role.name === 'admin')
+      })
+
+      adminUsers.value = adminOnlyUsers.map((user: any) => ({
+        ...user,
+        nom_complet: user.nom_complet || user.name || 'Unknown User',
+        email: user.email || ''
+      }))
+
+      console.log('✅ [Create Ticket] Admin users loaded:', adminUsers.value.length)
+    } else {
+      adminUsers.value = []
+    }
+  } catch (error) {
+    console.error('Failed to load admin users:', error)
+    adminUsers.value = []
+  } finally {
+    adminUsersLoading.value = false
+  }
+}
+
+// Search admin users function
+const searchAdminUsers = async (query: string) => {
+  if (!query || query.length < 2) {
+    // If no query, load initial admin users
+    await loadAdminUsers()
+    return
+  }
+
+  adminUsersLoading.value = true
+  try {
+    const params = new URLSearchParams({
+      search: query,
+      per_page: '20',
+      role: 'admin'
+    })
+
+    const response = await $api(`/admin/users?${params.toString()}`)
+    console.log('🔍 [Create Ticket] Search admin users response:', response)
+
+    if (response?.users && Array.isArray(response.users)) {
+      // Filter only users with admin role (double check)
+      const adminOnlyUsers = response.users.filter((user: any) => {
+        return user.roles && user.roles.some((role: any) => role.name === 'admin')
+      })
+
+      adminUsers.value = adminOnlyUsers.map((user: any) => ({
+        ...user,
+        nom_complet: user.nom_complet || user.name || 'Unknown User',
+        email: user.email || ''
+      }))
+    } else {
+      adminUsers.value = []
+    }
+  } catch (error) {
+    console.error('Failed to search admin users:', error)
+    adminUsers.value = []
+  } finally {
+    adminUsersLoading.value = false
   }
 }
 
@@ -545,17 +625,30 @@ watch(() => router.currentRoute.value, (newRoute) => {
 
               <!-- Assignee -->
               <v-col cols="12">
-                <v-select
+                <v-autocomplete
                   v-model="ticketForm.assignee_id"
-                  :items="safeUsers"
-                  item-title="nom_complet"
-                  item-value="id"
+                  :items="adminUsers"
+                  :loading="adminUsersLoading"
                   :label="getTranslation('tickets.form.assignee', 'Assignee')"
                   variant="outlined"
                   clearable
-                  :loading="usersLoading"
-                  :no-data-text="getTranslation('common.no_data', 'No users available')"
-                />
+                  item-title="nom_complet"
+                  item-value="id"
+                  placeholder="Search admin users..."
+                  @update:search="searchAdminUsers"
+                >
+                  <template #item="{ props: itemProps, item }">
+                    <v-list-item v-bind="itemProps">
+                      <template #prepend>
+                        <v-avatar size="24">
+                          <v-icon icon="tabler-user" size="14" />
+                        </v-avatar>
+                      </template>
+                      <v-list-item-title>{{ item.raw?.nom_complet || 'Unknown User' }}</v-list-item-title>
+                      <v-list-item-subtitle>{{ item.raw?.email || '' }}</v-list-item-subtitle>
+                    </v-list-item>
+                  </template>
+                </v-autocomplete>
               </v-col>
             </v-row>
           </v-form>
