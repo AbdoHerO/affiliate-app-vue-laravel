@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { useApi } from '@/composables/useApi'
+import { $api } from '@/utils/api'
 import { useNotifications } from '@/composables/useNotifications'
 
 // Types
@@ -183,7 +183,6 @@ export const useTicketsStore = defineStore('admin-tickets', () => {
   const totalMessages = computed(() => messagesPagination.value.total)
 
   // Actions
-  const { api } = useApi()
   const { showSuccess, showError } = useNotifications()
 
   const setError = (message: string) => {
@@ -195,44 +194,45 @@ export const useTicketsStore = defineStore('admin-tickets', () => {
     error.value = null
   }
 
-  // Add error boundary wrapper for store methods
-  const withErrorBoundary = <T extends (...args: any[]) => any>(fn: T): T => {
-    return ((...args: any[]) => {
-      try {
-        const result = fn(...args)
-        if (result instanceof Promise) {
-          return result.catch((error) => {
-            console.error('Store method error:', error)
-            throw error
-          })
-        }
-        return result
-      } catch (error) {
-        console.error('Store method error:', error)
-        throw error
-      }
-    }) as T
-  }
-
-  // Fetch tickets list
-  // Wrap the fetchTickets method
-  const fetchTickets = withErrorBoundary(async (newFilters: Partial<TicketFilters> = {}) => {
+  // Fetch tickets list - SIMPLIFIED VERSION
+  const fetchTickets = async (newFilters: Partial<TicketFilters> = {}) => {
+    if (loading.value) return // Prevent concurrent calls
+    
     loading.value = true
     clearError()
 
     try {
-      // Merge filters safely
-      const mergedFilters = { 
-        ...filters.value, 
-        ...newFilters 
-      }
-      filters.value = mergedFilters
-
-      const response = await api.get('/admin/tickets', { params: mergedFilters })
+      // Merge filters safely WITHOUT triggering reactivity loops
+      const currentFilters = { ...filters.value }
+      const mergedFilters = { ...currentFilters, ...newFilters }
       
-      if (response.data.success) {
-        tickets.value = response.data.data || []
-        pagination.value = response.data.pagination || {
+      // Only update filters if they actually changed
+      const filtersChanged = JSON.stringify(currentFilters) !== JSON.stringify(mergedFilters)
+      if (filtersChanged) {
+        filters.value = mergedFilters
+      }
+
+      // Build query string
+      const queryParams = new URLSearchParams()
+      Object.entries(mergedFilters).forEach(([key, value]) => {
+        if (value !== null && value !== undefined && value !== '') {
+          if (Array.isArray(value)) {
+            value.forEach(v => queryParams.append(`${key}[]`, String(v)))
+          } else {
+            queryParams.append(key, String(value))
+          }
+        }
+      })
+
+      const url = `/admin/support/tickets${queryParams.toString() ? `?${queryParams.toString()}` : ''}`
+      console.log('🎫 [Store] Fetching tickets from:', url)
+      
+      const response = await $api(url)
+      console.log('🎫 [Store] API Response:', response)
+
+      if (response?.success || response?.data) {
+        tickets.value = response.data || response.tickets || []
+        pagination.value = response.pagination || response.meta || {
           current_page: 1,
           last_page: 1,
           per_page: 15,
@@ -240,28 +240,32 @@ export const useTicketsStore = defineStore('admin-tickets', () => {
           from: 0,
           to: 0,
         }
+        console.log('✅ [Store] Tickets loaded:', tickets.value.length)
       } else {
-        setError(response.data.message || 'Failed to fetch tickets')
+        console.error('❌ [Store] API returned error:', response)
+        setError(response?.message || 'Failed to fetch tickets')
       }
     } catch (err: any) {
+      console.error('🚫 [Store] Fetch tickets error:', err)
       const errorMessage = err.response?.data?.message || err.message || 'Failed to fetch tickets'
       setError(errorMessage)
-      console.error('Fetch tickets error:', err)
     } finally {
       loading.value = false
     }
-  })
+  }
 
-  // Fetch statistics
+  // Fetch statistics - SIMPLIFIED
   const fetchStatistics = async () => {
     try {
-      const response = await api.get('/admin/tickets/statistics')
+      const response = await $api('/admin/support/tickets/statistics')
       
-      if (response.data.success) {
-        statistics.value = response.data.data
+      if (response?.success || response?.data) {
+        statistics.value = response.data || response.statistics
+        console.log('✅ [Store] Statistics loaded:', statistics.value)
       }
     } catch (err: any) {
-      console.error('Failed to fetch ticket statistics:', err)
+      console.error('🚫 [Store] Failed to fetch ticket statistics:', err)
+      // Don't throw - just log
     }
   }
 
@@ -271,13 +275,13 @@ export const useTicketsStore = defineStore('admin-tickets', () => {
     clearError()
 
     try {
-      const response = await api.get(`/admin/tickets/${id}`)
+      const response = await $api(`/admin/support/tickets/${id}`)
 
-      if (response.data.success) {
-        currentTicket.value = response.data.data
-        return response.data.data
+      if (response.success) {
+        currentTicket.value = response.data
+        return response.data
       } else {
-        setError(response.data.message || 'Failed to fetch ticket')
+        setError(response.message || 'Failed to fetch ticket')
         return null
       }
     } catch (err: any) {
@@ -323,17 +327,18 @@ export const useTicketsStore = defineStore('admin-tickets', () => {
         }
       }
 
-      const response = await api.post('/admin/tickets', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+      const response = await $api('/admin/support/tickets', {
+        method: 'POST',
+        body: formData
       })
 
-      if (response.data.success) {
-        showSuccess(response.data.message)
+      if (response.success) {
+        showSuccess(response.message)
         // Refresh tickets list
         await fetchTickets()
-        return response.data.data
+        return response.data
       } else {
-        setError(response.data.message || 'Failed to create ticket')
+        setError(response.message || 'Failed to create ticket')
         return null
       }
     } catch (err: any) {
@@ -350,25 +355,28 @@ export const useTicketsStore = defineStore('admin-tickets', () => {
     clearError()
 
     try {
-      const response = await api.post(`/admin/tickets/${id}`, data)
+      const response = await $api(`/admin/support/tickets/${id}`, {
+        method: 'POST',
+        body: data
+      })
 
-      if (response.data.success) {
-        showSuccess(response.data.message)
+      if (response.success) {
+        showSuccess(response.message)
 
         // Update current ticket if it's the one being updated
         if (currentTicket.value?.id === id) {
-          currentTicket.value = response.data.data
+          currentTicket.value = response.data
         }
 
         // Update in tickets list
         const index = tickets.value.findIndex(t => t.id === id)
         if (index !== -1) {
-          tickets.value[index] = response.data.data
+          tickets.value[index] = response.data
         }
 
-        return response.data.data
+        return response.data
       } else {
-        setError(response.data.message || 'Failed to update ticket')
+        setError(response.message || 'Failed to update ticket')
         return null
       }
     } catch (err: any) {
@@ -385,27 +393,28 @@ export const useTicketsStore = defineStore('admin-tickets', () => {
     clearError()
 
     try {
-      const response = await api.post(`/admin/tickets/${id}/assign`, {
-        assignee_id: assigneeId
+      const response = await $api(`/admin/support/tickets/${id}/assign`, {
+        method: 'POST',
+        body: { assignee_id: assigneeId }
       })
 
-      if (response.data.success) {
-        showSuccess(response.data.message)
+      if (response.success) {
+        showSuccess(response.message)
 
         // Update current ticket if it's the one being assigned
         if (currentTicket.value?.id === id) {
-          currentTicket.value = response.data.data
+          currentTicket.value = response.data
         }
 
         // Update in tickets list
         const index = tickets.value.findIndex(t => t.id === id)
         if (index !== -1) {
-          tickets.value[index] = response.data.data
+          tickets.value[index] = response.data
         }
 
-        return response.data.data
+        return response.data
       } else {
-        setError(response.data.message || 'Failed to assign ticket')
+        setError(response.message || 'Failed to assign ticket')
         return null
       }
     } catch (err: any) {
@@ -422,25 +431,28 @@ export const useTicketsStore = defineStore('admin-tickets', () => {
     clearError()
 
     try {
-      const response = await api.post(`/admin/tickets/${id}/status`, { status })
+      const response = await $api(`/admin/support/tickets/${id}/status`, {
+        method: 'POST',
+        body: { status }
+      })
 
-      if (response.data.success) {
-        showSuccess(response.data.message)
+      if (response.success) {
+        showSuccess(response.message)
 
         // Update current ticket if it's the one being updated
         if (currentTicket.value?.id === id) {
-          currentTicket.value = response.data.data
+          currentTicket.value = response.data
         }
 
         // Update in tickets list
         const index = tickets.value.findIndex(t => t.id === id)
         if (index !== -1) {
-          tickets.value[index] = response.data.data
+          tickets.value[index] = response.data
         }
 
-        return response.data.data
+        return response.data
       } else {
-        setError(response.data.message || 'Failed to change ticket status')
+        setError(response.message || 'Failed to change ticket status')
         return null
       }
     } catch (err: any) {
@@ -457,10 +469,12 @@ export const useTicketsStore = defineStore('admin-tickets', () => {
     clearError()
 
     try {
-      const response = await api.delete(`/admin/tickets/${id}`)
+      const response = await $api(`/admin/support/tickets/${id}`, {
+        method: 'DELETE'
+      })
 
-      if (response.data.success) {
-        showSuccess(response.data.message)
+      if (response.success) {
+        showSuccess(response.message)
 
         // Remove from tickets list
         tickets.value = tickets.value.filter(t => t.id !== id)
@@ -472,7 +486,7 @@ export const useTicketsStore = defineStore('admin-tickets', () => {
 
         return true
       } else {
-        setError(response.data.message || 'Failed to delete ticket')
+        setError(response.message || 'Failed to delete ticket')
         return false
       }
     } catch (err: any) {
@@ -495,15 +509,18 @@ export const useTicketsStore = defineStore('admin-tickets', () => {
         ...data
       }
 
-      const response = await api.post('/admin/tickets/bulk-action', payload)
+      const response = await $api('/admin/support/tickets/bulk-action', {
+        method: 'POST',
+        body: payload
+      })
 
-      if (response.data.success) {
-        showSuccess(response.data.message)
+      if (response.success) {
+        showSuccess(response.message)
         // Refresh tickets list
         await fetchTickets()
-        return response.data.updated_count
+        return response.data?.updated_count || 0
       } else {
-        setError(response.data.message || 'Failed to perform bulk action')
+        setError(response.message || 'Failed to perform bulk action')
         return 0
       }
     } catch (err: any) {
@@ -520,20 +537,24 @@ export const useTicketsStore = defineStore('admin-tickets', () => {
     clearError()
 
     try {
-      const response = await api.get(`/admin/tickets/${ticketId}/messages`, {
-        params: { page, per_page: messagesPagination.value.per_page }
-      })
+      // Build query string for messages
+      const queryParams = new URLSearchParams()
+      queryParams.append('page', String(page))
+      queryParams.append('per_page', String(messagesPagination.value.per_page))
 
-      if (response.data.success) {
+      const url = `/admin/support/tickets/${ticketId}/messages?${queryParams.toString()}`
+      const response = await $api(url)
+
+      if (response.success) {
         if (page === 1) {
-          messages.value = response.data.data
+          messages.value = response.data
         } else {
-          messages.value.push(...response.data.data)
+          messages.value.push(...response.data)
         }
-        messagesPagination.value = response.data.pagination
-        return response.data.data
+        messagesPagination.value = response.pagination
+        return response.data
       } else {
-        setError(response.data.message || 'Failed to fetch messages')
+        setError(response.message || 'Failed to fetch messages')
         return []
       }
     } catch (err: any) {
@@ -560,24 +581,25 @@ export const useTicketsStore = defineStore('admin-tickets', () => {
         })
       }
 
-      const response = await api.post(`/admin/tickets/${ticketId}/messages`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+      const response = await $api(`/admin/support/tickets/${ticketId}/messages`, {
+        method: 'POST',
+        body: formData
       })
 
-      if (response.data.success) {
-        showSuccess(response.data.message)
+      if (response.success) {
+        showSuccess(response.message)
 
         // Add message to current messages list
-        messages.value.push(response.data.data)
+        messages.value.push(response.data)
 
         // Update current ticket's last activity
         if (currentTicket.value?.id === ticketId) {
-          currentTicket.value.last_activity_at = response.data.data.created_at
+          currentTicket.value.last_activity_at = response.data.created_at
         }
 
-        return response.data.data
+        return response.data
       } else {
-        setError(response.data.message || 'Failed to send message')
+        setError(response.message || 'Failed to send message')
         return null
       }
     } catch (err: any) {

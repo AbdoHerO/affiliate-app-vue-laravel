@@ -17,7 +17,7 @@ class TicketMessagesController extends Controller
     public function __construct(
         protected TicketService $ticketService
     ) {
-        $this->middleware('auth:sanctum');
+        // Middleware is applied in routes/api.php
     }
 
     /**

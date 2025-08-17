@@ -312,7 +312,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         });
 
         // Support Tickets Management
-        Route::prefix('tickets')->group(function () {
+        Route::prefix('support/tickets')->group(function () {
             Route::get('/', [\App\Http\Controllers\Admin\TicketsController::class, 'index']);
             Route::get('/statistics', [\App\Http\Controllers\Admin\TicketsController::class, 'statistics']);
             Route::post('/', [\App\Http\Controllers\Admin\TicketsController::class, 'store']);
