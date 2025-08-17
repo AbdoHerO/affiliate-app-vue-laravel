@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useApi } from '@/composables/useApi'
+import { $api } from '@/utils/api'
 
 interface User {
   id: string
@@ -39,7 +39,6 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<Emits>()
 
 const { t } = useI18n()
-const { api } = useApi()
 
 // State
 const users = ref<User[]>([])
@@ -55,23 +54,31 @@ const searchUsers = async (query: string) => {
 
   loading.value = true
   try {
-    const response = await api.get('/admin/users', {
-      params: {
-        search: query, // Use 'search' parameter instead of 'q'
-        per_page: 20,
-        role: 'admin', // Only show admin users for assignment
-      }
+    const params = new URLSearchParams({
+      search: query,
+      per_page: '20',
+      role: 'admin'
     })
 
+    const response = await $api(`/admin/users?${params.toString()}`)
+    console.log('🔍 [TicketAssigneeSelect] Search response:', response)
+
     // Handle the correct API response format
-    if (response.data && response.data.users && Array.isArray(response.data.users)) {
+    if (response && response.users && Array.isArray(response.users)) {
+      // Filter only users with admin role (double check)
+      const adminOnlyUsers = response.users.filter((user: any) => {
+        return user.roles && user.roles.some((role: any) => role.name === 'admin')
+      })
+
       // Ensure each user has the required fields
-      users.value = response.data.users.map((user: any) => ({
+      users.value = adminOnlyUsers.map((user: any) => ({
         ...user,
         nom_complet: user.nom_complet || user.name || 'Unknown User',
         email: user.email || '',
         photo_profil: user.photo_profil || null
       }))
+
+      console.log('✅ [TicketAssigneeSelect] Admin users found:', users.value.length)
     } else {
       users.value = []
     }
@@ -87,27 +94,35 @@ const searchUsers = async (query: string) => {
 const loadAdminUsers = async () => {
   loading.value = true
   try {
-    const response = await api.get('/admin/users', {
-      params: {
-        per_page: 50,
-        role: 'admin',
-      }
+    const params = new URLSearchParams({
+      per_page: '50',
+      role: 'admin'
     })
 
+    const response = await $api(`/admin/users?${params.toString()}`)
+    console.log('🔍 [TicketAssigneeSelect] Load admin users response:', response)
+
     // Handle the correct API response format
-    if (response.data && response.data.users && Array.isArray(response.data.users)) {
+    if (response && response.users && Array.isArray(response.users)) {
+      // Filter only users with admin role (double check)
+      const adminOnlyUsers = response.users.filter((user: any) => {
+        return user.roles && user.roles.some((role: any) => role.name === 'admin')
+      })
+
       // Ensure each user has the required fields
-      users.value = response.data.users.map((user: any) => ({
+      users.value = adminOnlyUsers.map((user: any) => ({
         ...user,
         nom_complet: user.nom_complet || user.name || 'Unknown User',
         email: user.email || '',
         photo_profil: user.photo_profil || null
       }))
+
+      console.log('✅ [TicketAssigneeSelect] Admin users loaded:', users.value.length)
     } else {
       users.value = []
     }
   } catch (error) {
-    console.error('Failed to load admin users:', error)
+    console.error('❌ [TicketAssigneeSelect] Failed to load admin users:', error)
     users.value = []
   } finally {
     loading.value = false
@@ -133,6 +148,12 @@ watch(search, (newSearch) => {
 // Load initial data
 onMounted(() => {
   loadAdminUsers()
+})
+
+// Expose methods for parent components
+defineExpose({
+  loadAdminUsers,
+  refresh: loadAdminUsers
 })
 
 // Computed
@@ -171,6 +192,7 @@ const handleSelection = (user: User | null) => {
     return-object
     @update:model-value="handleSelection"
     @update:search="search = $event"
+    @focus="loadAdminUsers"
   >
     <template #item="{ props: itemProps, item }">
       <VListItem v-bind="itemProps">

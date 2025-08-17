@@ -4,11 +4,11 @@ import { storeToRefs } from 'pinia'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useTicketsStore } from '@/stores/admin/tickets'
+import { $api } from '@/utils/api'
 
 // Safe component imports with fallbacks
 let TicketStatusBadge: any = null
 let TicketPriorityBadge: any = null
-let TicketAssigneeSelect: any = null
 let TicketEntityLink: any = null
 let MessageComposer: any = null
 let ConfirmActionDialog: any = null
@@ -51,6 +51,10 @@ const showAssignDialog = ref(false)
 const showStatusDialog = ref(false)
 const newAssigneeId = ref<string | null>(null)
 const newStatus = ref('')
+
+// Admin users for assignment
+const adminUsers = ref<any[]>([])
+const adminUsersLoading = ref(false)
 
 // Additional reactive variables for fallback message composer
 const messageType = ref('public')
@@ -110,11 +114,6 @@ const loadComponents = async () => {
         ref: () => TicketPriorityBadge
       },
       {
-        name: 'TicketAssigneeSelect',
-        path: '@/components/admin/tickets/TicketAssigneeSelect.vue',
-        ref: () => TicketAssigneeSelect
-      },
-      {
         name: 'TicketEntityLink',
         path: '@/components/admin/tickets/TicketEntityLink.vue',
         ref: () => TicketEntityLink
@@ -136,7 +135,6 @@ const loadComponents = async () => {
         const module = await import(loader.path)
         if (loader.name === 'TicketStatusBadge') TicketStatusBadge = module.default
         else if (loader.name === 'TicketPriorityBadge') TicketPriorityBadge = module.default
-        else if (loader.name === 'TicketAssigneeSelect') TicketAssigneeSelect = module.default
         else if (loader.name === 'TicketEntityLink') TicketEntityLink = module.default
         else if (loader.name === 'MessageComposer') MessageComposer = module.default
         else if (loader.name === 'ConfirmActionDialog') ConfirmActionDialog = module.default
@@ -315,17 +313,17 @@ const goBack = () => {
 
 const handleAssign = async () => {
   if (isDestroyed.value || !isInitialized.value || !safeTicket.value || !ticketsStore) return
-  
+
   try {
     if (ticketsStore.assignTicket) {
       await ticketsStore.assignTicket(safeTicket.value.id, newAssigneeId.value)
-      
+
       // Update local data with safety checks
       if (storeRefs && !isDestroyed.value && storeRefs.currentTicket) {
         ticket.value = storeRefs.currentTicket.value || ticket.value
       }
     }
-    
+
     showAssignDialog.value = false
     newAssigneeId.value = null
   } catch (error) {
@@ -334,6 +332,52 @@ const handleAssign = async () => {
     alert('Failed to assign ticket. Please try again.')
   }
 }
+
+// Load admin users function
+const loadAdminUsers = async () => {
+  console.log('🔍 [Ticket Detail] Loading admin users...')
+  adminUsersLoading.value = true
+  try {
+    const params = new URLSearchParams({
+      per_page: '50',
+      role: 'admin'
+    })
+
+    const response = await $api(`/admin/users?${params.toString()}`)
+    console.log('🔍 [Ticket Detail] Admin users response:', response)
+
+    if (response && response.users && Array.isArray(response.users)) {
+      // Filter only users with admin role (double check)
+      const adminOnlyUsers = response.users.filter((user: any) => {
+        return user.roles && user.roles.some((role: any) => role.name === 'admin')
+      })
+
+      adminUsers.value = adminOnlyUsers.map((user: any) => ({
+        ...user,
+        nom_complet: user.nom_complet || user.name || 'Unknown User',
+        email: user.email || ''
+      }))
+
+      console.log('✅ [Ticket Detail] Admin users loaded:', adminUsers.value.length)
+    } else {
+      adminUsers.value = []
+    }
+  } catch (error) {
+    console.error('❌ [Ticket Detail] Failed to load admin users:', error)
+    adminUsers.value = []
+  } finally {
+    adminUsersLoading.value = false
+  }
+}
+
+// Watch for assign dialog opening to trigger data loading
+watch(showAssignDialog, (newValue) => {
+  console.log('🔍 [Ticket Detail] Assign dialog state changed:', newValue)
+  if (newValue) {
+    console.log('🔍 [Ticket Detail] Assign dialog opened, loading admin users...')
+    loadAdminUsers()
+  }
+})
 
 const handleStatusChange = async () => {
   if (isDestroyed.value || !isInitialized.value || !safeTicket.value || !newStatus.value || !ticketsStore) return
@@ -1172,24 +1216,30 @@ onBeforeUnmount(() => {
       <VCard>
         <VCardTitle>{{ getTranslation('assign_ticket', 'Assign Ticket') }}</VCardTitle>
         <VCardText>
-          <!-- Use component if available, fallback otherwise -->
-          <component 
-            v-if="TicketAssigneeSelect" 
-            :is="TicketAssigneeSelect"
+          <!-- Simple autocomplete for admin users -->
+          <VAutocomplete
             v-model="newAssigneeId"
-            :label="getTranslation('select_assignee', 'Select Assignee')"
-          />
-          <VSelect
-            v-else
-            v-model="newAssigneeId"
+            :items="adminUsers"
+            :loading="adminUsersLoading"
             :label="getTranslation('select_assignee', 'Select Assignee')"
             variant="outlined"
-            :items="[]"
+            clearable
             item-title="nom_complet"
             item-value="id"
-            clearable
-            placeholder="No assignees available"
-          />
+            placeholder="Search admin users..."
+          >
+            <template #item="{ props: itemProps, item }">
+              <VListItem v-bind="itemProps">
+                <template #prepend>
+                  <VAvatar size="24">
+                    <VIcon icon="tabler-user" size="14" />
+                  </VAvatar>
+                </template>
+                <VListItemTitle>{{ item.raw?.nom_complet || 'Unknown User' }}</VListItemTitle>
+                <VListItemSubtitle>{{ item.raw?.email || '' }}</VListItemSubtitle>
+              </VListItem>
+            </template>
+          </VAutocomplete>
         </VCardText>
         <VCardActions>
           <VSpacer />
