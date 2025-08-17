@@ -66,7 +66,8 @@ class DatabaseSeeder extends Seeder
         // 7. PAYMENTS & WITHDRAWALS: Complete payment system
         $this->command->info('🏦 Step 7: Payments & Withdrawals');
         $this->call([
-            WithdrawalDemoSeeder::class,  // Comprehensive demo scenarios for testing
+            ComprehensiveWithdrawalSeeder::class,  // Comprehensive withdrawal data
+            FinalWithdrawalSeeder::class,          // Final 2 withdrawals to reach 10 total
         ]);
 
         $this->command->info('');

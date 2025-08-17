@@ -56,7 +56,7 @@ class WithdrawalDemoSeeder extends Seeder
                 ]);
             }
 
-            // Also create some additional eligible commissions if needed
+            // Also update eligible commissions
             $eligibleCommissions = CommissionAffilie::where('user_id', $affiliate->id)
                 ->where('status', 'eligible')
                 ->take(10)
@@ -64,14 +64,14 @@ class WithdrawalDemoSeeder extends Seeder
 
             foreach ($eligibleCommissions as $commission) {
                 $commission->update([
-                    'status' => 'approved',
+                    'status' => CommissionAffilie::STATUS_APPROVED,
                     'approved_at' => now()->subDays(rand(1, 20)),
                     'notes' => 'Eligible commission approved for demo',
                 ]);
             }
 
-            $totalUpdated = $calculatedCommissions->count() + $eligibleCommissions->count();
-            $this->command->info("✅ Updated {$totalUpdated} commissions to approved for {$affiliate->nom_complet}");
+            $totalCommissions = CommissionAffilie::where('user_id', $affiliate->id)->where('status', CommissionAffilie::STATUS_APPROVED)->count();
+            $this->command->info("✅ {$affiliate->nom_complet} now has {$totalCommissions} approved commissions");
         }
     }
 
@@ -85,6 +85,7 @@ class WithdrawalDemoSeeder extends Seeder
         $withdrawalService = app(WithdrawalService::class);
         $affiliates = User::role('affiliate')->get();
         
+        // Create exactly 5 withdrawals with different statuses
         $scenarios = [
             [
                 'name' => 'Pending Review',
@@ -122,103 +123,6 @@ class WithdrawalDemoSeeder extends Seeder
                 'description' => 'Rejected due to invalid bank info',
                 'commission_count' => 2,
                 'reject_reason' => 'Invalid bank account information provided',
-            ],
-            [
-                'name' => 'Large Withdrawal',
-                'status' => Withdrawal::STATUS_PENDING,
-                'description' => 'Large amount withdrawal with many commissions',
-                'commission_count' => 8,
-            ],
-            [
-                'name' => 'Small Amount',
-                'status' => Withdrawal::STATUS_PENDING,
-                'description' => 'Small withdrawal request',
-                'commission_count' => 1,
-            ],
-            [
-                'name' => 'Quick Payment',
-                'status' => Withdrawal::STATUS_PAID,
-                'description' => 'Fast processed payment',
-                'commission_count' => 3,
-                'approved_days_ago' => 1,
-                'paid_days_ago' => 0,
-                'payment_ref' => 'QUICK-' . strtoupper(Str::random(8)),
-            ],
-            [
-                'name' => 'Urgent Request',
-                'status' => Withdrawal::STATUS_APPROVED,
-                'description' => 'Urgent withdrawal request',
-                'commission_count' => 4,
-                'approved_days_ago' => 1,
-            ],
-            [
-                'name' => 'Bank Transfer',
-                'status' => Withdrawal::STATUS_IN_PAYMENT,
-                'description' => 'Bank transfer in progress',
-                'commission_count' => 6,
-                'approved_days_ago' => 3,
-                'payment_ref' => 'BANK-' . strtoupper(Str::random(8)),
-            ],
-            [
-                'name' => 'Monthly Payout',
-                'status' => Withdrawal::STATUS_PAID,
-                'description' => 'Regular monthly payout',
-                'commission_count' => 7,
-                'approved_days_ago' => 15,
-                'paid_days_ago' => 5,
-                'payment_ref' => 'MONTH-' . strtoupper(Str::random(8)),
-            ],
-            [
-                'name' => 'Cancelled Request',
-                'status' => Withdrawal::STATUS_CANCELED,
-                'description' => 'Cancelled by affiliate',
-                'commission_count' => 2,
-                'reject_reason' => 'Cancelled by affiliate request',
-            ],
-            [
-                'name' => 'Bonus Withdrawal',
-                'status' => Withdrawal::STATUS_PENDING,
-                'description' => 'Special bonus withdrawal',
-                'commission_count' => 5,
-            ],
-            [
-                'name' => 'Holiday Payment',
-                'status' => Withdrawal::STATUS_PAID,
-                'description' => 'Holiday season payment',
-                'commission_count' => 4,
-                'approved_days_ago' => 7,
-                'paid_days_ago' => 2,
-                'payment_ref' => 'HOLIDAY-' . strtoupper(Str::random(6)),
-            ],
-            [
-                'name' => 'Verification Needed',
-                'status' => Withdrawal::STATUS_PENDING,
-                'description' => 'Requires additional verification',
-                'commission_count' => 3,
-            ],
-            [
-                'name' => 'Express Payment',
-                'status' => Withdrawal::STATUS_PAID,
-                'description' => 'Express payment processed',
-                'commission_count' => 2,
-                'approved_days_ago' => 2,
-                'paid_days_ago' => 1,
-                'payment_ref' => 'EXPRESS-' . strtoupper(Str::random(6)),
-            ],
-            [
-                'name' => 'Weekend Request',
-                'status' => Withdrawal::STATUS_APPROVED,
-                'description' => 'Weekend withdrawal request',
-                'commission_count' => 3,
-                'approved_days_ago' => 0,
-            ],
-            [
-                'name' => 'Bulk Commission',
-                'status' => Withdrawal::STATUS_IN_PAYMENT,
-                'description' => 'Bulk commission withdrawal',
-                'commission_count' => 9,
-                'approved_days_ago' => 4,
-                'payment_ref' => 'BULK-' . strtoupper(Str::random(8)),
             ],
         ];
 

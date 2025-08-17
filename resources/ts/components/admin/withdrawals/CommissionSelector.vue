@@ -69,7 +69,10 @@ const selectedCommissionsData = computed(() => {
 })
 
 const totalSelectedAmount = computed(() => {
-  return selectedCommissionsData.value.reduce((sum, commission) => sum + commission.amount, 0)
+  return selectedCommissionsData.value.reduce((sum, commission) => {
+    const amount = Number(commission.amount) || 0
+    return sum + amount
+  }, 0)
 })
 
 const isAllSelected = computed(() => {
@@ -278,7 +281,7 @@ watch(() => props.userId, fetchCommissions, { immediate: true })
                 <VCheckbox
                   :model-value="isAllSelected"
                   :indeterminate="isSomeSelected"
-                  @click="toggleAll"
+                  @update:model-value="toggleAll"
                 />
               </VCol>
               <VCol cols="3">Commission</VCol>

@@ -51,11 +51,17 @@ const breadcrumbItems = computed(() => [
 ])
 
 const canSubmit = computed(() => {
+  // Only enable submit on step 3 (confirmation)
+  if (currentStep.value !== maxSteps) return false
+
   // Step 1: require user_id
+  if (!form.value.user_id) return false
+
   // Step 2: require either selected commission ids OR auto amount with preview
-  // Step 3: ready to submit
-  return Boolean(form.value.user_id) &&
-         (form.value.commission_ids.length > 0 || (targetAmount.value > 0 && selectionMode.value === 'auto'))
+  const hasCommissions = form.value.commission_ids.length > 0
+  const hasAutoAmount = targetAmount.value > 0 && selectionMode.value === 'auto'
+
+  return hasCommissions || hasAutoAmount
 })
 
 const currentStep = ref(1)
@@ -102,8 +108,14 @@ const fetchUsers = async (search?: string) => {
   }
 }
 
-const nextStep = () => {
+const nextStep = async () => {
   if (currentStep.value < maxSteps) {
+    // Validate current step before proceeding
+    if (formRef.value) {
+      const { valid } = await formRef.value.validate()
+      if (!valid) return
+    }
+
     currentStep.value++
   }
 }

@@ -12,6 +12,7 @@ interface Props {
 interface Emits {
   (e: 'update:isVisible', value: boolean): void
   (e: 'success'): void
+  (e: 'closed'): void
 }
 
 const props = defineProps<Props>()
@@ -96,6 +97,7 @@ const resetForm = () => {
 
 const closeDialog = () => {
   emit('update:isVisible', false)
+  emit('closed')
 }
 
 const handleFileChange = (event: Event) => {
@@ -164,6 +166,7 @@ const handleSubmit = async () => {
     max-width="600"
     persistent
     @update:model-value="emit('update:isVisible', $event)"
+    @click:outside="closeDialog"
   >
     <VCard>
       <VCardTitle class="d-flex align-center gap-2">
