@@ -4,7 +4,8 @@ import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { storeToRefs } from 'pinia'
 import { useTicketsStore } from '@/stores/admin/tickets'
-import { useUsersStore } from '@/stores/admin/users'
+import { $api } from '@/utils/api'
+import { useNotifications } from '@/composables/useNotifications'
 import { useSafeNavigation } from '@/composables/useSafeNavigation'
 
 // Define page meta
@@ -18,11 +19,11 @@ definePage({
 // Initialize basic composables
 const router = useRouter()
 const { t } = useI18n()
+const { showSuccess, showError } = useNotifications()
 const { safePush } = useSafeNavigation()
 
 // Initialize stores with enhanced error handling
 let ticketsStore: ReturnType<typeof useTicketsStore>
-let usersStore: ReturnType<typeof useUsersStore>
 
 try {
   console.log('🎫 [Create Ticket] Initializing tickets store...')
@@ -36,21 +37,6 @@ try {
     createTicket: () => Promise.resolve({ success: false }),
     fetchCategories: () => Promise.resolve(),
     categories: ref([]),
-  } as any
-}
-
-try {
-  console.log('🎫 [Create Ticket] Initializing users store...')
-  usersStore = useUsersStore()
-  console.log('✅ [Create Ticket] Users store initialized successfully')
-} catch (error) {
-  console.error('🚫 [Create Ticket] Error initializing users store:', error)
-  // Create fallback store
-  usersStore = {
-    loading: ref(false),
-    users: ref([]),
-    fetchUsers: () => Promise.resolve(),
-    searchUsers: () => Promise.resolve([]),
   } as any
 }
 
@@ -100,28 +86,11 @@ try {
 // Component cleanup flag
 const isDestroyed = ref(false)
 
-// Store refs with enhanced error handling
-let loading: any, categories: any, users: any, usersLoading: any
-
-try {
-  console.log('🎫 [Create Ticket] Accessing store refs...')
-  const ticketsStoreRefs = storeToRefs(ticketsStore)
-  const usersStoreRefs = storeToRefs(usersStore)
-  
-  loading = ticketsStoreRefs.loading
-  categories = ticketsStoreRefs.categories || ref([])
-  users = usersStoreRefs.users
-  usersLoading = usersStoreRefs.loading
-  
-  console.log('✅ [Create Ticket] Store refs accessed successfully')
-} catch (error) {
-  console.error('🚫 [Create Ticket] Error accessing store refs:', error)
-  // Fallback refs
-  loading = ref(false)
-  categories = ref([])
-  users = ref([])
-  usersLoading = ref(false)
-}
+// Local state variables (like withdrawal page)
+const loading = ref(false)
+const categories = ref<Array<{ value: string; title: string }>>([])
+const users = ref<any[]>([])
+const usersLoading = ref(false)
 
 // State
 const isLoading = ref(false)
@@ -213,27 +182,55 @@ const getTranslation = (key: string, fallback?: string) => {
 const loadTicketCategories = async () => {
   try {
     console.log('🎫 [Create Ticket] Loading ticket categories...')
-    if (ticketsStore.fetchCategories) {
-      await ticketsStore.fetchCategories()
-      console.log('✅ [Create Ticket] Categories loaded successfully')
-    }
+
+    // Ticket categories are predefined (from Ticket model)
+    categories.value = [
+      { value: 'general', title: 'General' },
+      { value: 'orders', title: 'Orders' },
+      { value: 'payments', title: 'Payments' },
+      { value: 'commissions', title: 'Commissions' },
+      { value: 'kyc', title: 'KYC' },
+      { value: 'technical', title: 'Technical' },
+      { value: 'other', title: 'Other' }
+    ]
+
+    console.log('✅ [Create Ticket] Categories loaded successfully')
   } catch (error) {
     console.error('🚫 [Create Ticket] Error loading categories:', error)
     // Don't throw - just log the error
   }
 }
 
-const loadUsers = async () => {
+const loadUsers = async (search?: string) => {
+  usersLoading.value = true
   try {
     console.log('🎫 [Create Ticket] Loading users...')
-    if (usersStore.fetchUsers) {
-      await usersStore.fetchUsers({ per_page: 100 }) // Load enough users for selection
-      console.log('✅ [Create Ticket] Users loaded successfully')
+
+    // Build query parameters (like withdrawal page)
+    const params = new URLSearchParams()
+    if (search) params.append('q', search)
+    params.append('per_page', '100')
+    // Don't filter by role - tickets can be assigned to any user
+
+    const url = `/admin/users${params.toString() ? `?${params.toString()}` : ''}`
+    console.log('🔍 [Create Ticket] Fetching users from:', url)
+    const response = await $api(url)
+
+    console.log('📥 [Create Ticket] API Response:', response)
+
+    if (response?.users || response?.data?.users) {
+      // Handle direct response or nested response (like withdrawal page)
+      users.value = response.users || response.data?.users || []
+      console.log('✅ [Create Ticket] Users loaded:', users.value.length)
+    } else {
+      console.error('❌ [Create Ticket] API returned error:', response)
+      showError(response?.message || 'Erreur lors du chargement des utilisateurs')
     }
   } catch (error) {
     console.error('🚫 [Create Ticket] Error loading users:', error)
-    // Don't throw - just log the error and continue
-    // The UI will show empty dropdowns but won't crash
+    showError('Erreur lors du chargement des utilisateurs')
+  } finally {
+    usersLoading.value = false
   }
 }
 

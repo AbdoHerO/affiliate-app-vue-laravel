@@ -77,16 +77,17 @@ export const useUsersStore = defineStore('users', () => {
       }
 
       const response = await axios.get('/admin/users', { params: queryParams })
-      
-      if (response.data.success) {
-        users.value = response.data.data.data || []
+
+      // The API returns { users: [...], pagination: {...} }
+      if (response.data.users) {
+        users.value = response.data.users || []
         pagination.value = {
-          current_page: response.data.data.current_page || 1,
-          last_page: response.data.data.last_page || 1,
-          per_page: response.data.data.per_page || 15,
-          total: response.data.data.total || 0,
+          current_page: response.data.pagination?.current_page || 1,
+          last_page: response.data.pagination?.last_page || 1,
+          per_page: response.data.pagination?.per_page || 15,
+          total: response.data.pagination?.total || 0,
         }
-        
+
         // Update filters with current params
         Object.assign(filters.value, queryParams)
       } else {
@@ -109,9 +110,10 @@ export const useUsersStore = defineStore('users', () => {
           per_page: 50, // Get more results for search
         }
       })
-      
-      if (response.data.success) {
-        return response.data.data.data || []
+
+      // The API returns { users: [...], pagination: {...} }
+      if (response.data.users) {
+        return response.data.users || []
       } else {
         throw new Error(response.data.message || 'Failed to search users')
       }
@@ -124,9 +126,10 @@ export const useUsersStore = defineStore('users', () => {
   const getUserById = async (id: string) => {
     try {
       const response = await axios.get(`/admin/users/${id}`)
-      
-      if (response.data.success) {
-        return response.data.data
+
+      // The API returns { user: {...} }
+      if (response.data.user) {
+        return response.data.user
       } else {
         throw new Error(response.data.message || 'Failed to fetch user')
       }
@@ -142,8 +145,9 @@ export const useUsersStore = defineStore('users', () => {
       error.value = null
 
       const response = await axios.post('/admin/users', userData)
-      
-      if (response.data.success) {
+
+      // The API returns { message: '...', user: {...} }
+      if (response.data.user) {
         // Refresh users list
         await fetchUsers({ page: pagination.value.current_page })
         return response.data
@@ -164,8 +168,9 @@ export const useUsersStore = defineStore('users', () => {
       error.value = null
 
       const response = await axios.put(`/admin/users/${id}`, userData)
-      
-      if (response.data.success) {
+
+      // The API returns { message: '...', user: {...} }
+      if (response.data.user) {
         // Refresh users list
         await fetchUsers({ page: pagination.value.current_page })
         return response.data
@@ -186,13 +191,14 @@ export const useUsersStore = defineStore('users', () => {
       error.value = null
 
       const response = await axios.delete(`/admin/users/${id}`)
-      
-      if (response.data.success) {
+
+      // The API returns { message: '...' }
+      if (response.data.message) {
         // Refresh users list
         await fetchUsers({ page: pagination.value.current_page })
         return response.data
       } else {
-        throw new Error(response.data.message || 'Failed to delete user')
+        throw new Error('Failed to delete user')
       }
     } catch (err: any) {
       error.value = err.message || 'Failed to delete user'
@@ -205,8 +211,9 @@ export const useUsersStore = defineStore('users', () => {
   const toggleUserStatus = async (id: string) => {
     try {
       const response = await axios.post(`/admin/users/${id}/toggle-status`)
-      
-      if (response.data.success) {
+
+      // The API returns { message: '...', user: {...} }
+      if (response.data.user) {
         // Refresh users list
         await fetchUsers({ page: pagination.value.current_page })
         return response.data
@@ -222,13 +229,14 @@ export const useUsersStore = defineStore('users', () => {
   const restoreUser = async (id: string) => {
     try {
       const response = await axios.post(`/admin/users/${id}/restore`)
-      
-      if (response.data.success) {
+
+      // The API returns { message: '...' }
+      if (response.data.message) {
         // Refresh users list
         await fetchUsers({ page: pagination.value.current_page })
         return response.data
       } else {
-        throw new Error(response.data.message || 'Failed to restore user')
+        throw new Error('Failed to restore user')
       }
     } catch (err: any) {
       console.error('Error restoring user:', err)
@@ -239,13 +247,14 @@ export const useUsersStore = defineStore('users', () => {
   const forceDeleteUser = async (id: string) => {
     try {
       const response = await axios.delete(`/admin/users/${id}/force`)
-      
-      if (response.data.success) {
+
+      // The API returns { message: '...' }
+      if (response.data.message) {
         // Refresh users list
         await fetchUsers({ page: pagination.value.current_page })
         return response.data
       } else {
-        throw new Error(response.data.message || 'Failed to permanently delete user')
+        throw new Error('Failed to permanently delete user')
       }
     } catch (err: any) {
       console.error('Error force deleting user:', err)
