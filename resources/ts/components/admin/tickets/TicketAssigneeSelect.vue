@@ -57,14 +57,15 @@ const searchUsers = async (query: string) => {
   try {
     const response = await api.get('/admin/users', {
       params: {
-        q: query,
+        search: query, // Use 'search' parameter instead of 'q'
         per_page: 20,
         role: 'admin', // Only show admin users for assignment
       }
     })
 
-    if (response.data.success) {
-      users.value = response.data.data
+    // Handle the correct API response format
+    if (response.data.users) {
+      users.value = response.data.users
     }
   } catch (error) {
     console.error('Failed to search users:', error)
@@ -85,8 +86,9 @@ const loadAdminUsers = async () => {
       }
     })
 
-    if (response.data.success) {
-      users.value = response.data.data
+    // Handle the correct API response format
+    if (response.data.users) {
+      users.value = response.data.users
     }
   } catch (error) {
     console.error('Failed to load admin users:', error)
@@ -95,14 +97,21 @@ const loadAdminUsers = async () => {
   }
 }
 
-// Watch search input
+// Watch search input with debounce
+let searchTimeout: NodeJS.Timeout | null = null
 watch(search, (newSearch) => {
-  if (newSearch) {
-    searchUsers(newSearch)
-  } else {
-    loadAdminUsers()
+  if (searchTimeout) {
+    clearTimeout(searchTimeout)
   }
-}, { debounce: 300 })
+
+  searchTimeout = setTimeout(() => {
+    if (newSearch) {
+      searchUsers(newSearch)
+    } else {
+      loadAdminUsers()
+    }
+  }, 300)
+})
 
 // Load initial data
 onMounted(() => {

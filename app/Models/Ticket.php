@@ -159,6 +159,52 @@ class Ticket extends Model
     }
 
     /**
+     * Scope to filter by last activity date range.
+     */
+    public function scopeActivityDateRange($query, $from, $to)
+    {
+        if ($from) {
+            $query->where('last_activity_at', '>=', $from);
+        }
+        if ($to) {
+            $query->where('last_activity_at', '<=', $to);
+        }
+        return $query;
+    }
+
+    /**
+     * Scope to filter unassigned tickets.
+     */
+    public function scopeUnassigned($query)
+    {
+        return $query->whereNull('assignee_id');
+    }
+
+    /**
+     * Scope to filter tickets assigned to a specific user.
+     */
+    public function scopeAssignedTo($query, $userId)
+    {
+        return $query->where('assignee_id', $userId);
+    }
+
+    /**
+     * Scope to filter tickets that have received a response.
+     */
+    public function scopeHasResponse($query)
+    {
+        return $query->whereNotNull('first_response_at');
+    }
+
+    /**
+     * Scope to filter tickets that have not received a response.
+     */
+    public function scopeNoResponse($query)
+    {
+        return $query->whereNull('first_response_at');
+    }
+
+    /**
      * Check if ticket is open.
      */
     public function isOpen(): bool

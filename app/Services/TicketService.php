@@ -10,6 +10,7 @@ use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
 class TicketService
@@ -200,6 +201,26 @@ class TicketService
 
         if (!empty($filters['date_from']) || !empty($filters['date_to'])) {
             $query->dateRange($filters['date_from'] ?? null, $filters['date_to'] ?? null);
+        }
+
+        if (!empty($filters['activity_from']) || !empty($filters['activity_to'])) {
+            $query->activityDateRange($filters['activity_from'] ?? null, $filters['activity_to'] ?? null);
+        }
+
+        if (!empty($filters['unassigned']) && $filters['unassigned'] === 'true') {
+            $query->unassigned();
+        }
+
+        if (!empty($filters['has_response'])) {
+            if ($filters['has_response'] === 'true') {
+                $query->hasResponse();
+            } elseif ($filters['has_response'] === 'false') {
+                $query->noResponse();
+            }
+        }
+
+        if (!empty($filters['my_tickets']) && $filters['my_tickets'] === 'true') {
+            $query->assignedTo(Auth::id());
         }
 
         // Apply sorting

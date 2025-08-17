@@ -82,7 +82,7 @@ const isSubmitting = ref(false)
 const ticketForm = ref({
   title: '',
   description: '',
-  priority: 'medium',
+  priority: 'normal',
   category_id: 'general',
   user_id: null,
   assignee_id: null,
@@ -135,8 +135,7 @@ const canSubmit = computed(() => {
 const priorityOptions = [
   { value: 'low', label: 'Low', color: 'success' },
   { value: 'normal', label: 'Normal', color: 'info' },
-  { value: 'medium', label: 'Medium', color: 'warning' },
-  { value: 'high', label: 'High', color: 'error' },
+  { value: 'high', label: 'High', color: 'warning' },
   { value: 'urgent', label: 'Urgent', color: 'error' }
 ]
 

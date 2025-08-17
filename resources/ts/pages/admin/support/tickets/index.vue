@@ -5,6 +5,7 @@ import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useTicketsStore } from '@/stores/admin/tickets'
 import { useQuickConfirm } from '@/composables/useConfirmAction'
+import { $api } from '@/utils/api'
 import TicketStatusBadge from '@/components/admin/tickets/TicketStatusBadge.vue'
 import TicketPriorityBadge from '@/components/admin/tickets/TicketPriorityBadge.vue'
 import TicketAssigneeSelect from '@/components/admin/tickets/TicketAssigneeSelect.vue'
@@ -79,10 +80,17 @@ const showFilters = ref(false)
 // Dialog boolean states
 const showBulkAssignDialog = ref(false)
 const showBulkStatusDialog = ref(false)
+const showAssignDialog = ref(false)
 
 // Form values
 const bulkAssigneeId = ref<string | null>(null)
 const bulkStatus = ref('')
+const selectedTicketId = ref<string | null>(null)
+const assigneeId = ref<string | null>(null)
+
+// Requester search state
+const requesterUsers = ref<any[]>([])
+const loadingRequesters = ref(false)
 const pageLoading = ref(true)
 const hasError = ref(false)
 const errorMessage = ref('')
@@ -177,6 +185,11 @@ const categoryOptions = [
   { title: getTranslation('ticket_category_other', 'Other'), value: 'other' },
 ]
 
+const responseStatusOptions = [
+  { title: getTranslation('has_response', 'Has Response'), value: 'true' },
+  { title: getTranslation('no_response', 'No Response'), value: 'false' },
+]
+
 const sortOptions = [
   { title: getTranslation('sort_last_activity', 'Last Activity'), value: 'last_activity_at' },
   { title: getTranslation('sort_created_date', 'Created Date'), value: 'created_at' },
@@ -237,7 +250,16 @@ const handleSearch = (query: string) => {
 const handleFilterChange = () => {
   if (isDestroyed.value) return
   try {
-    ticketsStore?.fetchTickets?.({ page: 1 })
+    // Convert boolean filters to strings for API
+    const apiFilters = { ...filters?.value }
+    if (apiFilters.unassigned) {
+      apiFilters.unassigned = apiFilters.unassigned ? 'true' : undefined
+    }
+    if (apiFilters.my_tickets) {
+      apiFilters.my_tickets = apiFilters.my_tickets ? 'true' : undefined
+    }
+
+    ticketsStore?.fetchTickets?.({ ...apiFilters, page: 1 })
   } catch (error) {
     console.error('Error handling filter change:', error)
   }
@@ -252,8 +274,24 @@ const clearFilters = () => {
         per_page: 15,
         sort: 'last_activity_at',
         dir: 'desc',
+        // Clear all additional filters
+        q: '',
+        status: [],
+        priority: [],
+        category: '',
+        assignee_id: null,
+        requester_id: null,
+        date_from: '',
+        date_to: '',
+        activity_from: '',
+        activity_to: '',
+        has_response: '',
+        unassigned: false,
+        my_tickets: false,
       }
     }
+    // Clear requester users list
+    requesterUsers.value = []
     ticketsStore?.fetchTickets?.()
   } catch (error) {
     console.error('Error clearing filters:', error)
@@ -306,6 +344,82 @@ const assignTicket = async (ticketId: string, assigneeId: string | null) => {
     await ticketsStore?.assignTicket?.(ticketId, assigneeId)
   } catch (error) {
     console.error('Error assigning ticket:', error)
+  }
+}
+
+const openAssignDialog = (ticketId: string) => {
+  selectedTicketId.value = ticketId
+  assigneeId.value = null
+  showAssignDialog.value = true
+}
+
+const handleAssign = async () => {
+  if (!selectedTicketId.value) return
+  try {
+    await assignTicket(selectedTicketId.value, assigneeId.value)
+    showAssignDialog.value = false
+    selectedTicketId.value = null
+    assigneeId.value = null
+  } catch (error) {
+    console.error('Error in individual assign:', error)
+  }
+}
+
+// Requester search functionality
+const searchRequesters = async (query: string) => {
+  if (!query || query.length < 2) {
+    requesterUsers.value = []
+    return
+  }
+
+  loadingRequesters.value = true
+  try {
+    const params = new URLSearchParams({
+      search: query,
+      per_page: '20',
+    })
+
+    const response = await $api(`/admin/users?${params.toString()}`)
+
+    if (response.users) {
+      requesterUsers.value = response.users
+    }
+  } catch (error) {
+    console.error('Failed to search requesters:', error)
+    requesterUsers.value = []
+  } finally {
+    loadingRequesters.value = false
+  }
+}
+
+// Quick filter presets
+const applyQuickFilter = (filterType: string) => {
+  if (isDestroyed.value || !filters?.value) return
+
+  try {
+    // Clear existing filters first
+    clearFilters()
+
+    // Apply specific quick filter
+    switch (filterType) {
+      case 'unassigned':
+        filters.value.unassigned = true
+        break
+      case 'my_tickets':
+        filters.value.my_tickets = true
+        break
+      case 'no_response':
+        filters.value.has_response = 'false'
+        break
+      case 'high_priority':
+        filters.value.priority = ['high', 'urgent']
+        break
+    }
+
+    // Apply the filter
+    handleFilterChange()
+  } catch (error) {
+    console.error('Error applying quick filter:', error)
   }
 }
 
@@ -594,6 +708,49 @@ onBeforeUnmount(() => {
                   {{ getTranslation('clear_filters', 'Clear') }}
                 </VBtn>
 
+                <!-- Quick Filter Presets -->
+                <VDivider vertical class="mx-2" />
+
+                <VBtn
+                  variant="text"
+                  size="small"
+                  color="warning"
+                  @click="applyQuickFilter('unassigned')"
+                >
+                  <VIcon icon="tabler-user-off" class="me-1" />
+                  {{ getTranslation('unassigned', 'Unassigned') }}
+                </VBtn>
+
+                <VBtn
+                  variant="text"
+                  size="small"
+                  color="info"
+                  @click="applyQuickFilter('my_tickets')"
+                >
+                  <VIcon icon="tabler-user-check" class="me-1" />
+                  {{ getTranslation('my_tickets', 'My Tickets') }}
+                </VBtn>
+
+                <VBtn
+                  variant="text"
+                  size="small"
+                  color="error"
+                  @click="applyQuickFilter('no_response')"
+                >
+                  <VIcon icon="tabler-message-off" class="me-1" />
+                  {{ getTranslation('no_response', 'No Response') }}
+                </VBtn>
+
+                <VBtn
+                  variant="text"
+                  size="small"
+                  color="success"
+                  @click="applyQuickFilter('high_priority')"
+                >
+                  <VIcon icon="tabler-alert-triangle" class="me-1" />
+                  {{ getTranslation('high_priority', 'High Priority') }}
+                </VBtn>
+
                 <VSpacer />
 
                 <!-- Bulk Actions -->
@@ -681,6 +838,113 @@ onBeforeUnmount(() => {
                   variant="outlined"
                   density="compact"
                   clearable
+                />
+              </VCol>
+            </VRow>
+
+            <!-- Second row of filters -->
+            <VRow v-if="showFilters" class="mt-2">
+              <VCol cols="12" md="3">
+                <VAutocomplete
+                  v-model="filters.requester_id"
+                  :items="requesterUsers"
+                  :loading="loadingRequesters"
+                  :label="getTranslation('requester', 'Requester')"
+                  variant="outlined"
+                  density="compact"
+                  clearable
+                  item-title="nom_complet"
+                  item-value="id"
+                  placeholder="Search requesters..."
+                  @update:search="searchRequesters"
+                >
+                  <template #item="{ props: itemProps, item }">
+                    <VListItem v-bind="itemProps">
+                      <template #prepend>
+                        <VAvatar size="24">
+                          <VIcon icon="tabler-user" size="14" />
+                        </VAvatar>
+                      </template>
+                      <VListItemTitle>{{ item.raw.nom_complet }}</VListItemTitle>
+                      <VListItemSubtitle>{{ item.raw.email }}</VListItemSubtitle>
+                    </VListItem>
+                  </template>
+                </VAutocomplete>
+              </VCol>
+
+              <VCol cols="12" md="3">
+                <VTextField
+                  v-model="filters.date_from"
+                  :label="getTranslation('date_from', 'Date From')"
+                  variant="outlined"
+                  density="compact"
+                  type="date"
+                  clearable
+                />
+              </VCol>
+
+              <VCol cols="12" md="3">
+                <VTextField
+                  v-model="filters.date_to"
+                  :label="getTranslation('date_to', 'Date To')"
+                  variant="outlined"
+                  density="compact"
+                  type="date"
+                  clearable
+                />
+              </VCol>
+
+              <VCol cols="12" md="3">
+                <VSelect
+                  v-model="filters.has_response"
+                  :items="responseStatusOptions"
+                  :label="getTranslation('response_status', 'Response Status')"
+                  variant="outlined"
+                  density="compact"
+                  clearable
+                />
+              </VCol>
+            </VRow>
+
+            <!-- Third row of filters -->
+            <VRow v-if="showFilters" class="mt-2">
+              <VCol cols="12" md="3">
+                <VTextField
+                  v-model="filters.activity_from"
+                  :label="getTranslation('activity_from', 'Activity From')"
+                  variant="outlined"
+                  density="compact"
+                  type="date"
+                  clearable
+                />
+              </VCol>
+
+              <VCol cols="12" md="3">
+                <VTextField
+                  v-model="filters.activity_to"
+                  :label="getTranslation('activity_to', 'Activity To')"
+                  variant="outlined"
+                  density="compact"
+                  type="date"
+                  clearable
+                />
+              </VCol>
+
+              <VCol cols="12" md="3">
+                <VCheckbox
+                  v-model="filters.unassigned"
+                  :label="getTranslation('unassigned_only', 'Unassigned Only')"
+                  density="compact"
+                  hide-details
+                />
+              </VCol>
+
+              <VCol cols="12" md="3">
+                <VCheckbox
+                  v-model="filters.my_tickets"
+                  :label="getTranslation('my_tickets_only', 'My Tickets Only')"
+                  density="compact"
+                  hide-details
                 />
               </VCol>
             </VRow>
@@ -823,7 +1087,7 @@ onBeforeUnmount(() => {
                   <VListItemTitle>{{ getTranslation('view', 'View') }}</VListItemTitle>
                 </VListItem>
 
-                <VListItem @click="assignTicket(item.id, null)">
+                <VListItem @click="openAssignDialog(item.id)">
                   <template #prepend>
                     <VIcon icon="tabler-user-check" />
                   </template>
@@ -889,6 +1153,24 @@ onBeforeUnmount(() => {
             <VSpacer />
             <VBtn @click="showBulkAssignDialog = false">{{ getTranslation('cancel', 'Cancel') }}</VBtn>
             <VBtn color="primary" @click="handleBulkAssign">{{ getTranslation('assign', 'Assign') }}</VBtn>
+          </VCardActions>
+        </VCard>
+      </VDialog>
+
+      <!-- Individual Assignment Dialog -->
+      <VDialog v-model="showAssignDialog" max-width="400">
+        <VCard>
+          <VCardTitle>{{ getTranslation('assign_ticket', 'Assign Ticket') }}</VCardTitle>
+          <VCardText>
+            <TicketAssigneeSelect
+              v-model="assigneeId"
+              :label="getTranslation('select_assignee', 'Select Assignee')"
+            />
+          </VCardText>
+          <VCardActions>
+            <VSpacer />
+            <VBtn @click="showAssignDialog = false">{{ getTranslation('cancel', 'Cancel') }}</VBtn>
+            <VBtn color="primary" @click="handleAssign">{{ getTranslation('assign', 'Assign') }}</VBtn>
           </VCardActions>
         </VCard>
       </VDialog>

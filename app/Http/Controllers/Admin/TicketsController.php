@@ -30,8 +30,9 @@ class TicketsController extends Controller
         Gate::authorize('viewAny', Ticket::class);
 
         $filters = $request->only([
-            'q', 'status', 'priority', 'category', 
+            'q', 'status', 'priority', 'category',
             'requester_id', 'assignee_id', 'date_from', 'date_to',
+            'activity_from', 'activity_to', 'unassigned', 'has_response', 'my_tickets',
             'sort', 'dir', 'per_page'
         ]);
 
