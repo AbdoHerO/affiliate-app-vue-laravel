@@ -18,8 +18,10 @@ export function setupRouterGuards(router: Router) {
       // Safe string operations
       const routePath = to.path || ''
       const routeName = to.name?.toString() || ''
+      const fromPath = from?.path || ''
+      const fromName = from?.name?.toString() || ''
 
-      console.log('🛡️ [Route Guard] Navigating to:', routeName, routePath)
+      console.log('🛡️ [Route Guard] Navigating:', fromName, fromPath, '→', routeName, routePath)
 
       const authStore = useAuthStore()
 
@@ -138,6 +140,34 @@ export function setupRouterGuards(router: Router) {
       } else {
         router.push('/').catch(console.error)
       }
+    } else if (error.message?.includes('emitsOptions')) {
+      console.error('🚫 [Route Guard] Component lifecycle error detected - emitsOptions is null')
+
+      // This is usually a Vue component cleanup issue during navigation
+      // Try to navigate to the target route after a short delay
+      setTimeout(() => {
+        if (to?.path) {
+          console.log('🔄 [Route Guard] Retrying navigation after emitsOptions error')
+          router.push(to.path).catch((retryError) => {
+            console.error('🚫 [Route Guard] Retry navigation failed:', retryError)
+            // Final fallback
+            router.push('/admin/dashboard').catch(console.error)
+          })
+        }
+      }, 100)
+    } else if (error.message?.includes('Cannot read properties of undefined')) {
+      console.error('🚫 [Route Guard] Undefined property access error')
+
+      // General undefined property error - try safe navigation
+      if (to?.path?.includes('/admin/withdrawals')) {
+        setTimeout(() => {
+          router.push('/admin/withdrawals').catch(console.error)
+        }, 50)
+      } else if (to?.path?.includes('/admin')) {
+        setTimeout(() => {
+          router.push('/admin/dashboard').catch(console.error)
+        }, 50)
+      }
     }
   })
 }
@@ -152,6 +182,6 @@ declare module 'vue-router' {
     requiresRole?: string | string[]
     requiresPermission?: string | string[]
     public?: boolean
-    layout?: string
+    layout?: 'default' | 'blank'
   }
 }

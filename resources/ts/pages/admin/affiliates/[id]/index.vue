@@ -490,17 +490,17 @@ onMounted(async () => {
           <VCard>
             <VCardTitle>Commissions Récentes</VCardTitle>
             <VCardText>
-              <div v-if="affiliate.profil_affilie?.commissions?.length">
+              <div v-if="affiliate.commissions?.length">
                 <VList>
                   <VListItem
-                    v-for="commission in affiliate.profil_affilie.commissions"
+                    v-for="commission in affiliate.commissions"
                     :key="commission.id"
                   >
-                    <VListItemTitle>{{ formatCurrency(commission.montant) }}</VListItemTitle>
+                    <VListItemTitle>{{ formatCurrency(commission.amount) }}</VListItemTitle>
                     <VListItemSubtitle>{{ formatDate(commission.created_at) }}</VListItemSubtitle>
                     <template #append>
-                      <VChip size="small" :color="getStatusColor(commission.statut)" variant="tonal">
-                        {{ commission.statut }}
+                      <VChip size="small" :color="getStatusColor(commission.status)" variant="tonal">
+                        {{ commission.status }}
                       </VChip>
                     </template>
                   </VListItem>

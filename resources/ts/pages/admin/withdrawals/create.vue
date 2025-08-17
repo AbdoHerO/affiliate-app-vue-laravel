@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { computed, ref, watch, onUnmounted } from 'vue'
+import { useRouter, onBeforeRouteLeave } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useWithdrawalsStore } from '@/stores/admin/withdrawals'
-import { useApi } from '@/composables/useApi'
+import { $api } from '@/utils/api'
 import { useNotifications } from '@/composables/useNotifications'
 import { useFormErrors } from '@/composables/useFormErrors'
+import { useSafeNavigation } from '@/composables/useSafeNavigation'
 import Breadcrumbs from '@/components/common/Breadcrumbs.vue'
 import CommissionSelector from '@/components/admin/withdrawals/CommissionSelector.vue'
 
@@ -19,9 +20,9 @@ definePage({
 const router = useRouter()
 const { t } = useI18n()
 const withdrawalsStore = useWithdrawalsStore()
-const { api } = useApi()
 const { showSuccess, showError } = useNotifications()
-const { errors, setErrors, clearErrors, hasError, getError } = useFormErrors()
+const { errors, set: setErrors, clear: clearErrors } = useFormErrors()
+const { safePush } = useSafeNavigation()
 
 // Form state
 const form = ref({
@@ -54,23 +55,34 @@ const isFormValid = computed(() => {
 const currentStep = ref(1)
 const maxSteps = 3
 
+// Helper functions for error handling
+const hasError = (field: string) => {
+  return errors.value?.[field] && errors.value[field]!.length > 0
+}
+
+const getError = (field: string) => {
+  return errors.value?.[field] || []
+}
+
 // Methods
 const fetchUsers = async (search?: string) => {
   loadingUsers.value = true
   try {
-    const response = await api.get('/admin/users', {
-      params: {
-        q: search,
-        per_page: 50,
-        role: 'affiliate', // Only affiliates can have withdrawals
-      },
-    })
+    // Build query parameters
+    const params = new URLSearchParams()
+    if (search) params.append('q', search)
+    params.append('per_page', '50')
+    params.append('role', 'affiliate') // Only affiliates can have withdrawals
 
-    if (response.data.success) {
-      users.value = response.data.data
+    const url = `/admin/users${params.toString() ? `?${params.toString()}` : ''}`
+    const response = await $api(url)
+
+    if (response?.success) {
+      users.value = response.data || []
     }
   } catch (error) {
-    console.error('Error fetching users:', error)
+    console.error('🚫 [Create Withdrawal] Error fetching users:', error)
+    showError('Erreur lors du chargement des utilisateurs')
   } finally {
     loadingUsers.value = false
   }
@@ -107,17 +119,20 @@ const handleSubmit = async () => {
       payload.commission_ids = form.value.commission_ids
     }
 
+    console.log('🔄 [Create Withdrawal] Submitting:', payload)
     const result = await withdrawalsStore.create(payload)
 
     if (result.success) {
-      showSuccess(result.message)
-      router.push(`/admin/withdrawals/${result.data.id}`)
+      showSuccess(result.message || 'Retrait créé avec succès')
+      // Use safe navigation to the withdrawal detail page
+      await safePush(`/admin/withdrawals/${result.data?.id}`)
     } else {
-      showError(result.message)
+      showError(result.message || 'Erreur lors de la création du retrait')
     }
   } catch (error: any) {
-    if (error.response?.data?.errors) {
-      setErrors(error.response.data.errors)
+    console.error('🚫 [Create Withdrawal] Error:', error)
+    if (error.data?.errors) {
+      setErrors(error.data.errors)
     } else {
       showError('Une erreur est survenue lors de la création du retrait')
     }
@@ -126,14 +141,41 @@ const handleSubmit = async () => {
   }
 }
 
-const cancel = () => {
-  router.push('/admin/withdrawals')
+const cancel = async () => {
+  console.log('🔄 [Create Withdrawal] Cancelling, navigating to withdrawals list')
+  try {
+    await safePush('/admin/withdrawals')
+  } catch (error) {
+    console.error('🚫 [Create Withdrawal] Error during cancel navigation:', error)
+    // Fallback to direct router push
+    router.push('/admin/withdrawals').catch(console.error)
+  }
 }
+
+// Cleanup on component unmount
+onUnmounted(() => {
+  console.log('🧹 [Create Withdrawal] Component unmounting')
+  // Clear any pending operations
+  loading.value = false
+  loadingUsers.value = false
+})
 
 // Watch for user selection to reset commission selection
 watch(() => form.value.user_id, () => {
   form.value.commission_ids = []
   targetAmount.value = 0
+})
+
+// Navigation guard to prevent navigation issues
+onBeforeRouteLeave((to, from, next) => {
+  console.log('🔄 [Create Withdrawal] Leaving component, navigating to:', to?.path)
+
+  // Clear loading states before leaving
+  loading.value = false
+  loadingUsers.value = false
+
+  // Allow navigation
+  next()
 })
 
 // Initialize

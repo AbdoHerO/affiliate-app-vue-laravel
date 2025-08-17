@@ -28,9 +28,9 @@ class AffiliatesController extends Controller
             ])
             ->withCount([
                 'profilAffilie.commandes as orders_count',
-                'profilAffilie.commissions as commissions_count'
+                'commissions as commissions_count'
             ])
-            ->withSum('profilAffilie.commissions as total_commissions', 'montant');
+            ->withSum('commissions as total_commissions', 'amount');
 
         // Apply filters
         if ($request->filled('q')) {
@@ -110,7 +110,7 @@ class AffiliatesController extends Controller
                 'profilAffilie.commandes' => function ($q) {
                     $q->latest()->take(10);
                 },
-                'profilAffilie.commissions' => function ($q) {
+                'commissions' => function ($q) {
                     $q->latest()->take(10);
                 },
                 'profilAffilie.reglements' => function ($q) {
@@ -122,9 +122,9 @@ class AffiliatesController extends Controller
             ])
             ->withCount([
                 'profilAffilie.commandes as orders_count',
-                'profilAffilie.commissions as commissions_count'
+                'commissions as commissions_count'
             ])
-            ->withSum('profilAffilie.commissions as total_commissions', 'montant')
+            ->withSum('commissions as total_commissions', 'amount')
             ->findOrFail($id);
 
         return response()->json([
@@ -295,15 +295,15 @@ class AffiliatesController extends Controller
                     ->pluck('count', 'statut'),
             ],
             'commissions' => [
-                'total' => $affiliate->profilAffilie->commissions()->sum('montant'),
-                'this_month' => $affiliate->profilAffilie->commissions()
+                'total' => $affiliate->commissions()->sum('amount'),
+                'this_month' => $affiliate->commissions()
                     ->whereMonth('created_at', now()->month)
                     ->whereYear('created_at', now()->year)
-                    ->sum('montant'),
-                'by_status' => $affiliate->profilAffilie->commissions()
-                    ->select('statut', DB::raw('sum(montant) as total'))
-                    ->groupBy('statut')
-                    ->pluck('total', 'statut'),
+                    ->sum('amount'),
+                'by_status' => $affiliate->commissions()
+                    ->select('status', DB::raw('sum(amount) as total'))
+                    ->groupBy('status')
+                    ->pluck('total', 'status'),
             ],
             'payments' => [
                 'total_paid' => $affiliate->profilAffilie->reglements()
