@@ -142,6 +142,48 @@ const handleReject = async (commission: Commission) => {
   }
 }
 
+const handleAdjust = async (commission: Commission) => {
+  const confirmed = await confirm({
+    title: 'Ajuster la commission',
+    text: `Voulez-vous ajuster cette commission de ${commission.amount} ${commission.currency} ?`,
+    confirmText: 'Ajuster',
+    color: 'warning',
+    type: 'warning',
+  })
+
+  if (confirmed) {
+    // For now, we'll use default values. In a real app, you'd show a dialog to get the new amount and reason
+    const newAmount = parseFloat(commission.amount) * 0.8 // Reduce by 20% as example
+    const result = await commissionsStore.adjustCommission(commission.id, newAmount, 'Ajustement administratif')
+    if (result.success) {
+      showSuccess(result.message)
+      await fetchCommissions()
+    } else {
+      showError(result.message)
+    }
+  }
+}
+
+const handleMarkAsPaid = async (commission: Commission) => {
+  const confirmed = await confirm({
+    title: 'Marquer comme payée',
+    text: `Confirmer le paiement de cette commission de ${commission.amount} ${commission.currency} ?`,
+    confirmText: 'Confirmer le paiement',
+    color: 'primary',
+    type: 'success',
+  })
+
+  if (confirmed) {
+    const result = await commissionsStore.markAsPaid(commission.id)
+    if (result.success) {
+      showSuccess(result.message)
+      await fetchCommissions()
+    } else {
+      showError(result.message)
+    }
+  }
+}
+
 // Bulk actions
 const handleBulkApprove = async () => {
   if (selectedCommissions.value.length === 0) return
@@ -532,30 +574,70 @@ onMounted(async () => {
 
         <!-- Actions Column -->
         <template #item.actions="{ item }">
-          <div class="d-flex gap-1">
-            <ActionIcon
-              icon="tabler-eye"
-              label="actions.view"
-              variant="default"
-              @click="handleView(item)"
-            />
+          <VMenu>
+            <template #activator="{ props }">
+              <VBtn
+                icon="tabler-dots-vertical"
+                size="small"
+                variant="text"
+                v-bind="props"
+              />
+            </template>
 
-            <ActionIcon
-              v-if="item.can_be_approved"
-              icon="tabler-check"
-              label="actions.approve"
-              variant="success"
-              @click="handleApprove(item)"
-            />
+            <VList>
+              <!-- View Action -->
+              <VListItem @click="handleView(item)">
+                <template #prepend>
+                  <VIcon icon="tabler-eye" size="20" />
+                </template>
+                <VListItemTitle>Voir détails</VListItemTitle>
+              </VListItem>
 
-            <ActionIcon
-              v-if="item.can_be_rejected"
-              icon="tabler-x"
-              label="actions.reject"
-              variant="error"
-              @click="handleReject(item)"
-            />
-          </div>
+              <!-- Approve Action -->
+              <VListItem
+                v-if="item.can_be_approved"
+                @click="handleApprove(item)"
+              >
+                <template #prepend>
+                  <VIcon icon="tabler-check" size="20" color="success" />
+                </template>
+                <VListItemTitle>Approuver</VListItemTitle>
+              </VListItem>
+
+              <!-- Reject Action -->
+              <VListItem
+                v-if="item.can_be_rejected"
+                @click="handleReject(item)"
+              >
+                <template #prepend>
+                  <VIcon icon="tabler-x" size="20" color="error" />
+                </template>
+                <VListItemTitle>Rejeter</VListItemTitle>
+              </VListItem>
+
+              <!-- Adjust Action -->
+              <VListItem
+                v-if="item.can_be_adjusted"
+                @click="handleAdjust(item)"
+              >
+                <template #prepend>
+                  <VIcon icon="tabler-edit" size="20" color="warning" />
+                </template>
+                <VListItemTitle>Ajuster</VListItemTitle>
+              </VListItem>
+
+              <!-- Mark as Paid Action -->
+              <VListItem
+                v-if="item.status === 'approved' && !item.paid_at"
+                @click="handleMarkAsPaid(item)"
+              >
+                <template #prepend>
+                  <VIcon icon="tabler-cash" size="20" color="primary" />
+                </template>
+                <VListItemTitle>Marquer comme payée</VListItemTitle>
+              </VListItem>
+            </VList>
+          </VMenu>
         </template>
       </VDataTableServer>
     </VCard>

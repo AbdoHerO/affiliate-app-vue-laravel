@@ -278,6 +278,33 @@ export const useCommissionsStore = defineStore('commissions', () => {
     }
   }
 
+  const markAsPaid = async (id: string) => {
+    try {
+      const response = await axios.post(`/api/admin/commissions/${id}/mark-paid`)
+
+      if (response.data.success) {
+        // Update the commission in the list
+        const index = commissions.value.findIndex(c => c.id === id)
+        if (index !== -1) {
+          commissions.value[index] = response.data.data
+        }
+
+        // Update current commission if it's the same
+        if (currentCommission.value?.id === id) {
+          currentCommission.value = response.data.data
+        }
+
+        return { success: true, message: response.data.message }
+      } else {
+        throw new Error(response.data.message || 'Failed to mark commission as paid')
+      }
+    } catch (err: any) {
+      const message = err.response?.data?.message || err.message || 'Failed to mark commission as paid'
+      console.error('Error marking commission as paid:', err)
+      return { success: false, message }
+    }
+  }
+
   const bulkApprove = async (ids: string[], note?: string) => {
     try {
       const response = await axios.post('/api/admin/commissions/bulk/approve', {
@@ -412,6 +439,7 @@ export const useCommissionsStore = defineStore('commissions', () => {
     approveCommission,
     rejectCommission,
     adjustCommission,
+    markAsPaid,
     bulkApprove,
     bulkReject,
     recalculateOrder,
