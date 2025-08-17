@@ -148,6 +148,14 @@ export const useCommissionsStore = defineStore('commissions', () => {
 
   const fetchCommission = async (id: string) => {
     console.log('🔍 Store: fetchCommission called with ID:', id)
+    
+    // Validate ID format
+    if (!id || id === 'undefined' || id === 'null') {
+      error.value = 'ID de commission invalide'
+      console.error('❌ Store: Invalid commission ID:', id)
+      return
+    }
+    
     loading.value = true
     error.value = null
 
@@ -159,12 +167,24 @@ export const useCommissionsStore = defineStore('commissions', () => {
       if (response.data.success) {
         console.log('✅ Commission data received:', response.data.data)
         currentCommission.value = response.data.data
+        return response.data.data
       } else {
         throw new Error(response.data.message || 'Failed to fetch commission')
       }
     } catch (err: any) {
       console.error('❌ Store: fetchCommission error:', err)
-      error.value = err.response?.data?.message || err.message || 'Failed to fetch commission'
+      
+      // Handle specific error types
+      if (err.response?.status === 404) {
+        error.value = 'Commission non trouvée'
+      } else if (err.response?.status === 422) {
+        error.value = 'Format d\'ID invalide'
+      } else {
+        error.value = err.response?.data?.message || err.message || 'Failed to fetch commission'
+      }
+
+      // Return null to indicate failure
+      return null
     } finally {
       loading.value = false
     }

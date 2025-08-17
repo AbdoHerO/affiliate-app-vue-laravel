@@ -77,7 +77,7 @@ const fetchPreorder = async () => {
     }
   } catch (error: any) {
     showError(error.message || 'Erreur lors du chargement de la commande')
-    router.push({ name: 'admin-orders-pre-index' })
+    router.push({ name: 'admin-orders-pre' })
   }
 }
 

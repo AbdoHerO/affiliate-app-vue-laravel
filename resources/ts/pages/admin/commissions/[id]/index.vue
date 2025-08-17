@@ -24,9 +24,10 @@ const { confirm } = useQuickConfirm()
 
 // Store
 const commissionsStore = useCommissionsStore()
-const { currentCommission, loading } = storeToRefs(commissionsStore)
+const { loading } = storeToRefs(commissionsStore)
 
 // Local state
+const commission = ref<Commission | null>(null)
 const showRejectDialog = ref(false)
 const showAdjustDialog = ref(false)
 const rejectReason = ref('')
@@ -40,17 +41,26 @@ const breadcrumbs = computed(() => [
   { title: `Commission ${route.params.id}`, to: `/admin/commissions/${route.params.id}` },
 ])
 
-const commission = computed(() => currentCommission.value)
-
 // Methods
 const fetchCommission = async () => {
   try {
     console.log('🔍 Fetching commission:', route.params.id)
-    await commissionsStore.fetchCommission(route.params.id as string)
-    console.log('✅ Commission fetched successfully')
+    const result = await commissionsStore.fetchCommission(route.params.id as string)
+
+    // Check if commission was actually loaded
+    if (!result) {
+      console.error('❌ Commission not found after fetch')
+      showError('Commission non trouvée')
+      router.push('/admin/commissions')
+      return
+    }
+
+    commission.value = result
+    console.log('✅ Commission fetched successfully:', result)
   } catch (error) {
     console.error('❌ Error fetching commission:', error)
     showError('Erreur lors du chargement de la commission')
+    router.push('/admin/commissions')
   }
 }
 
@@ -126,6 +136,8 @@ const goBack = () => {
 // Load data on mount
 onMounted(async () => {
   console.log('🚀 Commission detail page mounted, ID:', route.params.id)
+  console.log('🔍 Current commission state:', commission.value)
+  console.log('🔍 Loading state:', loading.value)
 
   // Check if ID is valid
   if (!route.params.id || route.params.id === 'undefined') {
@@ -135,10 +147,11 @@ onMounted(async () => {
     return
   }
 
-  // Add a small delay to ensure everything is initialized
-  setTimeout(async () => {
-    await fetchCommission()
-  }, 100)
+  // Fetch commission data
+  await fetchCommission()
+
+  console.log('🔍 After fetch - Commission:', commission.value)
+  console.log('🔍 After fetch - Loading:', loading.value)
 })
 </script>
 
@@ -150,6 +163,22 @@ onMounted(async () => {
     <!-- Loading State -->
     <div v-if="loading" class="text-center py-8">
       <VProgressCircular indeterminate color="primary" />
+      <p class="mt-4">Chargement de la commission...</p>
+    </div>
+
+    <!-- Error State -->
+    <div v-else-if="!commission && !loading" class="text-center py-8">
+      <VIcon icon="tabler-alert-circle" size="64" class="mb-4" color="error" />
+      <h2 class="text-h5 mb-2">Commission non trouvée</h2>
+      <p class="text-body-1 mb-4">La commission demandée n'existe pas ou a été supprimée.</p>
+      <VBtn
+        color="primary"
+        variant="elevated"
+        prepend-icon="tabler-arrow-left"
+        @click="goBack"
+      >
+        Retour à la liste
+      </VBtn>
     </div>
 
     <!-- Commission Details -->

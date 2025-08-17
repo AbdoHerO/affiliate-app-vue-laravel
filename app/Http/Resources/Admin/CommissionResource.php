@@ -51,24 +51,9 @@ class CommissionResource extends JsonResource
                     'id' => $this->commande->id,
                     'statut' => $this->commande->statut,
                     'total_ttc' => $this->commande->total_ttc,
-                    'devise' => $this->commande->devise,
+                    'devise' => $this->commande->devise ?? 'MAD',
                     'notes' => $this->commande->notes,
                     'created_at' => $this->commande->created_at->format('Y-m-d H:i:s'),
-                    'articles' => $this->whenLoaded('commande.articles', function () {
-                        return $this->commande->articles->map(function ($article) {
-                            return [
-                                'id' => $article->id,
-                                'quantite' => $article->quantite,
-                                'prix_unitaire' => $article->prix_unitaire,
-                                'total_ligne' => $article->total_ligne,
-                                'produit' => $this->when($article->relationLoaded('produit'), [
-                                    'id' => $article->produit->id,
-                                    'titre' => $article->produit->titre,
-                                    'prix_vente' => $article->produit->prix_vente,
-                                ]),
-                            ];
-                        });
-                    }),
                 ];
             }),
             

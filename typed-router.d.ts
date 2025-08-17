@@ -26,8 +26,6 @@ declare module 'vue-router/auto-routes' {
     'admin-boutiques': RouteRecordInfo<'admin-boutiques', '/admin/boutiques', Record<never, never>, Record<never, never>>,
     'admin-boutiques-create': RouteRecordInfo<'admin-boutiques-create', '/admin/boutiques/create', Record<never, never>, Record<never, never>>,
     'admin-categories': RouteRecordInfo<'admin-categories', '/admin/categories', Record<never, never>, Record<never, never>>,
-    'admin-commissions': RouteRecordInfo<'admin-commissions', '/admin/commissions', Record<never, never>, Record<never, never>>,
-    'admin-commissions-id': RouteRecordInfo<'admin-commissions-id', '/admin/commissions/:id', { id: ParamValue<true> }, { id: ParamValue<false> }>,
     'admin-dashboard': RouteRecordInfo<'admin-dashboard', '/admin/dashboard', Record<never, never>, Record<never, never>>,
     'admin-dashboard-simple': RouteRecordInfo<'admin-dashboard-simple', '/admin/dashboard-simple', Record<never, never>, Record<never, never>>,
     'admin-debug-ozonexpress': RouteRecordInfo<'admin-debug-ozonexpress', '/admin/debug/ozonexpress', Record<never, never>, Record<never, never>>,

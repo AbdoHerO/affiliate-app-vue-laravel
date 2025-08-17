@@ -97,30 +97,46 @@ class CommissionsController extends Controller
     public function show(string $id): JsonResponse
     {
         try {
-            \Log::info('CommissionsController::show called with ID: ' . $id);
+            Log::info('CommissionsController::show called with ID: ' . $id);
+
+            // Validate UUID format
+            if (!preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $id)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Format d\'ID invalide',
+                ], 422);
+            }
 
             $commission = CommissionAffilie::with([
                 'affiliate:id,nom_complet,email,telephone',
-                'commande:id,statut,total_ttc,created_at,notes',
+                'commande:id,statut,total_ttc,devise,created_at,notes',
+                'commandeArticle:id,quantite,prix_unitaire,total_ligne',
                 'commandeArticle.produit:id,titre,prix_vente'
-            ])->findOrFail($id);
+            ])->find($id);
 
-            \Log::info('Commission found: ' . $commission->id);
+            if (!$commission) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Commission non trouvée',
+                ], 404);
+            }
+
+            Log::info('Commission found: ' . $commission->id);
 
             $resource = new CommissionResource($commission);
-            \Log::info('Commission resource created successfully');
+            Log::info('Commission resource created successfully');
 
             return response()->json([
                 'success' => true,
                 'data' => $resource
             ]);
         } catch (\Exception $e) {
-            \Log::error('Error in CommissionsController::show: ' . $e->getMessage());
-            \Log::error('Stack trace: ' . $e->getTraceAsString());
+            Log::error('Error in CommissionsController::show: ' . $e->getMessage());
+            Log::error('Stack trace: ' . $e->getTraceAsString());
 
             return response()->json([
                 'success' => false,
-                'message' => 'Erreur lors du chargement de la commission: ' . $e->getMessage(),
+                'message' => 'Erreur lors du chargement de la commission',
             ], 500);
         }
     }
