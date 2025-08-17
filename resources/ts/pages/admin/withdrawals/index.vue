@@ -139,6 +139,10 @@ const toggleSelectAll = () => {
 }
 
 const viewWithdrawal = (withdrawal: Withdrawal) => {
+  if (!withdrawal?.id) {
+    showError('ID de retrait invalide')
+    return
+  }
   router.push(`/admin/withdrawals/${withdrawal.id}`)
 }
 
@@ -155,9 +159,31 @@ const openActionDialog = (withdrawal: Withdrawal, action: typeof actionDialog.va
   }
 }
 
-const handleActionSuccess = () => {
-  selectedWithdrawals.value = []
-  fetchWithdrawals()
+const resetActionDialog = () => {
+  actionDialog.value = {
+    isVisible: false,
+    withdrawal: null,
+    action: 'approve'
+  }
+}
+
+const handleActionSuccess = async () => {
+  try {
+    // Close dialog first to prevent reactivity issues
+    resetActionDialog()
+
+    // Clear selections
+    selectedWithdrawals.value = []
+
+    // Refresh data
+    await fetchWithdrawals()
+
+    // Show success message
+    showSuccess('Action effectuée avec succès')
+  } catch (error) {
+    console.error('Error handling action success:', error)
+    showError('Erreur lors de la mise à jour des données')
+  }
 }
 
 const exportWithdrawals = async () => {
@@ -397,7 +423,7 @@ onMounted(() => {
         <!-- ID Column -->
         <template #item.id="{ item }">
           <div class="text-body-2 font-family-monospace">
-            {{ item.id.substring(0, 8) }}...
+            {{ item?.id?.slice(0, 8) ?? '—' }}...
           </div>
         </template>
 
@@ -517,10 +543,13 @@ onMounted(() => {
 
     <!-- Action Dialog -->
     <WithdrawalActionDialog
+      v-if="actionDialog.isVisible && actionDialog.withdrawal"
+      :key="(actionDialog.withdrawal?.id || 'new') + '-' + actionDialog.action"
       v-model:is-visible="actionDialog.isVisible"
       :withdrawal="actionDialog.withdrawal"
       :action="actionDialog.action"
       @success="handleActionSuccess"
+      @closed="resetActionDialog"
     />
   </div>
 </template>

@@ -38,6 +38,9 @@ const targetAmount = ref(0)
 const loading = ref(false)
 const users = ref<any[]>([])
 const loadingUsers = ref(false)
+const eligibleCommissions = ref<any[]>([])
+const loadingCommissions = ref(false)
+const formRef = ref()
 
 // Computed
 const breadcrumbItems = computed(() => [
@@ -47,9 +50,12 @@ const breadcrumbItems = computed(() => [
   { title: 'Nouveau retrait', disabled: true },
 ])
 
-const isFormValid = computed(() => {
-  return form.value.user_id && 
-         (form.value.amount || form.value.commission_ids.length > 0)
+const canSubmit = computed(() => {
+  // Step 1: require user_id
+  // Step 2: require either selected commission ids OR auto amount with preview
+  // Step 3: ready to submit
+  return Boolean(form.value.user_id) &&
+         (form.value.commission_ids.length > 0 || (targetAmount.value > 0 && selectionMode.value === 'auto'))
 })
 
 const currentStep = ref(1)
@@ -57,11 +63,11 @@ const maxSteps = 3
 
 // Helper functions for error handling
 const hasError = (field: string) => {
-  return errors.value?.[field] && errors.value[field]!.length > 0
+  return errors.value?.[field] && (errors.value as any)[field]?.length > 0
 }
 
 const getError = (field: string) => {
-  return errors.value?.[field] || []
+  return (errors.value as any)?.[field] || []
 }
 
 // Methods
@@ -109,13 +115,17 @@ const prevStep = () => {
 }
 
 const handleSubmit = async () => {
-  if (!isFormValid.value) return
+  if (!canSubmit.value) return
+
+  // Validate form first
+  const { valid } = await formRef.value?.validate()
+  if (!valid) return
 
   loading.value = true
   clearErrors()
 
   try {
-    const payload = {
+    const payload: any = {
       user_id: form.value.user_id,
       method: form.value.method,
       notes: form.value.notes || undefined,
@@ -123,8 +133,10 @@ const handleSubmit = async () => {
 
     if (selectionMode.value === 'auto' && targetAmount.value > 0) {
       payload.amount = targetAmount.value
+      payload.mode = 'auto'
     } else if (form.value.commission_ids.length > 0) {
       payload.commission_ids = form.value.commission_ids
+      payload.mode = 'manual'
     }
 
     console.log('🔄 [Create Withdrawal] Submitting:', payload)
@@ -168,11 +180,31 @@ onUnmounted(() => {
   loadingUsers.value = false
 })
 
-// Watch for user selection to reset commission selection
-watch(() => form.value.user_id, () => {
+// Watch for user selection to load eligible commissions
+watch(() => form.value.user_id, async (uid) => {
+  // Reset form state
   form.value.commission_ids = []
   targetAmount.value = 0
-})
+
+  if (!uid) {
+    eligibleCommissions.value = []
+    return
+  }
+
+  loadingCommissions.value = true
+  try {
+    const res = await withdrawalsStore.fetchEligibleCommissions(uid)
+    // Unwrap payload safely: res.data?.data ?? res.data ?? []
+    const commissions = Array.isArray(res?.data?.data) ? res.data.data : (Array.isArray(res?.data) ? res.data : [])
+    eligibleCommissions.value = commissions
+    console.log('✅ [Create Withdrawal] Loaded eligible commissions:', eligibleCommissions.value.length)
+  } catch (error) {
+    console.error('❌ [Create Withdrawal] Error loading commissions:', error)
+    showError('Erreur lors du chargement des commissions')
+  } finally {
+    loadingCommissions.value = false
+  }
+}, { immediate: true })
 
 // Navigation guard to prevent navigation issues
 onBeforeRouteLeave((to, from, next) => {
@@ -223,7 +255,7 @@ fetchUsers()
     <!-- Form -->
     <VCard>
       <VCardText>
-        <VForm @submit.prevent="handleSubmit">
+        <VForm ref="formRef" @submit.prevent="handleSubmit">
           <!-- Step 1: User Selection -->
           <div v-if="currentStep === 1">
             <h3 class="text-h6 mb-6">Sélection de l'affilié</h3>
@@ -388,7 +420,7 @@ fetchUsers()
                     v-if="currentStep === maxSteps"
                     color="primary"
                     :loading="loading"
-                    :disabled="!isFormValid"
+                    :disabled="!canSubmit"
                     type="submit"
                   >
                     Créer le retrait

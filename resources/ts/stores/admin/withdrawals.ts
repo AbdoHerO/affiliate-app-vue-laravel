@@ -474,8 +474,19 @@ export const useWithdrawalsStore = defineStore('withdrawals', () => {
       const url = `/admin/withdrawals/users/${userId}/eligible-commissions${queryParams.toString() ? `?${queryParams.toString()}` : ''}`
       const response = await $api(url)
 
-      if (response?.success) {
-        return { success: true, data: response.data }
+      if (response?.success || response?.data) {
+        // Unwrap payload safely: response.data?.data ?? response.data ?? response
+        const commissions = Array.isArray(response?.data?.data)
+          ? response.data.data
+          : (Array.isArray(response?.data) ? response.data : [])
+
+        return {
+          success: true,
+          data: {
+            data: commissions,
+            pagination: response?.data?.pagination || null
+          }
+        }
       } else {
         error.value = response?.message || 'Erreur lors du chargement des commissions éligibles'
         return { success: false, message: error.value }
