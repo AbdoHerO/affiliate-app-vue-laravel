@@ -143,9 +143,14 @@ const viewWithdrawal = (withdrawal: Withdrawal) => {
 }
 
 const openActionDialog = (withdrawal: Withdrawal, action: typeof actionDialog.value.action) => {
+  if (!withdrawal) {
+    console.error('Cannot open action dialog: withdrawal is null')
+    return
+  }
+
   actionDialog.value = {
     isVisible: true,
-    withdrawal,
+    withdrawal: { ...withdrawal }, // Create a copy to avoid reactivity issues
     action,
   }
 }
@@ -167,9 +172,9 @@ const exportWithdrawals = async () => {
 
   const result = await withdrawalsStore.exportCsv(filterParams)
   if (result.success) {
-    showSuccess(result.message)
+    showSuccess(result.message || 'Export réussi')
   } else {
-    showError(result.message)
+    showError(result.message || 'Erreur lors de l\'export')
   }
 }
 

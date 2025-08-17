@@ -5,7 +5,7 @@ import { useNotifications } from '@/composables/useNotifications'
 
 interface Props {
   isVisible: boolean
-  withdrawal: any
+  withdrawal: any | null
   action: 'approve' | 'reject' | 'mark_in_payment' | 'mark_paid'
 }
 

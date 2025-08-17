@@ -80,8 +80,9 @@ const fetchUsers = async (search?: string) => {
 
     console.log('📥 [Create Withdrawal] API Response:', response)
 
-    if (response?.success) {
-      users.value = response.data?.users || []
+    if (response?.users || response?.data?.users) {
+      // Handle direct response or nested response
+      users.value = response.users || response.data?.users || []
       console.log('✅ [Create Withdrawal] Users loaded:', users.value.length)
     } else {
       console.error('❌ [Create Withdrawal] API returned error:', response)
