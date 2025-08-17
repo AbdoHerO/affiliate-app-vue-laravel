@@ -78,7 +78,7 @@ const fetchUsers = async (search?: string) => {
     const response = await $api(url)
 
     if (response?.success) {
-      users.value = response.data || []
+      users.value = response.data?.users || []
     }
   } catch (error) {
     console.error('🚫 [Create Withdrawal] Error fetching users:', error)
@@ -218,10 +218,10 @@ fetchUsers()
         <VForm @submit.prevent="handleSubmit">
           <!-- Step 1: User Selection -->
           <div v-if="currentStep === 1">
-            <h3 class="text-h6 mb-4">Sélection de l'affilié</h3>
-            
+            <h3 class="text-h6 mb-6">Sélection de l'affilié</h3>
+
             <VRow>
-              <VCol cols="12" md="8">
+              <VCol cols="12">
                 <VAutocomplete
                   v-model="form.user_id"
                   :items="users"
@@ -234,6 +234,7 @@ fetchUsers()
                   :error="hasError('user_id')"
                   :error-messages="getError('user_id')"
                   @update:search="fetchUsers"
+                  class="mb-4"
                 >
                   <template #item="{ props, item }">
                     <VListItem v-bind="props">
@@ -248,13 +249,26 @@ fetchUsers()
                   </template>
                 </VAutocomplete>
               </VCol>
-              <VCol cols="12" md="4">
+            </VRow>
+
+            <VRow>
+              <VCol cols="12" md="6">
                 <VSelect
                   v-model="form.method"
                   :items="[{ title: 'Virement bancaire', value: 'bank_transfer' }]"
                   label="Méthode de retrait"
                   :error="hasError('method')"
                   :error-messages="getError('method')"
+                />
+              </VCol>
+              <VCol cols="12" md="6">
+                <VTextarea
+                  v-model="form.notes"
+                  label="Notes (optionnel)"
+                  placeholder="Ajouter des notes pour ce retrait..."
+                  rows="3"
+                  :error="hasError('notes')"
+                  :error-messages="getError('notes')"
                 />
               </VCol>
             </VRow>
