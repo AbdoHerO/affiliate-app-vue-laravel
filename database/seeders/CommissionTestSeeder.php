@@ -250,7 +250,6 @@ class CommissionTestSeeder extends Seeder
                 'client_id' => $client->id,
                 'boutique_id' => $boutique->id,
                 'adresse_id' => $clientAddress->id,
-                'adresse_livraison_id' => $clientAddress->id,
                 'statut' => $status,
                 'total_ht' => 0,
                 'total_ttc' => 0,

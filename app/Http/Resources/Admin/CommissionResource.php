@@ -57,19 +57,17 @@ class CommissionResource extends JsonResource
                 ];
             }),
             
-            'commande_article' => $this->whenLoaded('commandeArticle', function () {
-                return [
-                    'id' => $this->commandeArticle->id,
-                    'quantite' => $this->commandeArticle->quantite,
-                    'prix_unitaire' => $this->commandeArticle->prix_unitaire,
-                    'total_ligne' => $this->commandeArticle->total_ligne,
-                    'produit' => $this->whenLoaded('commandeArticle.produit', [
-                        'id' => $this->commandeArticle->produit->id,
-                        'titre' => $this->commandeArticle->produit->titre,
-                        'prix_vente' => $this->commandeArticle->produit->prix_vente,
-                    ]),
-                ];
-            }),
+            'commande_article' => $this->commandeArticle ? [
+                'id' => $this->commandeArticle->id,
+                'quantite' => $this->commandeArticle->quantite,
+                'prix_unitaire' => $this->commandeArticle->prix_unitaire,
+                'total_ligne' => $this->commandeArticle->total_ligne,
+                'produit' => $this->commandeArticle->produit ? [
+                    'id' => $this->commandeArticle->produit->id,
+                    'titre' => $this->commandeArticle->produit->titre,
+                    'prix_vente' => $this->commandeArticle->produit->prix_vente,
+                ] : null,
+            ] : null,
             
             // Computed properties
             'can_be_approved' => $this->canBeApproved(),
