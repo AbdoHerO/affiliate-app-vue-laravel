@@ -470,8 +470,8 @@ watch(() => router.currentRoute.value, (newRoute) => {
                 <v-select
                   v-model="ticketForm.category_id"
                   :items="safeCategories"
-                  item-title="name"
-                  item-value="id"
+                  item-title="title"
+                  item-value="value"
                   :label="getTranslation('tickets.form.category', 'Category')"
                   variant="outlined"
                   clearable
