@@ -4,6 +4,7 @@ import { storeToRefs } from 'pinia'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useTicketsStore } from '@/stores/admin/tickets'
+import { useQuickConfirm } from '@/composables/useConfirmAction'
 import TicketStatusBadge from '@/components/admin/tickets/TicketStatusBadge.vue'
 import TicketPriorityBadge from '@/components/admin/tickets/TicketPriorityBadge.vue'
 import TicketAssigneeSelect from '@/components/admin/tickets/TicketAssigneeSelect.vue'
@@ -22,10 +23,25 @@ definePage({
 const router = useRouter()
 const { t } = useI18n()
 
-// Initialize store and composables safely with detailed error catching
+// Initialize store and composables
 let ticketsStore: ReturnType<typeof useTicketsStore>
-let confirm: any
-let presets: any
+
+// Initialize confirm composable
+const {
+  confirm,
+  confirmDelete,
+  confirmBulkDelete,
+  isDialogVisible,
+  isLoading,
+  dialogTitle,
+  dialogText,
+  dialogIcon,
+  dialogColor,
+  confirmButtonText,
+  cancelButtonText,
+  handleConfirm,
+  handleCancel,
+} = useQuickConfirm()
 
 try {
   console.log('🎫 [Tickets] Initializing tickets store...')
@@ -51,56 +67,7 @@ try {
   } as any
 }
 
-// Initialize confirm composable with better error handling
-try {
-  console.log('🎫 [Tickets] Initializing confirm composable...')
-  
-  // Try to import the composable dynamically to catch import errors
-  const { useQuickConfirm } = await import('@/composables/useConfirmAction')
-  const confirmComposable = useQuickConfirm()
-  
-  if (confirmComposable && typeof confirmComposable === 'object') {
-    confirm = confirmComposable.confirm || (() => Promise.resolve(true))
-    presets = confirmComposable.presets || { 
-      delete: () => ({ title: 'Confirm Delete', text: 'Are you sure?' }), 
-      bulkDelete: () => ({ title: 'Confirm Bulk Delete', text: 'Are you sure?' }) 
-    }
-    console.log('✅ [Tickets] Confirm composable initialized successfully')
-  } else {
-    throw new Error('useQuickConfirm returned invalid object')
-  }
-} catch (error) {
-  console.error('🚫 [Tickets] Error initializing confirm composable:', error)
-  
-  // Create safe fallback implementations
-  confirm = async (options?: any) => {
-    console.log('🔄 [Tickets] Using fallback confirm dialog')
-    // Use native browser confirm as fallback
-    const message = options?.text || options?.title || 'Are you sure?'
-    return window.confirm(message)
-  }
-  
-  presets = {
-    delete: (type?: string, name?: string) => ({
-      title: `Delete ${type || 'item'}`,
-      text: `Are you sure you want to delete ${name ? `"${name}"` : 'this item'}?`,
-      type: 'error',
-      confirmText: 'Delete',
-      cancelText: 'Cancel',
-      icon: 'tabler-trash',
-      color: 'error',
-    }),
-    bulkDelete: (type?: string, count?: number) => ({
-      title: `Delete ${count || 0} ${type || 'items'}`,
-      text: `Are you sure you want to delete ${count || 0} ${type || 'items'}?`,
-      type: 'error',
-      confirmText: 'Delete All',
-      cancelText: 'Cancel',
-      icon: 'tabler-trash',
-      color: 'error',
-    })
-  }
-}
+
 
 // Component cleanup flag
 const isDestroyed = ref(false)
@@ -108,9 +75,15 @@ const isDestroyed = ref(false)
 // State
 const selectedTickets = ref<string[]>([])
 const showFilters = ref(false)
+
+// Dialog boolean states
+const showBulkAssignDialog = ref(false)
+const showBulkStatusDialog = ref(false)
+
+// Form values
 const bulkAssigneeId = ref<string | null>(null)
 const bulkStatus = ref('')
-const isLoading = ref(true)
+const pageLoading = ref(true)
 const hasError = ref(false)
 const errorMessage = ref('')
 
@@ -348,7 +321,7 @@ const changeTicketStatus = async (ticketId: string, status: string) => {
 const deleteTicket = async (ticket: any) => {
   if (isDestroyed.value) return
   try {
-    const confirmed = await confirm?.(presets?.delete?.('ticket', ticket.subject) || {})
+    const confirmed = await confirmDelete('ticket', ticket.subject)
     if (confirmed) {
       await ticketsStore?.deleteTicket?.(ticket.id)
     }
@@ -356,6 +329,10 @@ const deleteTicket = async (ticket: any) => {
     console.error('Error deleting ticket:', error)
   }
 }
+
+// Dialog openers
+const openBulkAssign = () => { showBulkAssignDialog.value = true }
+const openBulkStatus = () => { showBulkStatusDialog.value = true }
 
 // Bulk actions with error handling
 const handleBulkAssign = async () => {
@@ -378,6 +355,7 @@ const handleBulkAssign = async () => {
       })
       selectedTickets.value = []
       bulkAssigneeId.value = null
+      showBulkAssignDialog.value = false
     }
   } catch (error) {
     console.error('Error in bulk assign:', error)
@@ -404,6 +382,7 @@ const handleBulkStatusChange = async () => {
       })
       selectedTickets.value = []
       bulkStatus.value = ''
+      showBulkStatusDialog.value = false
     }
   } catch (error) {
     console.error('Error in bulk status change:', error)
@@ -412,9 +391,9 @@ const handleBulkStatusChange = async () => {
 
 const handleBulkDelete = async () => {
   if (isDestroyed.value || selectedTickets.value.length === 0) return
-  
+
   try {
-    const confirmed = await confirm?.(presets?.bulkDelete?.('tickets', selectedTickets.value.length) || {})
+    const confirmed = await confirmBulkDelete('tickets', selectedTickets.value.length)
     if (confirmed) {
       await ticketsStore?.bulkAction?.('delete', selectedTickets.value)
       selectedTickets.value = []
@@ -627,7 +606,7 @@ onBeforeUnmount(() => {
                     variant="outlined"
                     size="small"
                     color="primary"
-                    @click="handleBulkAssign"
+                    @click="openBulkAssign"
                   >
                     <VIcon icon="tabler-user-check" class="me-2" />
                     {{ getTranslation('assign', 'Assign') }}
@@ -637,7 +616,7 @@ onBeforeUnmount(() => {
                     variant="outlined"
                     size="small"
                     color="warning"
-                    @click="handleBulkStatusChange"
+                    @click="openBulkStatus"
                   >
                     <VIcon icon="tabler-edit" class="me-2" />
                     {{ getTranslation('change_status', 'Change Status') }}
@@ -897,7 +876,7 @@ onBeforeUnmount(() => {
       </VCard>
 
       <!-- Bulk Action Dialogs -->
-      <VDialog v-model="bulkAssigneeId" max-width="400">
+      <VDialog v-model="showBulkAssignDialog" max-width="400">
         <VCard>
           <VCardTitle>{{ getTranslation('bulk_assign_tickets', 'Bulk Assign Tickets') }}</VCardTitle>
           <VCardText>
@@ -908,13 +887,13 @@ onBeforeUnmount(() => {
           </VCardText>
           <VCardActions>
             <VSpacer />
-            <VBtn @click="bulkAssigneeId = null">{{ getTranslation('cancel', 'Cancel') }}</VBtn>
+            <VBtn @click="showBulkAssignDialog = false">{{ getTranslation('cancel', 'Cancel') }}</VBtn>
             <VBtn color="primary" @click="handleBulkAssign">{{ getTranslation('assign', 'Assign') }}</VBtn>
           </VCardActions>
         </VCard>
       </VDialog>
 
-      <VDialog v-model="bulkStatus" max-width="400">
+      <VDialog v-model="showBulkStatusDialog" max-width="400">
         <VCard>
           <VCardTitle>{{ getTranslation('bulk_change_status', 'Bulk Change Status') }}</VCardTitle>
           <VCardText>
@@ -927,7 +906,7 @@ onBeforeUnmount(() => {
           </VCardText>
           <VCardActions>
             <VSpacer />
-            <VBtn @click="bulkStatus = ''">{{ getTranslation('cancel', 'Cancel') }}</VBtn>
+            <VBtn @click="showBulkStatusDialog = false">{{ getTranslation('cancel', 'Cancel') }}</VBtn>
             <VBtn color="primary" @click="handleBulkStatusChange">{{ getTranslation('change_status', 'Change Status') }}</VBtn>
           </VCardActions>
         </VCard>
@@ -935,7 +914,18 @@ onBeforeUnmount(() => {
     </div>
 
     <!-- Confirm Dialog -->
-    <ConfirmActionDialog />
+    <ConfirmActionDialog
+      :is-dialog-visible="isDialogVisible"
+      :is-loading="isLoading"
+      :dialog-title="dialogTitle"
+      :dialog-text="dialogText"
+      :dialog-icon="dialogIcon"
+      :dialog-color="dialogColor"
+      :confirm-button-text="confirmButtonText"
+      :cancel-button-text="cancelButtonText"
+      @confirm="handleConfirm"
+      @cancel="handleCancel"
+    />
   </div>
 </template>
 
