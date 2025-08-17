@@ -7,10 +7,6 @@ use App\Models\TicketMessage;
 use App\Models\TicketAttachment;
 use App\Models\TicketRelation;
 use App\Models\User;
-use App\Models\Commande;
-use App\Models\Commission;
-use App\Models\Withdrawal;
-use App\Models\Produit;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Storage;
 
@@ -35,11 +31,7 @@ class TicketSeeder extends Seeder
             return;
         }
 
-        // Get some related entities for linking
-        $orders = Commande::limit(10)->get();
-        $commissions = Commission::limit(5)->get();
-        $withdrawals = Withdrawal::limit(3)->get();
-        $products = Produit::limit(5)->get();
+        // Note: Skipping related entities for now to avoid model dependencies
 
         $this->command->info('Creating support tickets...');
 
@@ -197,38 +189,7 @@ class TicketSeeder extends Seeder
                 ]);
             }
 
-            // Add some relations to existing entities
-            if ($index < 3 && !$orders->isEmpty()) {
-                TicketRelation::create([
-                    'ticket_id' => $ticket->id,
-                    'related_type' => 'App\Models\Commande',
-                    'related_id' => $orders->random()->id,
-                ]);
-            }
-
-            if ($index === 1 && !$commissions->isEmpty()) {
-                TicketRelation::create([
-                    'ticket_id' => $ticket->id,
-                    'related_type' => 'App\Models\Commission',
-                    'related_id' => $commissions->random()->id,
-                ]);
-            }
-
-            if ($index === 3 && !$withdrawals->isEmpty()) {
-                TicketRelation::create([
-                    'ticket_id' => $ticket->id,
-                    'related_type' => 'App\Models\Withdrawal',
-                    'related_id' => $withdrawals->random()->id,
-                ]);
-            }
-
-            if ($index === 2 && !$products->isEmpty()) {
-                TicketRelation::create([
-                    'ticket_id' => $ticket->id,
-                    'related_type' => 'App\Models\Produit',
-                    'related_id' => $products->random()->id,
-                ]);
-            }
+            // Skip relations for now - can be added later when models exist
 
             $this->command->info("Created ticket: {$ticket->subject}");
         }

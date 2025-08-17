@@ -45,7 +45,7 @@ return new class extends Migration
             // SLA tracking
             $table->timestamp('first_response_at')->nullable();
             $table->timestamp('resolved_at')->nullable();
-            $table->timestamp('last_activity_at');
+            $table->timestamp('last_activity_at')->nullable();
             
             // Additional data
             $table->json('meta')->nullable();

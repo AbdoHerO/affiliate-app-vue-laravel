@@ -2,8 +2,6 @@
 import { ref, computed, onMounted, watch, nextTick, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { storeToRefs } from 'pinia'
-import { useTicketsStore } from '@/stores/admin/tickets'
 import { $api } from '@/utils/api'
 import { useNotifications } from '@/composables/useNotifications'
 import { useSafeNavigation } from '@/composables/useSafeNavigation'
@@ -21,24 +19,6 @@ const router = useRouter()
 const { t } = useI18n()
 const { showSuccess, showError } = useNotifications()
 const { safePush } = useSafeNavigation()
-
-// Initialize stores with enhanced error handling
-let ticketsStore: ReturnType<typeof useTicketsStore>
-
-try {
-  console.log('🎫 [Create Ticket] Initializing tickets store...')
-  ticketsStore = useTicketsStore()
-  console.log('✅ [Create Ticket] Tickets store initialized successfully')
-} catch (error) {
-  console.error('🚫 [Create Ticket] Error initializing tickets store:', error)
-  // Create fallback store
-  ticketsStore = {
-    loading: ref(false),
-    createTicket: () => Promise.resolve({ success: false }),
-    fetchCategories: () => Promise.resolve(),
-    categories: ref([]),
-  } as any
-}
 
 // Initialize confirm composable with better error handling
 let confirm: any
@@ -86,7 +66,7 @@ try {
 // Component cleanup flag
 const isDestroyed = ref(false)
 
-// Local state variables (like withdrawal page)
+// Local state variables
 const loading = ref(false)
 const categories = ref<Array<{ value: string; title: string }>>([])
 const users = ref<any[]>([])
@@ -103,7 +83,7 @@ const ticketForm = ref({
   title: '',
   description: '',
   priority: 'medium',
-  category_id: null,
+  category_id: 'general',
   user_id: null,
   assignee_id: null,
   status: 'open',
@@ -154,6 +134,7 @@ const canSubmit = computed(() => {
 // Priority options
 const priorityOptions = [
   { value: 'low', label: 'Low', color: 'success' },
+  { value: 'normal', label: 'Normal', color: 'info' },
   { value: 'medium', label: 'Medium', color: 'warning' },
   { value: 'high', label: 'High', color: 'error' },
   { value: 'urgent', label: 'Urgent', color: 'error' }
@@ -162,8 +143,9 @@ const priorityOptions = [
 // Status options
 const statusOptions = [
   { value: 'open', label: 'Open', color: 'info' },
-  { value: 'in_progress', label: 'In Progress', color: 'warning' },
-  { value: 'pending', label: 'Pending', color: 'secondary' },
+  { value: 'pending', label: 'Pending', color: 'warning' },
+  { value: 'waiting_user', label: 'Waiting User', color: 'secondary' },
+  { value: 'waiting_third_party', label: 'Waiting Third Party', color: 'secondary' },
   { value: 'resolved', label: 'Resolved', color: 'success' },
   { value: 'closed', label: 'Closed', color: 'default' }
 ]
@@ -206,11 +188,10 @@ const loadUsers = async (search?: string) => {
   try {
     console.log('🎫 [Create Ticket] Loading users...')
 
-    // Build query parameters (like withdrawal page)
+    // Build query parameters
     const params = new URLSearchParams()
     if (search) params.append('q', search)
     params.append('per_page', '100')
-    // Don't filter by role - tickets can be assigned to any user
 
     const url = `/admin/users${params.toString() ? `?${params.toString()}` : ''}`
     console.log('🔍 [Create Ticket] Fetching users from:', url)
@@ -219,18 +200,58 @@ const loadUsers = async (search?: string) => {
     console.log('📥 [Create Ticket] API Response:', response)
 
     if (response?.users || response?.data?.users) {
-      // Handle direct response or nested response (like withdrawal page)
       users.value = response.users || response.data?.users || []
       console.log('✅ [Create Ticket] Users loaded:', users.value.length)
+    } else if (response?.data && Array.isArray(response.data)) {
+      users.value = response.data
+      console.log('✅ [Create Ticket] Users loaded from data array:', users.value.length)
     } else {
-      console.error('❌ [Create Ticket] API returned error:', response)
-      showError(response?.message || 'Erreur lors du chargement des utilisateurs')
+      console.error('❌ [Create Ticket] API returned unexpected format:', response)
+      showError('Unexpected response format from server')
     }
   } catch (error) {
     console.error('🚫 [Create Ticket] Error loading users:', error)
-    showError('Erreur lors du chargement des utilisateurs')
+    showError('Error loading users')
   } finally {
     usersLoading.value = false
+  }
+}
+
+// Direct API call for ticket creation
+const createTicketAPI = async (ticketData: any) => {
+  try {
+    console.log('🎫 [Create Ticket] Making API call to create ticket:', ticketData)
+    
+    const response = await $api('/admin/support/tickets', {
+      method: 'POST',
+      body: ticketData
+    })
+
+    console.log('📥 [Create Ticket] API Response:', response)
+
+    if (response?.success || response?.ticket || response?.data) {
+      return {
+        success: true,
+        ticket: response.ticket || response.data,
+        message: response.message || 'Ticket created successfully'
+      }
+    } else {
+      return {
+        success: false,
+        message: response?.message || response?.error || 'Failed to create ticket'
+      }
+    }
+  } catch (error: any) {
+    console.error('🚫 [Create Ticket] API Error:', error)
+    
+    // Handle different error formats
+    if (error?.data?.message) {
+      return { success: false, message: error.data.message }
+    } else if (error?.message) {
+      return { success: false, message: error.message }
+    } else {
+      return { success: false, message: 'Network error occurred' }
+    }
   }
 }
 
@@ -259,12 +280,31 @@ const handleSubmit = async () => {
       throw new Error('User is required')
     }
 
-    const result = await ticketsStore.createTicket(ticketForm.value)
+    // Prepare ticket data for API
+    const ticketData = {
+      subject: ticketForm.value.title.trim(),
+      category: ticketForm.value.category_id || 'general',
+      priority: ticketForm.value.priority || 'normal',
+      status: ticketForm.value.status || 'open',
+      requester_id: ticketForm.value.user_id,
+      assignee_id: ticketForm.value.assignee_id || null,
+      first_message: {
+        body: ticketForm.value.description.trim(),
+        attachments: ticketForm.value.attachments || []
+      },
+      tags: ticketForm.value.tags || []
+    }
+
+    console.log('🎫 [Create Ticket] Prepared ticket data:', ticketData)
+
+    // Make direct API call
+    const result = await createTicketAPI(ticketData)
 
     if (result?.success) {
       console.log('✅ [Create Ticket] Ticket created successfully')
+      showSuccess('Ticket created successfully')
       
-      // Navigate back to tickets list with success message
+      // Navigate back to tickets list
       await safePush('/admin/support/tickets', {
         fallback: '/admin/dashboard',
         maxRetries: 2
@@ -277,6 +317,7 @@ const handleSubmit = async () => {
     console.error('🚫 [Create Ticket] Error creating ticket:', error)
     hasError.value = true
     errorMessage.value = error.message || 'An error occurred while creating the ticket'
+    showError(error.message || 'Failed to create ticket')
   } finally {
     isSubmitting.value = false
   }
