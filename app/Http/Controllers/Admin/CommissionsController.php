@@ -45,7 +45,15 @@ class CommissionsController extends Controller
 
         if ($request->filled('status')) {
             $statuses = is_array($request->status) ? $request->status : [$request->status];
-            $query->whereIn('status', $statuses);
+            // Filter out empty values (for "Tous les statuts" option)
+            $statuses = array_filter($statuses, function($status) {
+                return !empty($status);
+            });
+
+            // Only apply filter if we have valid statuses
+            if (!empty($statuses)) {
+                $query->whereIn('status', $statuses);
+            }
         }
 
         if ($request->filled('user_id')) {
