@@ -47,7 +47,29 @@
   "title_statistics": "الإحصائيات",
 
   // ===========================================
-  // COMMON ACTIONS & BUTTONS
+  // ACTIONS & BUTTONS
+  // ===========================================
+  "actions": {
+    "view": "عرض",
+    "edit": "تعديل",
+    "delete": "حذف",
+    "approve": "موافقة",
+    "reject": "رفض",
+    "adjust": "تعديل",
+    "resend": "إعادة إرسال",
+    "track": "تتبع",
+    "refresh": "تحديث",
+    "blCreate": "إنشاء بوليصة",
+    "blAddParcels": "إضافة طرود",
+    "blSave": "حفظ بوليصة",
+    "restore": "استعادة",
+    "force_delete": "حذف نهائي",
+    "confirm_delete": "تأكيد الحذف",
+    "confirm_delete_message": "هل أنت متأكد من حذف هذا العنصر؟ لا يمكن التراجع عن هذا الإجراء."
+  },
+
+  // ===========================================
+  // COMMON ACTIONS & BUTTONS (Legacy)
   // ===========================================
   "action_login": "تسجيل الدخول",
   "action_logout": "تسجيل الخروج",
@@ -823,5 +845,23 @@
   "user_permissions": "صلاحيات المستخدم",
   "File d'Attente d'Approbation": "قائمة انتظار الموافقة",
   "Pré-commandes": "الطلبات المسبقة",
-  "Expéditions": "الشحنات"
+  "Expéditions": "الشحنات",
+
+  // OzonExpress and shipping keys
+  "Debug OzonExpress": "تصحيح OzonExpress",
+  "OzonExpress Paramètres": "إعدادات OzonExpress",
+  "OzonExpress Villes": "مدن OzonExpress",
+
+  // Dashboard and actions keys
+  "dashboard": "لوحة التحكم",
+  "actions.edit": "تعديل",
+  "actions.view": "عرض",
+  "actions.delete": "حذف",
+
+  // User status keys
+  "blocked": "محظور",
+  "not_required": "غير مطلوب",
+  "pending": "قيد الانتظار",
+  "approved": "موافق عليه",
+  "rejected": "مرفوض"
 }

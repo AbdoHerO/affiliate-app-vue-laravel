@@ -44,6 +44,28 @@
   "nav_marketing_materials": "Matériel marketing",
 
   // ===========================================
+  // ACTIONS & BUTTONS
+  // ===========================================
+  "actions": {
+    "view": "Voir",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "approve": "Approuver",
+    "reject": "Rejeter",
+    "adjust": "Ajuster",
+    "resend": "Renvoyer",
+    "track": "Suivre",
+    "refresh": "Actualiser",
+    "blCreate": "Créer BL",
+    "blAddParcels": "Ajouter colis",
+    "blSave": "Sauvegarder BL",
+    "restore": "Restaurer",
+    "force_delete": "Supprimer définitivement",
+    "confirm_delete": "Confirmer la suppression",
+    "confirm_delete_message": "Êtes-vous sûr de vouloir supprimer cet élément ? Cette action est irréversible."
+  },
+
+  // ===========================================
   // PAGE TITLES & HEADERS
   // ===========================================
   "title_admin_dashboard": "Tableau de bord administrateur",
@@ -1125,5 +1147,23 @@
   "user_permissions": "Permissions Utilisateur",
   "File d'Attente d'Approbation": "File d'Attente d'Approbation",
   "Pré-commandes": "Pré-commandes",
-  "Expéditions": "Expéditions"
+  "Expéditions": "Expéditions",
+
+  // OzonExpress and shipping keys
+  "Debug OzonExpress": "Debug OzonExpress",
+  "OzonExpress Paramètres": "OzonExpress Paramètres",
+  "OzonExpress Villes": "OzonExpress Villes",
+
+  // Dashboard and actions keys
+  "dashboard": "Tableau de bord",
+  "actions.edit": "Modifier",
+  "actions.view": "Voir",
+  "actions.delete": "Supprimer",
+
+  // User status keys
+  "blocked": "Bloqué",
+  "not_required": "Non requis",
+  "pending": "En attente",
+  "approved": "Approuvé",
+  "rejected": "Rejeté"
 }

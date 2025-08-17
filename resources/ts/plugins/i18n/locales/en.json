@@ -47,7 +47,29 @@
   "title_statistics": "Statistics",
 
   // ===========================================
-  // COMMON ACTIONS & BUTTONS
+  // ACTIONS & BUTTONS
+  // ===========================================
+  "actions": {
+    "view": "View",
+    "edit": "Edit",
+    "delete": "Delete",
+    "approve": "Approve",
+    "reject": "Reject",
+    "adjust": "Adjust",
+    "resend": "Resend",
+    "track": "Track",
+    "refresh": "Refresh",
+    "blCreate": "Create BL",
+    "blAddParcels": "Add Parcels",
+    "blSave": "Save BL",
+    "restore": "Restore",
+    "force_delete": "Delete Permanently",
+    "confirm_delete": "Confirm Deletion",
+    "confirm_delete_message": "Are you sure you want to delete this item? This action cannot be undone."
+  },
+
+  // ===========================================
+  // COMMON ACTIONS & BUTTONS (Legacy)
   // ===========================================
   "action_login": "Login",
   "action_logout": "Logout",
@@ -1240,5 +1262,23 @@
   "user_permissions": "User Permissions",
   "File d'Attente d'Approbation": "Approval Queue",
   "Pré-commandes": "Pre-orders",
-  "Expéditions": "Shipments"
+  "Expéditions": "Shipments",
+
+  // OzonExpress and shipping keys
+  "Debug OzonExpress": "Debug OzonExpress",
+  "OzonExpress Paramètres": "OzonExpress Settings",
+  "OzonExpress Villes": "OzonExpress Cities",
+
+  // Dashboard and actions keys
+  "dashboard": "Dashboard",
+  "actions.edit": "Edit",
+  "actions.view": "View",
+  "actions.delete": "Delete",
+
+  // User status keys
+  "blocked": "Blocked",
+  "not_required": "Not Required",
+  "pending": "Pending",
+  "approved": "Approved",
+  "rejected": "Rejected"
 }
