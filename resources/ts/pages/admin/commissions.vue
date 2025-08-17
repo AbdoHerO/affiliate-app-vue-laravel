@@ -7,6 +7,7 @@ import { useCommissionsStore, type Commission, type CommissionFilters } from '@/
 import { useAuthStore } from '@/stores/auth'
 import Breadcrumbs from '@/components/common/Breadcrumbs.vue'
 import ConfirmActionDialog from '@/components/common/ConfirmActionDialog.vue'
+import ActionIcon from '@/components/common/ActionIcon.vue'
 import { useQuickConfirm } from '@/composables/useConfirmAction'
 import { useNotifications } from '@/composables/useNotifications'
 
@@ -89,7 +90,13 @@ const handleTableUpdate = async (options: any) => {
 }
 
 const handleView = (commission: Commission) => {
-  router.push(`/admin/commissions/${commission.id}`)
+  console.log('Navigating to commission detail:', commission.id)
+  try {
+    router.push(`/admin/commissions/${commission.id}`)
+  } catch (error) {
+    console.error('Navigation error:', error)
+    showError('Erreur de navigation vers les détails de la commission')
+  }
 }
 
 const handleApprove = async (commission: Commission) => {
@@ -498,37 +505,34 @@ onMounted(async () => {
         <!-- Actions Column -->
         <template #item.actions="{ item }">
           <div class="d-flex gap-1">
-            <VBtn
+            <ActionIcon
               icon="tabler-eye"
-              variant="text"
-              size="small"
+              label="actions.view"
+              variant="default"
               @click="handleView(item)"
             />
 
-            <VBtn
+            <ActionIcon
               v-if="item.can_be_approved"
               icon="tabler-check"
-              variant="text"
-              size="small"
-              color="success"
+              label="actions.approve"
+              variant="success"
               @click="handleApprove(item)"
             />
 
-            <VBtn
+            <ActionIcon
               v-if="item.can_be_rejected"
               icon="tabler-x"
-              variant="text"
-              size="small"
-              color="error"
+              label="actions.reject"
+              variant="danger"
               @click="openRejectDialog(item)"
             />
 
-            <VBtn
+            <ActionIcon
               v-if="item.can_be_adjusted"
               icon="tabler-edit"
-              variant="text"
-              size="small"
-              color="warning"
+              label="actions.adjust"
+              variant="warning"
               @click="openAdjustDialog(item)"
             />
           </div>

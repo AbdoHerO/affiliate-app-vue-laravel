@@ -5,6 +5,7 @@ import { useI18n } from 'vue-i18n'
 import { storeToRefs } from 'pinia'
 import { useCommissionsStore, type Commission } from '@/stores/admin/commissions'
 import Breadcrumbs from '@/components/common/Breadcrumbs.vue'
+import ActionIcon from '@/components/common/ActionIcon.vue'
 import { useQuickConfirm } from '@/composables/useConfirmAction'
 import { useNotifications } from '@/composables/useNotifications'
 
@@ -160,7 +161,7 @@ onMounted(async () => {
           >
             Retour
           </VBtn>
-          
+
           <VBtn
             v-if="commission.can_be_approved"
             color="success"
@@ -170,7 +171,7 @@ onMounted(async () => {
           >
             Approuver
           </VBtn>
-          
+
           <VBtn
             v-if="commission.can_be_rejected"
             color="error"
@@ -180,7 +181,7 @@ onMounted(async () => {
           >
             Rejeter
           </VBtn>
-          
+
           <VBtn
             v-if="commission.can_be_adjusted"
             color="warning"

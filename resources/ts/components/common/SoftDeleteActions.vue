@@ -2,93 +2,63 @@
   <div class="soft-delete-actions">
     <!-- Active item actions -->
     <template v-if="!isSoftDeleted(item)">
-      <VBtn
+      <ActionIcon
         v-if="showEdit"
-        icon
-        size="small"
-        color="primary"
-        variant="text"
+        icon="tabler-edit"
+        label="actions.edit"
+        variant="primary"
         @click="$emit('edit', item)"
-      >
-        <VIcon icon="tabler-edit" />
-        <VTooltip activator="parent" location="top">
-          {{ $t('action_edit') }}
-        </VTooltip>
-      </VBtn>
-      
-      <VBtn
+      />
+
+      <ActionIcon
         v-if="showView"
-        icon
-        size="small"
-        color="info"
-        variant="text"
+        icon="tabler-eye"
+        label="actions.view"
+        variant="default"
         @click="$emit('view', item)"
-      >
-        <VIcon icon="tabler-eye" />
-        <VTooltip activator="parent" location="top">
-          {{ $t('action_view') }}
-        </VTooltip>
-      </VBtn>
-      
-      <VBtn
-        icon
-        size="small"
-        color="error"
-        variant="text"
+      />
+
+      <ActionIcon
+        icon="tabler-trash"
+        label="actions.delete"
+        variant="danger"
         :loading="isLoading"
+        confirm
+        confirm-title="Confirmer la suppression"
+        :confirm-message="`Êtes-vous sûr de vouloir supprimer ${getItemName(item)} ?`"
         @click="handleSoftDelete"
-      >
-        <VIcon icon="tabler-trash" />
-        <VTooltip activator="parent" location="top">
-          {{ $t('action_delete') }}
-        </VTooltip>
-      </VBtn>
+      />
     </template>
 
     <!-- Soft deleted item actions -->
     <template v-else>
-      <VBtn
+      <ActionIcon
         v-if="showView"
-        icon
-        size="small"
-        color="info"
-        variant="text"
+        icon="tabler-eye"
+        label="actions.view"
+        variant="default"
         @click="$emit('view', item)"
-      >
-        <VIcon icon="tabler-eye" />
-        <VTooltip activator="parent" location="top">
-          {{ $t('action_view') }}
-        </VTooltip>
-      </VBtn>
-      
-      <VBtn
-        icon
-        size="small"
-        color="success"
-        variant="text"
+      />
+
+      <ActionIcon
+        icon="tabler-restore"
+        label="actions.restore"
+        variant="success"
         :loading="isLoading"
         @click="handleRestore"
-      >
-        <VIcon icon="tabler-restore" />
-        <VTooltip activator="parent" location="top">
-          {{ $t('action_restore') }}
-        </VTooltip>
-      </VBtn>
-      
-      <VBtn
+      />
+
+      <ActionIcon
         v-if="showPermanentDelete"
-        icon
-        size="small"
-        color="error"
-        variant="text"
+        icon="tabler-trash-x"
+        label="actions.force_delete"
+        variant="danger"
         :loading="isLoading"
+        confirm
+        confirm-title="Suppression définitive"
+        :confirm-message="`Êtes-vous sûr de vouloir supprimer définitivement ${getItemName(item)} ? Cette action est irréversible.`"
         @click="handlePermanentDelete"
-      >
-        <VIcon icon="tabler-trash-x" />
-        <VTooltip activator="parent" location="top">
-          {{ $t('action_permanent_delete') }}
-        </VTooltip>
-      </VBtn>
+      />
     </template>
   </div>
 </template>
@@ -98,6 +68,7 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useQuickConfirm } from '@/composables/useConfirmAction'
 import { useSoftDelete } from '@/composables/useSoftDelete'
+import ActionIcon from '@/components/common/ActionIcon.vue'
 
 interface Props {
   item: any
@@ -147,6 +118,10 @@ const {
 const itemName = computed(() => {
   return props.item[props.itemNameField] || props.item.nom || props.item.titre || props.item.nom_complet || 'Item'
 })
+
+const getItemName = (item: any) => {
+  return item[props.itemNameField] || item.nom || item.titre || item.nom_complet || 'cet élément'
+}
 
 // Handle soft delete
 const handleSoftDelete = async () => {
