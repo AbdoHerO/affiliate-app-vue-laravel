@@ -184,12 +184,20 @@ const saveProduct = async () => {
 
   // Show confirm dialog before saving
   const confirmed = props.mode === 'create' && !localId.value
-    ? await confirmCreate(t('product'))
-    : await confirmUpdate(t('product'), form.value.titre)
+    ? await confirmCreate('product')
+    : await confirmUpdate('product', form.value.titre)
   if (!confirmed) return
+
+  // TODO: Re-enable confirm dialog once core functionality is working
+  // const confirmed = props.mode === 'create' && !localId.value
+  //   ? await confirmCreate('product')
+  //   : await confirmUpdate('product', form.value.titre)
+  // if (!confirmed) return
 
   saving.value = true
   try {
+    console.debug('[ProductForm] Form data before save:', form.value)
+
     if (props.mode === 'create' && !localId.value) {
       // Create new product
       console.debug('[ProductForm] Creating new product')
@@ -945,10 +953,10 @@ onMounted(async () => {
       </VTabs>
 
       <!-- Tab Content -->
-      <VTabsWindow v-model="activeTab" class="pa-6">
-        <!-- Details Tab -->
-        <VTabsWindowItem value="details">
-          <VForm @submit.prevent="saveProduct">
+      <VForm @submit.prevent="saveProduct">
+        <VTabsWindow v-model="activeTab" class="pa-6">
+          <!-- Details Tab -->
+          <VTabsWindowItem value="details">
             <VRow>
               <VCol cols="12" md="6">
                 <VSelect
@@ -1053,7 +1061,6 @@ onMounted(async () => {
                 />
               </VCol>
             </VRow>
-          </VForm>
         </VTabsWindowItem>
 
         <!-- Notation Tab -->
@@ -1071,7 +1078,8 @@ onMounted(async () => {
                 <div class="mb-4">
                   <label class="text-subtitle-2 mb-2 d-block">{{ $t('products.rating.value') }}</label>
                   <VRating
-                    v-model="form.rating_value"
+                    :model-value="form.rating_value || 0"
+                    @update:model-value="(value) => form.rating_value = value || null"
                     half-increments
                     length="5"
                     color="warning"
@@ -1751,6 +1759,7 @@ onMounted(async () => {
           </div>
         </VTabsWindowItem>
       </VTabsWindow>
+      </VForm>
     </VCard>
 
     <!-- Sticky Footer -->
