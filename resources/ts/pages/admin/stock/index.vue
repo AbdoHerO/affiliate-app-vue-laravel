@@ -27,6 +27,16 @@ definePage({
 const { t } = useI18n()
 const { showSuccess, showError } = useNotifications()
 const { safePush, checkEmergencyReset } = useSafeNavigation()
+
+// Debug authentication
+import { useAuthStore } from '@/stores/auth'
+const authStore = useAuthStore()
+console.log('🔐 [Stock Page] Auth status:', {
+  isAuthenticated: authStore.isAuthenticated,
+  hasToken: !!authStore.token,
+  hasUser: !!authStore.user,
+  tokenFromStorage: !!localStorage.getItem('auth_token'),
+})
 const {
   confirmCreate,
   isDialogVisible: isConfirmDialogVisible,
@@ -153,7 +163,7 @@ const handleTableUpdate = (options: any) => {
     sort: options.sortBy?.[0]?.key,
     dir: options.sortBy?.[0]?.order,
   })
-  stockStore.fetchList()
+  // Don't call fetchList here - the watcher will handle it
 }
 
 const openMovementDialog = (item: StockItem, type: 'in' | 'out' | 'adjust') => {
@@ -190,13 +200,23 @@ const handleRetry = () => {
   fetchData()
 }
 
-// Watchers
+// Watchers with debouncing to prevent multiple API calls
+let debounceTimer: NodeJS.Timeout | null = null
+
 const stopWatcher = watch(
   () => filters.value,
   () => {
-    if (isMounted.value) {
-      stockStore.fetchList()
+    if (!isMounted.value) return
+
+    // Clear previous timer
+    if (debounceTimer) {
+      clearTimeout(debounceTimer)
     }
+
+    // Debounce the API call
+    debounceTimer = setTimeout(() => {
+      stockStore.fetchList()
+    }, 300) // 300ms debounce
   },
   { deep: true }
 )
@@ -208,6 +228,12 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   isMounted.value = false
+
+  // Clear debounce timer
+  if (debounceTimer) {
+    clearTimeout(debounceTimer)
+    debounceTimer = null
+  }
 
   // Force close dialogs
   showMovementDialog.value = false
@@ -574,7 +600,6 @@ onBeforeUnmount(() => {
           v-model="filters.page"
           :length="pagination.last_page"
           :total-visible="7"
-          @update:model-value="stockStore.fetchList()"
         />
       </VCardText>
     </VCard>
@@ -621,3 +646,10 @@ onBeforeUnmount(() => {
     </div>
   </ErrorBoundary>
 </template>
+
+<route lang="yaml">
+meta:
+  requiresAuth: true
+  requiresRole: ['admin']
+  layout: admin
+</route>

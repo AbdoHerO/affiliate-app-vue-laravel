@@ -320,6 +320,19 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::get('/{produitId}/history', [StockController::class, 'history']);
         });
 
+        // Debug route for stock
+        Route::get('stock-debug', function () {
+            return response()->json([
+                'success' => true,
+                'message' => 'Stock debug route working',
+                'data' => [
+                    'products_count' => \App\Models\Produit::count(),
+                    'variants_count' => \App\Models\ProduitVariante::count(),
+                    'stocks_count' => \App\Models\Stock::count(),
+                ],
+            ]);
+        });
+
         // Support Tickets Management
         Route::prefix('support/tickets')->group(function () {
             Route::get('/', [\App\Http\Controllers\Admin\TicketsController::class, 'index']);

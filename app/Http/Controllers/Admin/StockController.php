@@ -15,6 +15,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
 class StockController extends Controller
@@ -31,19 +32,27 @@ class StockController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $request->validate([
-            'q' => 'nullable|string|max:255',
-            'categorie_id' => 'nullable|uuid|exists:categories,id',
-            'boutique_id' => 'nullable|uuid|exists:boutiques,id',
-            'actif' => 'nullable|boolean',
-            'with_variants' => 'nullable|boolean',
-            'min_qty' => 'nullable|integer|min:0',
-            'max_qty' => 'nullable|integer|min:0',
-            'page' => 'nullable|integer|min:1',
-            'per_page' => 'nullable|integer|min:1|max:100',
-            'sort' => 'nullable|in:product,variant,qty,available,updated_at',
-            'dir' => 'nullable|in:asc,desc',
-        ]);
+        try {
+            $request->validate([
+                'q' => 'nullable|string|max:255',
+                'categorie_id' => 'nullable|uuid|exists:categories,id',
+                'boutique_id' => 'nullable|uuid|exists:boutiques,id',
+                'actif' => 'nullable|boolean',
+                'with_variants' => 'nullable|boolean',
+                'min_qty' => 'nullable|integer|min:0',
+                'max_qty' => 'nullable|integer|min:0',
+                'page' => 'nullable|integer|min:1',
+                'per_page' => 'nullable|integer|min:1|max:100',
+                'sort' => 'nullable|in:product,variant,qty,available,updated_at',
+                'dir' => 'nullable|in:asc,desc',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error: ' . $e->getMessage(),
+                'data' => [],
+            ], 422);
+        }
 
         $perPage = $request->get('per_page', 15);
         $page = $request->get('page', 1);
@@ -78,6 +87,14 @@ class StockController extends Controller
 
         $products = $query->paginate($perPage, ['*'], 'page', $page);
 
+        // Debug logging
+        Log::info('Stock Controller Debug', [
+            'total_products' => $products->total(),
+            'products_count' => $products->count(),
+            'with_variants' => $withVariants,
+            'request_params' => $request->all(),
+        ]);
+
         // Transform products to include stock information
         $items = [];
         foreach ($products->items() as $product) {
@@ -85,8 +102,26 @@ class StockController extends Controller
                 // Include variants
                 $variants = $product->variantes()->where('actif', true)->get();
                 foreach ($variants as $variant) {
-                    $stockSnapshot = $this->stockService->snapshot($variant->id);
-                    $stats = $this->stockService->getStats($variant->id, null, 7);
+                    try {
+                        $stockSnapshot = $this->stockService->snapshot($variant->id);
+                        $stats = $this->stockService->getStats($variant->id, null, 7);
+                    } catch (\Exception $e) {
+                        Log::error('Stock snapshot error for variant ' . $variant->id, ['error' => $e->getMessage()]);
+                        // Use default values if snapshot fails
+                        $stockSnapshot = [
+                            'on_hand' => 0,
+                            'reserved' => 0,
+                            'available' => 0,
+                            'last_movement_at' => null,
+                            'last_movement_type' => null,
+                        ];
+                        $stats = [
+                            'sum_in' => 0,
+                            'sum_out' => 0,
+                            'adjustments' => 0,
+                            'total_movements' => 0,
+                        ];
+                    }
 
                     // Apply quantity filters
                     if ($request->filled('min_qty') && $stockSnapshot['available'] < $request->get('min_qty')) {
@@ -186,6 +221,11 @@ class StockController extends Controller
                 ];
             }
         }
+
+        Log::info('Stock Controller Result', [
+            'items_count' => count($items),
+            'pagination_total' => $products->total(),
+        ]);
 
         return response()->json([
             'success' => true,

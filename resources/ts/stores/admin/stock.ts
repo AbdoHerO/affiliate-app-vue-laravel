@@ -60,22 +60,58 @@ export const useStockStore = defineStore('admin-stock', () => {
   })
 
   // Actions
+  let fetchListPromise: Promise<any> | null = null
+
   const fetchList = async (customFilters?: Partial<StockFilters>) => {
+    // Prevent duplicate concurrent calls
+    if (fetchListPromise) {
+      console.log('🔄 [Stock Store] Fetch already in progress, waiting...')
+      return fetchListPromise
+    }
+
     loading.value = true
-    try {
-      const params = { ...filters, ...customFilters }
+
+    fetchListPromise = (async () => {
+      try {
+      // Start with basic params for debugging
+      const params: any = {
+        page: customFilters?.page || filters.page || 1,
+        per_page: customFilters?.per_page || filters.per_page || 15,
+      }
+
+      // Only add other params if they have values - ensure booleans are properly converted
+      if (customFilters?.actif !== undefined || filters.actif !== undefined) {
+        const actifValue = customFilters?.actif ?? filters.actif
+        params.actif = actifValue === true ? 1 : (actifValue === false ? 0 : actifValue)
+      }
+
+      if (customFilters?.with_variants !== undefined || filters.with_variants !== undefined) {
+        const withVariantsValue = customFilters?.with_variants ?? filters.with_variants
+        params.with_variants = withVariantsValue === true ? 1 : (withVariantsValue === false ? 0 : withVariantsValue)
+      }
       
-      // Clean up undefined values
-      Object.keys(params).forEach(key => {
-        if (params[key as keyof StockFilters] === undefined || params[key as keyof StockFilters] === '') {
-          delete params[key as keyof StockFilters]
-        }
-      })
+      if (customFilters?.q || filters.q) {
+        params.q = customFilters?.q || filters.q
+      }
+      
+      if (customFilters?.categorie_id || filters.categorie_id) {
+        params.categorie_id = customFilters?.categorie_id || filters.categorie_id
+      }
+      
+      if (customFilters?.boutique_id || filters.boutique_id) {
+        params.boutique_id = customFilters?.boutique_id || filters.boutique_id
+      }
+
+      console.log('🔧 [Stock Store] Making API call with params:', params)
+      console.log('🔧 [Stock Store] Auth token:', localStorage.getItem('auth_token') ? 'Present' : 'Missing')
 
       const response = await $api<StockResponse>('/admin/stock', {
         method: 'GET',
-        params,
+        query: params,
       })
+
+      console.log('📦 [Stock Store] API Response:', response)
+      console.log('📦 [Stock Store] Response success:', response.success)
 
       if (response.success) {
         items.value = response.data
@@ -84,19 +120,27 @@ export const useStockStore = defineStore('admin-stock', () => {
 
       return response
     } catch (error) {
-      console.error('Failed to fetch stock list:', error)
+      console.error('🚨 [Stock Store] Failed to fetch stock list:', error)
       throw error
     } finally {
       loading.value = false
+      fetchListPromise = null
     }
+    })()
+
+    return fetchListPromise
   }
 
   const fetchSummary = async () => {
     summaryLoading.value = true
     try {
+      console.log('📊 [Stock Store] Fetching summary...')
+      
       const response = await $api<StockSummaryResponse>('/admin/stock/summary', {
         method: 'GET',
       })
+
+      console.log('📊 [Stock Store] Summary response:', response)
 
       if (response.success) {
         summary.value = response.data
@@ -104,7 +148,7 @@ export const useStockStore = defineStore('admin-stock', () => {
 
       return response
     } catch (error) {
-      console.error('Failed to fetch stock summary:', error)
+      console.error('🚨 [Stock Store] Failed to fetch stock summary:', error)
       throw error
     } finally {
       summaryLoading.value = false
