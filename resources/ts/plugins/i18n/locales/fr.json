@@ -118,7 +118,8 @@
       "available": "Disponible",
       "last_movement": "Dernier mouvement"
     },
-    "movement_created_successfully": "Mouvement de stock créé avec succès"
+    "movement_created_successfully": "Mouvement de stock créé avec succès",
+    "movement": "mouvement de stock"
   },
   "action_create": "Créer",
   "action_update": "Mettre à jour",
@@ -1469,12 +1470,15 @@
   "stock.history.columns.variant": "Variante",
 
   // Messages
+  "stock.movement": "mouvement de stock",
   "stock.messages.movement_created": "Mouvement de stock créé avec succès",
   "stock.errors.movement_failed": "Échec de la création du mouvement de stock",
+  "stock.errors.missing_product": "Produit manquant. Veuillez sélectionner un produit.",
 
-  // Validation
   "stock.validation.insufficient_stock": "Stock insuffisant. Disponible: {available}",
 
-  // Navigation
+  "validation.required": "Ce champ est requis",
+  "validation.min_value": "La valeur doit être au moins {min}",
+
   "nav_stock_management": "Gestion des Stocks"
 }

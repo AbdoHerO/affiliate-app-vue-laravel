@@ -104,20 +104,20 @@ const breadcrumbs = computed(() => {
 const headers = computed(() => {
   try {
     return [
-      { title: t('stock.columns.product'), key: 'product', sortable: false },
-      { title: t('stock.columns.variant'), key: 'variant', sortable: false },
-      { title: t('stock.columns.category'), key: 'category', sortable: false },
-      { title: t('stock.columns.boutique'), key: 'boutique', sortable: false },
-      { title: t('stock.columns.on_hand'), key: 'on_hand', sortable: true, align: 'center' as const },
-      { title: t('stock.columns.reserved'), key: 'reserved', sortable: true, align: 'center' as const },
-      { title: t('stock.columns.available'), key: 'available', sortable: true, align: 'center' as const },
-      { title: t('stock.columns.last_movement'), key: 'last_movement', sortable: false },
-      { title: t('common.actions'), key: 'actions', sortable: false, align: 'center' as const },
+      { title: t('stock.columns.product'), key: 'product', sortable: false, width: '25%', minWidth: '250px' },
+      { title: t('stock.columns.variant'), key: 'variant', sortable: false, width: '15%', minWidth: '120px' },
+      { title: t('stock.columns.category'), key: 'category', sortable: false, width: '12%', minWidth: '100px' },
+      { title: t('stock.columns.boutique'), key: 'boutique', sortable: false, width: '12%', minWidth: '100px' },
+      { title: t('stock.columns.on_hand'), key: 'on_hand', sortable: true, align: 'center' as const, width: '8%', minWidth: '80px' },
+      { title: t('stock.columns.reserved'), key: 'reserved', sortable: true, align: 'center' as const, width: '8%', minWidth: '80px' },
+      { title: t('stock.columns.available'), key: 'available', sortable: true, align: 'center' as const, width: '8%', minWidth: '80px' },
+      { title: t('stock.columns.last_movement'), key: 'last_movement', sortable: false, width: '12%', minWidth: '120px' },
+      { title: t('common.actions'), key: 'actions', sortable: false, align: 'center' as const, width: '120px' },
     ]
   } catch (error) {
     return [
-      { title: 'Product', key: 'product', sortable: false },
-      { title: 'Actions', key: 'actions', sortable: false },
+      { title: 'Product', key: 'product', sortable: false, width: '60%' },
+      { title: 'Actions', key: 'actions', sortable: false, width: '40%' },
     ]
   }
 })
@@ -696,6 +696,27 @@ onBeforeUnmount(() => {
   overflow-x: auto;
 }
 
+/* Table column width enforcement */
+.stock-table :deep(.v-data-table__wrapper) {
+  min-width: 800px; /* Ensure minimum table width */
+}
+
+.stock-table :deep(.v-data-table__th),
+.stock-table :deep(.v-data-table__td) {
+  /* Respect column width settings */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Product column - allow text wrapping for long names */
+.stock-table :deep(.v-data-table__th:first-child),
+.stock-table :deep(.v-data-table__td:first-child) {
+  white-space: normal;
+  word-wrap: break-word;
+  max-width: 250px;
+}
+
 /* Responsive table improvements */
 @media (max-width: 768px) {
   .stock-table :deep(.v-data-table__wrapper) {
@@ -709,6 +730,12 @@ onBeforeUnmount(() => {
   .stock-table :deep(.v-data-table__td) {
     white-space: nowrap;
     min-width: 120px;
+  }
+
+  /* On mobile, product column should still be readable */
+  .stock-table :deep(.v-data-table__td:first-child) {
+    min-width: 200px;
+    max-width: 250px;
   }
 }
 
