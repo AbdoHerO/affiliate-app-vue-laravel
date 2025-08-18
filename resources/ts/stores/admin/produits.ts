@@ -359,23 +359,23 @@ export const useProduitsStore = defineStore('produits', () => {
       }
 
       const response = responseData.value as any
-      
-      if (response.data.success) {
+
+      if (response.success) {
         // Update in local state
         const index = produits.value.findIndex(p => p.id === id)
         if (index !== -1) {
-          produits.value[index] = response.data.data
+          produits.value[index] = response.data
         }
-        
+
         // Update current produit if it matches
         if (currentProduit.value?.id === id) {
-          currentProduit.value = response.data.data
+          currentProduit.value = response.data
         }
-        
-        return response.data.data
+
+        return response.data
       }
-      
-      throw new Error(response.data.message)
+
+      throw new Error(response.message)
     } catch (error) {
       console.error('Failed to update produit:', error)
       throw error
@@ -446,19 +446,19 @@ export const useProduitsStore = defineStore('produits', () => {
       if (apiError.value) throw apiError.value
       const response = responseData.value as any
       
-      if (response.data.success) {
+      if (response.success) {
         // Add to local images state
-        images.value.push(response.data.data)
+        images.value.push(response.data)
         
         // Update current produit images if loaded
         if (currentProduit.value?.id === produitId && currentProduit.value.images) {
-          currentProduit.value.images.push(response.data.data)
+          currentProduit.value.images.push(response.data)
         }
-        
-        return response.data.data
+
+        return response.data
       }
       
-      throw new Error(response.data.message)
+      throw new Error(response.message)
     } catch (error) {
       console.error('Failed to add image:', error)
       throw error
@@ -476,7 +476,7 @@ export const useProduitsStore = defineStore('produits', () => {
       if (apiError.value) throw apiError.value
       const response = responseData.value as any
       
-      if (response.data.success) {
+      if (response.success) {
         // Update local images state with new order
         items.forEach(item => {
           const image = images.value.find(img => img.id === item.id)
@@ -502,7 +502,7 @@ export const useProduitsStore = defineStore('produits', () => {
         return true
       }
       
-      throw new Error(response.data.message)
+      throw new Error(response.message)
     } catch (error) {
       console.error('Failed to sort images:', error)
       throw error
@@ -518,7 +518,7 @@ export const useProduitsStore = defineStore('produits', () => {
       if (apiError.value) throw apiError.value
       const response = responseData.value as any
       
-      if (response.data.success) {
+      if (response.success) {
         // Remove from local images state
         const index = images.value.findIndex(img => img.id === imageId)
         if (index !== -1) {
@@ -536,7 +536,7 @@ export const useProduitsStore = defineStore('produits', () => {
         return true
       }
       
-      throw new Error(response.data.message)
+      throw new Error(response.message)
     } catch (error) {
       console.error('Failed to delete image:', error)
       throw error
