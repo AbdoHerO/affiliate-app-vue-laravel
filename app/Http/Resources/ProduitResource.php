@@ -27,6 +27,13 @@ class ProduitResource extends JsonResource
             'actif' => $this->actif,
             'quantite_min' => $this->quantite_min,
             'notes_admin' => $this->notes_admin,
+            'rating_value' => $this->rating_value,
+            'rating' => [
+                'value' => $this->rating_value,
+                'max' => $this->rating_max ?? 5,
+                'updated_by' => $this->ratingUpdater?->nom_complet,
+                'updated_at' => optional($this->rating_updated_at)->toISOString(),
+            ],
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
             

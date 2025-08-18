@@ -1346,5 +1346,15 @@
   "ticket_not_found_description": "Le ticket que vous recherchez n'existe pas ou a été supprimé.",
   "back_to_tickets": "Retour aux Tickets",
   "no_users_found": "Aucun utilisateur trouvé",
-  "type_to_search": "Tapez pour rechercher des utilisateurs"
+  "type_to_search": "Tapez pour rechercher des utilisateurs",
+
+  // ===========================================
+  // PRODUCT RATING MODULE
+  // ===========================================
+  "products.rating.tab": "Notation",
+  "products.rating.value": "Note (0–5)",
+  "products.rating.last_update": "Dernière mise à jour",
+  "products.rating.updated_by": "Mis à jour par",
+  "products.list.column.rating": "Note",
+  "products.rating.help": "Note statique définie par l'administrateur"
 }

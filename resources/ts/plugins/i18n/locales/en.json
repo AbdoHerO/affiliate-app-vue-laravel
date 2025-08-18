@@ -1459,5 +1459,15 @@
   "ticket_not_found_description": "The ticket you're looking for doesn't exist or has been deleted.",
   "back_to_tickets": "Back to Tickets",
   "no_users_found": "No users found",
-  "type_to_search": "Type to search users"
+  "type_to_search": "Type to search users",
+
+  // ===========================================
+  // PRODUCT RATING MODULE
+  // ===========================================
+  "products.rating.tab": "Rating",
+  "products.rating.value": "Rating (0–5)",
+  "products.rating.last_update": "Last updated",
+  "products.rating.updated_by": "Updated by",
+  "products.list.column.rating": "Rating",
+  "products.rating.help": "Static rating set by administrator"
 }

@@ -41,6 +41,7 @@ class UpdateProduitRequest extends FormRequest
             'actif' => 'required|boolean',
             'quantite_min' => 'required|integer|min:1',
             'notes_admin' => 'nullable|string',
+            'rating_value' => 'nullable|numeric|min:0|max:5',
         ];
     }
 

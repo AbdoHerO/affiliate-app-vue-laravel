@@ -116,8 +116,16 @@ class ProduitController extends Controller
                 $validated['slug'] = Str::slug($validated['titre']);
             }
 
+            // Handle rating fields
+            if (isset($validated['rating_value']) && $validated['rating_value'] !== null) {
+                // Clamp rating value to [0, 5] and round to 1 decimal place
+                $validated['rating_value'] = round(max(0, min(5, $validated['rating_value'])), 1);
+                $validated['rating_updated_by'] = $request->user()->id;
+                $validated['rating_updated_at'] = now();
+            }
+
             $produit = Produit::create($validated);
-            $produit->load(['boutique', 'categorie', 'images']);
+            $produit->load(['boutique', 'categorie', 'images', 'ratingUpdater:id,nom_complet']);
 
             return response()->json([
                 'success' => true,
@@ -141,6 +149,7 @@ class ProduitController extends Controller
         $produit->load([
             'boutique',
             'categorie',
+            'ratingUpdater:id,nom_complet',
             'images' => function ($query) {
                 $query->orderBy('ordre', 'asc');
             },
@@ -179,8 +188,16 @@ class ProduitController extends Controller
                 $validated['slug'] = Str::slug($validated['titre']);
             }
 
+            // Handle rating fields
+            if (isset($validated['rating_value']) && $validated['rating_value'] !== null) {
+                // Clamp rating value to [0, 5] and round to 1 decimal place
+                $validated['rating_value'] = round(max(0, min(5, $validated['rating_value'])), 1);
+                $validated['rating_updated_by'] = $request->user()->id;
+                $validated['rating_updated_at'] = now();
+            }
+
             $produit->update($validated);
-            $produit->load(['boutique', 'categorie', 'images']);
+            $produit->load(['boutique', 'categorie', 'images', 'ratingUpdater:id,nom_complet']);
 
             return response()->json([
                 'success' => true,

@@ -66,6 +66,7 @@ const form = ref<ProduitFormData>({
   quantite_min: 1,
   notes_admin: '',
   actif: true,
+  rating_value: null,
 })
 
 // Form errors handling
@@ -158,6 +159,7 @@ const loadProduct = async () => {
           quantite_min: (p as any).quantite_min || 1,
           notes_admin: (p as any).notes_admin || '',
           actif: p.actif,
+          rating_value: (p as any).rating_value || null,
         }
         localId.value = p.id
         console.debug('[ProductForm] Edit mode - variants loaded:', variantes.value.map(v => ({ id: v.id, nom: v.nom, valeur: v.valeur, image_url: v.image_url })))
@@ -237,6 +239,24 @@ const saveProduct = async () => {
 
 const cancelEdit = () => {
   router.push({ name: 'admin-produits' })
+}
+
+// Rating methods
+const clampRatingValue = () => {
+  if (form.value.rating_value !== null && form.value.rating_value !== undefined) {
+    form.value.rating_value = Math.max(0, Math.min(5, Number(form.value.rating_value)))
+    form.value.rating_value = Math.round(form.value.rating_value * 10) / 10 // Round to 1 decimal place
+  }
+}
+
+const formatDate = (dateString: string) => {
+  return new Date(dateString).toLocaleDateString('fr-FR', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
 }
 
 // Propositions methods
@@ -898,6 +918,10 @@ onMounted(async () => {
           <VIcon icon="tabler-info-circle" class="me-2" />
           Details
         </VTab>
+        <VTab value="notation">
+          <VIcon icon="tabler-star" class="me-2" />
+          {{ $t('products.rating.tab') }}
+        </VTab>
         <VTab :disabled="!readyForMedia" value="images">
           <VIcon icon="tabler-photo" class="me-2" />
           Images
@@ -1031,6 +1055,83 @@ onMounted(async () => {
             </VRow>
           </VForm>
         </VTabsWindowItem>
+
+        <!-- Notation Tab -->
+        <VTabsWindowItem value="notation">
+          <div class="mb-6">
+            <h3 class="text-h6 mb-2">{{ $t('products.rating.tab') }}</h3>
+            <p class="text-body-2 text-medium-emphasis">
+              {{ $t('products.rating.help') }}
+            </p>
+          </div>
+
+          <VRow>
+            <VCol cols="12" md="6">
+              <VCard variant="outlined" class="pa-4">
+                <div class="mb-4">
+                  <label class="text-subtitle-2 mb-2 d-block">{{ $t('products.rating.value') }}</label>
+                  <VRating
+                    v-model="form.rating_value"
+                    half-increments
+                    length="5"
+                    color="warning"
+                    background-color="grey-lighten-2"
+                    size="large"
+                    class="mb-3"
+                  />
+                  <VTextField
+                    v-model.number="form.rating_value"
+                    type="number"
+                    min="0"
+                    max="5"
+                    step="0.1"
+                    variant="outlined"
+                    density="compact"
+                    :label="$t('products.rating.value')"
+                    :error-messages="productErrors.rating_value"
+                    @blur="clampRatingValue"
+                  />
+                </div>
+              </VCard>
+            </VCol>
+
+            <VCol cols="12" md="6">
+              <VCard variant="outlined" class="pa-4">
+                <h4 class="text-subtitle-1 mb-3">Metadata</h4>
+
+                <div v-if="currentProduit?.rating?.updated_at" class="mb-3">
+                  <VChip
+                    size="small"
+                    color="info"
+                    variant="tonal"
+                    prepend-icon="tabler-clock"
+                  >
+                    {{ $t('products.rating.last_update') }}: {{ formatDate(currentProduit.rating.updated_at) }}
+                  </VChip>
+                </div>
+
+                <div v-if="currentProduit?.rating?.updated_by" class="mb-3">
+                  <VChip
+                    size="small"
+                    color="primary"
+                    variant="tonal"
+                    prepend-icon="tabler-user"
+                  >
+                    {{ $t('products.rating.updated_by') }}: {{ currentProduit.rating.updated_by }}
+                  </VChip>
+                </div>
+
+                <div v-if="!currentProduit?.rating?.updated_at" class="text-center py-4">
+                  <VIcon icon="tabler-star-off" size="48" color="grey-lighten-1" class="mb-2" />
+                  <p class="text-body-2 text-medium-emphasis">
+                    Aucune note définie
+                  </p>
+                </div>
+              </VCard>
+            </VCol>
+          </VRow>
+        </VTabsWindowItem>
+
         <!-- Images Tab -->
         <VTabsWindowItem value="images">
           <div v-if="!readyForMedia" class="text-center py-12">

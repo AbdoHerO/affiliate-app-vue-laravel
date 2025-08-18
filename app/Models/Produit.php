@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\User;
 
 class Produit extends Model
 {
@@ -35,6 +36,10 @@ class Produit extends Model
         'actif',
         'quantite_min',
         'notes_admin',
+        'rating_value',
+        'rating_max',
+        'rating_updated_by',
+        'rating_updated_at',
     ];
 
     /**
@@ -48,6 +53,9 @@ class Produit extends Model
         'prix_affilie' => 'decimal:2',
         'actif' => 'boolean',
         'quantite_min' => 'integer',
+        'rating_value' => 'float',
+        'rating_max' => 'integer',
+        'rating_updated_at' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime',
@@ -157,5 +165,13 @@ class Produit extends Model
     public function ruptures(): HasMany
     {
         return $this->hasMany(ProduitRupture::class, 'produit_id');
+    }
+
+    /**
+     * Get the user who last updated the rating.
+     */
+    public function ratingUpdater(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'rating_updated_by');
     }
 }

@@ -13,6 +13,13 @@ export interface Produit {
   prix_affilie: number | null
   slug: string
   actif: boolean
+  rating_value?: number | null
+  rating?: {
+    value?: number | null
+    max: number
+    updated_by?: string | null
+    updated_at?: string | null
+  }
   created_at: string
   updated_at: string
   boutique?: {
@@ -103,6 +110,7 @@ export interface ProduitFormData {
   notes_admin: string | null
   slug?: string
   actif: boolean
+  rating_value?: number | null
 }
 
 export interface ProduitFilters {

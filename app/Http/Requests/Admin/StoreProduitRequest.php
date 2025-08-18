@@ -33,6 +33,7 @@ class StoreProduitRequest extends FormRequest
             'actif' => 'required|boolean',
             'quantite_min' => 'nullable|integer|min:1',
             'notes_admin' => 'nullable|string',
+            'rating_value' => 'nullable|numeric|min:0|max:5',
         ];
     }
 

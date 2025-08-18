@@ -22,6 +22,10 @@ class PublicProduitResource extends JsonResource
             'description' => $this->description,
             'prix_vente' => $this->prix_vente,
             'prix_affilie' => $this->prix_affilie,
+            'rating' => [
+                'value' => $this->rating_value,
+                'max' => $this->rating_max ?? 5,
+            ],
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
 

@@ -1016,5 +1016,15 @@
   "ticket_not_found_description": "التذكرة التي تبحث عنها غير موجودة أو تم حذفها.",
   "back_to_tickets": "العودة إلى التذاكر",
   "no_users_found": "لم يتم العثور على مستخدمين",
-  "type_to_search": "اكتب للبحث عن المستخدمين"
+  "type_to_search": "اكتب للبحث عن المستخدمين",
+
+  // ===========================================
+  // PRODUCT RATING MODULE
+  // ===========================================
+  "products.rating.tab": "التقييم",
+  "products.rating.value": "التقييم (0–5)",
+  "products.rating.last_update": "آخر تحديث",
+  "products.rating.updated_by": "تم التحديث بواسطة",
+  "products.list.column.rating": "التقييم",
+  "products.rating.help": "تقييم ثابت يحدده المدير"
 }

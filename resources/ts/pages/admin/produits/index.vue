@@ -78,6 +78,7 @@ const headers = computed(() => [
   { title: t('admin_produits_categorie'), key: 'categorie.nom', sortable: true },
   { title: t('admin_produits_prix_vente'), key: 'prix_vente', sortable: true, align: 'end' as const },
   { title: t('admin_produits_prix_affilie'), key: 'prix_affilie', sortable: true, align: 'end' as const },
+  { title: t('products.list.column.rating'), key: 'rating_value', sortable: true, align: 'center' as const },
   { title: t('common.status'), key: 'actif', sortable: true },
   { title: t('record_status'), key: 'record_status', sortable: false },
   { title: t('common.actions'), key: 'actions', sortable: false, width: 120 }
@@ -451,6 +452,23 @@ onMounted(async () => {
 
         <template #item.prix_affilie="{ item }">
           <span class="font-weight-medium">{{ formatPrice(item.prix_affilie) }}</span>
+        </template>
+
+        <template #item.rating_value="{ item }">
+          <div class="d-flex align-center justify-center gap-2">
+            <VRating
+              :model-value="item.rating_value || 0"
+              readonly
+              half-increments
+              length="5"
+              size="small"
+              color="warning"
+              background-color="grey-lighten-2"
+            />
+            <span class="text-caption text-medium-emphasis">
+              {{ item.rating_value ? `${item.rating_value}/5` : '-' }}
+            </span>
+          </div>
         </template>
 
         <template #item.actif="{ item }">
