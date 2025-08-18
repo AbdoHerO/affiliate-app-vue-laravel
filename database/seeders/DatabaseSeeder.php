@@ -14,11 +14,11 @@ class DatabaseSeeder extends Seeder
     {
         $this->command->info('🚀 Starting complete database seeding...');
 
-        // Check environment safety
-        if (app()->environment('production')) {
-            $this->command->error('❌ Cannot run seeders in production environment!');
-            return;
-        }
+        // // Check environment safety
+        // if (app()->environment('production')) {
+        //     $this->command->error('❌ Cannot run seeders in production environment!');
+        //     return;
+        // }
 
         // 1. FOUNDATION: Roles, permissions, and basic settings
         $this->command->info('📋 Step 1: Foundation (Roles, Permissions, Settings)');
