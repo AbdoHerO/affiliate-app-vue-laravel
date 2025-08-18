@@ -254,7 +254,8 @@ watch(
         resetForm()
       })
     }
-  }
+  },
+  { immediate: true }
 )
 
 // Watch for item changes (when parent sets selectedItem)
@@ -271,7 +272,29 @@ watch(
       })
     }
   },
-  { deep: true }
+  { deep: true, immediate: true }
+)
+
+// Watch for all props together to handle timing issues
+watch(
+  () => [props.modelValue, props.item, props.movementType] as const,
+  ([isOpen, item, type]) => {
+    if (isOpen && item?.product?.id) {
+      console.log('🔄 [StockMovementDialog] All props ready, ensuring form is set:', {
+        productId: item.product.id,
+        movementType: type,
+        hasValidData: !!item.product.id
+      })
+      nextTick(() => {
+        // Double-check that produit_id is set correctly
+        if (!formData.value.produit_id) {
+          console.log('🔧 [StockMovementDialog] Fixing missing produit_id in combined watcher')
+          resetForm()
+        }
+      })
+    }
+  },
+  { deep: true, immediate: true }
 )
 
 watch(
@@ -283,7 +306,9 @@ watch(
       modelValue: props.modelValue,
       productId: props.item?.product?.id
     })
-    formData.value.type = newType
+    if (formData.value.type !== newType) {
+      formData.value.type = newType
+    }
   },
   { immediate: true }
 )
