@@ -242,4 +242,43 @@ class StockService
             ->where('actif', true)
             ->first();
     }
+
+    /**
+     * Synchronize reserved quantities from reservations table
+     */
+    public function syncReservedQuantities(?string $varianteId = null, ?string $entrepotId = null): int
+    {
+        $query = Stock::query();
+
+        if ($varianteId) {
+            $query->where('variante_id', $varianteId);
+        }
+
+        if ($entrepotId) {
+            $query->where('entrepot_id', $entrepotId);
+        }
+
+        $stocks = $query->get();
+        $updated = 0;
+
+        foreach ($stocks as $stock) {
+            $totalReserved = ReservationStock::where('variante_id', $stock->variante_id)
+                ->where('entrepot_id', $stock->entrepot_id)
+                ->where('statut', 'active')
+                ->sum('quantite');
+
+            if ($stock->qte_reservee !== $totalReserved) {
+                $stock->update(['qte_reservee' => $totalReserved]);
+                $updated++;
+            }
+        }
+
+        Log::info('Reserved quantities synchronized', [
+            'updated_count' => $updated,
+            'variante_id' => $varianteId,
+            'entrepot_id' => $entrepotId
+        ]);
+
+        return $updated;
+    }
 }

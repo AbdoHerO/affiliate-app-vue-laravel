@@ -29,6 +29,7 @@ use App\Http\Controllers\Admin\TestController;
 use App\Http\Controllers\Admin\CommissionsController;
 use App\Http\Controllers\Admin\TicketsController;
 use App\Http\Controllers\Admin\StockController;
+use App\Http\Controllers\Admin\ReservationStockController;
 use App\Http\Controllers\Admin\TicketMessagesController;
 use App\Http\Controllers\Public\ProduitController as PublicProduitController;
 use App\Http\Controllers\Public\AffiliateSignupController;
@@ -318,6 +319,18 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::get('/summary', [StockController::class, 'summary']);
             Route::post('/movements', [StockController::class, 'createMovement']);
             Route::get('/{produitId}/history', [StockController::class, 'history']);
+        });
+
+        // Stock Reservations Management
+        Route::prefix('reservations')->group(function () {
+            Route::get('/', [ReservationStockController::class, 'index']);
+            Route::post('/', [ReservationStockController::class, 'store']);
+            Route::get('/options', [ReservationStockController::class, 'options']);
+            Route::get('/stats', [ReservationStockController::class, 'stats']);
+            Route::post('/cleanup', [ReservationStockController::class, 'cleanup']);
+            Route::get('/{reservation}', [ReservationStockController::class, 'show']);
+            Route::post('/{reservation}/release', [ReservationStockController::class, 'release']);
+            Route::post('/{reservation}/use', [ReservationStockController::class, 'use']);
         });
 
         // Debug route for stock

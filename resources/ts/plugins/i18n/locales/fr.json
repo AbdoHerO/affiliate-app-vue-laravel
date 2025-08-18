@@ -1480,5 +1480,49 @@
   "validation.required": "Ce champ est requis",
   "validation.min_value": "La valeur doit être au moins {min}",
 
-  "nav_stock_management": "Gestion des Stocks"
+  "nav_stock_management": "Gestion des Stocks",
+
+  "reservations.title": "Réservations de Stock",
+  "reservations.subtitle": "Gérer les réservations de stock",
+  "reservations.create": "Créer une Réservation",
+  "reservations.release": "Annuler la Réservation",
+  "reservations.use": "Utiliser la Réservation",
+  "reservations.cleanup": "Nettoyer les Expirées",
+  "reservations.stats": "Statistiques des Réservations",
+
+  "reservations.columns.product": "Produit",
+  "reservations.columns.variant": "Variante",
+  "reservations.columns.warehouse": "Entrepôt",
+  "reservations.columns.quantity": "Quantité",
+  "reservations.columns.affiliate": "Affilié",
+  "reservations.columns.offer": "Offre",
+  "reservations.columns.expires_at": "Expire le",
+  "reservations.columns.status": "Statut",
+  "reservations.columns.created_at": "Créé le",
+
+  "reservations.status.active": "Active",
+  "reservations.status.utilisee": "Utilisée",
+  "reservations.status.expiree": "Expirée",
+  "reservations.status.annulee": "Annulée",
+
+  "reservations.form.variant": "Variante du Produit",
+  "reservations.form.warehouse": "Entrepôt",
+  "reservations.form.quantity": "Quantité à Réserver",
+  "reservations.form.affiliate": "Affilié (optionnel)",
+  "reservations.form.offer": "Offre (optionnel)",
+  "reservations.form.expires_at": "Date d'Expiration",
+  "reservations.form.note": "Note",
+
+  "reservations.messages.created": "Réservation créée avec succès",
+  "reservations.messages.released": "Réservation annulée avec succès",
+  "reservations.messages.used": "Réservation utilisée avec succès",
+  "reservations.messages.cleanup_completed": "Nettoyage des réservations expirées terminé",
+
+  "reservations.filters.search": "Rechercher...",
+  "reservations.filters.status": "Statut",
+  "reservations.filters.warehouse": "Entrepôt",
+  "reservations.filters.affiliate": "Affilié",
+
+  "reservations.no_data": "Aucune réservation trouvée",
+  "reservations.no_data_subtitle": "Aucune réservation ne correspond à vos critères"
 }
