@@ -1411,8 +1411,16 @@
   "stock.columns.available": "Disponible",
   "stock.columns.last_movement": "Dernier Mouvement",
 
+  "stock.table.title": "Inventaire des Stocks",
+  "stock.table.items": "articles",
+  "stock.table.no_data_title": "Aucun stock trouvé",
+  "stock.table.no_data_subtitle": "Aucun produit ne correspond à vos critères de recherche",
+  "stock.table.reset_filters": "Réinitialiser les filtres",
+
   // Filters
+  "stock.filters.title": "Filtres",
   "stock.filters.search": "Rechercher un produit",
+  "stock.filters.search_placeholder": "Nom du produit, SKU, référence...",
   "stock.filters.boutique": "Boutique",
   "stock.filters.category": "Catégorie",
   "stock.filters.with_variants": "Avec variantes",

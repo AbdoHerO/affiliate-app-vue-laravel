@@ -316,8 +316,22 @@ onBeforeUnmount(() => {
     <!-- Filters -->
     <VCard class="mb-6">
       <VCardText>
+        <div class="d-flex justify-space-between align-center mb-4">
+          <h3 class="text-h6">{{ t('stock.filters.title') }}</h3>
+          <VBtn
+            color="secondary"
+            variant="outlined"
+            size="small"
+            prepend-icon="tabler-refresh"
+            @click="clearFilters"
+          >
+            {{ t('common.clear') }}
+          </VBtn>
+        </div>
+
         <VRow>
-          <VCol cols="12" md="3">
+          <!-- Search - Full width on mobile, 1/3 on desktop -->
+          <VCol cols="12" md="4">
             <VTextField
               v-model="filters.q"
               :label="t('stock.filters.search')"
@@ -325,9 +339,12 @@ onBeforeUnmount(() => {
               variant="outlined"
               density="compact"
               clearable
+              :placeholder="t('stock.filters.search_placeholder')"
             />
           </VCol>
-          <VCol cols="12" md="2">
+
+          <!-- Boutique - Half width on tablet, 1/4 on desktop -->
+          <VCol cols="12" sm="6" md="3">
             <VSelect
               v-model="filters.boutique_id"
               :items="boutiques"
@@ -339,7 +356,9 @@ onBeforeUnmount(() => {
               clearable
             />
           </VCol>
-          <VCol cols="12" md="2">
+
+          <!-- Category - Half width on tablet, 1/4 on desktop -->
+          <VCol cols="12" sm="6" md="3">
             <VSelect
               v-model="filters.categorie_id"
               :items="categories"
@@ -351,7 +370,9 @@ onBeforeUnmount(() => {
               clearable
             />
           </VCol>
-          <VCol cols="12" md="2">
+
+          <!-- With Variants Switch - Quarter width on tablet, 1/6 on desktop -->
+          <VCol cols="12" sm="6" md="2">
             <VSwitch
               v-model="filters.with_variants"
               :label="t('stock.filters.with_variants')"
@@ -359,7 +380,11 @@ onBeforeUnmount(() => {
               density="compact"
             />
           </VCol>
-          <VCol cols="12" md="1">
+        </VRow>
+
+        <!-- Quantity Filters Row -->
+        <VRow>
+          <VCol cols="12" sm="6" md="3">
             <VTextField
               v-model.number="filters.min_qty"
               :label="t('stock.filters.min_qty')"
@@ -367,9 +392,10 @@ onBeforeUnmount(() => {
               variant="outlined"
               density="compact"
               min="0"
+              prepend-inner-icon="tabler-arrow-up"
             />
           </VCol>
-          <VCol cols="12" md="1">
+          <VCol cols="12" sm="6" md="3">
             <VTextField
               v-model.number="filters.max_qty"
               :label="t('stock.filters.max_qty')"
@@ -377,16 +403,8 @@ onBeforeUnmount(() => {
               variant="outlined"
               density="compact"
               min="0"
+              prepend-inner-icon="tabler-arrow-down"
             />
-          </VCol>
-          <VCol cols="12" md="1">
-            <VBtn
-              color="secondary"
-              variant="outlined"
-              @click="clearFilters"
-            >
-              {{ t('common.clear') }}
-            </VBtn>
           </VCol>
         </VRow>
       </VCardText>
@@ -394,17 +412,30 @@ onBeforeUnmount(() => {
 
     <!-- Data Table -->
     <VCard>
+      <VCardTitle class="d-flex justify-space-between align-center">
+        <span>{{ t('stock.table.title') }}</span>
+        <VChip
+          v-if="!loading"
+          size="small"
+          color="primary"
+          variant="tonal"
+        >
+          {{ pagination.total }} {{ t('stock.table.items') }}
+        </VChip>
+      </VCardTitle>
+
       <VDataTableServer
         :headers="headers"
         :items="items"
         :loading="loading"
-        :no-data-text="t('common.no_data')"
         :items-per-page="filters.per_page"
         :page="filters.page"
         :items-length="pagination.total"
         @update:options="handleTableUpdate"
         hide-default-footer
+        class="stock-table"
       >
+
         <!-- Product Column -->
         <template #item.product="{ item }">
           <div class="d-flex align-center">
@@ -581,15 +612,37 @@ onBeforeUnmount(() => {
 
         <!-- Loading State -->
         <template #loading>
-          <VSkeletonLoader type="table-row@10" />
+          <div class="pa-4">
+            <VSkeletonLoader
+              v-for="i in 8"
+              :key="i"
+              type="table-row"
+              class="mb-2"
+            />
+          </div>
         </template>
 
         <!-- No Data State -->
         <template #no-data>
-          <div class="text-center py-8">
-            <VIcon icon="tabler-package-off" size="64" class="mb-4" color="disabled" />
-            <h6 class="text-h6 mb-2">{{ t('stock.no_results') }}</h6>
-            <p class="text-body-2">{{ t('stock.try_adjusting_filters') }}</p>
+          <div class="text-center py-12">
+            <VIcon
+              icon="tabler-package-off"
+              size="64"
+              color="grey-lighten-1"
+              class="mb-4"
+            />
+            <h3 class="text-h6 mb-2">{{ t('stock.table.no_data_title') }}</h3>
+            <p class="text-body-2 text-medium-emphasis mb-4">
+              {{ t('stock.table.no_data_subtitle') }}
+            </p>
+            <VBtn
+              color="primary"
+              variant="outlined"
+              prepend-icon="tabler-refresh"
+              @click="clearFilters"
+            >
+              {{ t('stock.table.reset_filters') }}
+            </VBtn>
           </div>
         </template>
       </VDataTableServer>
@@ -605,30 +658,20 @@ onBeforeUnmount(() => {
     </VCard>
 
     <!-- Movement Dialog -->
-    <Suspense>
-      <StockMovementDialog
-        v-if="showMovementDialog"
-        v-model="showMovementDialog"
-        :item="selectedItem"
-        :movement-type="movementType"
-        @saved="handleMovementCreated"
-      />
-      <template #fallback>
-        <div>Loading dialog...</div>
-      </template>
-    </Suspense>
+    <StockMovementDialog
+      v-if="showMovementDialog"
+      v-model="showMovementDialog"
+      :item="selectedItem"
+      :movement-type="movementType"
+      @saved="handleMovementCreated"
+    />
 
     <!-- History Dialog -->
-    <Suspense>
-      <StockHistoryDialog
-        v-if="showHistoryDialog"
-        v-model="showHistoryDialog"
-        :item="selectedItem"
-      />
-      <template #fallback>
-        <div>Loading dialog...</div>
-      </template>
-    </Suspense>
+    <StockHistoryDialog
+      v-if="showHistoryDialog"
+      v-model="showHistoryDialog"
+      :item="selectedItem"
+    />
 
     <!-- Confirm Dialog -->
     <ConfirmActionDialog
@@ -646,6 +689,37 @@ onBeforeUnmount(() => {
     </div>
   </ErrorBoundary>
 </template>
+
+<style scoped>
+.stock-table {
+  /* Enable horizontal scroll on small screens */
+  overflow-x: auto;
+}
+
+/* Responsive table improvements */
+@media (max-width: 768px) {
+  .stock-table :deep(.v-data-table__wrapper) {
+    overflow-x: auto;
+  }
+
+  .stock-table :deep(.v-data-table-header) {
+    white-space: nowrap;
+  }
+
+  .stock-table :deep(.v-data-table__td) {
+    white-space: nowrap;
+    min-width: 120px;
+  }
+}
+
+/* Sticky header for better UX */
+.stock-table :deep(.v-data-table-header) {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: rgb(var(--v-theme-surface));
+}
+</style>
 
 <route lang="yaml">
 meta:

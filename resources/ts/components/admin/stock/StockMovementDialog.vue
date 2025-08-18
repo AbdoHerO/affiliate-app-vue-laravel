@@ -26,7 +26,7 @@ const emit = defineEmits<Emits>()
 const { t } = useI18n()
 const { showError } = useNotifications()
 const { confirmCreate } = useQuickConfirm()
-const { errors, clearErrors, setErrors } = useFormErrors()
+const { errors, clear: clearErrors, set: setErrors } = useFormErrors()
 const stockStore = useStockStore()
 
 // Local state
@@ -77,6 +77,9 @@ const maxQuantity = computed(() => {
 
 // Validation rules
 const rules = {
+  produit_id: [
+    (v: string) => !!v || t('validation.required'),
+  ],
   quantity: [
     (v: number) => !!v || t('validation.required'),
     (v: number) => v > 0 || t('validation.min_value', { min: 1 }),
@@ -94,8 +97,11 @@ const rules = {
 
 // Methods
 const resetForm = () => {
+  const productId = props.item?.product.id || ''
+  console.log('🔧 [StockMovementDialog] Resetting form with product ID:', productId, 'Item:', props.item)
+
   formData.value = {
-    produit_id: props.item?.product.id || '',
+    produit_id: productId,
     variante_id: props.item?.variant?.id || null,
     entrepot_id: null,
     type: props.movementType,
@@ -118,18 +124,17 @@ const save = async () => {
 
   // Show confirm dialog
   const typeLabel = MOVEMENT_TYPES.find(t => t.value === props.movementType)?.label || ''
-  const confirmed = await confirmCreate(
-    t('stock.dialog.movement.confirm_title') + ' - ' + typeLabel,
-    t('stock.dialog.movement.confirm_text', {
-      type: typeLabel.toLowerCase(),
-      quantity: formData.value.quantity,
-      product: props.item?.product.titre || '',
-    })
-  )
+  const confirmText = t('stock.dialog.movement.confirm_text', {
+    type: typeLabel.toLowerCase(),
+    quantity: formData.value.quantity,
+    product: props.item?.product.titre || '',
+  })
+  const confirmed = await confirmCreate(t('stock.dialog.movement.confirm_title') + ' - ' + typeLabel + '\n\n' + confirmText)
   if (!confirmed) return
 
   isSaving.value = true
   try {
+    console.log('🚀 [StockMovementDialog] Submitting movement:', formData.value)
     await stockStore.createMovement(formData.value)
     if (isMounted.value) {
       emit('saved')
@@ -240,6 +245,13 @@ onBeforeUnmount(() => {
 
         <!-- Form -->
         <VForm ref="formRef" @submit.prevent="save">
+          <!-- Hidden field for produit_id validation -->
+          <VTextField
+            v-model="formData.produit_id"
+            :rules="rules.produit_id"
+            style="display: none;"
+          />
+
           <VRow>
             <!-- Movement Type (readonly) -->
             <VCol cols="12">
