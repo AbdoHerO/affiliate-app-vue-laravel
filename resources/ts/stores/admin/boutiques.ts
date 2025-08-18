@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { useApi } from '@/composables/useApi'
+import { $api } from '@/utils/api'
 import { useNotifications } from '@/composables/useNotifications'
 
 export interface Boutique {

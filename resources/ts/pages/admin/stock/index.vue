@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, onMounted, onBeforeUnmount, ref, watch, onErrorCaptured } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { storeToRefs } from 'pinia'
 import { useStockStore } from '@/stores/admin/stock'
@@ -7,10 +7,12 @@ import { useBoutiquesStore } from '@/stores/admin/boutiques'
 import { useCategoriesStore } from '@/stores/admin/categories'
 import { useNotifications } from '@/composables/useNotifications'
 import { useQuickConfirm } from '@/composables/useConfirmAction'
+import { useSafeNavigation } from '@/composables/useSafeNavigation'
 import Breadcrumbs from '@/components/common/Breadcrumbs.vue'
 import StockMovementDialog from '@/components/admin/stock/StockMovementDialog.vue'
 import StockHistoryDialog from '@/components/admin/stock/StockHistoryDialog.vue'
 import ConfirmActionDialog from '@/components/common/ConfirmActionDialog.vue'
+import ErrorBoundary from '@/components/common/ErrorBoundary.vue'
 import type { StockItem } from '@/types/admin/stock'
 
 definePage({
@@ -24,6 +26,7 @@ definePage({
 // Composables
 const { t } = useI18n()
 const { showSuccess, showError } = useNotifications()
+const { safePush, checkEmergencyReset } = useSafeNavigation()
 const {
   confirmCreate,
   isDialogVisible: isConfirmDialogVisible,
@@ -58,27 +61,72 @@ const showHistoryDialog = ref(false)
 const selectedItem = ref<StockItem | null>(null)
 const movementType = ref<'in' | 'out' | 'adjust'>('in')
 const isMounted = ref(true)
+const errorBoundaryRef = ref()
 
-// Computed
-const breadcrumbs = computed(() => [
-  { title: t('nav_dashboard'), to: 'admin-dashboard' },
-  { title: t('stock.title'), to: 'admin-stock' },
-])
+// Error handling
+onErrorCaptured((err, instance, info) => {
+  console.error('🚨 [Stock Page] Error captured:', err, info)
+  
+  // Check for navigation errors specifically
+  const message = err.message || ''
+  if (message.includes('navigation') || message.includes('router')) {
+    checkEmergencyReset()
+  }
+  
+  return false // Let error boundary handle it
+})
 
-const headers = computed(() => [
-  { title: t('stock.columns.product'), key: 'product', sortable: false },
-  { title: t('stock.columns.variant'), key: 'variant', sortable: false },
-  { title: t('stock.columns.category'), key: 'category', sortable: false },
-  { title: t('stock.columns.boutique'), key: 'boutique', sortable: false },
-  { title: t('stock.columns.on_hand'), key: 'on_hand', sortable: true, align: 'center' as const },
-  { title: t('stock.columns.reserved'), key: 'reserved', sortable: true, align: 'center' as const },
-  { title: t('stock.columns.available'), key: 'available', sortable: true, align: 'center' as const },
-  { title: t('stock.columns.last_movement'), key: 'last_movement', sortable: false },
-  { title: t('common.actions'), key: 'actions', sortable: false, align: 'center' as const },
-])
+// Computed with safe access
+const breadcrumbs = computed(() => {
+  try {
+    return [
+      { title: t('nav_dashboard'), to: 'admin-dashboard' },
+      { title: t('stock.title'), to: 'admin-stock' },
+    ]
+  } catch (error) {
+    return [
+      { title: 'Dashboard', to: 'admin-dashboard' },
+      { title: 'Stock', to: 'admin-stock' },
+    ]
+  }
+})
 
-const boutiques = computed(() => boutiquesStore.items)
-const categories = computed(() => categoriesStore.categories)
+const headers = computed(() => {
+  try {
+    return [
+      { title: t('stock.columns.product'), key: 'product', sortable: false },
+      { title: t('stock.columns.variant'), key: 'variant', sortable: false },
+      { title: t('stock.columns.category'), key: 'category', sortable: false },
+      { title: t('stock.columns.boutique'), key: 'boutique', sortable: false },
+      { title: t('stock.columns.on_hand'), key: 'on_hand', sortable: true, align: 'center' as const },
+      { title: t('stock.columns.reserved'), key: 'reserved', sortable: true, align: 'center' as const },
+      { title: t('stock.columns.available'), key: 'available', sortable: true, align: 'center' as const },
+      { title: t('stock.columns.last_movement'), key: 'last_movement', sortable: false },
+      { title: t('common.actions'), key: 'actions', sortable: false, align: 'center' as const },
+    ]
+  } catch (error) {
+    return [
+      { title: 'Product', key: 'product', sortable: false },
+      { title: 'Actions', key: 'actions', sortable: false },
+    ]
+  }
+})
+
+const boutiques = computed(() => {
+  try {
+    return boutiquesStore.items || []
+  } catch (error) {
+    return []
+  }
+})
+
+const categories = computed(() => {
+  try {
+    return categoriesStore.categories || []
+  } catch (error) {
+    return []
+  }
+})
 
 // Methods
 const fetchData = async () => {
@@ -131,6 +179,17 @@ const clearFilters = () => {
   }
 }
 
+// Error handling methods
+const handleError = (error: Error) => {
+  console.error('🚨 [Stock Page] Error boundary caught error:', error)
+  showError(t('common.error_occurred') || 'Error occurred')
+}
+
+const handleRetry = () => {
+  console.log('🔄 [Stock Page] Retrying after error')
+  fetchData()
+}
+
 // Watchers
 const stopWatcher = watch(
   () => filters.value,
@@ -161,21 +220,28 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div>
-    <!-- Breadcrumbs -->
-    <Breadcrumbs :items="breadcrumbs" class="mb-6" />
+  <ErrorBoundary
+    ref="errorBoundaryRef"
+    fallback-route="/admin/dashboard"
+    :max-retries="3"
+    @error="handleError"
+    @retry="handleRetry"
+  >
+    <div>
+      <!-- Breadcrumbs -->
+      <Breadcrumbs :items="breadcrumbs" class="mb-6" />
 
-    <!-- Header with KPI Cards -->
-    <VRow class="mb-6">
-      <VCol cols="12">
-        <VCard>
-          <VCardText>
-            <div class="d-flex justify-space-between align-center mb-4">
-              <div>
-                <h2 class="text-h4 mb-2">{{ t('stock.title') }}</h2>
-                <p class="text-body-1 mb-0">{{ t('stock.subtitle') }}</p>
+      <!-- Header with KPI Cards -->
+      <VRow class="mb-6">
+        <VCol cols="12">
+          <VCard>
+            <VCardText>
+              <div class="d-flex justify-space-between align-center mb-4">
+                <div>
+                  <h2 class="text-h4 mb-2">{{ t('stock.title') }}</h2>
+                  <p class="text-body-1 mb-0">{{ t('stock.subtitle') }}</p>
+                </div>
               </div>
-            </div>
 
             <!-- KPI Cards -->
             <VRow v-if="summary">
@@ -552,5 +618,6 @@ onBeforeUnmount(() => {
       @confirm="handleConfirm"
       @cancel="handleCancel"
     />
-  </div>
+    </div>
+  </ErrorBoundary>
 </template>

@@ -1,6 +1,6 @@
 import { useRouter } from 'vue-router'
 import type { RouteLocationRaw } from 'vue-router'
-import { ref, nextTick } from 'vue'
+import { ref, nextTick, readonly } from 'vue'
 
 /**
  * Safe navigation composable that validates routes before navigation
@@ -9,6 +9,8 @@ export function useSafeNavigation() {
   const router = useRouter()
   const isNavigating = ref(false)
   const navigationQueue = ref<Array<{ to: RouteLocationRaw; type: 'push' | 'replace' }>>([])
+  const errorCount = ref(0)
+  const lastErrorTime = ref(0)
 
   /**
    * Process navigation queue to prevent concurrent navigations
@@ -29,6 +31,7 @@ export function useSafeNavigation() {
       }
     } catch (error) {
       console.error('🚫 [Navigation Queue] Navigation failed:', error)
+      recordError()
     } finally {
       isNavigating.value = false
       // Process next item in queue
@@ -36,6 +39,46 @@ export function useSafeNavigation() {
         setTimeout(processNavigationQueue, 50)
       }
     }
+  }
+
+  /**
+   * Record navigation error for monitoring
+   */
+  const recordError = () => {
+    errorCount.value++
+    lastErrorTime.value = Date.now()
+  }
+
+  /**
+   * Check if emergency reset is needed
+   */
+  const checkEmergencyReset = () => {
+    const now = Date.now()
+    const recentErrors = errorCount.value > 5 && (now - lastErrorTime.value) < 30000 // 5 errors in 30 seconds
+
+    if (recentErrors) {
+      console.warn('🚨 [Safe Navigation] Too many errors detected, performing emergency reset')
+      emergencyReset()
+      return true
+    }
+    return false
+  }
+
+  /**
+   * Emergency reset - clear state and navigate to safe route
+   */
+  const emergencyReset = (safeRoute: string = '/admin/dashboard') => {
+    console.warn('🚨 [Safe Navigation] Emergency reset triggered')
+    
+    // Clear all navigation state
+    clearNavigationQueue()
+    errorCount.value = 0
+    lastErrorTime.value = 0
+    
+    // Force navigate to safe route after a delay
+    setTimeout(() => {
+      forceNavigate(safeRoute)
+    }, 100)
   }
 
   /**
@@ -53,13 +96,15 @@ export function useSafeNavigation() {
     useQueue?: boolean
     maxRetries?: number
     fallback?: RouteLocationRaw
+    skipSafetyCheck?: boolean
   } = {}) => {
-    const { useQueue = false, maxRetries = 2, fallback } = options
+    const { useQueue = false, maxRetries = 2, fallback, skipSafetyCheck = false } = options
 
     try {
       // Validate the route object
       if (!to) {
         console.warn('⚠️ [Navigation] Invalid route:', to)
+        recordError()
         return Promise.reject(new Error('Invalid route'))
       }
 
@@ -70,11 +115,17 @@ export function useSafeNavigation() {
         return Promise.resolve()
       }
 
+      // Check if we should perform emergency reset
+      if (!skipSafetyCheck && checkEmergencyReset()) {
+        return Promise.resolve()
+      }
+
       // If it's a route object with params, validate params
       if (typeof to === 'object' && 'params' in to && to.params) {
         for (const [key, value] of Object.entries(to.params)) {
           if (value === undefined || value === null || value === '') {
             console.warn(`⚠️ [Navigation] Invalid param "${key}":`, value, 'for route:', to)
+            recordError()
             if (fallback) {
               console.log('🔄 [Navigation] Using fallback route:', fallback)
               return safePush(fallback, { ...options, fallback: undefined })
@@ -88,6 +139,7 @@ export function useSafeNavigation() {
       const resolved = router.resolve(to)
       if (!resolved || !resolved.name) {
         console.warn('⚠️ [Navigation] Could not resolve route:', to)
+        recordError()
         if (fallback) {
           console.log('🔄 [Navigation] Using fallback route:', fallback)
           return safePush(fallback, { ...options, fallback: undefined })
@@ -105,6 +157,7 @@ export function useSafeNavigation() {
 
     } catch (error) {
       console.error('🚫 [Navigation] Error during navigation setup:', error, 'to:', to)
+      recordError()
       
       if (fallback) {
         console.log('🔄 [Navigation] Attempting fallback navigation:', fallback)
@@ -135,9 +188,12 @@ export function useSafeNavigation() {
       try {
         const result = type === 'push' ? await router.push(to) : await router.replace(to)
         console.log('✅ [Navigation] Navigation successful:', to)
+        // Reset error count on successful navigation
+        errorCount.value = Math.max(0, errorCount.value - 1)
         return result
       } catch (error: any) {
         attempts++
+        recordError()
         const errorMessage = error?.message || ''
 
         console.error(`🚫 [Navigation] Attempt ${attempts}/${maxRetries + 1} failed:`, error)
@@ -205,10 +261,12 @@ export function useSafeNavigation() {
 
     const routeString = typeof failedRoute === 'string' ? failedRoute : (failedRoute as any).path || ''
 
-    if (routeString.includes('/admin/support/tickets')) {
-      return '/admin/support/tickets'
+    if (routeString.includes('/admin/stock')) {
+      return '/admin/dashboard'
+    } else if (routeString.includes('/admin/support/tickets')) {
+      return '/admin/dashboard'
     } else if (routeString.includes('/admin/withdrawals')) {
-      return '/admin/withdrawals'
+      return '/admin/dashboard'
     } else if (routeString.includes('/admin')) {
       return '/admin/dashboard'
     } else {
@@ -222,13 +280,19 @@ export function useSafeNavigation() {
   const safeReplace = async (to: RouteLocationRaw, options: {
     maxRetries?: number
     fallback?: RouteLocationRaw
+    skipSafetyCheck?: boolean
   } = {}) => {
-    const { maxRetries = 2, fallback } = options
+    const { maxRetries = 2, fallback, skipSafetyCheck = false } = options
 
     try {
       if (!to) {
         console.warn('⚠️ [Navigation] Invalid route for replace:', to)
+        recordError()
         return Promise.reject(new Error('Invalid route'))
+      }
+
+      if (!skipSafetyCheck && checkEmergencyReset()) {
+        return Promise.resolve()
       }
 
       isNavigating.value = true
@@ -237,6 +301,7 @@ export function useSafeNavigation() {
       return await navigateWithRetry(to, 'replace', maxRetries, fallback)
     } catch (error) {
       console.error('🚫 [Navigation] Error during replace:', error, 'to:', to)
+      recordError()
       
       if (fallback) {
         console.log('🔄 [Navigation] Attempting fallback replace:', fallback)
@@ -265,6 +330,7 @@ export function useSafeNavigation() {
       }
     } catch (error) {
       console.error('🚫 [Navigation] Error going back:', error)
+      recordError()
       if (fallback) {
         return safePush(fallback)
       }
@@ -277,7 +343,12 @@ export function useSafeNavigation() {
    */
   const forceNavigate = (path: string) => {
     console.warn('🔄 [Navigation] Force navigating to:', path)
-    window.location.href = path
+    try {
+      window.location.href = path
+    } catch (error) {
+      console.error('🚨 [Navigation] Force navigation failed:', error)
+      window.location.reload()
+    }
   }
 
   /**
@@ -293,6 +364,16 @@ export function useSafeNavigation() {
     isNavigating.value = false
   }
 
+  /**
+   * Get navigation statistics
+   */
+  const getNavigationStats = () => ({
+    errorCount: errorCount.value,
+    lastErrorTime: lastErrorTime.value,
+    queueLength: navigationQueue.value.length,
+    isNavigating: isNavigating.value
+  })
+
   return {
     safePush,
     safeReplace,
@@ -300,6 +381,9 @@ export function useSafeNavigation() {
     forceNavigate,
     isNavigationSafe,
     clearNavigationQueue,
+    checkEmergencyReset,
+    emergencyReset,
+    getNavigationStats,
     isNavigating: readonly(isNavigating),
     router
   }

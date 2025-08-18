@@ -10,6 +10,8 @@ declare global {
   const COOKIE_MAX_AGE_1_YEAR: typeof import('./resources/ts/utils/constants')['COOKIE_MAX_AGE_1_YEAR']
   const CreateUrl: typeof import('./src/@core/composable/CreateUrl')['CreateUrl']
   const EffectScope: typeof import('vue')['EffectScope']
+  const NavigationErrorType: typeof import('./resources/ts/utils/navigationSafety')['NavigationErrorType']
+  const NavigationSafety: typeof import('./resources/ts/utils/navigationSafety')['NavigationSafety']
   const acceptHMRUpdate: typeof import('pinia')['acceptHMRUpdate']
   const alphaDashValidator: typeof import('./resources/ts/@core/utils/validators')['alphaDashValidator']
   const alphaValidator: typeof import('./resources/ts/@core/utils/validators')['alphaValidator']
@@ -30,6 +32,7 @@ declare global {
   const createGenericProjection: typeof import('@vueuse/math')['createGenericProjection']
   const createGlobalState: typeof import('@vueuse/core')['createGlobalState']
   const createInjectionState: typeof import('@vueuse/core')['createInjectionState']
+  const createNavigationSafety: typeof import('./resources/ts/utils/navigationSafety')['createNavigationSafety']
   const createPinia: typeof import('pinia')['createPinia']
   const createProjection: typeof import('@vueuse/math')['createProjection']
   const createReactiveFn: typeof import('@vueuse/core')['createReactiveFn']
@@ -273,6 +276,7 @@ declare global {
   const useMousePressed: typeof import('@vueuse/core')['useMousePressed']
   const useMutationObserver: typeof import('@vueuse/core')['useMutationObserver']
   const useNavigation: typeof import('./resources/ts/composables/useNavigation')['useNavigation']
+  const useNavigationSafety: typeof import('./resources/ts/utils/navigationSafety')['useNavigationSafety']
   const useNavigatorLanguage: typeof import('@vueuse/core')['useNavigatorLanguage']
   const useNetwork: typeof import('@vueuse/core')['useNetwork']
   const useNotifications: typeof import('./resources/ts/composables/useNotifications')['useNotifications']
@@ -384,6 +388,9 @@ declare global {
   // @ts-ignore
   export type { Component, ComponentPublicInstance, ComputedRef, DirectiveBinding, ExtractDefaultPropTypes, ExtractPropTypes, ExtractPublicPropTypes, InjectionKey, PropType, Ref, MaybeRef, MaybeRefOrGetter, VNode, WritableComputedRef } from 'vue'
   import('vue')
+  // @ts-ignore
+  export type { NavigationErrorType, NavigationSafety } from './resources/ts/utils/navigationSafety'
+  import('./resources/ts/utils/navigationSafety')
 }
 
 // for vue template auto import
@@ -394,6 +401,8 @@ declare module 'vue' {
     readonly $api: UnwrapRef<typeof import('./resources/ts/utils/api')['$api']>
     readonly COOKIE_MAX_AGE_1_YEAR: UnwrapRef<typeof import('./resources/ts/utils/constants')['COOKIE_MAX_AGE_1_YEAR']>
     readonly EffectScope: UnwrapRef<typeof import('vue')['EffectScope']>
+    readonly NavigationErrorType: UnwrapRef<typeof import('./resources/ts/utils/navigationSafety')['NavigationErrorType']>
+    readonly NavigationSafety: UnwrapRef<typeof import('./resources/ts/utils/navigationSafety')['NavigationSafety']>
     readonly acceptHMRUpdate: UnwrapRef<typeof import('pinia')['acceptHMRUpdate']>
     readonly alphaDashValidator: UnwrapRef<typeof import('./resources/ts/@core/utils/validators')['alphaDashValidator']>
     readonly alphaValidator: UnwrapRef<typeof import('./resources/ts/@core/utils/validators')['alphaValidator']>
@@ -414,6 +423,7 @@ declare module 'vue' {
     readonly createGenericProjection: UnwrapRef<typeof import('@vueuse/math')['createGenericProjection']>
     readonly createGlobalState: UnwrapRef<typeof import('@vueuse/core')['createGlobalState']>
     readonly createInjectionState: UnwrapRef<typeof import('@vueuse/core')['createInjectionState']>
+    readonly createNavigationSafety: UnwrapRef<typeof import('./resources/ts/utils/navigationSafety')['createNavigationSafety']>
     readonly createPinia: UnwrapRef<typeof import('pinia')['createPinia']>
     readonly createProjection: UnwrapRef<typeof import('@vueuse/math')['createProjection']>
     readonly createReactiveFn: UnwrapRef<typeof import('@vueuse/core')['createReactiveFn']>
@@ -651,6 +661,7 @@ declare module 'vue' {
     readonly useMousePressed: UnwrapRef<typeof import('@vueuse/core')['useMousePressed']>
     readonly useMutationObserver: UnwrapRef<typeof import('@vueuse/core')['useMutationObserver']>
     readonly useNavigation: UnwrapRef<typeof import('./resources/ts/composables/useNavigation')['useNavigation']>
+    readonly useNavigationSafety: UnwrapRef<typeof import('./resources/ts/utils/navigationSafety')['useNavigationSafety']>
     readonly useNavigatorLanguage: UnwrapRef<typeof import('@vueuse/core')['useNavigatorLanguage']>
     readonly useNetwork: UnwrapRef<typeof import('@vueuse/core')['useNetwork']>
     readonly useNotifications: UnwrapRef<typeof import('./resources/ts/composables/useNotifications')['useNotifications']>

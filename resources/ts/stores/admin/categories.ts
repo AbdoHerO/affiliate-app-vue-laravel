@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { useApi } from '@/composables/useApi'
+import { $api } from '@/utils/api'
 
 export interface Category {
   id: string
@@ -76,15 +76,8 @@ export const useCategoriesStore = defineStore('categories', {
         })
 
         const url = `/admin/categories${searchParams.toString() ? `?${searchParams.toString()}` : ''}`
-        const { data: responseData, error: apiError } = await useApi(url)
+        const response = await $api(url)
 
-        if (apiError.value) {
-          const message = (apiError.value as any).message || 'Error fetching categories'
-          this.error = message
-          throw apiError.value
-        }
-
-        const response = responseData.value as any
         if (response.success) {
           this.categories = response.data
           this.pagination = response.pagination
@@ -104,15 +97,8 @@ export const useCategoriesStore = defineStore('categories', {
       this.error = null
 
       try {
-        const { data: responseData, error: apiError } = await useApi(`/admin/categories/${id}`)
+        const response = await $api(`/admin/categories/${id}`)
 
-        if (apiError.value) {
-          const message = (apiError.value as any).message || 'Error fetching category'
-          this.error = message
-          throw apiError.value
-        }
-
-        const response = responseData.value as any
         if (response.success) {
           this.currentCategory = response.data
           return response.data
@@ -134,21 +120,13 @@ export const useCategoriesStore = defineStore('categories', {
       this.error = null
 
       try {
-        const { data: responseData, error: apiError } = await useApi('/admin/categories', {
+        const response = await $api('/admin/categories', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify(data)
         })
-
-        if (apiError.value) {
-          const message = (apiError.value as any).message || 'Error creating category'
-          this.error = message
-          throw apiError.value
-        }
-
-        const response = responseData.value as any
 
         if (response.success) {
           // Add the new category to the list
@@ -173,21 +151,13 @@ export const useCategoriesStore = defineStore('categories', {
       this.error = null
 
       try {
-        const { data: responseData, error: apiError } = await useApi(`/admin/categories/${id}`, {
+        const response = await $api(`/admin/categories/${id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify(data)
         })
-
-        if (apiError.value) {
-          const message = (apiError.value as any).message || 'Error updating category'
-          this.error = message
-          throw apiError.value
-        }
-
-        const response = responseData.value as any
 
         if (response.success) {
           // Update the category in the list
@@ -219,15 +189,9 @@ export const useCategoriesStore = defineStore('categories', {
       this.error = null
 
       try {
-        const { error: apiError } = await useApi(`/admin/categories/${id}`, {
+        await $api(`/admin/categories/${id}`, {
           method: 'DELETE'
         })
-
-        if (apiError.value) {
-          const message = (apiError.value as any).message || 'Error deleting category'
-          this.error = message
-          throw apiError.value
-        }
 
         // Remove the category from the list
         this.categories = this.categories.filter(cat => cat.id !== id)
@@ -250,17 +214,9 @@ export const useCategoriesStore = defineStore('categories', {
       this.error = null
 
       try {
-        const { data: responseData, error: apiError } = await useApi(`/admin/categories/${id}/toggle-status`, {
+        const response = await $api(`/admin/categories/${id}/toggle-status`, {
           method: 'POST'
         })
-
-        if (apiError.value) {
-          const message = (apiError.value as any).message || 'Error toggling category status'
-          this.error = message
-          throw apiError.value
-        }
-
-        const response = responseData.value as any
 
         if (response.success) {
           // Update the category in the list

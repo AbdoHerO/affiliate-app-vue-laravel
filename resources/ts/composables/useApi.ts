@@ -5,8 +5,21 @@ import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
 import { normalizeFromResponse } from '@/services/ErrorService'
 
+// Safe API base URL resolution to prevent VueUse joinPaths startsWith error
+const getApiBaseUrl = (): string => {
+  const envUrl = import.meta.env.VITE_API_BASE_URL
+  
+  // Ensure we return a valid string to prevent VueUse joinPaths issues
+  if (typeof envUrl === 'string' && envUrl.trim().length > 0) {
+    return envUrl.trim()
+  }
+  
+  // Fallback to a valid string
+  return '/api'
+}
+
 export const useApi = createFetch({
-  baseUrl: import.meta.env.VITE_API_BASE_URL || '/api',
+  baseUrl: getApiBaseUrl(),
   fetchOptions: {
     headers: {
       Accept: 'application/json',
@@ -42,7 +55,6 @@ export const useApi = createFetch({
           const { ['Content-Type']: _removed, ...rest } = options.headers as any
           options.headers = rest
         }
-  // (debug removed)
       } else if (!(options.headers as any)['Content-Type']) {
         // Only auto‑set JSON Content-Type when the caller did not specify one and it's not FormData
         options.headers = {
@@ -61,7 +73,7 @@ export const useApi = createFetch({
       const { data, response } = ctx
 
       // Handle authentication errors globally
-  if (response.status === 401) {
+      if (response.status === 401) {
         const authStore = useAuthStore()
         authStore.clearAuth()
 
@@ -74,7 +86,7 @@ export const useApi = createFetch({
 
       // Parse data if it's JSON
       let parsedData = null
-  try { parsedData = destr(data) } catch (_) { /* ignore parse errors */ }
+      try { parsedData = destr(data) } catch (_) { /* ignore parse errors */ }
 
       return { data: parsedData, response }
     },

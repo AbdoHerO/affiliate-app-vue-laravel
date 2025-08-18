@@ -91,6 +91,35 @@
   "action_cancel": "Annuler",
   "action_delete": "Supprimer",
   "action_edit": "Modifier",
+  "common": {
+    "actions": "Actions",
+    "all": "Tous",
+    "retry": "Réessayer",
+    "go_to_dashboard": "Aller au tableau de bord",
+    "error_occurred": "Une erreur s'est produite",
+    "unknown_error": "Erreur inconnue",
+    "max_retries_reached": "Nombre maximum de tentatives atteint",
+    "too_many_errors_redirecting": "Trop d'erreurs détectées, redirection en cours...",
+    "error_loading_data": "Erreur lors du chargement des données"
+  },
+
+  // ===========================================
+  // STOCK MANAGEMENT
+  // ===========================================
+  "stock": {
+    "title": "Gestion des Stocks",
+    "columns": {
+      "product": "Produit",
+      "variant": "Variante", 
+      "category": "Catégorie",
+      "boutique": "Boutique",
+      "on_hand": "En stock",
+      "reserved": "Réservé",
+      "available": "Disponible",
+      "last_movement": "Dernier mouvement"
+    },
+    "movement_created_successfully": "Mouvement de stock créé avec succès"
+  },
   "action_create": "Créer",
   "action_update": "Mettre à jour",
   "action_view": "Voir",

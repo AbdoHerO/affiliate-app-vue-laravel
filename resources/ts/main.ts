@@ -11,10 +11,10 @@ import '@styles/styles.scss'
 // Create vue app
 const app = createApp(App)
 
-// Register plugins
+// Register plugins (including navigation safety)
 registerPlugins(app)
 
-// Initialize authentication after plugins are registered
+// Mount app
 app.mount('#app')
 
 // Initialize auth store after app is mounted

@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, reactive } from 'vue'
-import { useApi } from '@/composables/useApi'
+import { $api } from '@/utils/api'
 import type {
   StockItem,
   StockSummary,
@@ -16,7 +16,6 @@ import type {
 } from '@/types/admin/stock'
 
 export const useStockStore = defineStore('admin-stock', () => {
-  const { api } = useApi()
 
   // State
   const items = ref<StockItem[]>([])
@@ -73,7 +72,7 @@ export const useStockStore = defineStore('admin-stock', () => {
         }
       })
 
-      const response = await api<StockResponse>('/admin/stock', {
+      const response = await $api<StockResponse>('/admin/stock', {
         method: 'GET',
         params,
       })
@@ -95,7 +94,7 @@ export const useStockStore = defineStore('admin-stock', () => {
   const fetchSummary = async () => {
     summaryLoading.value = true
     try {
-      const response = await api<StockSummaryResponse>('/admin/stock/summary', {
+      const response = await $api<StockSummaryResponse>('/admin/stock/summary', {
         method: 'GET',
       })
 
@@ -114,7 +113,7 @@ export const useStockStore = defineStore('admin-stock', () => {
 
   const createMovement = async (data: CreateStockMovementForm) => {
     try {
-      const response = await api<StockMovementResponse>('/admin/stock/movements', {
+      const response = await $api<StockMovementResponse>('/admin/stock/movements', {
         method: 'POST',
         body: data,
       })
@@ -151,7 +150,7 @@ export const useStockStore = defineStore('admin-stock', () => {
         }
       })
 
-      const response = await api<StockHistoryResponse>(`/admin/stock/${produitId}/history`, {
+      const response = await $api<StockHistoryResponse>(`/admin/stock/${produitId}/history`, {
         method: 'GET',
         params,
       })

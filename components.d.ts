@@ -55,6 +55,7 @@ declare module 'vue' {
     DialogCloseBtn: typeof import('./resources/ts/@core/components/DialogCloseBtn.vue')['default']
     DropZone: typeof import('./resources/ts/@core/components/DropZone.vue')['default']
     EnableOneTimePasswordDialog: typeof import('./resources/ts/components/dialogs/EnableOneTimePasswordDialog.vue')['default']
+    ErrorBoundary: typeof import('./resources/ts/components/common/ErrorBoundary.vue')['default']
     ErrorHeader: typeof import('./resources/ts/components/ErrorHeader.vue')['default']
     FileUploader: typeof import('./resources/ts/components/FileUploader.vue')['default']
     GlobalConfirmProvider: typeof import('./resources/ts/components/common/GlobalConfirmProvider.vue')['default']
