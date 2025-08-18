@@ -95,6 +95,11 @@ const adminNavigation = [
         icon: { icon: 'tabler-palette' },
       },
       {
+        title: 'nav_stock_management',
+        to: '/admin/stock',
+        icon: { icon: 'tabler-package-import' },
+      },
+      {
         title: 'nav_ozonexpress_credentials',
         to: '/admin/integrations/ozon/credentials',
         icon: { icon: 'tabler-settings' },

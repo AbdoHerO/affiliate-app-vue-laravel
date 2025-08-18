@@ -1356,5 +1356,88 @@
   "products.rating.last_update": "Dernière mise à jour",
   "products.rating.updated_by": "Mis à jour par",
   "products.list.column.rating": "Note",
-  "products.rating.help": "Note statique définie par l'administrateur"
+  "products.rating.help": "Note statique définie par l'administrateur",
+
+  // ===========================================
+  // STOCK MANAGEMENT MODULE
+  // ===========================================
+  "stock.title": "Gestion des Stocks",
+  "stock.subtitle": "Gérer les niveaux de stock et les mouvements",
+  "stock.no_results": "Aucun stock trouvé",
+  "stock.try_adjusting_filters": "Essayez d'ajuster vos filtres de recherche",
+
+  // KPI Cards
+  "stock.kpi.products": "Produits",
+  "stock.kpi.on_hand": "En Stock",
+  "stock.kpi.reserved": "Réservé",
+  "stock.kpi.available": "Disponible",
+
+  // Table Columns
+  "stock.columns.product": "Produit",
+  "stock.columns.variant": "Variante",
+  "stock.columns.category": "Catégorie",
+  "stock.columns.boutique": "Boutique",
+  "stock.columns.on_hand": "En Stock",
+  "stock.columns.reserved": "Réservé",
+  "stock.columns.available": "Disponible",
+  "stock.columns.last_movement": "Dernier Mouvement",
+
+  // Filters
+  "stock.filters.search": "Rechercher un produit",
+  "stock.filters.boutique": "Boutique",
+  "stock.filters.category": "Catégorie",
+  "stock.filters.with_variants": "Avec variantes",
+  "stock.filters.min_qty": "Qté min",
+  "stock.filters.max_qty": "Qté max",
+  "stock.filters.type": "Type de mouvement",
+  "stock.filters.reason": "Raison",
+  "stock.filters.date_from": "Date de début",
+  "stock.filters.date_to": "Date de fin",
+
+  // Actions
+  "stock.actions.in": "Entrée stock",
+  "stock.actions.out": "Sortie stock",
+  "stock.actions.adjust": "Ajustement",
+  "stock.actions.history": "Historique",
+  "stock.actions.create_movement": "Créer le mouvement",
+
+  // Stock Status
+  "stock.on_hand": "En stock",
+  "stock.reserved": "Réservé",
+  "stock.available": "Disponible",
+  "stock.current_stock": "Stock actuel",
+
+  // Movement Dialog
+  "stock.dialog.movement.title": "Mouvement de Stock",
+  "stock.dialog.movement.confirm_title": "Confirmer le mouvement",
+  "stock.dialog.movement.confirm_text": "Êtes-vous sûr de vouloir créer un mouvement de {type} de {quantity} unités pour {product} ?",
+
+  // Form Fields
+  "stock.fields.type": "Type de mouvement",
+  "stock.fields.quantity": "Quantité",
+  "stock.fields.reason": "Raison",
+  "stock.fields.reference": "Référence",
+  "stock.fields.note": "Note",
+  "stock.fields.note_placeholder": "Commentaire optionnel sur ce mouvement...",
+
+  // History
+  "stock.history.title": "Historique des Mouvements",
+  "stock.history.title_for": "Historique - {product}",
+  "stock.history.no_movements": "Aucun mouvement trouvé",
+  "stock.history.no_movements_desc": "Aucun mouvement de stock n'a été enregistré pour ce produit",
+  "stock.history.columns.date": "Date",
+  "stock.history.columns.type": "Type",
+  "stock.history.columns.quantity": "Quantité",
+  "stock.history.columns.reference": "Référence",
+  "stock.history.columns.variant": "Variante",
+
+  // Messages
+  "stock.messages.movement_created": "Mouvement de stock créé avec succès",
+  "stock.errors.movement_failed": "Échec de la création du mouvement de stock",
+
+  // Validation
+  "stock.validation.insufficient_stock": "Stock insuffisant. Disponible: {available}",
+
+  // Navigation
+  "nav_stock_management": "Gestion des Stocks"
 }

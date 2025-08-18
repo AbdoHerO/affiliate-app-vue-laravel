@@ -28,6 +28,7 @@ use App\Http\Controllers\Admin\VariantValeurController;
 use App\Http\Controllers\Admin\TestController;
 use App\Http\Controllers\Admin\CommissionsController;
 use App\Http\Controllers\Admin\TicketsController;
+use App\Http\Controllers\Admin\StockController;
 use App\Http\Controllers\Admin\TicketMessagesController;
 use App\Http\Controllers\Public\ProduitController as PublicProduitController;
 use App\Http\Controllers\Public\AffiliateSignupController;
@@ -309,6 +310,14 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::post('/{id}/mark-in-payment', [\App\Http\Controllers\Admin\WithdrawalsController::class, 'markInPayment']);
             Route::post('/{id}/mark-paid', [\App\Http\Controllers\Admin\WithdrawalsController::class, 'markPaid']);
             Route::get('/users/{user_id}/eligible-commissions', [\App\Http\Controllers\Admin\WithdrawalsController::class, 'getEligibleCommissions']);
+        });
+
+        // Stock Management
+        Route::prefix('stock')->group(function () {
+            Route::get('/', [StockController::class, 'index']);
+            Route::get('/summary', [StockController::class, 'summary']);
+            Route::post('/movements', [StockController::class, 'createMovement']);
+            Route::get('/{produitId}/history', [StockController::class, 'history']);
         });
 
         // Support Tickets Management

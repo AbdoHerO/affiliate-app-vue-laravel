@@ -348,4 +348,46 @@ return [
     'validation_file' => 'Ceci doit être un fichier',
     'validation_file_type' => 'Le type de fichier n\'est pas supporté',
     'validation_file_size' => 'La taille du fichier ne peut pas dépasser :max',
+
+    // ===========================================
+    // GESTION DES STOCKS
+    // ===========================================
+
+    // Messages généraux
+    'stock_movement_created' => 'Mouvement de stock enregistré avec succès',
+    'stock_movement_failed' => 'Échec de l\'enregistrement du mouvement de stock',
+    'no_variants_found' => 'Aucune variante trouvée pour ce produit',
+    'no_warehouse_found' => 'Aucun entrepôt trouvé pour cette boutique',
+    'insufficient_stock' => 'Stock insuffisant. Disponible: :available, Demandé: :requested',
+    'negative_stock_not_allowed' => 'Le stock ne peut pas être négatif',
+
+    // Types de mouvements
+    'movement_type_in' => 'Entrée',
+    'movement_type_out' => 'Sortie',
+    'movement_type_adjust' => 'Ajustement',
+
+    // Raisons de mouvement
+    'movement_reason_purchase' => 'Achat',
+    'movement_reason_correction' => 'Correction',
+    'movement_reason_return' => 'Retour',
+    'movement_reason_damage' => 'Dommage',
+    'movement_reason_manual' => 'Manuel',
+    'movement_reason_delivery_return' => 'Retour de livraison',
+    'movement_reason_cancel' => 'Annulation',
+
+    // Champs de formulaire
+    'product' => 'Produit',
+    'variant' => 'Variante',
+    'warehouse' => 'Entrepôt',
+    'movement_type' => 'Type de mouvement',
+    'quantity' => 'Quantité',
+    'reason' => 'Raison',
+    'note' => 'Note',
+    'reference' => 'Référence',
+
+    // Validation spécifique aux stocks
+    'validation_min_value' => 'La valeur doit être au moins :min',
+    'validation_integer' => 'Ce champ doit être un nombre entier',
+    'validation_uuid' => 'Ce champ doit être un identifiant valide',
+    'validation_exists' => 'L\'élément sélectionné n\'existe pas',
 ];

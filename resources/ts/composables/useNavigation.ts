@@ -109,6 +109,11 @@ export function useNavigation() {
                 icon: { icon: 'tabler-palette' },
               },
               {
+                title: t('nav_stock_management'),
+                to: 'admin-stock',
+                icon: { icon: 'tabler-package-import' },
+              },
+              {
                 title: t('nav_ozonexpress_credentials'),
                 to: 'admin-integrations-ozon-credentials',
                 icon: { icon: 'tabler-settings' },
