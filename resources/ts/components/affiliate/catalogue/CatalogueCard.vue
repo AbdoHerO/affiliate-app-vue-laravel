@@ -78,7 +78,25 @@ const maxQuantity = computed(() => {
 })
 
 const canAddToCart = computed(() => {
-  return props.product.stock_total > 0 && quantity.value <= maxQuantity.value
+  const hasStock = props.product.stock_total > 0 && quantity.value <= maxQuantity.value
+
+  // If product has both sizes and colors, both must be selected
+  if (availableSizes.value.length > 0 && availableColors.value.length > 0) {
+    return hasStock && selectedSizeId.value && selectedColorId.value
+  }
+
+  // If product has only sizes, size must be selected
+  if (availableSizes.value.length > 0) {
+    return hasStock && selectedSizeId.value
+  }
+
+  // If product has only colors, color must be selected
+  if (availableColors.value.length > 0) {
+    return hasStock && selectedColorId.value
+  }
+
+  // If no variants, just check stock
+  return hasStock
 })
 
 // Initialize current image
@@ -91,14 +109,14 @@ watch(() => props.product.mainImage, (newImage) => {
 // Methods
 const handleSizeSelect = (sizeId: string) => {
   selectedSizeId.value = sizeId
-  selectedColorId.value = '' // Clear color selection when size changes
-  emit('variantChange', sizeId)
+  // Don't clear color selection - allow independent selection
+  emit('variantChange', { type: 'size', value: sizeId, size: sizeId, color: selectedColorId.value })
 }
 
 const handleColorSelect = (colorId: string) => {
   selectedColorId.value = colorId
-  selectedSizeId.value = '' // Clear size selection when color changes
-  
+  // Don't clear size selection - allow independent selection
+
   // Update image if color has specific image
   const color = props.product.variants.colors.find(c => c.id === colorId)
   if (color?.image_url) {
@@ -106,8 +124,8 @@ const handleColorSelect = (colorId: string) => {
   } else {
     currentImage.value = props.product.mainImage
   }
-  
-  emit('variantChange', colorId)
+
+  emit('variantChange', { type: 'color', value: colorId, size: selectedSizeId.value, color: colorId })
 }
 
 const handleQuantityChange = (delta: number) => {
@@ -120,13 +138,16 @@ const handleQuantityChange = (delta: number) => {
 
 const handleAddToCart = () => {
   if (!canAddToCart.value) return
-  
-  const variantId = selectedSizeId.value || selectedColorId.value || undefined
-  
+
   emit('addToCart', {
     produit_id: props.product.id,
-    variante_id: variantId,
-    qty: quantity.value
+    size_variant_id: selectedSizeId.value || undefined,
+    color_variant_id: selectedColorId.value || undefined,
+    qty: quantity.value,
+    variants: {
+      size: selectedSizeId.value,
+      color: selectedColorId.value
+    }
   })
 }
 
@@ -203,7 +224,16 @@ watch(() => props.product.id, () => {
     <VCardText class="catalogue-card__content pa-3">
       <!-- Size Variants -->
       <div v-if="availableSizes.length" class="mb-3">
-        <div class="text-caption text-medium-emphasis mb-1">Tailles:</div>
+        <div class="text-caption text-medium-emphasis mb-1">
+          Tailles:
+          <VIcon
+            v-if="selectedSizeId"
+            icon="tabler-check"
+            size="12"
+            color="success"
+            class="ml-1"
+          />
+        </div>
         <VChip
           v-for="size in availableSizes.slice(0, 4)"
           :key="size.id"
@@ -217,7 +247,48 @@ watch(() => props.product.id, () => {
         </VChip>
       </div>
 
+      <!-- Color Variants -->
+      <div v-if="availableColors.length" class="mb-3">
+        <div class="text-caption text-medium-emphasis mb-1">
+          Couleurs:
+          <VIcon
+            v-if="selectedColorId"
+            icon="tabler-check"
+            size="12"
+            color="success"
+            class="ml-1"
+          />
+        </div>
+        <VChip
+          v-for="color in availableColors.slice(0, 3)"
+          :key="color.id"
+          :color="selectedColorId === color.id ? 'primary' : 'default'"
+          :variant="selectedColorId === color.id ? 'flat' : 'outlined'"
+          size="small"
+          class="me-1"
+          @click.stop="handleColorSelect(color.id)"
+        >
+          {{ color.value }}
+        </VChip>
+      </div>
 
+      <!-- Selection Status (for products with both size and color) -->
+      <div
+        v-if="availableSizes.length > 0 && availableColors.length > 0"
+        class="mb-2"
+      >
+        <div class="text-caption d-flex align-center">
+          <VIcon
+            :icon="selectedSizeId && selectedColorId ? 'tabler-check-circle' : 'tabler-circle'"
+            :color="selectedSizeId && selectedColorId ? 'success' : 'default'"
+            size="14"
+            class="me-1"
+          />
+          <span :class="selectedSizeId && selectedColorId ? 'text-success' : 'text-medium-emphasis'">
+            {{ selectedSizeId && selectedColorId ? 'Variantes sélectionnées' : 'Sélectionnez taille et couleur' }}
+          </span>
+        </div>
+      </div>
 
       <!-- Quantity and Add to Cart Row -->
       <div class="d-flex align-center justify-space-between mb-3">
@@ -253,22 +324,6 @@ watch(() => props.product.id, () => {
         >
           <VIcon icon="tabler-shopping-cart" size="16" />
         </VBtn>
-      </div>
-
-      <!-- Color Variants -->
-      <div v-if="availableColors.length" class="mb-3">
-        <div class="text-caption text-medium-emphasis mb-1">Couleurs:</div>
-        <VChip
-          v-for="color in availableColors.slice(0, 3)"
-          :key="color.id"
-          :color="selectedColorId === color.id ? 'primary' : 'default'"
-          :variant="selectedColorId === color.id ? 'flat' : 'outlined'"
-          size="small"
-          class="me-1"
-          @click.stop="handleColorSelect(color.id)"
-        >
-          {{ color.value }}
-        </VChip>
       </div>
 
 
