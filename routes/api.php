@@ -419,6 +419,21 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('commissions', function () {
             return response()->json(['message' => 'My Commissions - Affiliate Only']);
         });
+
+        // Catalogue routes
+        Route::get('catalogue', [App\Http\Controllers\Affiliate\CatalogueController::class, 'index']);
+        Route::get('catalogue/{id}', [App\Http\Controllers\Affiliate\CatalogueController::class, 'show']);
+
+        // Categories for affiliate (read-only)
+        Route::get('categories', [App\Http\Controllers\Admin\CategorieController::class, 'index']);
+
+        // Cart routes
+        Route::prefix('cart')->group(function () {
+            Route::post('items', [App\Http\Controllers\Affiliate\CartController::class, 'addItem']);
+            Route::get('summary', [App\Http\Controllers\Affiliate\CartController::class, 'summary']);
+            Route::delete('items', [App\Http\Controllers\Affiliate\CartController::class, 'removeItem']);
+            Route::delete('clear', [App\Http\Controllers\Affiliate\CartController::class, 'clear']);
+        });
     });
 
     // File upload routes

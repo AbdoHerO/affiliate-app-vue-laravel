@@ -47,6 +47,7 @@
   "nav_my_orders": "Mes commandes",
   "nav_my_commissions": "Mes commissions",
   "nav_marketing_materials": "Matériel marketing",
+  "nav_catalogue": "Catalogue produits",
 
   // ===========================================
   // ACTIONS & BUTTONS
@@ -1600,5 +1601,82 @@
   "reservations.filters.affiliate": "Affilié",
 
   "reservations.no_data": "Aucune réservation trouvée",
-  "reservations.no_data_subtitle": "Aucune réservation ne correspond à vos critères"
+  "reservations.no_data_subtitle": "Aucune réservation ne correspond à vos critères",
+
+  // ===========================================
+  // AFFILIATE CATALOGUE
+  // ===========================================
+  "catalogue.title": "Catalogue produits",
+  "catalogue.search": "Rechercher un produit",
+  "catalogue.search_placeholder": "Nom du produit, description...",
+  "catalogue.category": "Catégorie",
+  "catalogue.all_categories": "Toutes les catégories",
+  "catalogue.min_profit": "Profit minimum",
+  "catalogue.size": "Taille",
+  "catalogue.color": "Couleur",
+  "catalogue.stock": "Stock",
+  "catalogue.buy": "Achat",
+  "catalogue.sell": "Vente",
+  "catalogue.profit": "Profit",
+  "catalogue.add_to_cart": "Ajouter au panier",
+  "catalogue.view_details": "Voir détails",
+  "catalogue.clear_filters": "Effacer les filtres",
+  "catalogue.no_products": "Aucun produit trouvé",
+  "catalogue.no_products_subtitle": "Aucun produit ne correspond à vos critères de recherche",
+  "catalogue.loading": "Chargement des produits...",
+  "catalogue.error_loading": "Erreur lors du chargement du catalogue",
+  "catalogue.items_per_page": "Produits par page",
+  "catalogue.showing_results": "Affichage de {from} à {to} sur {total} produits",
+
+  // Product card
+  "catalogue.card.stock_badge": "{count} en stock",
+  "catalogue.card.out_of_stock": "Rupture de stock",
+  "catalogue.card.low_stock": "Stock faible",
+  "catalogue.card.profit_label": "+{amount} MAD",
+  "catalogue.card.rating": "Note: {rating}/5",
+  "catalogue.card.no_rating": "Pas encore noté",
+
+  // Product detail drawer
+  "catalogue.detail.title": "Détails du produit",
+  "catalogue.detail.description": "Description",
+  "catalogue.detail.specifications": "Caractéristiques",
+  "catalogue.detail.variants": "Variantes",
+  "catalogue.detail.images": "Images",
+  "catalogue.detail.videos": "Vidéos",
+  "catalogue.detail.pricing": "Tarification",
+  "catalogue.detail.stock_info": "Informations de stock",
+  "catalogue.detail.add_to_cart_success": "Produit ajouté au panier",
+  "catalogue.detail.add_to_cart_error": "Erreur lors de l'ajout au panier",
+  "catalogue.detail.select_variant": "Sélectionner une variante",
+  "catalogue.detail.quantity": "Quantité",
+  "catalogue.detail.max_quantity": "Maximum {max}",
+  "catalogue.detail.insufficient_stock": "Stock insuffisant",
+
+  // Cart
+  "catalogue.cart.summary": "Résumé du panier",
+  "catalogue.cart.items_count": "{count} article(s)",
+  "catalogue.cart.total": "Total: {amount} MAD",
+  "catalogue.cart.empty": "Votre panier est vide",
+  "catalogue.cart.view_cart": "Voir le panier",
+  "catalogue.cart.added_success": "Produit ajouté au panier avec succès",
+  "catalogue.cart.removed_success": "Produit retiré du panier",
+  "catalogue.cart.error": "Erreur lors de l'opération sur le panier",
+
+  // Filters
+  "catalogue.filters.apply": "Appliquer les filtres",
+  "catalogue.filters.reset": "Réinitialiser",
+  "catalogue.filters.price_range": "Fourchette de prix",
+  "catalogue.filters.profit_range": "Fourchette de profit",
+  "catalogue.filters.availability": "Disponibilité",
+  "catalogue.filters.in_stock": "En stock",
+  "catalogue.filters.out_of_stock": "Rupture de stock",
+  "catalogue.filters.sort_by": "Trier par",
+  "catalogue.filters.sort_newest": "Plus récent",
+  "catalogue.filters.sort_oldest": "Plus ancien",
+  "catalogue.filters.sort_price_asc": "Prix croissant",
+  "catalogue.filters.sort_price_desc": "Prix décroissant",
+  "catalogue.filters.sort_profit_asc": "Profit croissant",
+  "catalogue.filters.sort_profit_desc": "Profit décroissant",
+  "catalogue.filters.sort_name_asc": "Nom A-Z",
+  "catalogue.filters.sort_name_desc": "Nom Z-A"
 }

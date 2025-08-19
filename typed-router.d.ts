@@ -58,6 +58,7 @@ declare module 'vue-router/auto-routes' {
     'admin-withdrawals': RouteRecordInfo<'admin-withdrawals', '/admin/withdrawals', Record<never, never>, Record<never, never>>,
     'admin-withdrawals-id': RouteRecordInfo<'admin-withdrawals-id', '/admin/withdrawals/:id', { id: ParamValue<true> }, { id: ParamValue<false> }>,
     'admin-withdrawals-create': RouteRecordInfo<'admin-withdrawals-create', '/admin/withdrawals/create', Record<never, never>, Record<never, never>>,
+    'affiliate-catalogue': RouteRecordInfo<'affiliate-catalogue', '/affiliate/catalogue', Record<never, never>, Record<never, never>>,
     'affiliate-commissions': RouteRecordInfo<'affiliate-commissions', '/affiliate/commissions', Record<never, never>, Record<never, never>>,
     'affiliate-dashboard': RouteRecordInfo<'affiliate-dashboard', '/affiliate/dashboard', Record<never, never>, Record<never, never>>,
     'affiliate-marketing': RouteRecordInfo<'affiliate-marketing', '/affiliate/marketing', Record<never, never>, Record<never, never>>,

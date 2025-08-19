@@ -188,6 +188,11 @@ export function useNavigation() {
             icon: { icon: 'tabler-dashboard' },
           },
           {
+            title: t('nav_catalogue'),
+            to: 'affiliate-catalogue',
+            icon: { icon: 'tabler-package' },
+          },
+          {
             title: t('nav_my_orders'),
             to: 'affiliate-orders',
             icon: { icon: 'tabler-shopping-cart' },

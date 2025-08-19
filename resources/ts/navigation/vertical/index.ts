@@ -175,6 +175,11 @@ const affiliateNavigation = [
     icon: { icon: 'tabler-dashboard' },
   },
   {
+    title: 'nav_catalogue',
+    to: '/affiliate/catalogue',
+    icon: { icon: 'tabler-package' },
+  },
+  {
     title: 'nav_my_orders',
     to: '/affiliate/orders',
     icon: { icon: 'tabler-shopping-cart' },
