@@ -26,10 +26,7 @@ class CatalogueController extends Controller
                     },
                     'variantes' => function ($query) {
                         $query->where('actif', true)->orderBy('nom', 'asc')
-                              ->with(['stocks' => function ($stockQuery) {
-                                  $stockQuery->selectRaw('variante_id, SUM(qte_disponible) as total_stock')
-                                             ->groupBy('variante_id');
-                              }]);
+                              ->with(['stocks']);
                     }
                 ]);
 
@@ -87,6 +84,11 @@ class CatalogueController extends Controller
 
             // Transform data for frontend
             $transformedData = $products->getCollection()->map(function ($product) {
+                // Calculate total stock from all variants
+                $totalStock = $product->variantes->sum(function ($variant) {
+                    return $variant->stocks->sum('qte_disponible');
+                });
+
                 return [
                     'id' => $product->id,
                     'titre' => $product->titre,
@@ -95,7 +97,7 @@ class CatalogueController extends Controller
                     'prix_achat' => (float) $product->prix_achat,
                     'prix_vente' => (float) $product->prix_vente,
                     'prix_affilie' => (float) $product->prix_affilie,
-                    'stock_total' => (int) ($product->stock_total ?? 0),
+                    'stock_total' => (int) $totalStock,
                     'rating_value' => $product->rating_value ? (float) $product->rating_value : null,
                     'categorie' => $product->categorie ? [
                         'id' => $product->categorie->id,
@@ -108,14 +110,14 @@ class CatalogueController extends Controller
                         ];
                     }),
                     'variantes' => $product->variantes->map(function ($variant) {
-                        $totalStock = $variant->stocks->sum('qte_disponible') ?? 0;
+                        $variantStock = $variant->stocks->sum('qte_disponible') ?? 0;
                         return [
                             'id' => $variant->id,
                             'attribut_principal' => $variant->nom, // Use 'nom' instead of 'attribut_principal'
                             'valeur' => $variant->valeur,
                             'color' => $variant->color ?? null,
                             'image_url' => $variant->image_url,
-                            'stock' => (int) $totalStock,
+                            'stock' => (int) $variantStock,
                         ];
                     }),
                 ];
