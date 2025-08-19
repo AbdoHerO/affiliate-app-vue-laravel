@@ -1279,6 +1279,24 @@
   "drag_drop_files": "Glissez-déposez les fichiers ici",
   "browse": "Parcourir",
 
+  // Stock history dialog keys
+  "common.filters": "Filtres",
+  "common.clear_filters": "Effacer les Filtres",
+  "common.clear": "Effacer",
+  "short": "Court",
+  "time": "Heure",
+
+  // Loading and redirect messages
+  "Loading": "Chargement",
+  "Redirecting to your dashboard": "Redirection vers votre tableau de bord",
+
+  // Login form keys
+  "placeholder_email_or_username": "Entrez votre email ou nom d'utilisateur",
+  "placeholder_enter_email": "Entrez votre email",
+  "form_password": "Mot de passe",
+  "placeholder_enter_password": "Entrez votre mot de passe",
+
+
   // ===========================================
   // TICKETS DE SUPPORT
   // ===========================================

@@ -891,6 +891,26 @@
   "drag_drop_files": "اسحب وأفلت الملفات هنا",
   "browse": "تصفح",
 
+  // Stock history dialog keys
+  "common.filters": "المرشحات",
+  "common.clear_filters": "مسح المرشحات",
+  "common.clear": "مسح",
+  "short": "قصير",
+  "time": "الوقت",
+
+  // Loading and redirect messages
+  "Loading": "جاري التحميل",
+  "Redirecting to your dashboard": "إعادة توجيه إلى لوحة التحكم الخاصة بك",
+
+  // Login form keys
+  "placeholder_email_or_username": "أدخل بريدك الإلكتروني أو اسم المستخدم",
+  "placeholder_enter_email": "أدخل بريدك الإلكتروني",
+  "form_password": "كلمة المرور",
+  "placeholder_enter_password": "أدخل كلمة المرور",
+
+  // Stock management
+  "Gestion des Stocks": "إدارة المخزون",
+
   // ===========================================
   // تذاكر الدعم
   // ===========================================

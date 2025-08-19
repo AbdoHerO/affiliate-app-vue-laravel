@@ -1308,6 +1308,24 @@
   "drag_drop_files": "Drag & drop files here",
   "browse": "Browse",
 
+  // Stock history dialog keys
+  "common.filters": "Filters",
+  "common.clear_filters": "Clear Filters",
+  "common.clear": "Clear",
+  "short": "Short",
+  "time": "Time",
+
+  // Loading and redirect messages
+  "Loading": "Loading",
+  "Redirecting to your dashboard": "Redirecting to your dashboard",
+
+  // Login form keys
+  "placeholder_email_or_username": "Enter your email or username",
+  "placeholder_enter_email": "Enter your email",
+  "form_password": "Password",
+  "placeholder_enter_password": "Enter your password",
+
+
   // ===========================================
   // SUPPORT TICKETS
   // ===========================================
