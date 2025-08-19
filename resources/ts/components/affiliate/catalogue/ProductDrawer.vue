@@ -11,7 +11,13 @@ interface Props {
 
 interface Emits {
   (e: 'update:modelValue', value: boolean): void
-  (e: 'addToCart', data: { produit_id: string; variante_id?: string; qty: number }): void
+  (e: 'addToCart', data: {
+    produit_id: string
+    size_variant_id?: string
+    color_variant_id?: string
+    qty: number
+    variants: { size?: string; color?: string }
+  }): void
 }
 
 const props = defineProps<Props>()
@@ -21,9 +27,10 @@ const { t } = useI18n()
 
 // Local state
 const selectedImageIndex = ref(0)
-const selectedVariantId = ref<string>('')
+const selectedSizeId = ref<string>('')
+const selectedColorId = ref<string>('')
 const quantity = ref(1)
-const activeTab = ref('details')
+const currentImage = ref('')
 
 // Computed
 const isOpen = computed({
@@ -36,79 +43,79 @@ const images = computed(() => {
   return props.product.images.sort((a, b) => a.ordre - b.ordre)
 })
 
-const currentImage = computed(() => {
-  if (!images.value.length) return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDMwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjRjVGNUY1Ii8+CjxwYXRoIGQ9Ik0xNTAgMTAwQzE2MS4wNDYgMTAwIDE3MCA5MC45NTQzIDE3MCA4MEM1NyA2OS4wNDU3IDE0Ny45NTQgNjAgMTM2IDYwQzEyNC45NTQgNjAgMTE2IDY5LjA0NTcgMTE2IDgwQzExNiA5MC45NTQzIDEyNC45NTQgMTAwIDEzNiAxMDBIMTUwWiIgZmlsbD0iI0NDQ0NDQyIvPgo8cGF0aCBkPSJNMTgwIDEyMEgxMjBDMTE2LjY4NiAxMjAgMTE0IDEyMi42ODYgMTE0IDEyNlYyMDBDMTE0IDIwMy4zMTQgMTE2LjY4NiAyMDYgMTIwIDIwNkgxODBDMTgzLjMxNCAyMDYgMTg2IDIwMy4zMTQgMTg2IDIwMFYxMjZDMTg2IDEyMi42ODYgMTgzLjMxNCAxMjAgMTgwIDEyMFoiIGZpbGw9IiNDQ0NDQ0MiLz4KPC9zdmc+'
-  return images.value[selectedImageIndex.value]?.url || images.value[0]?.url
+const availableSizes = computed(() => {
+  if (!props.product?.variantes) return []
+  return props.product.variantes
+    .filter(variant =>
+      ['taille', 'size'].includes(variant.attribut_principal.toLowerCase()) &&
+      variant.stock > 0
+    )
+    .map(variant => ({
+      id: variant.id,
+      value: variant.valeur,
+      stock: variant.stock
+    }))
 })
 
-const variants = computed(() => {
-  if (!props.product?.variantes) return { sizes: [], colors: [], others: [] }
-  
-  const sizes = props.product.variantes.filter(v => 
-    ['taille', 'size'].includes(v.attribut_principal.toLowerCase())
-  )
-  const colors = props.product.variantes.filter(v => 
-    ['couleur', 'color'].includes(v.attribut_principal.toLowerCase())
-  )
-  const others = props.product.variantes.filter(v => 
-    !['taille', 'size', 'couleur', 'color'].includes(v.attribut_principal.toLowerCase())
-  )
-  
-  return { sizes, colors, others }
-})
-
-const selectedVariant = computed(() => {
-  if (!selectedVariantId.value || !props.product?.variantes) return null
-  return props.product.variantes.find(v => v.id === selectedVariantId.value)
+const availableColors = computed(() => {
+  if (!props.product?.variantes) return []
+  return props.product.variantes
+    .filter(variant =>
+      ['couleur', 'color'].includes(variant.attribut_principal.toLowerCase()) &&
+      variant.stock > 0
+    )
+    .map(variant => ({
+      id: variant.id,
+      value: variant.valeur,
+      stock: variant.stock,
+      image_url: variant.image_url
+    }))
 })
 
 const maxQuantity = computed(() => {
-  if (selectedVariant.value) {
-    return Math.min(selectedVariant.value.stock, 10)
-  }
-  if (props.product) {
-    const totalStock = props.product.variantes?.reduce((sum, v) => sum + v.stock, 0) || 0
-    return Math.min(totalStock, 10)
-  }
-  return 1
+  return Math.min(props.product?.stock_total || 0, 99)
 })
 
 const canAddToCart = computed(() => {
-  if (!props.product) return false
-  
-  const totalStock = props.product.variantes?.reduce((sum, v) => sum + v.stock, 0) || 0
-  return totalStock > 0 && quantity.value <= maxQuantity.value
-})
+  if (!props.product || props.product.stock_total <= 0) return false
 
-const stockStatus = computed(() => {
-  if (!props.product) return { text: '', color: 'default' }
-  
-  const totalStock = props.product.variantes?.reduce((sum, v) => sum + v.stock, 0) || 0
-  
-  if (totalStock === 0) {
-    return { text: t('catalogue.card.out_of_stock'), color: 'error' }
-  } else if (totalStock < 10) {
-    return { text: t('catalogue.card.low_stock'), color: 'warning' }
-  } else {
-    return { text: `${totalStock} ${t('catalogue.stock')}`, color: 'success' }
+  // If product has both sizes and colors, both must be selected
+  if (availableSizes.value.length > 0 && availableColors.value.length > 0) {
+    return selectedSizeId.value && selectedColorId.value
   }
+
+  // If product has only sizes, size must be selected
+  if (availableSizes.value.length > 0) {
+    return selectedSizeId.value
+  }
+
+  // If product has only colors, color must be selected
+  if (availableColors.value.length > 0) {
+    return selectedColorId.value
+  }
+
+  // If no variants, can add to cart
+  return true
 })
 
 // Methods
 const handleImageSelect = (index: number) => {
   selectedImageIndex.value = index
+  currentImage.value = images.value[index]?.url || ''
 }
 
-const handleVariantSelect = (variantId: string) => {
-  selectedVariantId.value = variantId
-  
-  // Update image if variant has specific image
-  const variant = props.product?.variantes?.find(v => v.id === variantId)
-  if (variant?.image_url && images.value.length > 0) {
-    const imageIndex = images.value.findIndex(img => img.url === variant.image_url)
-    if (imageIndex !== -1) {
-      selectedImageIndex.value = imageIndex
-    }
+const handleSizeSelect = (sizeId: string) => {
+  selectedSizeId.value = sizeId
+}
+
+const handleColorSelect = (colorId: string) => {
+  selectedColorId.value = colorId
+
+  // Update image if color has specific image
+  const color = availableColors.value.find(c => c.id === colorId)
+  if (color?.image_url) {
+    currentImage.value = color.image_url
+    selectedImageIndex.value = -1 // Indicate it's a variant image
   }
 }
 
@@ -121,11 +128,16 @@ const handleQuantityChange = (delta: number) => {
 
 const handleAddToCart = () => {
   if (!canAddToCart.value || !props.product) return
-  
+
   emit('addToCart', {
     produit_id: props.product.id,
-    variante_id: selectedVariantId.value || undefined,
-    qty: quantity.value
+    size_variant_id: selectedSizeId.value || undefined,
+    color_variant_id: selectedColorId.value || undefined,
+    qty: quantity.value,
+    variants: {
+      size: selectedSizeId.value,
+      color: selectedColorId.value
+    }
   })
 }
 
@@ -133,13 +145,35 @@ const closeDrawer = () => {
   isOpen.value = false
 }
 
-// Reset state when product changes
-watch(() => props.product?.id, () => {
-  selectedImageIndex.value = 0
-  selectedVariantId.value = ''
+const openVideo = (url: string) => {
+  window.open(url, '_blank')
+}
+
+// Format copywriting with line breaks and bold text
+const formatCopywriting = (text: string): string => {
+  if (!text) return ''
+
+  return text
+    // Convert line breaks to <br> tags
+    .replace(/\n/g, '<br>')
+    // Convert **text** to bold
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    // Convert *text* to italic
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    // Preserve emojis and special characters
+    .trim()
+}
+
+// Initialize current image when product changes
+watch(() => props.product, (newProduct) => {
+  if (newProduct && images.value.length > 0) {
+    currentImage.value = images.value[0].url
+    selectedImageIndex.value = 0
+  }
+  selectedSizeId.value = ''
+  selectedColorId.value = ''
   quantity.value = 1
-  activeTab.value = 'details'
-})
+}, { immediate: true })
 
 // Close drawer before route navigation
 onBeforeRouteLeave(() => {
@@ -153,254 +187,204 @@ onBeforeRouteLeave(() => {
   <VNavigationDrawer
     v-model="isOpen"
     location="end"
-    width="600"
+    width="500"
     temporary
     class="product-drawer"
   >
     <template v-if="product">
-      <!-- Header -->
-      <div class="product-drawer__header">
-        <div class="d-flex align-center justify-space-between pa-4 border-b">
-          <h5 class="text-h5">{{ product.titre }}</h5>
-          <VBtn
-            icon
-            variant="text"
-            @click="closeDrawer"
-          >
-            <VIcon icon="tabler-x" />
-          </VBtn>
+      <!-- Header with Close Button -->
+      <div class="product-drawer__header d-flex align-center justify-space-between pa-4 border-b">
+        <div class="d-flex align-center">
+          <span class="text-caption text-medium-emphasis me-2">REF:</span>
+          <span class="text-caption font-weight-medium">{{ product.id.slice(-8) }}</span>
+          <VDivider vertical class="mx-2" />
+          <span class="text-caption">{{ product.titre }}</span>
+        </div>
+        <VBtn
+          icon="tabler-x"
+          variant="text"
+          size="small"
+          color="error"
+          @click="closeDrawer"
+        />
+      </div>
+
+      <!-- Stats Row -->
+      <div class="d-flex justify-space-around pa-4 bg-grey-lighten-5">
+        <div class="text-center">
+          <div class="text-caption text-medium-emphasis">المبيعات</div>
+          <div class="text-h6 font-weight-bold text-primary">90+</div>
+        </div>
+        <div class="text-center">
+          <div class="text-caption text-medium-emphasis">المتجر السعودي</div>
+          <div class="text-h6 font-weight-bold text-primary">220+</div>
+        </div>
+        <div class="text-center">
+          <div class="text-caption text-medium-emphasis">المتجر</div>
+          <div class="text-h6 font-weight-bold text-primary">130</div>
+        </div>
+        <div class="text-center">
+          <div class="text-caption text-medium-emphasis">المتجرون الطلبات</div>
+          <div class="text-h6 font-weight-bold text-primary">29</div>
         </div>
       </div>
 
-      <!-- Content -->
-      <VContainer fluid class="pa-0">
-        <!-- Image Gallery -->
-        <div class="product-drawer__gallery pa-4">
-          <!-- Main Image -->
+      <!-- Main Content -->
+      <div class="pa-4">
+        <!-- Main Product Image -->
+        <div class="product-drawer__main-image mb-4">
           <VImg
             :src="currentImage"
             :alt="product.titre"
-            aspect-ratio="1"
+            aspect-ratio="0.8"
             cover
-            class="rounded mb-4"
+            class="rounded-lg w-100"
+            style="max-height: 400px;"
           />
-          
-          <!-- Thumbnail Images -->
-          <div v-if="images.length > 1" class="product-drawer__thumbnails">
-            <VBtn
-              v-for="(image, index) in images"
+        </div>
+
+        <!-- Thumbnail Images -->
+        <div v-if="images.length > 1" class="product-drawer__thumbnails mb-4">
+          <div class="d-flex gap-2 justify-center">
+            <VImg
+              v-for="(image, index) in images.slice(0, 4)"
               :key="index"
-              :variant="selectedImageIndex === index ? 'elevated' : 'outlined'"
-              :color="selectedImageIndex === index ? 'primary' : 'default'"
-              size="small"
-              class="me-2 mb-2"
+              :src="image.url"
+              :alt="`${product.titre} - Image ${index + 1}`"
+              width="60"
+              height="80"
+              cover
+              class="rounded cursor-pointer thumbnail"
+              :class="{ 'thumbnail--active': selectedImageIndex === index }"
               @click="handleImageSelect(index)"
+            />
+          </div>
+        </div>
+        <!-- Variant Selection Section -->
+        <div class="variant-selection mb-4">
+          <!-- Size Selection -->
+          <div v-if="availableSizes.length" class="mb-3">
+            <div class="text-body-2 font-weight-medium mb-2 text-center">الأحجام المتوفرة</div>
+            <div class="d-flex justify-center gap-2 flex-wrap">
+              <VChip
+                v-for="size in availableSizes"
+                :key="size.id"
+                :color="selectedSizeId === size.id ? 'primary' : 'default'"
+                :variant="selectedSizeId === size.id ? 'flat' : 'outlined'"
+                size="large"
+                class="cursor-pointer"
+                @click="handleSizeSelect(size.id)"
+              >
+                {{ size.value }}
+              </VChip>
+            </div>
+          </div>
+
+          <!-- Color Selection -->
+          <div v-if="availableColors.length" class="mb-3">
+            <div class="text-body-2 font-weight-medium mb-2 text-center">الألوان المتوفرة</div>
+            <div class="d-flex justify-center gap-2 flex-wrap">
+              <VChip
+                v-for="color in availableColors"
+                :key="color.id"
+                :color="selectedColorId === color.id ? 'primary' : 'default'"
+                :variant="selectedColorId === color.id ? 'flat' : 'outlined'"
+                size="large"
+                class="cursor-pointer"
+                @click="handleColorSelect(color.id)"
+              >
+                {{ color.value }}
+              </VChip>
+            </div>
+          </div>
+        </div>
+
+        <!-- Copywriting Section -->
+        <div v-if="product.copywriting" class="copywriting-section mb-4 pa-3 bg-grey-lighten-5 rounded">
+          <div class="text-body-2 copywriting-content" v-html="formatCopywriting(product.copywriting)"></div>
+        </div>
+
+        <!-- Rating Section -->
+        <div v-if="product.rating_value" class="rating-section mb-4 text-center">
+          <VRating
+            :model-value="product.rating_value"
+            readonly
+            length="5"
+            half-increments
+            color="warning"
+            size="large"
+            class="mb-2"
+          />
+          <div class="text-caption text-medium-emphasis">
+            {{ product.rating_value }} من 5 نجوم
+          </div>
+        </div>
+
+        <!-- Videos Section -->
+        <div v-if="product.videos && product.videos.length > 0" class="videos-section mb-4">
+          <div class="text-body-2 font-weight-medium mb-2 text-center">فيديوهات المنتج</div>
+          <div class="d-flex gap-2 justify-center flex-wrap">
+            <VBtn
+              v-for="(video, index) in product.videos.slice(0, 2)"
+              :key="index"
+              variant="outlined"
+              color="primary"
+              size="small"
+              prepend-icon="tabler-play"
+              @click="openVideo(video.url)"
             >
-              <VImg
-                :src="image.url"
-                :alt="`${product.titre} ${index + 1}`"
-                width="40"
-                height="40"
-                cover
-              />
+              فيديو {{ index + 1 }}
             </VBtn>
           </div>
         </div>
 
-        <!-- Product Info Tabs -->
-        <VTabs v-model="activeTab" class="border-b">
-          <VTab value="details">{{ t('catalogue.detail.title') }}</VTab>
-          <VTab value="variants">{{ t('catalogue.detail.variants') }}</VTab>
-          <VTab value="pricing">{{ t('catalogue.detail.pricing') }}</VTab>
-        </VTabs>
-
-        <VWindow v-model="activeTab">
-          <!-- Details Tab -->
-          <VWindowItem value="details" class="pa-4">
-            <!-- Stock Status -->
-            <VAlert
-              :color="stockStatus.color"
-              variant="tonal"
-              class="mb-4"
-            >
-              {{ stockStatus.text }}
-            </VAlert>
-
-            <!-- Description -->
-            <div v-if="product.description" class="mb-4">
-              <h6 class="text-h6 mb-2">{{ t('catalogue.detail.description') }}</h6>
-              <div class="text-body-2" v-html="product.description"></div>
-            </div>
-
-            <!-- Category -->
-            <div v-if="product.categorie" class="mb-4">
-              <h6 class="text-h6 mb-2">{{ t('catalogue.category') }}</h6>
-              <VChip color="primary" variant="tonal">
-                {{ product.categorie.nom }}
-              </VChip>
-            </div>
-
-            <!-- Rating -->
-            <div v-if="product.rating_value" class="mb-4">
-              <h6 class="text-h6 mb-2">{{ t('catalogue.card.rating') }}</h6>
-              <VRating
-                :model-value="product.rating_value"
-                readonly
-                length="5"
-                half-increments
-              />
-            </div>
-          </VWindowItem>
-
-          <!-- Variants Tab -->
-          <VWindowItem value="variants" class="pa-4">
-            <!-- Sizes -->
-            <div v-if="variants.sizes.length" class="mb-4">
-              <h6 class="text-h6 mb-2">{{ t('catalogue.size') }}</h6>
-              <div class="d-flex flex-wrap gap-2">
-                <VChip
-                  v-for="variant in variants.sizes"
-                  :key="variant.id"
-                  :color="selectedVariantId === variant.id ? 'primary' : 'default'"
-                  :variant="selectedVariantId === variant.id ? 'elevated' : 'outlined'"
-                  :disabled="variant.stock === 0"
-                  @click="handleVariantSelect(variant.id)"
-                >
-                  {{ variant.valeur }}
-                  <VTooltip activator="parent">
-                    {{ variant.stock }} en stock
-                  </VTooltip>
-                </VChip>
-              </div>
-            </div>
-
-            <!-- Colors -->
-            <div v-if="variants.colors.length" class="mb-4">
-              <h6 class="text-h6 mb-2">{{ t('catalogue.color') }}</h6>
-              <div class="d-flex flex-wrap gap-2">
-                <VBtn
-                  v-for="variant in variants.colors"
-                  :key="variant.id"
-                  :variant="selectedVariantId === variant.id ? 'elevated' : 'outlined'"
-                  :color="selectedVariantId === variant.id ? 'primary' : 'default'"
-                  :disabled="variant.stock === 0"
-                  size="small"
-                  @click="handleVariantSelect(variant.id)"
-                >
-                  <div
-                    v-if="variant.color"
-                    class="color-swatch me-2"
-                    :style="{ backgroundColor: variant.color }"
-                  />
-                  {{ variant.valeur }}
-                  <VTooltip activator="parent">
-                    {{ variant.stock }} en stock
-                  </VTooltip>
-                </VBtn>
-              </div>
-            </div>
-
-            <!-- Other Variants -->
-            <div v-if="variants.others.length" class="mb-4">
-              <h6 class="text-h6 mb-2">{{ t('catalogue.detail.specifications') }}</h6>
-              <div class="d-flex flex-wrap gap-2">
-                <VChip
-                  v-for="variant in variants.others"
-                  :key="variant.id"
-                  :color="selectedVariantId === variant.id ? 'primary' : 'default'"
-                  :variant="selectedVariantId === variant.id ? 'elevated' : 'outlined'"
-                  :disabled="variant.stock === 0"
-                  @click="handleVariantSelect(variant.id)"
-                >
-                  {{ variant.attribut_principal }}: {{ variant.valeur }}
-                  <VTooltip activator="parent">
-                    {{ variant.stock }} en stock
-                  </VTooltip>
-                </VChip>
-              </div>
-            </div>
-          </VWindowItem>
-
-          <!-- Pricing Tab -->
-          <VWindowItem value="pricing" class="pa-4">
-            <VRow>
-              <VCol cols="12" md="6">
-                <VCard variant="outlined">
-                  <VCardText>
-                    <div class="text-center">
-                      <h6 class="text-h6 mb-2">{{ t('catalogue.buy') }}</h6>
-                      <div class="text-h4 text-primary">{{ product.prix_achat }} MAD</div>
-                    </div>
-                  </VCardText>
-                </VCard>
-              </VCol>
-              <VCol cols="12" md="6">
-                <VCard variant="outlined">
-                  <VCardText>
-                    <div class="text-center">
-                      <h6 class="text-h6 mb-2">{{ t('catalogue.sell') }}</h6>
-                      <div class="text-h4 text-success">{{ product.prix_vente }} MAD</div>
-                    </div>
-                  </VCardText>
-                </VCard>
-              </VCol>
-              <VCol cols="12">
-                <VCard variant="outlined" color="primary">
-                  <VCardText>
-                    <div class="text-center">
-                      <h6 class="text-h6 mb-2">{{ t('catalogue.profit') }}</h6>
-                      <div class="text-h3 text-primary">+{{ product.prix_affilie }} MAD</div>
-                    </div>
-                  </VCardText>
-                </VCard>
-              </VCol>
-            </VRow>
-          </VWindowItem>
-        </VWindow>
-
-        <!-- Add to Cart Section -->
-        <div class="product-drawer__cart-section pa-4 border-t">
-          <!-- Quantity Selector -->
-          <div class="d-flex align-center justify-center mb-4">
-            <VBtn
-              icon
-              variant="outlined"
-              :disabled="quantity <= 1"
-              @click="handleQuantityChange(-1)"
-            >
-              <VIcon icon="tabler-minus" />
-            </VBtn>
-            <div class="mx-4 text-h6 text-center" style="min-width: 60px;">
-              {{ quantity }}
-            </div>
-            <VBtn
-              icon
-              variant="outlined"
-              :disabled="quantity >= maxQuantity"
-              @click="handleQuantityChange(1)"
-            >
-              <VIcon icon="tabler-plus" />
-            </VBtn>
+        <!-- Product Features -->
+        <div class="product-features mb-4">
+          <div class="d-flex align-center mb-2">
+            <VIcon icon="tabler-check-circle" color="success" size="16" class="me-2" />
+            <span class="text-body-2">الشحن مجاني لجميع المدن</span>
           </div>
-
-          <!-- Add to Cart Button -->
+          <div class="d-flex align-center mb-2">
+            <VIcon icon="tabler-check-circle" color="success" size="16" class="me-2" />
+            <span class="text-body-2">متوفر بجميع المقاسات</span>
+          </div>
+          <div class="d-flex align-center mb-2">
+            <VIcon icon="tabler-check-circle" color="success" size="16" class="me-2" />
+            <span class="text-body-2">جودة عالية ومضمونة</span>
+          </div>
+          <div class="d-flex align-center">
+            <VIcon icon="tabler-currency-dirham" color="warning" size="16" class="me-2" />
+            <span class="text-body-2 font-weight-medium">السعر: {{ product.prix_vente }} درهم</span>
+          </div>
+        </div>
+        <!-- Order Button -->
+        <div class="order-section pa-4 border-t">
           <VBtn
-            block
             color="primary"
             size="large"
+            block
             :disabled="!canAddToCart"
             @click="handleAddToCart"
           >
-            <VIcon start icon="tabler-shopping-cart" />
-            {{ t('catalogue.add_to_cart') }}
+            <VIcon icon="tabler-shopping-cart" class="me-2" />
+            تحميل
           </VBtn>
 
-          <!-- Max Quantity Info -->
-          <div v-if="maxQuantity < 10" class="text-caption text-center mt-2 text-medium-emphasis">
-            {{ t('catalogue.detail.max_quantity', { max: maxQuantity }) }}
+          <!-- Selection Status -->
+          <div v-if="availableSizes.length > 0 && availableColors.length > 0" class="mt-3">
+            <div class="text-caption text-center">
+              <VIcon
+                :icon="selectedSizeId && selectedColorId ? 'tabler-check-circle' : 'tabler-alert-circle'"
+                :color="selectedSizeId && selectedColorId ? 'success' : 'warning'"
+                size="14"
+                class="me-1"
+              />
+              {{ selectedSizeId && selectedColorId ? 'تم اختيار المقاس واللون' : 'يرجى اختيار المقاس واللون' }}
+            </div>
           </div>
         </div>
-      </VContainer>
+      </div>
+
     </template>
 
     <!-- Loading State -->
@@ -410,33 +394,82 @@ onBeforeRouteLeave(() => {
   </VNavigationDrawer>
 </template>
 
+
 <style scoped>
+.product-drawer {
+  direction: rtl;
+}
+
 .product-drawer__header {
   position: sticky;
   top: 0;
-  z-index: 1;
+  z-index: 2;
   background: rgb(var(--v-theme-surface));
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.product-drawer__gallery {
-  border-bottom: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+.product-drawer__main-image {
+  position: relative;
+  overflow: hidden;
 }
 
-.product-drawer__thumbnails {
-  display: flex;
-  flex-wrap: wrap;
+.thumbnail {
+  border: 2px solid transparent;
+  transition: all 0.2s ease;
+  cursor: pointer;
 }
 
-.product-drawer__cart-section {
-  position: sticky;
-  bottom: 0;
-  background: rgb(var(--v-theme-surface));
+.thumbnail:hover {
+  border-color: rgb(var(--v-theme-primary));
+  transform: scale(1.05);
 }
 
-.color-swatch {
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
+.thumbnail--active {
+  border-color: rgb(var(--v-theme-primary));
+  box-shadow: 0 0 0 2px rgba(var(--v-theme-primary), 0.2);
+}
+
+.variant-selection {
+  background: rgba(var(--v-theme-surface), 0.5);
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.copywriting-section {
   border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
 }
+
+.product-features {
+  background: rgba(var(--v-theme-primary), 0.05);
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.order-section {
+  background: rgb(var(--v-theme-surface));
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.copywriting-content {
+  line-height: 1.6;
+  word-wrap: break-word;
+}
+
+.copywriting-content strong {
+  font-weight: 600;
+  color: rgb(var(--v-theme-primary));
+}
+
+.copywriting-content em {
+  font-style: italic;
+  color: rgb(var(--v-theme-secondary));
+}
+
 </style>

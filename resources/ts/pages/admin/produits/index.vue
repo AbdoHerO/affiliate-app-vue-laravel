@@ -73,7 +73,8 @@ const breadcrumbs = computed(() => [
 ])
 
 const headers = computed(() => [
-  { title: t('admin_produits_titre'), key: 'titre', sortable: true },
+  { title: 'Photo', key: 'image', sortable: false, width: 80, align: 'center' as const },
+  { title: t('admin_produits_titre'), key: 'titre', sortable: true, width: 350 },
   { title: t('admin_produits_boutique'), key: 'boutique.nom', sortable: true },
   { title: t('admin_produits_categorie'), key: 'categorie.nom', sortable: true },
   { title: t('admin_produits_prix_vente'), key: 'prix_vente', sortable: true, align: 'end' as const },
@@ -397,28 +398,32 @@ onMounted(async () => {
         @update:options="handleTableUpdate"
         hide-default-footer
       >
-        <template #item.titre="{ item }">
-          <div class="d-flex align-center">
+        <!-- Product Image Column -->
+        <template #item.image="{ item }">
+          <div class="d-flex justify-center">
             <VImg
               v-if="item.images && item.images[0]"
               :src="item.images[0].url"
-              width="40"
-              height="40"
-              class="rounded me-3"
+              width="50"
+              height="50"
+              class="rounded"
               cover
             />
             <VAvatar
               v-else
               color="grey-lighten-2"
-              size="40"
-              class="me-3"
+              size="50"
             >
               <VIcon icon="tabler-package" />
             </VAvatar>
-            <div>
-              <div class="font-weight-medium">{{ item.titre }}</div>
-              <div class="text-caption text-medium-emphasis">{{ item.slug }}</div>
-            </div>
+          </div>
+        </template>
+
+        <!-- Product Title Column -->
+        <template #item.titre="{ item }">
+          <div class="product-title-column">
+            <div class="font-weight-medium product-title">{{ item.titre }}</div>
+            <div class="text-caption text-medium-emphasis">{{ item.slug }}</div>
           </div>
         </template>
 
@@ -550,3 +555,50 @@ onMounted(async () => {
 
   </div>
 </template>
+
+<style scoped>
+/* Image Column Styling */
+:deep(.v-data-table__td[data-column="image"]) {
+  width: 80px !important;
+  min-width: 80px !important;
+  max-width: 80px !important;
+  padding: 8px !important;
+  text-align: center;
+}
+
+/* Title Column Styling */
+.product-title-column {
+  min-width: 0;
+  width: 100%;
+}
+
+.product-title {
+  word-wrap: break-word;
+  word-break: break-word;
+  white-space: normal;
+  line-height: 1.4;
+  font-size: 0.875rem;
+  margin-bottom: 2px;
+}
+
+:deep(.v-data-table__td[data-column="titre"]) {
+  width: 350px !important;
+  min-width: 350px !important;
+  max-width: 350px !important;
+  white-space: normal !important;
+  vertical-align: top;
+  padding: 12px 16px !important;
+}
+
+/* General table styling */
+:deep(.v-data-table__td) {
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+/* Ensure proper row height for images */
+:deep(.v-data-table tbody tr) {
+  height: auto !important;
+  min-height: 70px;
+}
+</style>

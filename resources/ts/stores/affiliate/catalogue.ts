@@ -15,6 +15,11 @@ export interface CatalogueProduct {
     url: string
     ordre: number
   }>
+  videos?: Array<{
+    url: string
+    titre?: string
+    ordre?: number
+  }>
   prix_achat: number
   prix_vente: number
   prix_affilie: number
@@ -23,6 +28,7 @@ export interface CatalogueProduct {
   rating_value?: number | null
   slug?: string
   description?: string
+  copywriting?: string
 }
 
 export interface CatalogueVariant {

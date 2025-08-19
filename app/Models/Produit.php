@@ -29,6 +29,7 @@ class Produit extends Model
         'categorie_id',
         'titre',
         'description',
+        'copywriting',
         'prix_achat',
         'prix_vente',
         'prix_affilie',

@@ -73,6 +73,7 @@ declare module 'vue' {
     ProductForm: typeof import('./resources/ts/components/admin/products/ProductForm.vue')['default']
     ProductImageGallery: typeof import('./resources/ts/components/admin/ProductImageGallery.vue')['default']
     ProductImageManager: typeof import('./resources/ts/components/admin/products/ProductImageManager.vue')['default']
+    ProductModal: typeof import('./resources/ts/components/affiliate/catalogue/ProductModal.vue')['default']
     ProductVariantManager: typeof import('./resources/ts/components/admin/products/ProductVariantManager.vue')['default']
     ProductVideoManager: typeof import('./resources/ts/components/admin/products/ProductVideoManager.vue')['default']
     ProfileImageUpload: typeof import('./resources/ts/components/ProfileImageUpload.vue')['default']

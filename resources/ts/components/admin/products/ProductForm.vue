@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, onMounted, computed, reactive } from 'vue'
+import { ref, watch, onMounted, computed, reactive, nextTick } from 'vue'
 import { useProduitsStore, type Produit, type ProduitFormData, type ProduitRupture } from '@/stores/admin/produits'
 import { useBoutiquesStore } from '@/stores/admin/boutiques'
 import { useCategoriesStore } from '@/stores/admin/categories'
@@ -60,6 +60,7 @@ const form = ref<ProduitFormData>({
   categorie_id: null,
   titre: '',
   description: '',
+  copywriting: '',
   prix_achat: null,
   prix_vente: null,
   prix_affilie: null,
@@ -153,6 +154,7 @@ const loadProduct = async () => {
           categorie_id: p.categorie_id,
           titre: p.titre,
           description: p.description || '',
+          copywriting: (p as any).copywriting || '',
           prix_achat: p.prix_achat,
           prix_vente: p.prix_vente,
           prix_affilie: p.prix_affilie,
@@ -163,6 +165,10 @@ const loadProduct = async () => {
         }
         localId.value = p.id
         console.debug('[ProductForm] Edit mode - variants loaded:', variantes.value.map(v => ({ id: v.id, nom: v.nom, valeur: v.valeur, image_url: v.image_url })))
+
+        // Sync rich text editor with loaded copywriting content
+        await syncRichTextEditor()
+
         await loadPropositions()
         await loadRuptures()
       }
@@ -176,23 +182,38 @@ const loadProduct = async () => {
 }
 
 const saveProduct = async () => {
+  console.debug('[ProductForm] saveProduct called, mode:', props.mode, 'localId:', localId.value)
+
   // Prevent double-click/double-submit
   if (saving.value) {
     console.debug('[ProductForm] Save already in progress, ignoring')
     return
   }
 
-  // Show confirm dialog before saving
-  const confirmed = props.mode === 'create' && !localId.value
-    ? await confirmCreate('product')
-    : await confirmUpdate('product', form.value.titre)
-  if (!confirmed) return
+  // Basic validation
+  if (!form.value.titre.trim()) {
+    showError('Product title is required')
+    return
+  }
 
-  // TODO: Re-enable confirm dialog once core functionality is working
-  // const confirmed = props.mode === 'create' && !localId.value
-  //   ? await confirmCreate('product')
-  //   : await confirmUpdate('product', form.value.titre)
-  // if (!confirmed) return
+  if (!form.value.boutique_id) {
+    showError('Boutique selection is required')
+    return
+  }
+
+  try {
+    // Show confirm dialog before saving
+    console.debug('[ProductForm] Showing confirm dialog...')
+    const confirmed = props.mode === 'create' && !localId.value
+      ? await confirmCreate('product')
+      : await confirmUpdate('product', form.value.titre)
+
+    console.debug('[ProductForm] Confirm dialog result:', confirmed)
+    if (!confirmed) return
+  } catch (error) {
+    console.error('[ProductForm] Error in confirm dialog:', error)
+    return
+  }
 
   saving.value = true
   try {
@@ -255,6 +276,89 @@ const clampRatingValue = () => {
     form.value.rating_value = Math.max(0, Math.min(5, Number(form.value.rating_value)))
     form.value.rating_value = Math.round(form.value.rating_value * 10) / 10 // Round to 1 decimal place
   }
+}
+
+// Rich text editor methods
+const richTextEditor = ref<HTMLElement>()
+
+// Watch for form.copywriting changes to update the rich text editor
+watch(() => form.value.copywriting, async (newValue) => {
+  await nextTick()
+  if (richTextEditor.value && richTextEditor.value.innerHTML !== newValue) {
+    richTextEditor.value.innerHTML = newValue || ''
+  }
+}, { immediate: true })
+
+const formatText = (command: string) => {
+  document.execCommand(command, false, '')
+  richTextEditor.value?.focus()
+}
+
+const isFormatActive = (command: string): boolean => {
+  return document.queryCommandState(command)
+}
+
+const changeFontSize = (size: 'small' | 'normal' | 'large') => {
+  const sizeMap = {
+    small: '12px',
+    normal: '14px',
+    large: '18px'
+  }
+  document.execCommand('fontSize', false, '7')
+  const fontElements = document.getElementsByTagName('font')
+  for (let i = 0; i < fontElements.length; i++) {
+    if (fontElements[i].size === '7') {
+      fontElements[i].removeAttribute('size')
+      fontElements[i].style.fontSize = sizeMap[size]
+    }
+  }
+  richTextEditor.value?.focus()
+}
+
+const handleRichTextInput = (event: Event) => {
+  const target = event.target as HTMLElement
+  form.value.copywriting = target.innerHTML
+}
+
+// Sync rich text editor content with form data
+const syncRichTextEditor = async () => {
+  await nextTick()
+  if (richTextEditor.value) {
+    richTextEditor.value.innerHTML = form.value.copywriting || ''
+  }
+}
+
+const handleKeyDown = (event: KeyboardEvent) => {
+  // Handle Ctrl+B for bold
+  if (event.ctrlKey && event.key === 'b') {
+    event.preventDefault()
+    formatText('bold')
+  }
+  // Handle Ctrl+I for italic
+  if (event.ctrlKey && event.key === 'i') {
+    event.preventDefault()
+    formatText('italic')
+  }
+  // Handle Ctrl+U for underline
+  if (event.ctrlKey && event.key === 'u') {
+    event.preventDefault()
+    formatText('underline')
+  }
+}
+
+// Copywriting formatting method (for display)
+const formatCopywriting = (text: string): string => {
+  if (!text) return ''
+
+  return text
+    // Convert line breaks to <br> tags
+    .replace(/\n/g, '<br>')
+    // Convert **text** to bold
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    // Convert *text* to italic
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    // Preserve emojis and special characters
+    .trim()
 }
 
 const formatDate = (dateString: string) => {
@@ -889,6 +993,12 @@ onMounted(async () => {
   await loadLookups()
   await loadProduct()
   await fetchAttributes()
+
+  // Initialize rich text editor content after product is loaded
+  await nextTick()
+  if (richTextEditor.value && form.value.copywriting) {
+    richTextEditor.value.innerHTML = form.value.copywriting
+  }
 })
 </script>
 
@@ -999,6 +1109,78 @@ onMounted(async () => {
                   rows="4"
                   :error-messages="productErrors.description"
                 />
+              </VCol>
+              <VCol cols="12">
+                <div class="copywriting-field">
+                  <VLabel class="mb-2">Copywriting (Marketing Text with Rich Formatting)</VLabel>
+
+                  <!-- Rich Text Editor -->
+                  <div class="rich-text-editor">
+                    <div class="editor-toolbar">
+                      <VBtnGroup variant="outlined" size="small" class="mb-2">
+                        <VBtn
+                          @click="formatText('bold')"
+                          :color="isFormatActive('bold') ? 'primary' : 'default'"
+                          icon="tabler-bold"
+                          size="small"
+                        />
+                        <VBtn
+                          @click="formatText('italic')"
+                          :color="isFormatActive('italic') ? 'primary' : 'default'"
+                          icon="tabler-italic"
+                          size="small"
+                        />
+                        <VBtn
+                          @click="formatText('underline')"
+                          :color="isFormatActive('underline') ? 'primary' : 'default'"
+                          icon="tabler-underline"
+                          size="small"
+                        />
+                      </VBtnGroup>
+
+                      <VBtnGroup variant="outlined" size="small" class="mb-2 ms-2">
+                        <VBtn
+                          @click="changeFontSize('small')"
+                          size="small"
+                          text="A"
+                          style="font-size: 12px;"
+                        />
+                        <VBtn
+                          @click="changeFontSize('normal')"
+                          size="small"
+                          text="A"
+                          style="font-size: 14px;"
+                        />
+                        <VBtn
+                          @click="changeFontSize('large')"
+                          size="small"
+                          text="A"
+                          style="font-size: 16px;"
+                        />
+                      </VBtnGroup>
+                    </div>
+
+                    <div
+                      ref="richTextEditor"
+                      class="rich-text-content"
+                      contenteditable="true"
+                      @input="handleRichTextInput"
+                      @keydown="handleKeyDown"
+                      @focus="syncRichTextEditor"
+                      :placeholder="'🌸 جديد عندنا 🌸\n\nكسوة صيفية بنقشة مميزة وراحة لا مثيل لها\n\n✅ القماش: توب لولان\n✅ المقاسات: L / XL / XXL / XXXL\n💰 الثمن: غير بـ130 درهم😍\n\nخلي الأناقة ديالك تبدا من هنا 💃'"
+                    >{{ form.copywriting }}</div>
+                  </div>
+
+                  <div class="text-caption text-medium-emphasis mt-1">
+                    <VIcon icon="tabler-info-circle" size="14" class="me-1" />
+                    Rich text editor with bold, italic, underline, and font size controls. Supports emojis and line breaks.
+                  </div>
+
+                  <!-- Error Messages -->
+                  <div v-if="productErrors.copywriting" class="text-error text-caption mt-1">
+                    {{ productErrors.copywriting }}
+                  </div>
+                </div>
               </VCol>
               <VCol cols="12" md="4">
                 <VTextField
@@ -1839,4 +2021,83 @@ onMounted(async () => {
 </style>
 
 <style scoped>
+.copywriting-field {
+  position: relative;
+}
+
+.copywriting-textarea {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.copywriting-preview {
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  border-radius: 8px;
+}
+
+.copywriting-content {
+  line-height: 1.6;
+  word-wrap: break-word;
+  font-size: 14px;
+}
+
+.copywriting-content strong {
+  font-weight: 600;
+  color: rgb(var(--v-theme-primary));
+}
+
+.copywriting-content em {
+  font-style: italic;
+  color: rgb(var(--v-theme-secondary));
+}
+
+.rich-text-editor {
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.editor-toolbar {
+  background: rgba(var(--v-theme-surface), 0.8);
+  padding: 8px 12px;
+  border-bottom: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+}
+
+.rich-text-content {
+  min-height: 120px;
+  max-height: 300px;
+  overflow-y: auto;
+  padding: 12px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  background: rgb(var(--v-theme-surface));
+  outline: none;
+  border: none;
+}
+
+.rich-text-content:empty:before {
+  content: attr(placeholder);
+  color: rgba(var(--v-theme-on-surface), 0.6);
+  font-style: italic;
+  white-space: pre-line;
+}
+
+.rich-text-content:focus {
+  background: rgb(var(--v-theme-surface));
+}
+
+.rich-text-content strong {
+  font-weight: 600;
+  color: rgb(var(--v-theme-primary));
+}
+
+.rich-text-content em {
+  font-style: italic;
+  color: rgb(var(--v-theme-secondary));
+}
+
+.rich-text-content u {
+  text-decoration: underline;
+  color: rgb(var(--v-theme-info));
+}
 </style>

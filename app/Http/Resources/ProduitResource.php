@@ -20,6 +20,7 @@ class ProduitResource extends JsonResource
             'categorie_id' => $this->categorie_id,
             'titre' => $this->titre,
             'description' => $this->description,
+            'copywriting' => $this->copywriting,
             'prix_achat' => $this->prix_achat,
             'prix_vente' => $this->prix_vente,
             'prix_affilie' => $this->prix_affilie,

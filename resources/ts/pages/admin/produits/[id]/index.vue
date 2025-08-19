@@ -73,6 +73,21 @@ const getStatusText = (actif: boolean): string => {
   return actif ? t('common.active') : t('common.inactive')
 }
 
+// Format copywriting with line breaks and bold text
+const formatCopywriting = (text: string): string => {
+  if (!text) return ''
+
+  return text
+    // Convert line breaks to <br> tags
+    .replace(/\n/g, '<br>')
+    // Convert **text** to bold
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    // Convert *text* to italic
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    // Preserve emojis and special characters
+    .trim()
+}
+
 // Lifecycle
 onMounted(async () => {
   await loadProduit()
@@ -186,6 +201,14 @@ onMounted(async () => {
               <div v-if="produit.description" class="mt-4">
                 <h6 class="text-h6 mb-2">{{ $t('admin_produits_description') }}</h6>
                 <p class="text-body-1">{{ produit.description }}</p>
+              </div>
+
+              <!-- Copywriting Section -->
+              <div v-if="produit.copywriting" class="mt-4">
+                <h6 class="text-h6 mb-2">Copywriting (Marketing Content)</h6>
+                <VCard variant="outlined" class="pa-3 bg-grey-lighten-5">
+                  <div class="text-body-1 copywriting-content" v-html="formatCopywriting(produit.copywriting)"></div>
+                </VCard>
               </div>
             </VCardText>
           </VCard>
@@ -320,3 +343,20 @@ onMounted(async () => {
     </div>
   </div>
 </template>
+
+<style scoped>
+.copywriting-content {
+  line-height: 1.6;
+  word-wrap: break-word;
+}
+
+.copywriting-content strong {
+  font-weight: 600;
+  color: rgb(var(--v-theme-primary));
+}
+
+.copywriting-content em {
+  font-style: italic;
+  color: rgb(var(--v-theme-secondary));
+}
+</style>

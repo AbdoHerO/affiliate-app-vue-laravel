@@ -20,6 +20,7 @@ class PublicProduitResource extends JsonResource
             'slug' => $this->slug,
             'titre' => $this->titre,
             'description' => $this->description,
+            'copywriting' => $this->copywriting,
             'prix_vente' => $this->prix_vente,
             'prix_affilie' => $this->prix_affilie,
             'rating' => [

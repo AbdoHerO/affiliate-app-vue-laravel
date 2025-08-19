@@ -79,6 +79,21 @@ const formatPrice = (price: number | string) => {
   }).format(Number(price))
 }
 
+// Format copywriting with line breaks and bold text
+const formatCopywriting = (text: string): string => {
+  if (!text) return ''
+
+  return text
+    // Convert line breaks to <br> tags
+    .replace(/\n/g, '<br>')
+    // Convert **text** to bold
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    // Convert *text* to italic
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    // Preserve emojis and special characters
+    .trim()
+}
+
 // Lifecycle
 onMounted(() => {
   loadProduct()
@@ -174,9 +189,33 @@ onMounted(() => {
                         {{ product.categorie.nom }}
                       </VChip>
                     </div>
+
+                    <!-- Rating Section -->
+                    <div v-if="product.rating?.value" class="rating-section mb-4">
+                      <div class="d-flex align-center gap-2">
+                        <VRating
+                          :model-value="product.rating.value"
+                          readonly
+                          length="5"
+                          half-increments
+                          color="warning"
+                          size="small"
+                        />
+                        <span class="text-body-2 text-medium-emphasis">
+                          ({{ product.rating.value }}/{{ product.rating.max || 5 }})
+                        </span>
+                      </div>
+                    </div>
                     
-                    <div v-if="product.description" class="text-body-1">
+                    <div v-if="product.description" class="text-body-1 mb-4">
                       <div v-html="product.description"></div>
+                    </div>
+
+                    <!-- Copywriting Section -->
+                    <div v-if="product.copywriting" class="copywriting-section">
+                      <VCard variant="outlined" class="pa-4 bg-grey-lighten-5">
+                        <div class="text-body-1 copywriting-content" v-html="formatCopywriting(product.copywriting)"></div>
+                      </VCard>
                     </div>
                   </div>
                 </div>
@@ -262,5 +301,24 @@ onMounted(() => {
 <style scoped>
 .v-app-bar {
   z-index: 1000;
+}
+
+.copywriting-section {
+  margin-top: 16px;
+}
+
+.copywriting-content {
+  line-height: 1.6;
+  word-wrap: break-word;
+}
+
+.copywriting-content strong {
+  font-weight: 600;
+  color: rgb(var(--v-theme-primary));
+}
+
+.copywriting-content em {
+  font-style: italic;
+  color: rgb(var(--v-theme-secondary));
 }
 </style>

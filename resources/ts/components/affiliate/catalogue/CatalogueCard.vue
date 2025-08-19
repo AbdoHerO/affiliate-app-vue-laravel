@@ -224,16 +224,6 @@ watch(() => props.product.id, () => {
     <VCardText class="catalogue-card__content pa-3">
       <!-- Size Variants -->
       <div v-if="availableSizes.length" class="mb-3">
-        <div class="text-caption text-medium-emphasis mb-1">
-          Tailles:
-          <VIcon
-            v-if="selectedSizeId"
-            icon="tabler-check"
-            size="12"
-            color="success"
-            class="ml-1"
-          />
-        </div>
         <VChip
           v-for="size in availableSizes.slice(0, 4)"
           :key="size.id"
@@ -249,16 +239,6 @@ watch(() => props.product.id, () => {
 
       <!-- Color Variants -->
       <div v-if="availableColors.length" class="mb-3">
-        <div class="text-caption text-medium-emphasis mb-1">
-          Couleurs:
-          <VIcon
-            v-if="selectedColorId"
-            icon="tabler-check"
-            size="12"
-            color="success"
-            class="ml-1"
-          />
-        </div>
         <VChip
           v-for="color in availableColors.slice(0, 3)"
           :key="color.id"
@@ -348,9 +328,15 @@ watch(() => props.product.id, () => {
         {{ product.titre }}
       </h6>
 
-      <!-- Category -->
-      <div class="text-caption text-medium-emphasis">
-        {{ product.categorie?.nom || 'Sans catégorie' }}
+      <!-- Category and Rating -->
+      <div class="d-flex align-center justify-space-between mb-2">
+        <div class="text-caption text-medium-emphasis">
+          {{ product.categorie?.nom || 'Sans catégorie' }}
+        </div>
+        <div v-if="product.rating_value" class="d-flex align-center">
+          <VIcon icon="tabler-star-filled" size="14" color="warning" class="me-1" />
+          <span class="text-caption font-weight-medium">{{ product.rating_value.toFixed(1) }}</span>
+        </div>
       </div>
     </VCardText>
   </VCard>

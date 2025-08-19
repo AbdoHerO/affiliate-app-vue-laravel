@@ -24,6 +24,9 @@ class CatalogueController extends Controller
                     'images' => function ($query) {
                         $query->orderBy('ordre', 'asc');
                     },
+                    'videos' => function ($query) {
+                        $query->orderBy('ordre', 'asc');
+                    },
                     'variantes' => function ($query) {
                         $query->where('actif', true)->orderBy('nom', 'asc')
                               ->with(['stocks']);
@@ -93,6 +96,7 @@ class CatalogueController extends Controller
                     'id' => $product->id,
                     'titre' => $product->titre,
                     'description' => $product->description,
+                    'copywriting' => $product->copywriting,
                     'slug' => $product->slug,
                     'prix_achat' => (float) $product->prix_achat,
                     'prix_vente' => (float) $product->prix_vente,
@@ -107,6 +111,13 @@ class CatalogueController extends Controller
                         return [
                             'url' => $image->url,
                             'ordre' => $image->ordre,
+                        ];
+                    }),
+                    'videos' => $product->videos->map(function ($video) {
+                        return [
+                            'url' => $video->url,
+                            'titre' => $video->titre,
+                            'ordre' => $video->ordre,
                         ];
                     }),
                     'variantes' => $product->variantes->map(function ($variant) {
@@ -254,6 +265,7 @@ class CatalogueController extends Controller
                 'id' => $product->id,
                 'titre' => $product->titre,
                 'description' => $product->description,
+                'copywriting' => $product->copywriting,
                 'slug' => $product->slug,
                 'prix_achat' => (float) $product->prix_achat,
                 'prix_vente' => (float) $product->prix_vente,

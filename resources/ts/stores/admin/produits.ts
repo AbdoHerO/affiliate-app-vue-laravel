@@ -103,6 +103,7 @@ export interface ProduitFormData {
   categorie_id: string | null
   titre: string
   description: string | null
+  copywriting?: string | null
   prix_achat: number | null
   prix_vente: number | null
   prix_affilie: number | null

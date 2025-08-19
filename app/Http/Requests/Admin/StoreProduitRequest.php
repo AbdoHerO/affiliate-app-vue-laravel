@@ -26,6 +26,7 @@ class StoreProduitRequest extends FormRequest
             'categorie_id' => 'nullable|uuid|exists:categories,id',
             'titre' => 'required|string|max:190',
             'description' => 'nullable|string',
+            'copywriting' => 'nullable|string',
             'prix_achat' => 'required|numeric|min:0',
             'prix_vente' => 'required|numeric|min:0.01',
             'prix_affilie' => 'nullable|numeric|min:0',
