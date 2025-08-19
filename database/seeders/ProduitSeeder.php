@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use App\Models\Produit;
 use App\Models\ProduitImage;
-use App\Models\ProduitVideo;
 use App\Models\ProduitVariante;
 use App\Models\Stock;
 use App\Models\Boutique;
@@ -27,10 +26,21 @@ class ProduitSeeder extends Seeder
             return;
         }
 
+        // Get or create an entrepot
+        $entrepot = \App\Models\Entrepot::first();
+        if (!$entrepot) {
+            $entrepot = \App\Models\Entrepot::create([
+                'boutique_id' => $boutiques->first()->id,
+                'nom' => 'Entrepôt Principal',
+                'adresse' => 'Casablanca, Maroc',
+                'actif' => true
+            ]);
+        }
+
         // Create variant attributes if they don't exist
         $this->createVariantAttributes();
 
-        $this->createProductsWithVariants($boutiques, $categories);
+        $this->createProductsWithVariants($boutiques, $categories, $entrepot);
 
         $this->command->info('Produit seeder completed successfully!');
     }
@@ -39,25 +49,27 @@ class ProduitSeeder extends Seeder
     {
         // Create size attribute if it doesn't exist
         $sizeAttr = VariantAttribut::firstOrCreate([
-            'nom' => 'taille',
-            'type' => 'select',
+            'code' => 'taille',
+            'nom' => 'Taille',
             'actif' => true
         ]);
 
         // Create color attribute if it doesn't exist
         $colorAttr = VariantAttribut::firstOrCreate([
-            'nom' => 'couleur',
-            'type' => 'color',
+            'code' => 'couleur',
+            'nom' => 'Couleur',
             'actif' => true
         ]);
 
         // Create size values
         $sizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '36', '37', '38', '39', '40', '41', '42', '43', '44', '45'];
-        foreach ($sizes as $size) {
+        foreach ($sizes as $index => $size) {
             VariantValeur::firstOrCreate([
                 'attribut_id' => $sizeAttr->id,
-                'valeur' => $size,
-                'actif' => true
+                'code' => strtolower($size),
+                'libelle' => $size,
+                'actif' => true,
+                'ordre' => $index + 1
             ]);
         }
 
@@ -73,141 +85,180 @@ class ProduitSeeder extends Seeder
             ['name' => 'Jaune', 'hex' => '#FFFF00'],
             ['name' => 'Orange', 'hex' => '#FFA500'],
             ['name' => 'Violet', 'hex' => '#800080'],
+            ['name' => 'Beige', 'hex' => '#F5F5DC'],
+            ['name' => 'Marron', 'hex' => '#8B4513'],
         ];
 
-        foreach ($colors as $color) {
+        foreach ($colors as $index => $color) {
             VariantValeur::firstOrCreate([
                 'attribut_id' => $colorAttr->id,
-                'valeur' => $color['name'],
-                'color' => $color['hex'],
-                'actif' => true
+                'code' => strtolower($color['name']),
+                'libelle' => $color['name'],
+                'actif' => true,
+                'ordre' => $index + 1
             ]);
         }
     }
 
-    private function createProductsWithVariants($boutiques, $categories): void
+    private function createProductsWithVariants($boutiques, $categories, $entrepot): void
     {
         $products = [
             [
-                'titre' => 'T-Shirt Premium Coton',
-                'description' => 'T-shirt en coton bio de haute qualité, confortable et durable. Parfait pour un usage quotidien.',
-                'prix_achat' => 25.00,
-                'prix_vente' => 45.00,
-                'prix_affilie' => 15.00,
+                'titre' => 'Robe Élégante Brodée',
+                'description' => 'Robe élégante avec broderies délicates, parfaite pour les occasions spéciales. Tissu fluide et confortable.',
+                'prix_achat' => 220.00,
+                'prix_vente' => 380.00,
+                'prix_affilie' => 90.00,
                 'actif' => true,
-                'qte_min' => 5,
-                'notes' => 'Produit populaire, maintenir un bon stock',
-                'rating_value' => 4.5,
-                'images' => [
-                    'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400',
-                    'https://images.unsplash.com/photo-1503341504253-dff4815485f1?w=400',
-                    'https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=400',
-                ],
-                'variants' => [
-                    ['type' => 'taille', 'values' => ['S', 'M', 'L', 'XL'], 'stock_each' => [15, 25, 20, 10]],
-                    ['type' => 'couleur', 'values' => ['Rouge', 'Bleu', 'Noir', 'Blanc'], 'stock_each' => [12, 18, 22, 8], 'images' => [
-                        'Rouge' => 'https://images.unsplash.com/photo-1583743814966-8936f37f4678?w=400',
-                        'Bleu' => 'https://images.unsplash.com/photo-1571945153237-4929e783af4a?w=400',
-                        'Noir' => 'https://images.unsplash.com/photo-1503341504253-dff4815485f1?w=400',
-                        'Blanc' => 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400',
-                    ]],
-                ]
-            ],
-            [
-                'titre' => 'Sneakers Sport Moderne',
-                'description' => 'Chaussures de sport modernes avec technologie de confort avancée. Idéales pour le running et le fitness.',
-                'prix_achat' => 60.00,
-                'prix_vente' => 120.00,
-                'prix_affilie' => 35.00,
-                'actif' => true,
-                'qte_min' => 3,
-                'notes' => 'Chaussures très demandées',
+                'quantite_min' => 2,
+                'notes_admin' => 'Produit premium, forte demande',
                 'rating_value' => 4.8,
                 'images' => [
-                    'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=400',
-                    'https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=400',
-                    'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=400',
+                    'https://images.unsplash.com/photo-1566479179817-c0b5b4b8b1cc?w=500&h=600&fit=crop',
+                    'https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=500&h=600&fit=crop',
                 ],
                 'variants' => [
-                    ['type' => 'taille', 'values' => ['39', '40', '41', '42', '43', '44'], 'stock_each' => [8, 12, 15, 18, 10, 5]],
-                    ['type' => 'couleur', 'values' => ['Noir', 'Blanc', 'Gris', 'Bleu'], 'stock_each' => [20, 15, 12, 8], 'images' => [
-                        'Noir' => 'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=400',
-                        'Blanc' => 'https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=400',
-                        'Gris' => 'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=400',
-                        'Bleu' => 'https://images.unsplash.com/photo-1551107696-a4b0c5a0d9a2?w=400',
+                    ['type' => 'taille', 'values' => ['S', 'M', 'L', 'XL'], 'stock_each' => [25, 35, 30, 15]],
+                    ['type' => 'couleur', 'values' => ['Beige', 'Rose', 'Bleu'], 'stock_each' => [40, 35, 30], 'images' => [
+                        'Beige' => 'https://images.unsplash.com/photo-1566479179817-c0b5b4b8b1cc?w=500&h=600&fit=crop',
+                        'Rose' => 'https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=500&h=600&fit=crop',
+                        'Bleu' => 'https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=500&h=600&fit=crop',
                     ]],
                 ]
             ],
             [
-                'titre' => 'Robe Élégante Soirée',
-                'description' => 'Robe élégante parfaite pour les occasions spéciales. Tissu de qualité premium avec finitions soignées.',
-                'prix_achat' => 80.00,
-                'prix_vente' => 150.00,
-                'prix_affilie' => 45.00,
+                'titre' => 'Sneakers Tendance Urbain',
+                'description' => 'Baskets urbaines tendance avec design moderne. Confort optimal pour un style décontracté.',
+                'prix_achat' => 180.00,
+                'prix_vente' => 320.00,
+                'prix_affilie' => 75.00,
                 'actif' => true,
-                'qte_min' => 2,
-                'notes' => 'Produit saisonnier, forte demande',
+                'quantite_min' => 2,
+                'notes_admin' => 'Chaussures très populaires',
                 'rating_value' => 4.6,
                 'images' => [
-                    'https://images.unsplash.com/photo-1566479179817-c0b5b4b8b1cc?w=400',
-                    'https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=400',
-                    'https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=400',
+                    'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=500&h=500&fit=crop',
+                    'https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=500&h=500&fit=crop',
                 ],
                 'variants' => [
-                    ['type' => 'taille', 'values' => ['XS', 'S', 'M', 'L', 'XL'], 'stock_each' => [5, 12, 15, 10, 6]],
-                    ['type' => 'couleur', 'values' => ['Noir', 'Rouge', 'Rose', 'Bleu'], 'stock_each' => [18, 12, 8, 10], 'images' => [
-                        'Noir' => 'https://images.unsplash.com/photo-1566479179817-c0b5b4b8b1cc?w=400',
-                        'Rouge' => 'https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=400',
-                        'Rose' => 'https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=400',
-                        'Bleu' => 'https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=400',
+                    ['type' => 'taille', 'values' => ['39', '40', '41', '42', '43'], 'stock_each' => [12, 18, 22, 15, 8]],
+                    ['type' => 'couleur', 'values' => ['Noir', 'Blanc', 'Rouge'], 'stock_each' => [30, 25, 20], 'images' => [
+                        'Noir' => 'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=500&h=500&fit=crop',
+                        'Blanc' => 'https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=500&h=500&fit=crop',
+                        'Rouge' => 'https://images.unsplash.com/photo-1551107696-a4b0c5a0d9a2?w=500&h=500&fit=crop',
                     ]],
                 ]
             ],
             [
-                'titre' => 'Sac à Main Cuir Premium',
-                'description' => 'Sac à main en cuir véritable avec finitions artisanales. Design intemporel et fonctionnel.',
+                'titre' => 'Chemise Casual Homme',
+                'description' => 'Chemise décontractée pour homme, coupe moderne et tissu respirant. Idéale pour le bureau ou les sorties.',
                 'prix_achat' => 120.00,
                 'prix_vente' => 220.00,
-                'prix_affilie' => 65.00,
+                'prix_affilie' => 55.00,
                 'actif' => true,
-                'qte_min' => 2,
-                'notes' => 'Accessoire de luxe, marge élevée',
-                'rating_value' => 4.7,
+                'quantite_min' => 3,
+                'notes_admin' => 'Basique indispensable',
+                'rating_value' => 4.4,
                 'images' => [
-                    'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=400',
-                    'https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=400',
-                    'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=400',
+                    'https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=500&h=600&fit=crop',
+                    'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=500&h=600&fit=crop',
                 ],
                 'variants' => [
-                    ['type' => 'couleur', 'values' => ['Noir', 'Marron', 'Rouge', 'Blanc'], 'stock_each' => [15, 12, 8, 5], 'images' => [
-                        'Noir' => 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=400',
-                        'Marron' => 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=400',
-                        'Rouge' => 'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=400',
-                        'Blanc' => 'https://images.unsplash.com/photo-1591561954557-26941169b49e?w=400',
+                    ['type' => 'taille', 'values' => ['S', 'M', 'L', 'XL', 'XXL'], 'stock_each' => [15, 25, 30, 20, 10]],
+                    ['type' => 'couleur', 'values' => ['Blanc', 'Bleu', 'Noir'], 'stock_each' => [35, 30, 25], 'images' => [
+                        'Blanc' => 'https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=500&h=600&fit=crop',
+                        'Bleu' => 'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=500&h=600&fit=crop',
+                        'Noir' => 'https://images.unsplash.com/photo-1603252109303-2751441dd157?w=500&h=600&fit=crop',
+                    ]],
+                ]
+            ],
+            [
+                'titre' => 'Sac à Main Élégant',
+                'description' => 'Sac à main élégant en cuir synthétique de qualité. Design moderne avec plusieurs compartiments.',
+                'prix_achat' => 150.00,
+                'prix_vente' => 280.00,
+                'prix_affilie' => 70.00,
+                'actif' => true,
+                'quantite_min' => 2,
+                'notes_admin' => 'Accessoire tendance',
+                'rating_value' => 4.7,
+                'images' => [
+                    'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=500&h=500&fit=crop',
+                    'https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=500&h=500&fit=crop',
+                ],
+                'variants' => [
+                    ['type' => 'couleur', 'values' => ['Noir', 'Beige', 'Rouge'], 'stock_each' => [25, 20, 15], 'images' => [
+                        'Noir' => 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=500&h=500&fit=crop',
+                        'Beige' => 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=500&h=500&fit=crop',
+                        'Rouge' => 'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=500&h=500&fit=crop',
                     ]],
                 ]
             ],
             [
                 'titre' => 'Montre Connectée Sport',
                 'description' => 'Montre connectée avec suivi fitness avancé, GPS intégré et résistance à l\'eau.',
-                'prix_achat' => 150.00,
-                'prix_vente' => 280.00,
-                'prix_affilie' => 85.00,
+                'prix_achat' => 250.00,
+                'prix_vente' => 450.00,
+                'prix_affilie' => 120.00,
                 'actif' => true,
-                'qte_min' => 3,
-                'notes' => 'Technologie populaire, bon profit',
-                'rating_value' => 4.4,
+                'quantite_min' => 2,
+                'notes_admin' => 'Technologie populaire',
+                'rating_value' => 4.5,
                 'images' => [
-                    'https://images.unsplash.com/photo-1579586337278-3f436f25d4d4?w=400',
-                    'https://images.unsplash.com/photo-1544117519-31a4b719223d?w=400',
-                    'https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?w=400',
+                    'https://images.unsplash.com/photo-1579586337278-3f436f25d4d4?w=500&h=500&fit=crop',
+                    'https://images.unsplash.com/photo-1544117519-31a4b719223d?w=500&h=500&fit=crop',
                 ],
                 'variants' => [
-                    ['type' => 'couleur', 'values' => ['Noir', 'Blanc', 'Gris', 'Rose'], 'stock_each' => [20, 15, 10, 8], 'images' => [
-                        'Noir' => 'https://images.unsplash.com/photo-1579586337278-3f436f25d4d4?w=400',
-                        'Blanc' => 'https://images.unsplash.com/photo-1544117519-31a4b719223d?w=400',
-                        'Gris' => 'https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?w=400',
-                        'Rose' => 'https://images.unsplash.com/photo-1434493789847-2f02dc6ca35d?w=400',
+                    ['type' => 'couleur', 'values' => ['Noir', 'Blanc', 'Rose'], 'stock_each' => [30, 25, 15], 'images' => [
+                        'Noir' => 'https://images.unsplash.com/photo-1579586337278-3f436f25d4d4?w=500&h=500&fit=crop',
+                        'Blanc' => 'https://images.unsplash.com/photo-1544117519-31a4b719223d?w=500&h=500&fit=crop',
+                        'Rose' => 'https://images.unsplash.com/photo-1434493789847-2f02dc6ca35d?w=500&h=500&fit=crop',
+                    ]],
+                ]
+            ],
+            [
+                'titre' => 'Veste Denim Vintage',
+                'description' => 'Veste en denim style vintage, coupe décontractée. Parfaite pour un look casual chic.',
+                'prix_achat' => 180.00,
+                'prix_vente' => 320.00,
+                'prix_affilie' => 80.00,
+                'actif' => true,
+                'quantite_min' => 2,
+                'notes_admin' => 'Style intemporel',
+                'rating_value' => 4.3,
+                'images' => [
+                    'https://images.unsplash.com/photo-1551028719-00167b16eac5?w=500&h=600&fit=crop',
+                    'https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=500&h=600&fit=crop',
+                ],
+                'variants' => [
+                    ['type' => 'taille', 'values' => ['S', 'M', 'L', 'XL'], 'stock_each' => [18, 25, 22, 15]],
+                    ['type' => 'couleur', 'values' => ['Bleu', 'Noir', 'Blanc'], 'stock_each' => [35, 25, 20], 'images' => [
+                        'Bleu' => 'https://images.unsplash.com/photo-1551028719-00167b16eac5?w=500&h=600&fit=crop',
+                        'Noir' => 'https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=500&h=600&fit=crop',
+                        'Blanc' => 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=500&h=600&fit=crop',
+                    ]],
+                ]
+            ],
+            [
+                'titre' => 'Pantalon Chino Élégant',
+                'description' => 'Pantalon chino élégant, coupe slim. Idéal pour un style business casual.',
+                'prix_achat' => 90.00,
+                'prix_vente' => 180.00,
+                'prix_affilie' => 45.00,
+                'actif' => true,
+                'quantite_min' => 3,
+                'notes_admin' => 'Basique homme',
+                'rating_value' => 4.2,
+                'images' => [
+                    'https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=500&h=600&fit=crop',
+                    'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=500&h=600&fit=crop',
+                ],
+                'variants' => [
+                    ['type' => 'taille', 'values' => ['30', '32', '34', '36', '38'], 'stock_each' => [12, 20, 25, 18, 10]],
+                    ['type' => 'couleur', 'values' => ['Beige', 'Noir', 'Bleu'], 'stock_each' => [30, 25, 20], 'images' => [
+                        'Beige' => 'https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=500&h=600&fit=crop',
+                        'Noir' => 'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=500&h=600&fit=crop',
+                        'Bleu' => 'https://images.unsplash.com/photo-1603252109303-2751441dd157?w=500&h=600&fit=crop',
                     ]],
                 ]
             ],
@@ -225,7 +276,7 @@ class ProduitSeeder extends Seeder
             $product = Produit::create([
                 'boutique_id' => $boutique->id,
                 'categorie_id' => $category->id,
-                'slug' => Str::slug($productData['titre']),
+                'slug' => Str::slug($productData['titre']) . '-' . time() . '-' . rand(100, 999),
                 ...$productData
             ]);
 
@@ -239,13 +290,13 @@ class ProduitSeeder extends Seeder
             }
 
             // Create variants and stock
-            $this->createVariantsForProduct($product, $variants);
+            $this->createVariantsForProduct($product, $variants, $entrepot);
 
             $this->command->info("Created product: {$product->titre}");
         }
     }
 
-    private function createVariantsForProduct($product, $variants): void
+    private function createVariantsForProduct($product, $variants, $entrepot): void
     {
         foreach ($variants as $variantData) {
             $attributeName = $variantData['type'];
@@ -254,13 +305,13 @@ class ProduitSeeder extends Seeder
             $variantImages = $variantData['images'] ?? [];
 
             // Get the attribute
-            $attribute = VariantAttribut::where('nom', $attributeName)->first();
+            $attribute = VariantAttribut::where('code', $attributeName)->first();
             if (!$attribute) continue;
 
             foreach ($values as $index => $value) {
                 // Get the variant value
                 $variantValue = VariantValeur::where('attribut_id', $attribute->id)
-                    ->where('valeur', $value)
+                    ->where('libelle', $value)
                     ->first();
 
                 if (!$variantValue) continue;
@@ -270,7 +321,6 @@ class ProduitSeeder extends Seeder
                     'produit_id' => $product->id,
                     'nom' => $attributeName,
                     'valeur' => $value,
-                    'color' => $variantValue->color,
                     'image_url' => $variantImages[$value] ?? null,
                     'actif' => true,
                 ]);
@@ -280,10 +330,9 @@ class ProduitSeeder extends Seeder
                 if ($stockQuantity > 0) {
                     Stock::create([
                         'variante_id' => $productVariant->id,
+                        'entrepot_id' => $entrepot->id,
                         'qte_disponible' => $stockQuantity,
                         'qte_reservee' => 0,
-                        'seuil_alerte' => max(1, intval($stockQuantity * 0.2)), // 20% as alert threshold
-                        'actif' => true,
                     ]);
                 }
             }

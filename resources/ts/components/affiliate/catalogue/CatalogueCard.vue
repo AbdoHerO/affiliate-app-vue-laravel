@@ -149,16 +149,15 @@ watch(() => props.product.id, () => {
 <template>
   <VCard
     class="catalogue-card"
-    :class="{ 'catalogue-card--hovered': isHovered }"
-    @mouseenter="isHovered = true"
-    @mouseleave="isHovered = false"
+    elevation="2"
+    @click="handleViewDetails"
   >
     <!-- Product Image -->
     <div class="catalogue-card__image-container">
       <VImg
         :src="imageError ? 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDMwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjRjVGNUY1Ii8+CjxwYXRoIGQ9Ik0xNTAgMTAwQzE2MS4wNDYgMTAwIDE3MCA5MC45NTQzIDE3MCA4MEM1NyA2OS4wNDU3IDE0Ny45NTQgNjAgMTM2IDYwQzEyNC45NTQgNjAgMTE2IDY5LjA0NTcgMTE2IDgwQzExNiA5MC45NTQzIDEyNC45NTQgMTAwIDEzNiAxMDBIMTUwWiIgZmlsbD0iI0NDQ0NDQyIvPgo8cGF0aCBkPSJNMTgwIDEyMEgxMjBDMTE2LjY4NiAxMjAgMTE0IDEyMi42ODYgMTE0IDEyNlYyMDBDMTE0IDIwMy4zMTQgMTE2LjY4NiAyMDYgMTIwIDIwNkgxODBDMTgzLjMxNCAyMDYgMTg2IDIwMy4zMTQgMTg2IDIwMFYxMjZDMTg2IDEyMi42ODYgMTgzLjMxNCAxMjAgMTgwIDEyMFoiIGZpbGw9IiNDQ0NDQ0MiLz4KPC9zdmc+' : currentImage"
         :alt="product.titre"
-        aspect-ratio="1"
+        aspect-ratio="1.2"
         cover
         class="catalogue-card__image"
         @load="handleImageLoad"
@@ -170,157 +169,122 @@ watch(() => props.product.id, () => {
           </div>
         </template>
       </VImg>
-      
+
       <!-- Stock Badge (Top Left) -->
       <VChip
         :color="stockBadgeColor"
-        size="x-small"
+        size="small"
         variant="elevated"
         class="catalogue-card__stock-badge"
       >
         {{ stockBadgeText }}
       </VChip>
-      
+
       <!-- Eye Button (Top Right) -->
       <VBtn
         icon
         size="small"
         variant="elevated"
-        color="white"
+        color="primary"
         class="catalogue-card__eye-btn"
-        @click="handleViewDetails"
+        @click.stop="handleViewDetails"
       >
-        <VIcon icon="tabler-eye" />
-        <VTooltip activator="parent" location="bottom">
-          {{ t('catalogue.view_details') }}
-        </VTooltip>
+        <VIcon icon="tabler-message-circle" />
       </VBtn>
-      
-      <!-- Hover Overlay -->
-      <Transition name="fade">
-        <div
-          v-if="isHovered"
-          class="catalogue-card__overlay"
-        >
-          <!-- Top Section: Sizes and Quantity/Add to Cart -->
-          <div class="catalogue-card__overlay-top">
-            <!-- Sizes (Left) -->
-            <div v-if="availableSizes.length" class="catalogue-card__sizes">
-              <VChip
-                v-for="size in availableSizes"
-                :key="size.id"
-                :color="selectedSizeId === size.id ? 'primary' : 'default'"
-                :variant="selectedSizeId === size.id ? 'elevated' : 'tonal'"
-                size="small"
-                class="me-1 mb-1"
-                @click="handleSizeSelect(size.id)"
-              >
-                {{ size.value }}
-              </VChip>
-            </div>
-            
-            <!-- Quantity and Add to Cart (Right) -->
-            <div class="catalogue-card__actions">
-              <!-- Quantity Selector -->
-              <div class="catalogue-card__qty-selector">
-                <VBtn
-                  icon
-                  size="x-small"
-                  variant="outlined"
-                  :disabled="quantity <= 1"
-                  @click="handleQuantityChange(-1)"
-                >
-                  <VIcon icon="tabler-minus" size="16" />
-                </VBtn>
-                <span class="catalogue-card__qty-display">{{ quantity }}</span>
-                <VBtn
-                  icon
-                  size="x-small"
-                  variant="outlined"
-                  :disabled="quantity >= maxQuantity"
-                  @click="handleQuantityChange(1)"
-                >
-                  <VIcon icon="tabler-plus" size="16" />
-                </VBtn>
-              </div>
-              
-              <!-- Add to Cart Button -->
-              <VBtn
-                color="primary"
-                size="small"
-                :disabled="!canAddToCart"
-                @click="handleAddToCart"
-              >
-                <VIcon start icon="tabler-shopping-cart" />
-                {{ t('catalogue.add_to_cart') }}
-              </VBtn>
-            </div>
-          </div>
-          
-          <!-- Bottom Section: Pricing and Colors -->
-          <div class="catalogue-card__overlay-bottom">
-            <!-- Pricing (Left) -->
-            <div class="catalogue-card__pricing">
-              <div class="text-caption text-medium-emphasis">
-                {{ t('catalogue.buy') }}: {{ product.prix_achat }} MAD
-              </div>
-              <div class="text-caption text-medium-emphasis">
-                {{ t('catalogue.sell') }}: {{ product.prix_vente }} MAD
-              </div>
-            </div>
-            
-            <!-- Colors (Right) -->
-            <div v-if="availableColors.length" class="catalogue-card__colors">
-              <VBtn
-                v-for="color in availableColors"
-                :key="color.id"
-                icon
-                size="small"
-                :variant="selectedColorId === color.id ? 'elevated' : 'outlined'"
-                :color="selectedColorId === color.id ? 'primary' : 'default'"
-                class="me-1"
-                @click="handleColorSelect(color.id)"
-              >
-                <div
-                  v-if="color.color"
-                  class="catalogue-card__color-swatch"
-                  :style="{ backgroundColor: color.color }"
-                />
-                <span v-else class="text-caption">{{ color.value.charAt(0) }}</span>
-              </VBtn>
-            </div>
-          </div>
-        </div>
-      </Transition>
     </div>
-    
-    <!-- Card Footer -->
-    <VCardText class="catalogue-card__footer">
+
+    <!-- Card Content -->
+    <VCardText class="catalogue-card__content pa-3">
+      <!-- Size Variants -->
+      <div v-if="availableSizes.length" class="mb-3">
+        <VChip
+          v-for="size in availableSizes.slice(0, 4)"
+          :key="size.id"
+          :color="selectedSizeId === size.id ? 'primary' : 'default'"
+          :variant="selectedSizeId === size.id ? 'flat' : 'outlined'"
+          size="small"
+          class="me-1 mb-1"
+          @click.stop="handleSizeSelect(size.id)"
+        >
+          {{ size.value }}
+        </VChip>
+      </div>
+
+      <!-- Quantity and Add to Cart Row -->
+      <div class="d-flex align-center justify-space-between mb-3">
+        <!-- Quantity Selector -->
+        <div class="d-flex align-center">
+          <VBtn
+            icon
+            size="x-small"
+            variant="outlined"
+            :disabled="quantity <= 1"
+            @click.stop="handleQuantityChange(-1)"
+          >
+            <VIcon icon="tabler-minus" size="14" />
+          </VBtn>
+          <span class="mx-2 text-body-2 font-weight-medium">{{ quantity }}</span>
+          <VBtn
+            icon
+            size="x-small"
+            variant="outlined"
+            :disabled="quantity >= maxQuantity"
+            @click.stop="handleQuantityChange(1)"
+          >
+            <VIcon icon="tabler-plus" size="14" />
+          </VBtn>
+        </div>
+
+        <!-- Add to Cart Button -->
+        <VBtn
+          color="primary"
+          size="small"
+          :disabled="!canAddToCart"
+          @click.stop="handleAddToCart"
+        >
+          <VIcon icon="tabler-shopping-cart" size="16" />
+        </VBtn>
+      </div>
+
+      <!-- Color Variants -->
+      <div v-if="availableColors.length" class="mb-3">
+        <VChip
+          v-for="color in availableColors.slice(0, 3)"
+          :key="color.id"
+          :color="selectedColorId === color.id ? 'primary' : 'default'"
+          :variant="selectedColorId === color.id ? 'flat' : 'outlined'"
+          size="small"
+          class="me-1"
+          @click.stop="handleColorSelect(color.id)"
+        >
+          {{ color.value }}
+        </VChip>
+      </div>
+
+      <!-- Pricing Row -->
+      <div class="d-flex align-center justify-space-between mb-2">
+        <div class="text-body-2 text-medium-emphasis">
+          {{ t('catalogue.buy') }}: <span class="font-weight-medium">{{ product.prix_achat }} درهم</span>
+        </div>
+        <div class="text-body-2 text-medium-emphasis">
+          {{ t('catalogue.sell') }}: <span class="font-weight-medium">{{ product.prix_vente }} درهم</span>
+        </div>
+      </div>
+
+      <!-- Profit -->
+      <div class="text-primary font-weight-bold mb-2">
+        {{ profitText }} {{ t('catalogue.profit') }}
+      </div>
+
       <!-- Product Name -->
-      <h6 class="text-h6 catalogue-card__title">
+      <h6 class="text-body-1 font-weight-medium catalogue-card__title mb-1">
         {{ product.titre }}
       </h6>
-      
-      <!-- Profit -->
-      <div class="text-primary font-weight-medium mb-1">
-        {{ profitText }}
-      </div>
-      
+
       <!-- Category -->
-      <div class="text-caption text-medium-emphasis mb-2">
-        {{ product.categorie?.nom || 'Sans catégorie' }}
+      <div class="text-caption text-medium-emphasis">
+        {{ product.categorie?.nom || 'Sans catégorie' }} / {{ product.id }}
       </div>
-      
-      <!-- Rating -->
-      <VRating
-        v-if="product.rating_value > 0"
-        :model-value="product.rating_value"
-        readonly
-        length="5"
-        half-increments
-        size="small"
-        density="compact"
-      />
     </VCardText>
   </VCard>
 </template>
@@ -328,13 +292,16 @@ watch(() => props.product.id, () => {
 <style scoped>
 .catalogue-card {
   position: relative;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
   height: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
 }
 
 .catalogue-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
 
 .catalogue-card__image-container {
@@ -342,11 +309,20 @@ watch(() => props.product.id, () => {
   overflow: hidden;
 }
 
+.catalogue-card__image {
+  transition: transform 0.3s ease;
+}
+
+.catalogue-card:hover .catalogue-card__image {
+  transform: scale(1.05);
+}
+
 .catalogue-card__stock-badge {
   position: absolute;
   top: 8px;
   left: 8px;
   z-index: 2;
+  font-weight: 600;
 }
 
 .catalogue-card__eye-btn {
@@ -356,95 +332,26 @@ watch(() => props.product.id, () => {
   z-index: 2;
 }
 
-.catalogue-card__overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.8);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding: 16px;
-  z-index: 1;
-}
-
-.catalogue-card__overlay-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-}
-
-.catalogue-card__overlay-bottom {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-}
-
-.catalogue-card__sizes {
-  flex: 1;
-  margin-right: 8px;
-}
-
-.catalogue-card__actions {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 8px;
-}
-
-.catalogue-card__qty-selector {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: rgba(255, 255, 255, 0.9);
-  border-radius: 4px;
-  padding: 4px 8px;
-}
-
-.catalogue-card__qty-display {
-  min-width: 20px;
-  text-align: center;
-  font-weight: 500;
-}
-
-.catalogue-card__pricing {
-  color: white;
-}
-
-.catalogue-card__colors {
-  display: flex;
-  align-items: center;
-}
-
-.catalogue-card__color-swatch {
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-.catalogue-card__footer {
-  padding: 16px;
+.catalogue-card__content {
+  background: white;
 }
 
 .catalogue-card__title {
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  line-height: 1.2;
-  margin-bottom: 8px;
+  line-height: 1.3;
 }
 
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.3s ease;
-}
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .catalogue-card__content {
+    padding: 8px !important;
+  }
 
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
+  .catalogue-card__title {
+    font-size: 0.875rem;
+  }
 }
 </style>

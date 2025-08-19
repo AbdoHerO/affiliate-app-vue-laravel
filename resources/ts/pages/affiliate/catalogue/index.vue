@@ -327,7 +327,6 @@ onMounted(async () => {
         sm="6"
         md="4"
         lg="3"
-        xl="2"
         class="catalogue-grid__item"
       >
         <CatalogueCard
