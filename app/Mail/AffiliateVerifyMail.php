@@ -29,7 +29,7 @@ class AffiliateVerifyMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Vérifiez votre adresse email - Affilio',
+            subject: 'Vérifiez votre adresse email - Arif Affilio',
         );
     }
 
