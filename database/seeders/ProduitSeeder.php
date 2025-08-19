@@ -298,44 +298,82 @@ class ProduitSeeder extends Seeder
 
     private function createVariantsForProduct($product, $variants, $entrepot): void
     {
+        // Extract sizes and colors from variants
+        $sizes = [];
+        $colors = [];
+        $sizeStocks = [];
+        $colorStocks = [];
+        $colorImages = [];
+
         foreach ($variants as $variantData) {
-            $attributeName = $variantData['type'];
-            $values = $variantData['values'];
-            $stockEach = $variantData['stock_each'];
-            $variantImages = $variantData['images'] ?? [];
+            if ($variantData['type'] === 'taille') {
+                $sizes = $variantData['values'];
+                $sizeStocks = $variantData['stock_each'];
+            } elseif ($variantData['type'] === 'couleur') {
+                $colors = $variantData['values'];
+                $colorStocks = $variantData['stock_each'];
+                $colorImages = $variantData['images'] ?? [];
+            }
+        }
 
-            // Get the attribute
-            $attribute = VariantAttribut::where('code', $attributeName)->first();
-            if (!$attribute) continue;
-
-            foreach ($values as $index => $value) {
-                // Get the variant value
-                $variantValue = VariantValeur::where('attribut_id', $attribute->id)
-                    ->where('libelle', $value)
-                    ->first();
-
-                if (!$variantValue) continue;
-
-                // Create product variant
-                $productVariant = ProduitVariante::create([
-                    'produit_id' => $product->id,
-                    'nom' => $attributeName,
-                    'valeur' => $value,
-                    'image_url' => $variantImages[$value] ?? null,
-                    'actif' => true,
-                ]);
-
-                // Create stock for this variant
-                $stockQuantity = $stockEach[$index] ?? 0;
-                if ($stockQuantity > 0) {
-                    Stock::create([
-                        'variante_id' => $productVariant->id,
-                        'entrepot_id' => $entrepot->id,
-                        'qte_disponible' => $stockQuantity,
-                        'qte_reservee' => 0,
+        // If we have both sizes and colors, create combinations
+        if (!empty($sizes) && !empty($colors)) {
+            foreach ($colors as $colorIndex => $color) {
+                foreach ($sizes as $sizeIndex => $size) {
+                    // Create variant combination (e.g., "Rouge - M")
+                    $productVariant = ProduitVariante::create([
+                        'produit_id' => $product->id,
+                        'nom' => 'couleur_taille',
+                        'valeur' => $color . ' - ' . $size,
+                        'image_url' => $colorImages[$color] ?? null,
+                        'actif' => true,
                     ]);
+
+                    // Calculate stock (average of color and size stock)
+                    $colorStock = $colorStocks[$colorIndex] ?? 10;
+                    $sizeStock = $sizeStocks[$sizeIndex] ?? 10;
+                    $stockQuantity = intval(($colorStock + $sizeStock) / 2);
+
+                    if ($stockQuantity > 0) {
+                        Stock::create([
+                            'variante_id' => $productVariant->id,
+                            'entrepot_id' => $entrepot->id,
+                            'qte_disponible' => $stockQuantity,
+                            'qte_reservee' => 0,
+                        ]);
+                    }
+                }
+            }
+        } else {
+            // Fallback: create individual variants if only one type exists
+            foreach ($variants as $variantData) {
+                $attributeName = $variantData['type'];
+                $values = $variantData['values'];
+                $stockEach = $variantData['stock_each'];
+                $variantImages = $variantData['images'] ?? [];
+
+                foreach ($values as $index => $value) {
+                    $productVariant = ProduitVariante::create([
+                        'produit_id' => $product->id,
+                        'nom' => $attributeName,
+                        'valeur' => $value,
+                        'image_url' => $variantImages[$value] ?? null,
+                        'actif' => true,
+                    ]);
+
+                    $stockQuantity = $stockEach[$index] ?? 0;
+                    if ($stockQuantity > 0) {
+                        Stock::create([
+                            'variante_id' => $productVariant->id,
+                            'entrepot_id' => $entrepot->id,
+                            'qte_disponible' => $stockQuantity,
+                            'qte_reservee' => 0,
+                        ]);
+                    }
                 }
             }
         }
     }
+
+
 }

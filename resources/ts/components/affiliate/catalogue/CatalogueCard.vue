@@ -47,10 +47,16 @@ const profitText = computed(() => {
 })
 
 const availableSizes = computed(() => {
+  if (!props.product.variants || !props.product.variants.sizes) {
+    return []
+  }
   return props.product.variants.sizes.filter(size => size.stock > 0)
 })
 
 const availableColors = computed(() => {
+  if (!props.product.variants || !props.product.variants.colors) {
+    return []
+  }
   return props.product.variants.colors.filter(color => color.stock > 0)
 })
 
@@ -197,6 +203,7 @@ watch(() => props.product.id, () => {
     <VCardText class="catalogue-card__content pa-3">
       <!-- Size Variants -->
       <div v-if="availableSizes.length" class="mb-3">
+        <div class="text-caption text-medium-emphasis mb-1">Tailles:</div>
         <VChip
           v-for="size in availableSizes.slice(0, 4)"
           :key="size.id"
@@ -209,6 +216,8 @@ watch(() => props.product.id, () => {
           {{ size.value }}
         </VChip>
       </div>
+
+
 
       <!-- Quantity and Add to Cart Row -->
       <div class="d-flex align-center justify-space-between mb-3">
@@ -248,6 +257,7 @@ watch(() => props.product.id, () => {
 
       <!-- Color Variants -->
       <div v-if="availableColors.length" class="mb-3">
+        <div class="text-caption text-medium-emphasis mb-1">Couleurs:</div>
         <VChip
           v-for="color in availableColors.slice(0, 3)"
           :key="color.id"
@@ -260,6 +270,8 @@ watch(() => props.product.id, () => {
           {{ color.value }}
         </VChip>
       </div>
+
+
 
       <!-- Pricing Row -->
       <div class="d-flex align-center justify-space-between mb-2">
@@ -283,7 +295,7 @@ watch(() => props.product.id, () => {
 
       <!-- Category -->
       <div class="text-caption text-medium-emphasis">
-        {{ product.categorie?.nom || 'Sans catégorie' }} / {{ product.id }}
+        {{ product.categorie?.nom || 'Sans catégorie' }}
       </div>
     </VCardText>
   </VCard>

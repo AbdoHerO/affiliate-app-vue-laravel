@@ -132,24 +132,31 @@ export const useCatalogueStore = defineStore('affiliate-catalogue', () => {
     // Get main image (first image or fallback)
     const mainImage = product.images?.[0]?.url || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDMwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjRjVGNUY1Ii8+CjxwYXRoIGQ9Ik0xNTAgMTAwQzE2MS4wNDYgMTAwIDE3MCA5MC45NTQzIDE3MCA4MEM1NyA2OS4wNDU3IDE0Ny45NTQgNjAgMTM2IDYwQzEyNC45NTQgNjAgMTE2IDY5LjA0NTcgMTE2IDgwQzExNiA5MC45NTQzIDEyNC45NTQgMTAwIDEzNiAxMDBIMTUwWiIgZmlsbD0iI0NDQ0NDQyIvPgo8cGF0aCBkPSJNMTgwIDEyMEgxMjBDMTE2LjY4NiAxMjAgMTE0IDEyMi42ODYgMTE0IDEyNlYyMDBDMTE0IDIwMy4zMTQgMTE2LjY4NiAyMDYgMTIwIDIwNkgxODBDMTgzLjMxNCAyMDYgMTg2IDIwMy4zMTQgMTg2IDIwMFYxMjZDMTg2IDEyMi42ODYgMTgzLjMxNCAxMjAgMTgwIDEyMFoiIGZpbGw9IiNDQ0NDQ0MiLz4KPC9zdmc+'
     
-    // Group variants by type
-    const sizes = product.variantes?.filter(v => 
-      ['taille', 'size'].includes(v.attribut_principal.toLowerCase())
-    ).map(v => ({
-      id: v.id,
-      value: v.valeur,
-      stock: v.stock
-    })) || []
+    // Group variants by type - handle individual variants correctly
+    const sizes: Array<{ id: string; value: string; stock: number }> = []
+    const colors: Array<{ id: string; value: string; color?: string; image_url?: string; stock: number }> = []
 
-    const colors = product.variantes?.filter(v => 
-      ['couleur', 'color'].includes(v.attribut_principal.toLowerCase())
-    ).map(v => ({
-      id: v.id,
-      value: v.valeur,
-      color: v.color,
-      image_url: v.image_url,
-      stock: v.stock
-    })) || []
+    product.variantes?.forEach(v => {
+      const stock = v.stock || 0
+
+      if (v.attribut_principal === 'taille' || v.attribut_principal === 'size') {
+        // Individual size variant
+        sizes.push({
+          id: v.id,
+          value: v.valeur,
+          stock
+        })
+      } else if (v.attribut_principal === 'couleur' || v.attribut_principal === 'color') {
+        // Individual color variant
+        colors.push({
+          id: v.id,
+          value: v.valeur,
+          color: v.color,
+          image_url: v.image_url,
+          stock
+        })
+      }
+    })
 
     return {
       id: product.id,

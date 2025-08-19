@@ -115,11 +115,11 @@ class CatalogueController extends Controller
                             'id' => $variant->id,
                             'attribut_principal' => $variant->nom, // Use 'nom' instead of 'attribut_principal'
                             'valeur' => $variant->valeur,
-                            'color' => $variant->color ?? null,
                             'image_url' => $variant->image_url,
                             'stock' => (int) $variantStock,
                         ];
                     }),
+                    'variants' => $this->parseVariants($product->variantes),
                 ];
             });
 
@@ -143,6 +143,72 @@ class CatalogueController extends Controller
                 'success' => false
             ], 500);
         }
+    }
+
+    /**
+     * Parse variants into sizes and colors structure
+     */
+    private function parseVariants($variants)
+    {
+        $sizes = [];
+        $colors = [];
+        $sizeStocks = [];
+        $colorStocks = [];
+
+        foreach ($variants as $variant) {
+            $stock = $variant->stocks->sum('qte_disponible') ?? 0;
+
+            if ($variant->nom === 'couleur_taille' && strpos($variant->valeur, ' - ') !== false) {
+                // Parse combined variant (e.g., "Rouge - M")
+                [$color, $size] = explode(' - ', $variant->valeur, 2);
+
+                // Add to sizes
+                if (!isset($sizeStocks[$size])) {
+                    $sizeStocks[$size] = 0;
+                    $sizes[$size] = [
+                        'id' => $size,
+                        'value' => $size,
+                        'stock' => 0
+                    ];
+                }
+                $sizeStocks[$size] += $stock;
+                $sizes[$size]['stock'] = $sizeStocks[$size];
+
+                // Add to colors
+                if (!isset($colorStocks[$color])) {
+                    $colorStocks[$color] = 0;
+                    $colors[$color] = [
+                        'id' => $color,
+                        'value' => $color,
+                        'stock' => 0,
+                        'image_url' => $variant->image_url
+                    ];
+                }
+                $colorStocks[$color] += $stock;
+                $colors[$color]['stock'] = $colorStocks[$color];
+
+            } elseif ($variant->nom === 'taille') {
+                // Individual size variant
+                $sizes[$variant->valeur] = [
+                    'id' => $variant->valeur,
+                    'value' => $variant->valeur,
+                    'stock' => $stock
+                ];
+            } elseif ($variant->nom === 'couleur') {
+                // Individual color variant
+                $colors[$variant->valeur] = [
+                    'id' => $variant->valeur,
+                    'value' => $variant->valeur,
+                    'stock' => $stock,
+                    'image_url' => $variant->image_url
+                ];
+            }
+        }
+
+        return [
+            'sizes' => array_values($sizes),
+            'colors' => array_values($colors)
+        ];
     }
 
     /**
