@@ -129,23 +129,24 @@ class OzonExpressCitiesSeeder extends Seeder
     {
         // Normalize the data structure
         $normalized = $this->normalizeCityData($cityData);
-        
+
         if (!$normalized['city_id'] || !$normalized['name']) {
             throw new \InvalidArgumentException("Missing required fields: city_id or name");
         }
 
-        // Check if city exists
-        $existing = ShippingCity::where('provider', 'ozonexpress')
-                                ->where('city_id', $normalized['city_id'])
-                                ->first();
-        
+        // Check if city already exists
+        $existing = ShippingCity::findByProviderAndCityId(
+            $normalized['provider'],
+            $normalized['city_id']
+        );
+
         if ($existing) {
             // Update existing city
             $existing->update($normalized);
             return 'updated';
         } else {
-            // Create new city
-            ShippingCity::create($normalized);
+            // Create new city using the model's upsert method
+            ShippingCity::upsertCity($normalized);
             return 'inserted';
         }
     }

@@ -45,33 +45,7 @@ const adminNavigation = [
     ],
   },
   {
-    title: 'nav_order_management',
-    icon: { icon: 'tabler-shopping-cart' },
-    children: [
-      {
-        title: 'Pré-commandes',
-        to: '/admin/orders/pre',
-        icon: { icon: 'tabler-package' },
-      },
-      {
-        title: 'Expéditions',
-        to: '/admin/orders/shipping',
-        icon: { icon: 'tabler-truck' },
-      },
-      {
-        title: 'nav_order_conflicts',
-        to: '/admin/order-conflicts',
-        icon: { icon: 'tabler-alert-triangle' },
-      },
-      {
-        title: 'Debug OzonExpress',
-        to: '/admin/debug/ozonexpress',
-        icon: { icon: 'tabler-bug' },
-      },
-    ],
-  },
-  {
-    title: 'nav_product_management',
+    title: 'nav_gestion_stock',
     icon: { icon: 'tabler-package' },
     children: [
       {
@@ -90,24 +64,35 @@ const adminNavigation = [
         icon: { icon: 'tabler-building-store' },
       },
       {
-        title: 'nav_variant_catalog',
-        to: '/admin/variants/attributs',
-        icon: { icon: 'tabler-palette' },
-      },
-      {
         title: 'nav_stock_management',
         to: '/admin/stock',
         icon: { icon: 'tabler-package-import' },
       },
+    ],
+  },
+  {
+    title: 'nav_order_management',
+    icon: { icon: 'tabler-shopping-cart' },
+    children: [
       {
-        title: 'nav_ozonexpress_credentials',
-        to: '/admin/integrations/ozon/credentials',
-        icon: { icon: 'tabler-settings' },
+        title: 'Pré-commandes',
+        to: '/admin/orders/pre',
+        icon: { icon: 'tabler-package' },
       },
       {
-        title: 'nav_ozonexpress_cities',
-        to: '/admin/integrations/ozon/cities',
-        icon: { icon: 'tabler-map-pin' },
+        title: 'Expéditions',
+        to: '/admin/orders/shipping',
+        icon: { icon: 'tabler-truck' },
+      },
+      // {
+      //   title: 'nav_order_conflicts',
+      //   to: '/admin/order-conflicts',
+      //   icon: { icon: 'tabler-alert-triangle' },
+      // },
+      {
+        title: 'Debug OzonExpress',
+        to: '/admin/debug/ozonexpress',
+        icon: { icon: 'tabler-bug' },
       },
     ],
   },
@@ -125,10 +110,42 @@ const adminNavigation = [
         to: '/admin/withdrawals',
         icon: { icon: 'tabler-wallet' },
       },
+      // {
+      //   title: 'nav_payments',
+      //   to: '/admin/payments',
+      //   icon: { icon: 'tabler-credit-card' },
+      // },
+    ],
+  },
+  {
+    title: 'nav_parametres',
+    icon: { icon: 'tabler-settings' },
+    children: [
       {
-        title: 'nav_payments',
-        to: '/admin/payments',
-        icon: { icon: 'tabler-credit-card' },
+        title: 'nav_variant_catalog',
+        to: '/admin/variants/attributs',
+        icon: { icon: 'tabler-palette' },
+      },
+      {
+        title: 'nav_ozonexpress_credentials',
+        to: '/admin/integrations/ozon/credentials',
+        icon: { icon: 'tabler-key' },
+      },
+      {
+        title: 'nav_ozonexpress_cities',
+        to: '/admin/integrations/ozon/cities',
+        icon: { icon: 'tabler-map-pin' },
+      },
+    ],
+  },
+  {
+    title: 'nav_support',
+    icon: { icon: 'tabler-headset' },
+    children: [
+      {
+        title: 'nav_support_tickets',
+        to: '/admin/support/tickets',
+        icon: { icon: 'tabler-ticket' },
       },
     ],
   },

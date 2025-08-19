@@ -76,10 +76,10 @@ export function useNavigation() {
                 to: 'admin-orders-shipping',
                 icon: { icon: 'tabler-truck' },
               },
-              {
-                title: t('nav_order_conflicts'),
-                to: 'admin-order-conflicts',
-              },
+              // {
+              //   title: t('nav_order_conflicts'),
+              //   to: 'admin-order-conflicts',
+              // },
               {
                 title: 'Debug OzonExpress',
                 to: 'admin-debug-ozonexpress',
@@ -88,7 +88,7 @@ export function useNavigation() {
             ],
           },
           {
-            title: t('nav_product_management'),
+            title: t('nav_gestion_stock'),
             icon: { icon: 'tabler-package' },
             children: [
               {
@@ -104,24 +104,9 @@ export function useNavigation() {
                 to: 'admin-boutiques',
               },
               {
-                title: t('nav_variant_catalog'),
-                to: 'admin-variants-attributs',
-                icon: { icon: 'tabler-palette' },
-              },
-              {
                 title: t('nav_stock_management'),
                 to: 'admin-stock',
                 icon: { icon: 'tabler-package-import' },
-              },
-              {
-                title: t('nav_ozonexpress_credentials'),
-                to: 'admin-integrations-ozon-credentials',
-                icon: { icon: 'tabler-settings' },
-              },
-              {
-                title: t('nav_ozonexpress_cities'),
-                to: 'admin-integrations-ozon-cities',
-                icon: { icon: 'tabler-map-pin' },
               },
             ],
           },
@@ -137,9 +122,30 @@ export function useNavigation() {
                 title: t('nav_withdrawals'),
                 to: 'admin-withdrawals',
               },
+              // {
+              //   title: t('nav_payments'),
+              //   to: 'admin-payments',
+              // },
+            ],
+          },
+          {
+            title: t('nav_parametres'),
+            icon: { icon: 'tabler-settings' },
+            children: [
               {
-                title: t('nav_payments'),
-                to: 'admin-payments',
+                title: t('nav_variant_catalog'),
+                to: 'admin-variants-attributs',
+                icon: { icon: 'tabler-palette' },
+              },
+              {
+                title: t('nav_ozonexpress_credentials'),
+                to: 'admin-integrations-ozon-credentials',
+                icon: { icon: 'tabler-key' },
+              },
+              {
+                title: t('nav_ozonexpress_cities'),
+                to: 'admin-integrations-ozon-cities',
+                icon: { icon: 'tabler-map-pin' },
               },
             ],
           },
