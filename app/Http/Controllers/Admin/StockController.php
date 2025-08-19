@@ -353,9 +353,9 @@ class StockController extends Controller
     }
 
     /**
-     * Get stock movement history for a product
+     * Get stock movement history for a product variant
      */
-    public function history(Request $request, string $produitId): JsonResponse
+    public function history(Request $request, string $varianteId): JsonResponse
     {
         $request->validate([
             'variante_id' => 'nullable|uuid|exists:produit_variantes,id',
@@ -367,34 +367,9 @@ class StockController extends Controller
             'per_page' => 'nullable|integer|min:1|max:100',
         ]);
 
-        $product = Produit::findOrFail($produitId);
+        // Validate that the variant exists
+        $variant = ProduitVariante::with('produit')->findOrFail($varianteId);
         $perPage = $request->get('per_page', 15);
-
-        // If specific variant requested, use it; otherwise get all variants for the product
-        if ($request->filled('variante_id')) {
-            $varianteId = $request->get('variante_id');
-
-            // Verify variant belongs to product
-            $variant = ProduitVariante::where('id', $varianteId)
-                ->where('produit_id', $produitId)
-                ->firstOrFail();
-        } else {
-            // Get first variant for the product
-            $variant = $product->variantes()->where('actif', true)->first();
-            if (!$variant) {
-                return response()->json([
-                    'success' => true,
-                    'data' => [],
-                    'pagination' => [
-                        'current_page' => 1,
-                        'last_page' => 1,
-                        'per_page' => $perPage,
-                        'total' => 0,
-                    ],
-                ]);
-            }
-            $varianteId = $variant->id;
-        }
 
         $dateFrom = $request->filled('date_from') ? Carbon::parse($request->get('date_from')) : null;
         $dateTo = $request->filled('date_to') ? Carbon::parse($request->get('date_to')) : null;

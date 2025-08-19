@@ -318,7 +318,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::get('/', [StockController::class, 'index']);
             Route::get('/summary', [StockController::class, 'summary']);
             Route::post('/movements', [StockController::class, 'createMovement']);
-            Route::get('/{produitId}/history', [StockController::class, 'history']);
+            Route::get('/{varianteId}/history', [StockController::class, 'history']);
         });
 
         // Stock Reservations Management

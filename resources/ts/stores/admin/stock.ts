@@ -180,10 +180,15 @@ export const useStockStore = defineStore('admin-stock', () => {
   }
 
   const fetchHistory = async (
-    produitId: string,
+    varianteId: string,
     customFilters?: Partial<StockHistoryFilters>
   ) => {
     historyLoading.value = true
+    console.log('🔍 [Stock Store] fetchHistory called with:', {
+      varianteId,
+      customFilters
+    })
+    
     try {
       const params = { ...customFilters }
       
@@ -194,22 +199,35 @@ export const useStockStore = defineStore('admin-stock', () => {
         }
       })
 
-      const response = await $api<StockHistoryResponse>(`/admin/stock/${produitId}/history`, {
+      const url = `/admin/stock/${varianteId}/history`
+      console.log('📡 [Stock Store] Making API request:', {
+        url,
+        params
+      })
+
+      const response = await $api<StockHistoryResponse>(url, {
         method: 'GET',
         params,
       })
 
+      console.log('📥 [Stock Store] API response:', response)
+
       if (response.success) {
         history.value = response.data
         Object.assign(historyPagination, response.pagination)
+        console.log('✅ [Stock Store] History updated:', {
+          historyLength: history.value.length,
+          pagination: historyPagination
+        })
       }
 
       return response
     } catch (error) {
-      console.error('Failed to fetch stock history:', error)
+      console.error('❌ [Stock Store] Failed to fetch stock history:', error)
       throw error
     } finally {
       historyLoading.value = false
+      console.log('🏁 [Stock Store] fetchHistory completed, loading set to false')
     }
   }
 

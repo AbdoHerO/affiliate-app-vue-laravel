@@ -70,10 +70,24 @@ const reasonOptions = computed(() => [
 
 // Methods
 const fetchHistory = async () => {
-  if (!props.item) return
-  
+  if (!props.item) {
+    console.log('❌ [StockHistoryDialog] No item provided')
+    return
+  }
+
+  // Use variant ID if available, otherwise use product ID
+  const variantId = props.item.variant?.id || props.item.product.id
+
+  console.log('🔍 [StockHistoryDialog] Fetching history for:', {
+    productId: props.item.product.id,
+    productTitle: props.item.product.titre,
+    variantId: variantId,
+    variantLabel: props.item.variant?.libelle || 'Default variant',
+    filters: filters.value
+  })
+
   const cleanFilters = { ...filters.value }
-  
+
   // Remove empty values
   Object.keys(cleanFilters).forEach(key => {
     if (cleanFilters[key as keyof StockHistoryFilters] === '') {
@@ -81,7 +95,14 @@ const fetchHistory = async () => {
     }
   })
 
-  await stockStore.fetchHistory(props.item.product.id, cleanFilters)
+  console.log('📡 [StockHistoryDialog] Making API call with variant ID:', variantId, 'and filters:', cleanFilters)
+
+  try {
+    await stockStore.fetchHistory(variantId, cleanFilters)
+    console.log('✅ [StockHistoryDialog] History fetched successfully')
+  } catch (error) {
+    console.error('❌ [StockHistoryDialog] Failed to fetch history:', error)
+  }
 }
 
 const clearFilters = () => {

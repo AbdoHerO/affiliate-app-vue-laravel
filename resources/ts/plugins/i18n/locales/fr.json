@@ -108,6 +108,11 @@
   // ===========================================
   "stock": {
     "title": "Gestion des Stocks",
+    "subtitle": "Gérez les niveaux de stock de vos produits",
+    "current_stock": "Stock actuel",
+    "on_hand": "En stock",
+    "reserved": "Réservé", 
+    "available": "Disponible",
     "columns": {
       "product": "Produit",
       "variant": "Variante", 
@@ -117,6 +122,55 @@
       "reserved": "Réservé",
       "available": "Disponible",
       "last_movement": "Dernier mouvement"
+    },
+    "kpi": {
+      "products": "Produits",
+      "on_hand": "En stock",
+      "reserved": "Réservé",
+      "available": "Disponible"
+    },
+    "filters": {
+      "title": "Filtres",
+      "search": "Rechercher",
+      "search_placeholder": "Nom de produit, référence...",
+      "boutique": "Boutique",
+      "category": "Catégorie",
+      "with_variants": "Avec variantes",
+      "min_qty": "Quantité min",
+      "max_qty": "Quantité max",
+      "type": "Type de mouvement",
+      "reason": "Raison",
+      "date_from": "Date de début",
+      "date_to": "Date de fin"
+    },
+    "table": {
+      "title": "Liste des stocks",
+      "items": "éléments",
+      "no_data_title": "Aucun stock trouvé",
+      "no_data_subtitle": "Aucun produit ne correspond aux critères de recherche",
+      "reset_filters": "Réinitialiser les filtres"
+    },
+    "actions": {
+      "in": "Entrée stock",
+      "out": "Sortie stock", 
+      "adjust": "Ajustement",
+      "history": "Historique"
+    },
+    "history": {
+      "title": "Historique des mouvements",
+      "title_for": "Historique - {product}",
+      "no_movements": "Aucun mouvement trouvé",
+      "no_movements_desc": "Aucun mouvement de stock n'a été enregistré pour ce produit",
+      "columns": {
+        "date": "Date",
+        "type": "Type",
+        "quantity": "Quantité",
+        "reference": "Référence",
+        "variant": "Variante"
+      }
+    },
+    "messages": {
+      "movement_created": "Mouvement de stock créé avec succès"
     },
     "movement_created_successfully": "Mouvement de stock créé avec succès",
     "movement": "mouvement de stock"
