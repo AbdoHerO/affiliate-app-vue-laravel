@@ -69,6 +69,12 @@ class StockAllocationService
                 throw new \Exception('Some variant IDs are invalid or do not belong to this product');
             }
 
+            // Validate stock allocation totals
+            $totalAllocated = array_sum(array_column($allocations, 'qty'));
+            if ($totalAllocated > $stockTotal) {
+                throw new \Exception("Stock allocation error: Total allocated quantity ({$totalAllocated}) exceeds available stock ({$stockTotal})");
+            }
+
             // Get current stock snapshot for these variants
             $currentStocks = $this->getCurrentStockSnapshot($variantIds, $warehouse->id);
 

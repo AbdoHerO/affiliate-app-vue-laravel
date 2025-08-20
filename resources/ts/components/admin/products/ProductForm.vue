@@ -932,8 +932,14 @@ const handleStockAllocation = async () => {
   const hasStockChanges = stockMatrix.value.some(item => item.qty > 0) || stockForm.stock_total > 0
   if (!hasStockChanges) return
 
-  // Show confirmation if there's a stock mismatch
-  if (stockMismatch.value) {
+  // Block saving if stock is exceeded
+  if (stockExceeded.value) {
+    showError(`Impossible de sauvegarder : La somme des variantes (${totalVariantStock.value}) dépasse le stock total (${stockForm.stock_total})`)
+    return
+  }
+
+  // Show confirmation if there's a stock mismatch (but not exceeded)
+  if (stockMismatch.value && !stockExceeded.value) {
     const confirmed = await confirmUpdate(
       'Différence de stock détectée',
       `Le stock total (${stockForm.stock_total}) ne correspond pas à la somme des variantes (${totalVariantStock.value}). Voulez-vous continuer quand même ?`
@@ -2018,6 +2024,8 @@ onMounted(async () => {
                       variant="outlined"
                       min="0"
                       suffix="unités"
+                      :error="stockExceeded"
+                      :error-messages="stockExceeded ? `Total insuffisant (${totalVariantStock} alloués)` : []"
                     />
                   </VCol>
                   <VCol cols="12" md="6" class="d-flex align-end">
@@ -2159,18 +2167,38 @@ onMounted(async () => {
                       </tr>
                     </tbody>
                     <tfoot>
-                      <tr class="bg-grey-lighten-4">
+                      <tr :class="stockExceeded ? 'bg-red-lighten-4' : 'bg-grey-lighten-4'">
                         <td colspan="2" class="font-weight-bold">Total</td>
-                        <td class="font-weight-bold">{{ totalVariantStock }}</td>
+                        <td :class="stockExceeded ? 'font-weight-bold text-red' : 'font-weight-bold'">
+                          {{ totalVariantStock }}
+                          <VIcon v-if="stockExceeded" icon="tabler-alert-circle" size="small" color="red" class="ml-1" />
+                        </td>
                         <td class="font-weight-bold">{{ totalReservedStock }}</td>
                         <td class="font-weight-bold">{{ totalAvailableStock }}</td>
                       </tr>
                     </tfoot>
                   </VTable>
 
-                  <!-- Stock Mismatch Warning -->
+                  <!-- Stock Exceeded Error -->
                   <VAlert
-                    v-if="stockMismatch"
+                    v-if="stockExceeded"
+                    type="error"
+                    variant="tonal"
+                    class="mt-4"
+                  >
+                    <VIcon icon="tabler-alert-circle" start />
+                    <strong>❌ Erreur : Stock dépassé !</strong>
+                    <br>
+                    La somme des variantes ({{ totalVariantStock }}) dépasse le stock total ({{ stockForm.stock_total }}).
+                    <br>
+                    <small class="text-medium-emphasis">
+                      Réduisez les quantités des variantes ou augmentez le stock total.
+                    </small>
+                  </VAlert>
+
+                  <!-- Stock Mismatch Warning (when not exceeded) -->
+                  <VAlert
+                    v-else-if="stockMismatch"
                     type="warning"
                     variant="tonal"
                     class="mt-4"
@@ -2507,6 +2535,7 @@ onMounted(async () => {
           size="large"
           type="button"
           :loading="saving"
+          :disabled="isEditMode && stockExceeded"
           @click="saveProduct"
         >
           {{ isEditMode ? 'Update Product' : 'Create Product' }}
