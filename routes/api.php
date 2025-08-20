@@ -186,7 +186,11 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
         // Product Stock Management
         Route::post('produits/{produit}/stock/allocate', [ProduitController::class, 'allocateStock']);
-        Route::get('produits/{produit}/stock/summary', [ProduitController::class, 'getStockSummary']);
+        Route::get('produits/{produit}/stock/matrix', [ProduitController::class, 'getStockMatrix']);
+        Route::post('produits/{produit}/stock/generate-combinations', [ProduitController::class, 'generateCombinations']);
+
+        // Warehouse Management
+        Route::get('warehouses', [ProduitController::class, 'getWarehouses']);
 
         // Product Propositions Management
         Route::get('produits/{produit}/propositions', [ProduitPropositionController::class, 'index']);

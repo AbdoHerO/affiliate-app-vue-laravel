@@ -5,161 +5,228 @@ namespace App\Services;
 use App\Models\Produit;
 use App\Models\ProduitVariante;
 use App\Models\MouvementStock;
+use App\Models\Stock;
+use App\Models\Entrepot;
+use App\Services\WarehouseService;
+use App\Services\VariantCombinationService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class StockAllocationService
 {
+    protected WarehouseService $warehouseService;
+    protected VariantCombinationService $combinationService;
+
+    public function __construct()
+    {
+        $this->warehouseService = new WarehouseService();
+        $this->combinationService = new VariantCombinationService();
+    }
+
     /**
-     * Allocate stock to product variants
+     * Allocate stock to product variant combinations
      *
      * @param string $productId
      * @param int $stockTotal
-     * @param array $variantStocks [['variante_id' => string, 'qty' => int], ...]
+     * @param array $allocations [['variante_id' => string, 'qty' => int], ...]
+     * @param string|null $warehouseId
      * @return array Updated stock snapshot
      * @throws \Exception
      */
-    public function allocate(string $productId, int $stockTotal, array $variantStocks): array
+    public function allocate(string $productId, int $stockTotal, array $allocations, ?string $warehouseId = null): array
     {
-        return DB::transaction(function () use ($productId, $stockTotal, $variantStocks) {
+        return DB::transaction(function () use ($productId, $stockTotal, $allocations, $warehouseId) {
             // Validate product exists
             $product = Produit::findOrFail($productId);
-            
-            // Validate all variant IDs belong to this product and are size variants
-            $variantIds = collect($variantStocks)->pluck('variante_id')->toArray();
+
+            // Get or create warehouse
+            if ($warehouseId) {
+                $warehouse = $this->warehouseService->getWarehouse($warehouseId, $product->boutique_id);
+            } else {
+                $warehouse = $this->warehouseService->getDefaultWarehouseForProduct($product);
+            }
+
+            // Deduplicate allocations by variant_id (sum quantities for duplicates)
+            $deduplicatedAllocations = [];
+            foreach ($allocations as $allocation) {
+                $variantId = $allocation['variante_id'];
+                if (isset($deduplicatedAllocations[$variantId])) {
+                    $deduplicatedAllocations[$variantId]['qty'] += $allocation['qty'];
+                } else {
+                    $deduplicatedAllocations[$variantId] = $allocation;
+                }
+            }
+            $allocations = array_values($deduplicatedAllocations);
+
+            // Validate all variant IDs belong to this product
+            $variantIds = collect($allocations)->pluck('variante_id')->unique()->toArray();
             $variants = ProduitVariante::where('produit_id', $productId)
                 ->whereIn('id', $variantIds)
+                ->with(['attribut', 'valeur'])
                 ->get();
-            
+
             if ($variants->count() !== count($variantIds)) {
                 throw new \Exception('Some variant IDs are invalid or do not belong to this product');
             }
-            
-            // Validate these are size variants
-            $sizeVariants = $variants->filter(function ($variant) {
-                return in_array(strtolower($variant->nom), ['taille', 'size']);
-            });
-            
-            if ($sizeVariants->count() !== $variants->count()) {
-                throw new \Exception('All variants must be size variants for stock allocation');
-            }
-            
+
             // Get current stock snapshot for these variants
-            $currentStocks = $this->getCurrentStockSnapshot($variantIds);
-            
+            $currentStocks = $this->getCurrentStockSnapshot($variantIds, $warehouse->id);
+
             // Calculate deltas and create movements
             $movements = [];
             $updatedSnapshot = [];
-            
-            foreach ($variantStocks as $variantStock) {
-                $variantId = $variantStock['variante_id'];
-                $newQty = $variantStock['qty'];
+
+            foreach ($allocations as $allocation) {
+                $variantId = $allocation['variante_id'];
+                $newQty = $allocation['qty'];
                 $currentQty = $currentStocks[$variantId]['on_hand'] ?? 0;
                 $reserved = $currentStocks[$variantId]['reserved'] ?? 0;
-                
+
                 $delta = $newQty - $currentQty;
-                
+
                 if ($delta !== 0) {
-                    // Create stock movement
+                    // Create stock movement using the correct structure
                     $movement = MouvementStock::create([
                         'variante_id' => $variantId,
-                        'type' => 'adjust',
-                        'quantite' => abs($delta),
-                        'direction' => $delta > 0 ? 'in' : 'out',
-                        'motif' => 'manual',
-                        'notes' => 'Stock allocation from product form',
-                        'auteur_id' => auth()->id(),
+                        'entrepot_id' => $warehouse->id,
+                        'type' => 'ajustement', // Use 'ajustement' as per the schema
+                        'quantite' => $newQty, // Store the final quantity for adjustments
+                        'reference' => 'Stock allocation from product form',
                     ]);
-                    
+
                     $movements[] = $movement;
+
+                    // Update or create stock record
+                    Stock::updateOrCreate(
+                        [
+                            'variante_id' => $variantId,
+                            'entrepot_id' => $warehouse->id,
+                        ],
+                        [
+                            'qte_disponible' => $newQty,
+                        ]
+                    );
                 }
-                
+
                 // Build updated snapshot
                 $updatedSnapshot[$variantId] = [
+                    'variante_id' => $variantId,
                     'on_hand' => $newQty,
                     'reserved' => $reserved,
                     'available' => max(0, $newQty - $reserved),
                 ];
             }
-            
+
             // Update product stock_total if provided
             if ($stockTotal !== null) {
                 $product->update(['stock_total' => $stockTotal]);
             }
-            
+
             Log::info('Stock allocation completed', [
                 'product_id' => $productId,
+                'warehouse_id' => $warehouse->id,
                 'stock_total' => $stockTotal,
+                'allocations_count' => count($allocations),
                 'movements_created' => count($movements),
-                'updated_snapshot' => $updatedSnapshot,
             ]);
-            
-            return $updatedSnapshot;
+
+            return [
+                'allocations' => $updatedSnapshot,
+                'warehouse' => [
+                    'id' => $warehouse->id,
+                    'name' => $warehouse->nom,
+                ],
+                'summary' => [
+                    'rows' => count($allocations),
+                    'sum_allocations' => array_sum(array_column($allocations, 'qty')),
+                    'stock_total' => $stockTotal,
+                ],
+            ];
         });
     }
     
     /**
-     * Get current stock snapshot for variants
+     * Get current stock snapshot for variants in a specific warehouse
      *
      * @param array $variantIds
+     * @param string $warehouseId
      * @return array
      */
-    private function getCurrentStockSnapshot(array $variantIds): array
+    private function getCurrentStockSnapshot(array $variantIds, string $warehouseId): array
     {
         $snapshot = [];
-        
+
         foreach ($variantIds as $variantId) {
-            // Calculate current stock from movements
-            $inMovements = MouvementStock::where('variante_id', $variantId)
-                ->where('direction', 'in')
-                ->sum('quantite');
-                
-            $outMovements = MouvementStock::where('variante_id', $variantId)
-                ->where('direction', 'out')
-                ->sum('quantite');
-                
-            $onHand = $inMovements - $outMovements;
-            
-            // Get reserved quantity (this would come from reservations table if implemented)
-            $reserved = 0; // TODO: Implement reservations calculation
-            
-            $snapshot[$variantId] = [
-                'on_hand' => max(0, $onHand),
-                'reserved' => $reserved,
-                'available' => max(0, $onHand - $reserved),
-            ];
+            // Use the existing Stock table for current quantities
+            $stock = Stock::where('variante_id', $variantId)
+                ->where('entrepot_id', $warehouseId)
+                ->first();
+
+            if ($stock) {
+                $snapshot[$variantId] = [
+                    'on_hand' => $stock->qte_disponible,
+                    'reserved' => $stock->qte_reservee,
+                    'available' => max(0, $stock->qte_disponible - $stock->qte_reservee),
+                ];
+            } else {
+                // No stock record exists yet
+                $snapshot[$variantId] = [
+                    'on_hand' => 0,
+                    'reserved' => 0,
+                    'available' => 0,
+                ];
+            }
         }
-        
+
         return $snapshot;
     }
     
     /**
-     * Get stock summary for a product's size variants
+     * Get variant combinations matrix for a product
+     *
+     * @param string $productId
+     * @param string|null $warehouseId
+     * @return array
+     */
+    public function getProductVariantMatrix(string $productId, ?string $warehouseId = null): array
+    {
+        $product = Produit::findOrFail($productId);
+
+        // Get or determine warehouse
+        if ($warehouseId) {
+            $warehouse = $this->warehouseService->getWarehouse($warehouseId, $product->boutique_id);
+        } else {
+            $warehouse = $this->warehouseService->getDefaultWarehouseForProduct($product);
+        }
+
+        // Use the combination service to get the matrix
+        $matrixData = $this->combinationService->getSizeColorMatrix($productId, $warehouse->id);
+
+        return [
+            'matrix' => $matrixData['matrix'],
+            'warehouse' => [
+                'id' => $warehouse->id,
+                'name' => $warehouse->nom,
+            ],
+            'summary' => [
+                'matrix_rows' => count($matrixData['matrix']),
+                'has_combinations' => $matrixData['has_combinations'],
+                'has_virtual' => $matrixData['has_virtual'],
+                'size_count' => $matrixData['size_count'],
+                'color_count' => $matrixData['color_count'],
+                'combination_count' => $matrixData['combination_count'],
+            ],
+        ];
+    }
+
+    /**
+     * Generate Size × Color combinations for a product
      *
      * @param string $productId
      * @return array
      */
-    public function getProductStockSummary(string $productId): array
+    public function generateCombinations(string $productId): array
     {
-        $sizeVariants = ProduitVariante::where('produit_id', $productId)
-            ->whereIn('nom', ['taille', 'size', 'Taille', 'Size'])
-            ->get();
-            
-        $variantIds = $sizeVariants->pluck('id')->toArray();
-        $stockSnapshot = $this->getCurrentStockSnapshot($variantIds);
-        
-        $summary = [];
-        foreach ($sizeVariants as $variant) {
-            $stock = $stockSnapshot[$variant->id] ?? ['on_hand' => 0, 'reserved' => 0, 'available' => 0];
-            $summary[] = [
-                'variante_id' => $variant->id,
-                'size' => $variant->valeur,
-                'qty' => $stock['on_hand'],
-                'reserved' => $stock['reserved'],
-                'available' => $stock['available'],
-            ];
-        }
-        
-        return $summary;
+        return $this->combinationService->generateSizeColorCombinations($productId);
     }
 }

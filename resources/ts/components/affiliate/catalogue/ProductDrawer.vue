@@ -166,6 +166,10 @@ const copyToClipboard = async (text: string) => {
   }
 }
 
+const openVideo = (url: string) => {
+  window.open(url, '_blank')
+}
+
 const handleAddToCart = async () => {
   if (!product.value || !canAddToCart.value) return
 
@@ -584,7 +588,7 @@ const formatCopywriting = (text: string): string => {
                       size="small"
                       variant="outlined"
                       prepend-icon="tabler-eye"
-                      @click="() => window.open(video.url, '_blank')"
+                      @click="openVideo(video.url)"
                     >
                       Voir
                     </VBtn>

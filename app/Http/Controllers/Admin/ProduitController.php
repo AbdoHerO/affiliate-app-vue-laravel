@@ -8,6 +8,7 @@ use App\Http\Requests\Admin\UpdateProduitRequest;
 use App\Http\Resources\ProduitResource;
 use App\Models\Produit;
 use App\Services\StockAllocationService;
+use App\Services\WarehouseService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Str;
@@ -358,30 +359,25 @@ class ProduitController extends Controller
         try {
             $request->validate([
                 'stock_total' => 'required|integer|min:0',
-                'variant_stocks' => 'required|array',
-                'variant_stocks.*.variante_id' => 'required|string|exists:produit_variantes,id',
-                'variant_stocks.*.qty' => 'required|integer|min:0',
+                'allocations' => 'required|array',
+                'allocations.*.variante_id' => 'required|string|exists:produit_variantes,id',
+                'allocations.*.qty' => 'required|integer|min:0',
+                'warehouse_id' => 'nullable|string|exists:entrepots,id',
             ]);
 
             $stockService = new StockAllocationService();
 
-            $updatedSnapshot = $stockService->allocate(
+            $result = $stockService->allocate(
                 $id,
                 $request->input('stock_total'),
-                $request->input('variant_stocks')
+                $request->input('allocations'),
+                $request->input('warehouse_id')
             );
-
-            // Get updated product data
-            $product = Produit::with(['boutique', 'categorie', 'images', 'videos', 'variantes'])
-                ->findOrFail($id);
 
             return response()->json([
                 'success' => true,
                 'message' => 'Stock allocated successfully',
-                'data' => [
-                    'product' => new ProduitResource($product),
-                    'stock_snapshot' => $updatedSnapshot,
-                ]
+                'data' => $result
             ]);
 
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -399,23 +395,87 @@ class ProduitController extends Controller
     }
 
     /**
-     * Get stock summary for a product
+     * Get stock matrix for a product
      */
-    public function getStockSummary(string $id): JsonResponse
+    public function getStockMatrix(Request $request, string $id): JsonResponse
     {
         try {
+            $warehouseId = $request->query('warehouse_id');
+
             $stockService = new StockAllocationService();
-            $summary = $stockService->getProductStockSummary($id);
+            $matrix = $stockService->getProductVariantMatrix($id, $warehouseId);
 
             return response()->json([
                 'success' => true,
-                'data' => $summary
+                'data' => $matrix
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error getting stock summary: ' . $e->getMessage()
+                'message' => 'Error getting stock matrix: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Generate Size × Color combinations for a product
+     */
+    public function generateCombinations(string $id): JsonResponse
+    {
+        try {
+            $stockService = new StockAllocationService();
+            $result = $stockService->generateCombinations($id);
+
+            return response()->json([
+                'success' => true,
+                'message' => $result['message'],
+                'data' => [
+                    'combinations' => $result['combinations'],
+                    'created' => $result['created']
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error generating combinations: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get warehouses for the current user's boutiques
+     */
+    public function getWarehouses(Request $request): JsonResponse
+    {
+        try {
+            $warehouseService = new WarehouseService();
+
+            // For now, get warehouses for all boutiques the user has access to
+            // In a real scenario, you might filter by user permissions
+            $warehouses = \App\Models\Entrepot::where('actif', true)
+                ->with('boutique:id,nom')
+                ->orderBy('nom')
+                ->get()
+                ->map(function ($warehouse) {
+                    return [
+                        'id' => $warehouse->id,
+                        'name' => $warehouse->nom,
+                        'boutique' => $warehouse->boutique->nom ?? 'Unknown',
+                        'is_default' => true, // For now, mark all as default
+                    ];
+                });
+
+            return response()->json([
+                'success' => true,
+                'data' => $warehouses
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error getting warehouses: ' . $e->getMessage()
             ], 500);
         }
     }
