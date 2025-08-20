@@ -186,9 +186,98 @@ export const useCatalogueStore = defineStore('affiliate-catalogue', () => {
   const selectedId = ref<string | null>(null)
   const drawerProduct = ref<DrawerViewModel | null>(null)
   const addingToCart = ref(false)
-  const selectedColor = ref<string>('')
-  const selectedSize = ref<string>('')
+  const selectedColor = ref<string | null>(null)
+  const selectedSize = ref<string | null>(null)
+  const selectedVariantId = ref<string | null>(null)
   const selectedQty = ref(1)
+  const maxQty = ref<number>(0)
+
+  // Derived maps for variant resolution
+  const variantsByCombo = ref<Record<string, { id: string; stock_available: number; image_url?: string }>>({})
+  const sizes = ref<string[]>([])
+  const colors = ref<Array<{ name: string; swatch?: string; image_url?: string }>>([])
+  const matrixRows = ref<Array<{ qty: number; color: string; size: string }>>([])
+
+  // Helper function to create combo key
+  const createComboKey = (color: string | null, size: string | null): string => {
+    const normalizedColor = color?.trim() || '∅'
+    const normalizedSize = size?.trim() || '∅'
+    return `${normalizedColor}|${normalizedSize}`
+  }
+
+  // Build variant maps for resolution
+  const buildVariantMaps = (variants: any[]) => {
+    // Reset maps
+    variantsByCombo.value = {}
+    sizes.value = []
+    colors.value = []
+    matrixRows.value = []
+
+    const sizeSet = new Set<string>()
+    const colorMap = new Map<string, { name: string; swatch?: string; image_url?: string }>()
+
+    variants.forEach(variant => {
+      const { type, color, size, id, stock_available, image_url } = variant
+
+      // Build combo map
+      const comboKey = createComboKey(color, size)
+      variantsByCombo.value[comboKey] = {
+        id,
+        stock_available: stock_available || 0,
+        image_url
+      }
+
+      // Collect sizes
+      if (size) {
+        sizeSet.add(size)
+      }
+
+      // Collect colors
+      if (color) {
+        colorMap.set(color, {
+          name: color,
+          swatch: color, // Use color name as swatch for now
+          image_url
+        })
+      }
+
+      // Build matrix rows for table
+      if (color && size) {
+        matrixRows.value.push({
+          qty: stock_available || 0,
+          color,
+          size
+        })
+      }
+    })
+
+    // Convert to arrays
+    sizes.value = Array.from(sizeSet).sort((a, b) => {
+      // Custom size sorting: S < M < L < XL < 2XL < 3XL
+      const sizeOrder = ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL', '4XL', '5XL']
+      const aIndex = sizeOrder.indexOf(a)
+      const bIndex = sizeOrder.indexOf(b)
+      if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex
+      if (aIndex !== -1) return -1
+      if (bIndex !== -1) return 1
+      return a.localeCompare(b)
+    })
+
+    colors.value = Array.from(colorMap.values()).sort((a, b) => a.name.localeCompare(b.name))
+
+    // Sort matrix rows
+    matrixRows.value.sort((a, b) => {
+      const sizeOrder = ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL', '4XL', '5XL']
+      const aIndex = sizeOrder.indexOf(a.size)
+      const bIndex = sizeOrder.indexOf(b.size)
+      if (aIndex !== bIndex) {
+        if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex
+        if (aIndex !== -1) return -1
+        if (bIndex !== -1) return 1
+      }
+      return a.color.localeCompare(b.color)
+    })
+  }
 
   // Getters
   const hasItems = computed(() => items.value.length > 0)
@@ -260,34 +349,40 @@ export const useCatalogueStore = defineStore('affiliate-catalogue', () => {
     try {
       // Merge params with current filters
       const queryParams = { ...filters, ...params }
-      
-      const { data, error: apiError } = await useApi('/affiliate/catalogue', {
-        method: 'GET',
-        params: queryParams
-      })
+
+      // Build query string
+      const queryString = new URLSearchParams(
+        Object.entries(queryParams)
+          .filter(([_, value]) => value !== undefined && value !== '')
+          .map(([key, value]) => [key, String(value)])
+      ).toString()
+
+      const url = queryString ? `/affiliate/catalogue?${queryString}` : '/affiliate/catalogue'
+      const { data, error: apiError } = await useApi(url)
 
       if (apiError.value) {
         throw apiError.value
       }
 
-      if (data.value) {
-        items.value = data.value.data || []
-        
+      const response = data.value as any
+      if (response) {
+        items.value = response.data || []
+
         // Update pagination
-        if (data.value.meta) {
+        if (response.meta) {
           Object.assign(pagination, {
-            current_page: data.value.meta.current_page,
-            last_page: data.value.meta.last_page,
-            per_page: data.value.meta.per_page,
-            total: data.value.meta.total,
-            from: data.value.meta.from,
-            to: data.value.meta.to
+            current_page: response.meta.current_page,
+            last_page: response.meta.last_page,
+            per_page: response.meta.per_page,
+            total: response.meta.total,
+            from: response.meta.from,
+            to: response.meta.to
           })
         }
       }
     } catch (err: any) {
       error.value = err.message || 'Erreur lors du chargement du catalogue'
-      showError(error.value)
+      showError(error.value || 'Erreur inconnue')
     } finally {
       loading.value = false
     }
@@ -311,7 +406,7 @@ export const useCatalogueStore = defineStore('affiliate-catalogue', () => {
       }
     } catch (err: any) {
       error.value = err.message || 'Erreur lors du chargement du produit'
-      showError(error.value)
+      showError(error.value || 'Erreur inconnue')
     } finally {
       detailLoading.value = false
     }
@@ -403,11 +498,18 @@ export const useCatalogueStore = defineStore('affiliate-catalogue', () => {
       }
 
       if (data.value) {
-        drawerProduct.value = mapToDrawerViewModel(data.value as any)
+        const product = data.value as any
+        drawerProduct.value = mapToDrawerViewModel(product)
+
+        // Build variant maps for resolution
+        buildVariantMaps(product.variantes || [])
+
         // Reset selections
-        selectedColor.value = ''
-        selectedSize.value = ''
+        selectedColor.value = null
+        selectedSize.value = null
+        selectedVariantId.value = null
         selectedQty.value = 1
+        maxQty.value = 0
       }
     } catch (err: any) {
       error.value = err.message || 'Failed to fetch product details'
@@ -484,20 +586,39 @@ export const useCatalogueStore = defineStore('affiliate-catalogue', () => {
     }
   }
 
+  // Resolve variant ID based on color and size selection
+  const resolveVariantId = (color: string | null, size: string | null) => {
+    const comboKey = createComboKey(color, size)
+    const variant = variantsByCombo.value[comboKey]
+
+    if (variant) {
+      selectedVariantId.value = variant.id
+      maxQty.value = variant.stock_available
+      // Clamp current quantity to max available
+      if (selectedQty.value > maxQty.value) {
+        selectedQty.value = Math.max(1, maxQty.value)
+      }
+    } else {
+      selectedVariantId.value = null
+      maxQty.value = 0
+      selectedQty.value = 1
+    }
+  }
+
   const selectColor = (colorName: string) => {
     selectedColor.value = colorName
+    resolveVariantId(selectedColor.value, selectedSize.value)
 
     // Update main image if color has specific image
-    if (drawerProduct.value) {
-      const colorVariant = drawerProduct.value.colors.find(c => c.name === colorName)
-      if (colorVariant?.image_url) {
-        drawerProduct.value.gallery.main = colorVariant.image_url
-      }
+    const variant = variantsByCombo.value[createComboKey(colorName, null)]
+    if (variant?.image_url && drawerProduct.value) {
+      drawerProduct.value.gallery.main = variant.image_url
     }
   }
 
   const selectSize = (sizeValue: string) => {
     selectedSize.value = sizeValue
+    resolveVariantId(selectedColor.value, selectedSize.value)
   }
 
   const addToCartFromDrawer = async (data: { produit_id: string; variante_id?: string; qty: number }) => {
@@ -545,7 +666,15 @@ export const useCatalogueStore = defineStore('affiliate-catalogue', () => {
     addingToCart,
     selectedColor,
     selectedSize,
+    selectedVariantId,
     selectedQty,
+    maxQty,
+
+    // Variant resolution
+    variantsByCombo,
+    sizes,
+    colors,
+    matrixRows,
 
     // Getters
     hasItems,

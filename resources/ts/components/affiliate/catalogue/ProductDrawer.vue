@@ -42,29 +42,7 @@ const currentImage = computed(() => {
 })
 
 const maxQuantity = computed(() => {
-  if (!product.value) return 1
-
-  // If both size and color are selected, find specific variant stock
-  if (store.selectedSize && store.selectedColor) {
-    const variant = product.value.matrix.find(m =>
-      m.size === store.selectedSize && m.color === store.selectedColor
-    )
-    return Math.min(variant?.stock || 0, 10)
-  }
-
-  // If only size selected
-  if (store.selectedSize) {
-    const sizeVariant = product.value.sizes.find(s => s.value === store.selectedSize)
-    return Math.min(sizeVariant?.stock || 0, 10)
-  }
-
-  // If only color selected
-  if (store.selectedColor) {
-    const colorVariant = product.value.colors.find(c => c.name === store.selectedColor)
-    return Math.min(colorVariant?.stock || 0, 10)
-  }
-
-  return Math.min(product.value.stock_total, 10)
+  return store.maxQty
 })
 
 const canAddToCart = computed(() => {
@@ -72,26 +50,26 @@ const canAddToCart = computed(() => {
     return false
   }
 
-  const hasSizes = product.value.sizes.length > 0
-  const hasColors = product.value.colors.length > 0
+  const hasSizes = store.sizes.length > 0
+  const hasColors = store.colors.length > 0
 
   // If product has both sizes and colors, both must be selected
   if (hasSizes && hasColors) {
-    return store.selectedSize && store.selectedColor
+    return store.selectedSize && store.selectedColor && store.selectedVariantId && maxQuantity.value > 0
   }
 
   // If product has only sizes, size must be selected
   if (hasSizes) {
-    return store.selectedSize
+    return store.selectedSize && store.selectedVariantId && maxQuantity.value > 0
   }
 
   // If product has only colors, color must be selected
   if (hasColors) {
-    return store.selectedColor
+    return store.selectedColor && store.selectedVariantId && maxQuantity.value > 0
   }
 
   // No variants required
-  return true
+  return maxQuantity.value > 0
 })
 
 const totalPrice = computed(() => {
@@ -104,25 +82,9 @@ const totalProfit = computed(() => {
   return product.value.prix_affilie * store.selectedQty
 })
 
-// Size-only stock table (aggregated by size across all colors)
-const sizesTable = computed(() => {
-  if (!product.value?.matrix) return []
-
-  const sizeStockMap = new Map<string, number>()
-
-  // Aggregate stock by size across all colors
-  product.value.matrix.forEach(item => {
-    if (item.size) {
-      const currentQty = sizeStockMap.get(item.size) || 0
-      sizeStockMap.set(item.size, currentQty + item.stock)
-    }
-  })
-
-  // Convert to array format
-  return Array.from(sizeStockMap.entries()).map(([size, qty]) => ({
-    size,
-    qty
-  }))
+// Size × Color matrix table with columns [Quantité | Couleur | Taille]
+const matrixTable = computed(() => {
+  return store.matrixRows
 })
 
 // Methods
@@ -173,25 +135,9 @@ const openVideo = (url: string) => {
 const handleAddToCart = async () => {
   if (!product.value || !canAddToCart.value) return
 
-  // Find the variant ID based on selections
-  let variantId: string | undefined
-
-  if (store.selectedSize && store.selectedColor) {
-    const variant = product.value.matrix.find(m =>
-      m.size === store.selectedSize && m.color === store.selectedColor
-    )
-    variantId = variant?.variant_id
-  } else if (store.selectedSize) {
-    const sizeVariant = product.value.sizes.find(s => s.value === store.selectedSize)
-    variantId = sizeVariant?.id
-  } else if (store.selectedColor) {
-    const colorVariant = product.value.colors.find(c => c.name === store.selectedColor)
-    variantId = colorVariant?.id
-  }
-
   const success = await store.addToCartFromDrawer({
     produit_id: product.value.id,
-    variante_id: variantId,
+    variante_id: store.selectedVariantId || undefined,
     qty: store.selectedQty
   })
 
@@ -216,9 +162,11 @@ watch(() => props.modelValue, (isOpen) => {
     store.fetchOneForDrawer(props.productId)
   } else if (!isOpen) {
     // Reset state when closing
-    store.selectedColor = ''
-    store.selectedSize = ''
+    store.selectedColor = null
+    store.selectedSize = null
+    store.selectedVariantId = null
     store.selectedQty = 1
+    store.maxQty = 0
     selectedImageIndex.value = 0
     mainImageUrl.value = ''
   }
@@ -375,12 +323,12 @@ const formatCopywriting = (text: string): string => {
             <!-- Right: Variant Selectors + Quantity + CTA -->
             <VCol cols="6">
               <!-- Colors -->
-              <div v-if="product.colors.length" class="mb-4">
+              <div v-if="store.colors.length" class="mb-4">
                 <h4 class="text-subtitle-1 mb-3">{{ t('catalogue.variants.color') }}</h4>
                 <div class="d-flex gap-2 flex-wrap">
                   <VChip
-                    v-for="color in product.colors"
-                    :key="color.id"
+                    v-for="color in store.colors"
+                    :key="color.name"
                     :color="store.selectedColor === color.name ? 'primary' : 'default'"
                     :variant="store.selectedColor === color.name ? 'flat' : 'outlined'"
                     size="large"
@@ -396,23 +344,29 @@ const formatCopywriting = (text: string): string => {
                     {{ color.name }}
                   </VChip>
                 </div>
+                <div v-if="!store.selectedColor && store.colors.length" class="text-caption text-medium-emphasis mt-1">
+                  {{ t('catalogue.select.color') }}
+                </div>
               </div>
 
               <!-- Sizes -->
-              <div v-if="product.sizes.length" class="mb-4">
+              <div v-if="store.sizes.length" class="mb-4">
                 <h4 class="text-subtitle-1 mb-3">{{ t('catalogue.variants.size') }}</h4>
                 <div class="d-flex gap-2 flex-wrap">
                   <VChip
-                    v-for="size in product.sizes"
-                    :key="size.id"
-                    :color="store.selectedSize === size.value ? 'primary' : 'default'"
-                    :variant="store.selectedSize === size.value ? 'flat' : 'outlined'"
+                    v-for="size in store.sizes"
+                    :key="size"
+                    :color="store.selectedSize === size ? 'primary' : 'default'"
+                    :variant="store.selectedSize === size ? 'flat' : 'outlined'"
                     size="large"
                     class="cursor-pointer"
-                    @click="handleSizeSelect(size.value)"
+                    @click="handleSizeSelect(size)"
                   >
-                    {{ size.value }}
+                    {{ size }}
                   </VChip>
+                </div>
+                <div v-if="!store.selectedSize && store.sizes.length" class="text-caption text-medium-emphasis mt-1">
+                  {{ t('catalogue.select.size') }}
                 </div>
               </div>
 
@@ -424,7 +378,7 @@ const formatCopywriting = (text: string): string => {
                     icon="tabler-minus"
                     size="small"
                     variant="outlined"
-                    :disabled="store.selectedQty <= 1"
+                    :disabled="store.selectedQty <= 1 || maxQuantity === 0"
                     @click="store.selectedQty--"
                   />
                   <VTextField
@@ -435,16 +389,22 @@ const formatCopywriting = (text: string): string => {
                     style="width: 80px;"
                     min="1"
                     :max="maxQuantity"
+                    :disabled="maxQuantity === 0"
                     hide-details
                   />
                   <VBtn
                     icon="tabler-plus"
                     size="small"
                     variant="outlined"
-                    :disabled="store.selectedQty >= maxQuantity"
+                    :disabled="store.selectedQty >= maxQuantity || maxQuantity === 0"
                     @click="store.selectedQty++"
                   />
                   <span class="text-caption text-medium-emphasis">Max: {{ maxQuantity }}</span>
+                </div>
+
+                <!-- Stock out message -->
+                <div v-if="maxQuantity === 0" class="text-caption text-error mt-2">
+                  {{ t('catalogue.qty.max_zero') }}
                 </div>
               </div>
 
@@ -506,19 +466,19 @@ const formatCopywriting = (text: string): string => {
 
         <!-- Zone 3: Assets & Variants Tables -->
         <div class="pa-6">
-          <!-- Size Stock Table (Simplified) -->
-          <div v-if="sizesTable.length" class="mb-6">
-            <h3 class="text-h6 mb-3">{{ t('drawer.table.size') }} - Stock disponible</h3>
+          <!-- Size × Color Matrix Table -->
+          <div v-if="matrixTable.length" class="mb-6">
+            <h3 class="text-h6 mb-3">Stock par combinaison</h3>
             <VTable density="compact">
               <thead>
                 <tr>
-                  <th>{{ t('drawer.table.size') }}</th>
-                  <th>{{ t('drawer.table.qty') }}</th>
+                  <th>{{ t('catalogue.table.quantity') }}</th>
+                  <th>{{ t('catalogue.table.color') }}</th>
+                  <th>{{ t('catalogue.table.size') }}</th>
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="(item, index) in sizesTable" :key="index">
-                  <td class="font-weight-medium">{{ item.size }}</td>
+                <tr v-for="(item, index) in matrixTable" :key="index">
                   <td>
                     <VChip
                       :color="item.qty > 0 ? 'success' : 'error'"
@@ -528,6 +488,8 @@ const formatCopywriting = (text: string): string => {
                       {{ item.qty }}
                     </VChip>
                   </td>
+                  <td class="font-weight-medium">{{ item.color }}</td>
+                  <td class="font-weight-medium">{{ item.size }}</td>
                 </tr>
               </tbody>
             </VTable>

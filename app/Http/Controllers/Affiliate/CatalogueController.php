@@ -294,14 +294,36 @@ class CatalogueController extends Controller
                     ];
                 }),
                 'variantes' => $product->variantes->map(function ($variant) {
-                    $totalStock = $variant->stocks->sum('qte_disponible') ?? 0;
+                    $stockOnHand = $variant->stocks->sum('qte_disponible') ?? 0;
+                    $stockReserved = $variant->stocks->sum('qte_reservee') ?? 0;
+                    $stockAvailable = max(0, $stockOnHand - $stockReserved);
+
+                    // Determine variant type and extract color/size
+                    $type = 'other';
+                    $color = null;
+                    $size = null;
+
+                    if ($variant->nom === 'couleur_taille' && strpos($variant->valeur, ' - ') !== false) {
+                        $type = 'combination';
+                        [$color, $size] = explode(' - ', $variant->valeur, 2);
+                    } elseif (in_array(strtolower($variant->nom), ['couleur', 'color'])) {
+                        $type = 'color';
+                        $color = $variant->valeur;
+                    } elseif (in_array(strtolower($variant->nom), ['taille', 'size'])) {
+                        $type = 'size';
+                        $size = $variant->valeur;
+                    }
+
                     return [
                         'id' => $variant->id,
-                        'attribut_principal' => $variant->nom,
-                        'valeur' => $variant->valeur,
-                        'color' => $variant->color ?? null,
+                        'type' => $type,
+                        'value' => $variant->valeur,
+                        'color' => $color,
+                        'size' => $size,
                         'image_url' => $variant->image_url,
-                        'stock' => (int) $totalStock,
+                        'stock_on_hand' => (int) $stockOnHand,
+                        'stock_reserved' => (int) $stockReserved,
+                        'stock_available' => (int) $stockAvailable,
                     ];
                 }),
                 'propositions' => $product->propositions->map(function ($proposition) {
