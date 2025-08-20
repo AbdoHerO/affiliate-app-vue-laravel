@@ -438,11 +438,16 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
         // Cart routes
         Route::prefix('cart')->group(function () {
-            Route::post('items', [App\Http\Controllers\Affiliate\CartController::class, 'addItem']);
+            Route::post('add', [App\Http\Controllers\Affiliate\CartController::class, 'addItem']);
+            Route::post('items', [App\Http\Controllers\Affiliate\CartController::class, 'addItem']); // Keep both for compatibility
+            Route::patch('items', [App\Http\Controllers\Affiliate\CartController::class, 'updateItem']);
             Route::get('summary', [App\Http\Controllers\Affiliate\CartController::class, 'summary']);
             Route::delete('items', [App\Http\Controllers\Affiliate\CartController::class, 'removeItem']);
             Route::delete('clear', [App\Http\Controllers\Affiliate\CartController::class, 'clear']);
         });
+
+        // Checkout route
+        Route::post('checkout', [App\Http\Controllers\Affiliate\CartController::class, 'checkout']);
     });
 
     // File upload routes

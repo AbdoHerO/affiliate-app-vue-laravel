@@ -2,6 +2,7 @@
 import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useCatalogueStore } from '@/stores/affiliate/catalogue'
+import { useAffiliateCartStore } from '@/stores/affiliate/cart'
 import { useApi } from '@/composables/useApi'
 import { useNotifications } from '@/composables/useNotifications'
 import CatalogueCard from '@/components/affiliate/catalogue/CatalogueCard.vue'
@@ -16,6 +17,7 @@ definePage({
 
 const { t } = useI18n()
 const catalogueStore = useCatalogueStore()
+const cartStore = useAffiliateCartStore()
 const { showSuccess, showError } = useNotifications()
 
 // Local state
@@ -140,16 +142,16 @@ const handleProductOpen = async (productId: string) => {
 
 const handleAddToCart = async (data: { produit_id: string; variante_id?: string; qty: number }) => {
   try {
-    await catalogueStore.addToCart(data)
-    showSuccess(t('catalogue.cart.added_success'))
+    await cartStore.addItem(data)
+    showSuccess('Ajouté au panier')
   } catch (error) {
-    showError(t('catalogue.cart.error'))
+    showError('Erreur lors de l\'ajout au panier')
   }
 }
 
-const handleVariantChange = (variantId: string) => {
-  // Handle variant change if needed
-  console.log('Variant changed:', variantId)
+const handleVariantChange = (variantData: any) => {
+  // This should no longer be called since we removed variant change events from cards
+  console.log('Variant changed:', variantData)
 }
 
 const handleQtyChange = (qty: number) => {

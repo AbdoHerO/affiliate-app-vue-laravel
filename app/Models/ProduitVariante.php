@@ -124,6 +124,14 @@ class ProduitVariante extends Model
     }
 
     /**
+     * Get the total available stock for this variant.
+     */
+    public function getStockAttribute(): int
+    {
+        return $this->stocks()->sum('qte_disponible') ?? 0;
+    }
+
+    /**
      * Get the full image URL with proper encoding.
      */
     public function getFullImageUrl(): ?string

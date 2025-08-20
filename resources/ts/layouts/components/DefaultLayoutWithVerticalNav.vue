@@ -11,6 +11,7 @@ import NavbarShortcuts from '@/layouts/components/NavbarShortcuts.vue'
 import NavbarThemeSwitcher from '@/layouts/components/NavbarThemeSwitcher.vue'
 import UserProfile from '@/layouts/components/UserProfile.vue'
 import NavBarI18n from '@core/components/I18n.vue'
+import AffiliateHeaderCart from '@/components/affiliate/cart/AffiliateHeaderCart.vue'
 
 // @layouts plugin
 import { VerticalNavLayout } from '@layouts'
@@ -64,6 +65,10 @@ const isReady = computed(() => {
         />
         <NavbarThemeSwitcher />
         <NavbarShortcuts />
+
+        <!-- Affiliate Cart (only for affiliate users) -->
+        <AffiliateHeaderCart v-if="user?.roles?.some(role => role.name === 'affiliate')" class="me-2" />
+
         <NavBarNotifications class="me-1" />
         <UserProfile />
       </div>

@@ -23,7 +23,9 @@ const { showSuccess, showError } = useNotifications()
 
 // Local state
 const selectedImageIndex = ref(0)
-const mainImageUrl = ref('')
+const activeImageUrl = ref('')
+const selectedColor = ref('')
+const selectedSize = ref('')
 
 // Computed
 const isOpen = computed({
@@ -36,7 +38,7 @@ const isLoading = computed(() => store.detailLoading)
 const isAddingToCart = computed(() => store.addingToCart)
 
 const currentImage = computed(() => {
-  if (mainImageUrl.value) return mainImageUrl.value
+  if (activeImageUrl.value) return activeImageUrl.value
   if (product.value?.gallery.main) return product.value.gallery.main
   return ''
 })
@@ -91,21 +93,28 @@ const matrixTable = computed(() => {
 const handleImageSelect = (index: number) => {
   selectedImageIndex.value = index
   if (product.value?.gallery.thumbnails[index]) {
-    mainImageUrl.value = product.value.gallery.thumbnails[index].url
+    activeImageUrl.value = product.value.gallery.thumbnails[index].url
   }
 }
 
 const handleColorSelect = (colorName: string) => {
+  selectedColor.value = colorName
   store.selectColor(colorName)
 
   // Update main image if color has specific image
   const color = product.value?.colors.find(c => c.name === colorName)
   if (color?.image_url) {
-    mainImageUrl.value = color.image_url
+    activeImageUrl.value = color.image_url
+  } else {
+    // If no specific image, keep current or fallback to main
+    if (!activeImageUrl.value) {
+      activeImageUrl.value = product.value?.gallery.main || ''
+    }
   }
 }
 
 const handleSizeSelect = (sizeValue: string) => {
+  selectedSize.value = sizeValue
   store.selectSize(sizeValue)
 }
 
@@ -153,7 +162,9 @@ watch(() => props.productId, async (newId) => {
     await store.fetchOneForDrawer(newId)
     // Reset image selection
     selectedImageIndex.value = 0
-    mainImageUrl.value = ''
+    activeImageUrl.value = ''
+    selectedColor.value = ''
+    selectedSize.value = ''
   }
 }, { immediate: true })
 
@@ -168,9 +179,20 @@ watch(() => props.modelValue, (isOpen) => {
     store.selectedQty = 1
     store.maxQty = 0
     selectedImageIndex.value = 0
-    mainImageUrl.value = ''
+    activeImageUrl.value = ''
+    selectedColor.value = ''
+    selectedSize.value = ''
   }
 })
+
+// Watch for color/size changes to update variant ID and max quantity
+watch([selectedColor, selectedSize], () => {
+  // Update store state
+  store.selectedColor = selectedColor.value || null
+  store.selectedSize = selectedSize.value || null
+
+  // This will trigger the store's computed properties to update selectedVariantId and maxQty
+}, { immediate: true })
 
 // Route guard to close drawer
 onBeforeRouteLeave(() => {

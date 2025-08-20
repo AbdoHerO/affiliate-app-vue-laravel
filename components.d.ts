@@ -13,6 +13,8 @@ declare module 'vue' {
     AddEditPermissionDialog: typeof import('./resources/ts/components/dialogs/AddEditPermissionDialog.vue')['default']
     AddEditRoleDialog: typeof import('./resources/ts/components/dialogs/AddEditRoleDialog.vue')['default']
     AddPaymentMethodDialog: typeof import('./resources/ts/components/dialogs/AddPaymentMethodDialog.vue')['default']
+    AffiliateCartModal: typeof import('./resources/ts/components/affiliate/cart/AffiliateCartModal.vue')['default']
+    AffiliateHeaderCart: typeof import('./resources/ts/components/affiliate/cart/AffiliateHeaderCart.vue')['default']
     AppAutocomplete: typeof import('./resources/ts/@core/components/app-form-elements/AppAutocomplete.vue')['default']
     AppBarSearch: typeof import('./resources/ts/@core/components/AppBarSearch.vue')['default']
     AppCardActions: typeof import('./resources/ts/@core/components/cards/AppCardActions.vue')['default']

@@ -146,6 +146,10 @@ export interface NormalizedProduct {
     sizes: Array<{ id: string; value: string; stock: number }>
     colors: Array<{ id: string; value: string; color?: string; image_url?: string; stock: number }>
   }
+  // Enhanced variant data for cards
+  colors?: Array<{ name: string; swatch?: string; image_url?: string }>
+  sizes?: string[]
+  variantsByCombo?: Record<string, any>
   slug?: string
   description?: string
 }
@@ -292,10 +296,11 @@ export const useCatalogueStore = defineStore('affiliate-catalogue', () => {
   const mapProductToNormalized = (product: CatalogueProduct): NormalizedProduct => {
     // Get main image (first image or fallback)
     const mainImage = product.images?.[0]?.url || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDMwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjRjVGNUY1Ii8+CjxwYXRoIGQ9Ik0xNTAgMTAwQzE2MS4wNDYgMTAwIDE3MCA5MC45NTQzIDE3MCA4MEM1NyA2OS4wNDU3IDE0Ny45NTQgNjAgMTM2IDYwQzEyNC45NTQgNjAgMTE2IDY5LjA0NTcgMTE2IDgwQzExNiA5MC45NTQzIDEyNC45NTQgMTAwIDEzNiAxMDBIMTUwWiIgZmlsbD0iI0NDQ0NDQyIvPgo8cGF0aCBkPSJNMTgwIDEyMEgxMjBDMTE2LjY4NiAxMjAgMTE0IDEyMi42ODYgMTE0IDEyNlYyMDBDMTE0IDIwMy4zMTQgMTE2LjY4NiAyMDYgMTIwIDIwNkgxODBDMTgzLjMxNCAyMDYgMTg2IDIwMy4zMTQgMTg2IDIwMFYxMjZDMTg2IDEyMi42ODYgMTgzLjMxNCAxMjAgMTgwIDEyMFoiIGZpbGw9IiNDQ0NDQ0MiLz4KPC9zdmc+'
-    
+
     // Group variants by type - handle individual variants correctly
     const sizes: Array<{ id: string; value: string; stock: number }> = []
     const colors: Array<{ id: string; value: string; color?: string; image_url?: string; stock: number }> = []
+    const variantsByCombo: Record<string, any> = {}
 
     product.variantes?.forEach(v => {
       const stock = v.stock || 0
@@ -320,6 +325,14 @@ export const useCatalogueStore = defineStore('affiliate-catalogue', () => {
           stock
         })
       }
+
+      // Build combo key for variant lookup
+      const comboKey = `${attributCode || 'default'}|${v.valeur || 'default'}`
+      variantsByCombo[comboKey] = {
+        id: v.id,
+        stock_available: stock,
+        image_url: v.image_url || null
+      }
     })
 
     return {
@@ -336,9 +349,29 @@ export const useCatalogueStore = defineStore('affiliate-catalogue', () => {
         sizes,
         colors
       },
+      // Enhanced variant data for cards
+      colors: colors.map(c => ({
+        name: c.value,
+        swatch: c.color,
+        image_url: c.image_url
+      })),
+      sizes: sizes.map(s => s.value),
+      variantsByCombo,
       slug: product.slug,
       description: product.description
     }
+  }
+
+  // Helper function to get image for a specific color
+  const imageForColor = (product: NormalizedProduct, colorName: string): string => {
+    // First try to find variant image for this color
+    const colorVariant = product.colors?.find(c => c.name === colorName)
+    if (colorVariant?.image_url) {
+      return colorVariant.image_url
+    }
+
+    // Fallback to main image
+    return product.mainImage
   }
 
   // Actions
@@ -402,7 +435,7 @@ export const useCatalogueStore = defineStore('affiliate-catalogue', () => {
       }
 
       if (data.value) {
-        selectedProduct.value = data.value
+        selectedProduct.value = data.value as CatalogueProduct
       }
     } catch (err: any) {
       error.value = err.message || 'Erreur lors du chargement du produit'
@@ -450,7 +483,7 @@ export const useCatalogueStore = defineStore('affiliate-catalogue', () => {
       }
 
       if (data.value) {
-        cartSummary.value = data.value
+        cartSummary.value = data.value as CartSummary
       }
     } catch (err: any) {
       console.error('Error fetching cart summary:', err)
@@ -493,7 +526,7 @@ export const useCatalogueStore = defineStore('affiliate-catalogue', () => {
 
       if (apiError.value) {
         error.value = apiError.value.message || 'Failed to fetch product details'
-        showError(error.value)
+        showError(error.value || 'Failed to fetch product details')
         return
       }
 
@@ -513,7 +546,7 @@ export const useCatalogueStore = defineStore('affiliate-catalogue', () => {
       }
     } catch (err: any) {
       error.value = err.message || 'Failed to fetch product details'
-      showError(error.value)
+      showError(error.value || 'Failed to fetch product details')
     } finally {
       detailLoading.value = false
     }
@@ -543,7 +576,7 @@ export const useCatalogueStore = defineStore('affiliate-catalogue', () => {
           id: variant.id,
           name: variant.valeur,
           swatch: variant.color || variant.swatch,
-          image_url: variant.image_url,
+          image_url: variant.image_url || undefined,
           stock: variant.stock
         })
       }
@@ -692,6 +725,7 @@ export const useCatalogueStore = defineStore('affiliate-catalogue', () => {
     clearSelectedProduct,
     setPage,
     mapProductToNormalized,
+    imageForColor,
 
     // Drawer actions
     fetchOneForDrawer,

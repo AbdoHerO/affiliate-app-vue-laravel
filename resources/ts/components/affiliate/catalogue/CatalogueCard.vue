@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useCatalogueStore } from '@/stores/affiliate/catalogue'
 import type { NormalizedProduct } from '@/stores/affiliate/catalogue'
 
 interface Props {
@@ -18,13 +19,13 @@ const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
 const { t } = useI18n()
+const catalogueStore = useCatalogueStore()
 
 // Local state
 const isHovered = ref(false)
-const selectedSizeId = ref<string>('')
-const selectedColorId = ref<string>('')
+const selectedSize = ref<string>('')
+const selectedColor = ref<string>('')
 const quantity = ref(1)
-const currentImage = ref('')
 const imageLoading = ref(true)
 const imageError = ref(false)
 
@@ -60,13 +61,44 @@ const availableColors = computed(() => {
   return props.product.variants.colors.filter(color => color.stock > 0)
 })
 
+// Enhanced color swatches from normalized data
+const colorSwatches = computed(() => {
+  return props.product.colors || []
+})
+
+// Enhanced size chips from normalized data
+const sizeChips = computed(() => {
+  return props.product.sizes || []
+})
+
+// Computed image that updates based on color selection
+const displayImage = computed(() => {
+  if (selectedColor.value) {
+    // Use the store's imageForColor helper for consistent logic
+    return catalogueStore.imageForColor(props.product, selectedColor.value)
+  }
+  return props.product.mainImage
+})
+
 const selectedVariant = computed(() => {
-  if (selectedSizeId.value) {
-    return props.product.variants.sizes.find(s => s.id === selectedSizeId.value)
+  // Find variant based on selected color and size
+  if (selectedSize.value && selectedColor.value) {
+    // Look for exact match in variantsByCombo
+    const comboKey = `couleur|${selectedColor.value}`
+    const colorVariant = props.product.variantsByCombo?.[comboKey]
+    if (colorVariant) return colorVariant
   }
-  if (selectedColorId.value) {
-    return props.product.variants.colors.find(c => c.id === selectedColorId.value)
+
+  if (selectedSize.value) {
+    const sizeVariant = props.product.variants?.sizes?.find(s => s.value === selectedSize.value)
+    if (sizeVariant) return sizeVariant
   }
+
+  if (selectedColor.value) {
+    const colorVariant = props.product.variants?.colors?.find(c => c.value === selectedColor.value)
+    if (colorVariant) return colorVariant
+  }
+
   return null
 })
 
@@ -81,51 +113,32 @@ const canAddToCart = computed(() => {
   const hasStock = props.product.stock_total > 0 && quantity.value <= maxQuantity.value
 
   // If product has both sizes and colors, both must be selected
-  if (availableSizes.value.length > 0 && availableColors.value.length > 0) {
-    return hasStock && selectedSizeId.value && selectedColorId.value
+  if (sizeChips.value.length > 0 && colorSwatches.value.length > 0) {
+    return hasStock && selectedSize.value && selectedColor.value
   }
 
   // If product has only sizes, size must be selected
-  if (availableSizes.value.length > 0) {
-    return hasStock && selectedSizeId.value
+  if (sizeChips.value.length > 0) {
+    return hasStock && selectedSize.value
   }
 
   // If product has only colors, color must be selected
-  if (availableColors.value.length > 0) {
-    return hasStock && selectedColorId.value
+  if (colorSwatches.value.length > 0) {
+    return hasStock && selectedColor.value
   }
 
   // If no variants, just check stock
   return hasStock
 })
 
-// Initialize current image
-watch(() => props.product.mainImage, (newImage) => {
-  currentImage.value = newImage
-  imageLoading.value = true
-  imageError.value = false
-}, { immediate: true })
-
-// Methods
-const handleSizeSelect = (sizeId: string) => {
-  selectedSizeId.value = sizeId
-  // Don't clear color selection - allow independent selection
-  emit('variantChange', { type: 'size', value: sizeId, size: sizeId, color: selectedColorId.value })
+// Methods - Updated to NOT emit variantChange (which opens drawer)
+const handleColorSwatchSelect = (colorName: string) => {
+  selectedColor.value = colorName
+  // Image will update automatically via displayImage computed
 }
 
-const handleColorSelect = (colorId: string) => {
-  selectedColorId.value = colorId
-  // Don't clear size selection - allow independent selection
-
-  // Update image if color has specific image
-  const color = props.product.variants.colors.find(c => c.id === colorId)
-  if (color?.image_url) {
-    currentImage.value = color.image_url
-  } else {
-    currentImage.value = props.product.mainImage
-  }
-
-  emit('variantChange', { type: 'color', value: colorId, size: selectedSizeId.value, color: colorId })
+const handleSizeChipSelect = (sizeName: string) => {
+  selectedSize.value = sizeName
 }
 
 const handleQuantityChange = (delta: number) => {
@@ -139,15 +152,26 @@ const handleQuantityChange = (delta: number) => {
 const handleAddToCart = () => {
   if (!canAddToCart.value) return
 
+  // Find the actual variant ID based on selections
+  let variantId: string | undefined
+
+  if (selectedColor.value && selectedSize.value) {
+    // Look for combined variant
+    const comboKey = `couleur|${selectedColor.value}`
+    const variant = props.product.variantsByCombo?.[comboKey]
+    if (variant) variantId = variant.id
+  } else if (selectedColor.value) {
+    const colorVariant = props.product.variants?.colors?.find(c => c.value === selectedColor.value)
+    if (colorVariant) variantId = colorVariant.id
+  } else if (selectedSize.value) {
+    const sizeVariant = props.product.variants?.sizes?.find(s => s.value === selectedSize.value)
+    if (sizeVariant) variantId = sizeVariant.id
+  }
+
   emit('addToCart', {
     produit_id: props.product.id,
-    size_variant_id: selectedSizeId.value || undefined,
-    color_variant_id: selectedColorId.value || undefined,
-    qty: quantity.value,
-    variants: {
-      size: selectedSizeId.value,
-      color: selectedColorId.value
-    }
+    variante_id: variantId,
+    qty: quantity.value
   })
 }
 
@@ -182,7 +206,7 @@ watch(() => props.product.id, () => {
     <!-- Product Image -->
     <div class="catalogue-card__image-container">
       <VImg
-        :src="imageError ? 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDMwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjRjVGNUY1Ii8+CjxwYXRoIGQ9Ik0xNTAgMTAwQzE2MS4wNDYgMTAwIDE3MCA5MC45NTQzIDE3MCA4MEM1NyA2OS4wNDU3IDE0Ny45NTQgNjAgMTM2IDYwQzEyNC45NTQgNjAgMTE2IDY5LjA0NTcgMTE2IDgwQzExNiA5MC45NTQzIDEyNC45NTQgMTAwIDEzNiAxMDBIMTUwWiIgZmlsbD0iI0NDQ0NDQyIvPgo8cGF0aCBkPSJNMTgwIDEyMEgxMjBDMTE2LjY4NiAxMjAgMTE0IDEyMi42ODYgMTE0IDEyNlYyMDBDMTE0IDIwMy4zMTQgMTE2LjY4NiAyMDYgMTIwIDIwNkgxODBDMTgzLjMxNCAyMDYgMTg2IDIwMy4zMTQgMTg2IDIwMFYxMjZDMTg2IDEyMi42ODYgMTgzLjMxNCAxMjAgMTgwIDEyMFoiIGZpbGw9IiNDQ0NDQ0MiLz4KPC9zdmc+' : currentImage"
+        :src="imageError ? 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDMwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjRjVGNUY1Ii8+CjxwYXRoIGQ9Ik0xNTAgMTAwQzE2MS4wNDYgMTAwIDE3MCA5MC45NTQzIDE3MCA4MEM1NyA2OS4wNDU3IDE0Ny45NTQgNjAgMTM2IDYwQzEyNC45NTQgNjAgMTE2IDY5LjA0NTcgMTE2IDgwQzExNiA5MC45NTQzIDEyNC45NTQgMTAwIDEzNiAxMDBIMTUwWiIgZmlsbD0iI0NDQ0NDQyIvPgo8cGF0aCBkPSJNMTgwIDEyMEgxMjBDMTE2LjY4NiAxMjAgMTE0IDEyMi42ODYgMTE0IDEyNlYyMDBDMTE0IDIwMy4zMTQgMTE2LjY4NiAyMDYgMTIwIDIwNkgxODBDMTgzLjMxNCAyMDYgMTg2IDIwMy4zMTQgMTg2IDIwMFYxMjZDMTg2IDEyMi42ODYgMTgzLjMxNCAxMjAgMTgwIDEyMFoiIGZpbGw9IiNDQ0NDQ0MiLz4KPC9zdmc+' : displayImage"
         :alt="product.titre"
         aspect-ratio="1.2"
         cover
@@ -222,50 +246,55 @@ watch(() => props.product.id, () => {
 
     <!-- Card Content -->
     <VCardText class="catalogue-card__content pa-3">
-      <!-- Size Variants -->
-      <div v-if="availableSizes.length" class="mb-3">
-        <VChip
-          v-for="size in availableSizes.slice(0, 4)"
-          :key="size.id"
-          :color="selectedSizeId === size.id ? 'primary' : 'default'"
-          :variant="selectedSizeId === size.id ? 'flat' : 'outlined'"
-          size="small"
-          class="me-1 mb-1"
-          @click.stop="handleSizeSelect(size.id)"
-        >
-          {{ size.value }}
-        </VChip>
+      <!-- Color Swatches (Row 1) -->
+      <div v-if="colorSwatches.length" class="mb-2">
+        <div class="d-flex align-center gap-1 flex-wrap">
+          <VBtn
+            v-for="color in colorSwatches.slice(0, 4)"
+            :key="color.name"
+            :color="selectedColor === color.name ? 'primary' : 'default'"
+            :variant="selectedColor === color.name ? 'flat' : 'outlined'"
+            size="x-small"
+            class="color-swatch"
+            :style="color.swatch ? { backgroundColor: color.swatch } : {}"
+            @click.stop="handleColorSwatchSelect(color.name)"
+          >
+            <span v-if="!color.swatch" class="text-caption">{{ color.name.charAt(0) }}</span>
+          </VBtn>
+        </div>
       </div>
 
-      <!-- Color Variants -->
-      <div v-if="availableColors.length" class="mb-3">
-        <VChip
-          v-for="color in availableColors.slice(0, 3)"
-          :key="color.id"
-          :color="selectedColorId === color.id ? 'primary' : 'default'"
-          :variant="selectedColorId === color.id ? 'flat' : 'outlined'"
-          size="small"
-          class="me-1"
-          @click.stop="handleColorSelect(color.id)"
-        >
-          {{ color.value }}
-        </VChip>
+      <!-- Size Chips (Row 2) -->
+      <div v-if="sizeChips.length" class="mb-3">
+        <div class="d-flex align-center gap-1 flex-wrap">
+          <VChip
+            v-for="size in sizeChips.slice(0, 5)"
+            :key="size"
+            :color="selectedSize === size ? 'primary' : 'default'"
+            :variant="selectedSize === size ? 'flat' : 'outlined'"
+            size="small"
+            class="size-chip"
+            @click.stop="handleSizeChipSelect(size)"
+          >
+            {{ size }}
+          </VChip>
+        </div>
       </div>
 
       <!-- Selection Status (for products with both size and color) -->
       <div
-        v-if="availableSizes.length > 0 && availableColors.length > 0"
+        v-if="sizeChips.length > 0 && colorSwatches.length > 0"
         class="mb-2"
       >
         <div class="text-caption d-flex align-center">
           <VIcon
-            :icon="selectedSizeId && selectedColorId ? 'tabler-check-circle' : 'tabler-circle'"
-            :color="selectedSizeId && selectedColorId ? 'success' : 'default'"
+            :icon="selectedSize && selectedColor ? 'tabler-check-circle' : 'tabler-circle'"
+            :color="selectedSize && selectedColor ? 'success' : 'default'"
             size="14"
             class="me-1"
           />
-          <span :class="selectedSizeId && selectedColorId ? 'text-success' : 'text-medium-emphasis'">
-            {{ selectedSizeId && selectedColorId ? 'Variantes sélectionnées' : 'Sélectionnez taille et couleur' }}
+          <span :class="selectedSize && selectedColor ? 'text-success' : 'text-medium-emphasis'">
+            {{ selectedSize && selectedColor ? 'Variantes sélectionnées' : 'Sélectionnez taille et couleur' }}
           </span>
         </div>
       </div>
@@ -383,6 +412,24 @@ watch(() => props.product.id, () => {
   top: 8px;
   right: 8px;
   z-index: 2;
+}
+
+.color-swatch {
+  min-width: 24px !important;
+  width: 24px;
+  height: 24px;
+  border-radius: 50% !important;
+  padding: 0 !important;
+  border: 2px solid rgba(var(--v-border-color), var(--v-border-opacity)) !important;
+}
+
+.color-swatch.v-btn--variant-flat {
+  border: 2px solid rgb(var(--v-theme-primary)) !important;
+}
+
+.size-chip {
+  min-width: 32px;
+  font-size: 0.75rem;
 }
 
 .catalogue-card__content {

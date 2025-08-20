@@ -416,4 +416,15 @@ return [
             'client_email_format' => 'Le format de l\'email est invalide',
         ]
     ],
+
+    'cart' => [
+        'added_to_cart' => 'Ajouté au panier',
+        'updated' => 'Panier mis à jour',
+        'removed' => 'Produit retiré du panier',
+        'cleared' => 'Panier vidé',
+        'checkout_success' => 'Commande créée avec succès',
+        'checkout_error' => 'Erreur lors de la création de la commande',
+        'add_error' => 'Erreur lors de l\'ajout au panier',
+        'route_not_found' => 'Route non trouvée'
+    ],
 ];
