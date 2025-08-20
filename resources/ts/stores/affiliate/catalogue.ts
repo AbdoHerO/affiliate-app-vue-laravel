@@ -6,6 +6,7 @@ import { useNotifications } from '@/composables/useNotifications'
 // Types for affiliate catalogue
 export interface CatalogueProduct {
   id: string
+  ref?: string
   titre: string
   description?: string
   copywriting?: string
@@ -27,24 +28,74 @@ export interface CatalogueProduct {
     nom: string
   } | null
   images: Array<{
+    id?: string
     url: string
     ordre: number
   }>
   videos?: Array<{
+    id?: string
     url: string
     titre?: string
+    title?: string
     ordre?: number
   }>
   variantes: CatalogueVariant[]
+  attributes?: {
+    size?: string[]
+    color?: Array<{
+      name: string
+      swatch?: string
+    }>
+  }
 }
 
 export interface CatalogueVariant {
   id: string
+  type?: 'size' | 'color' | 'other'
   attribut_principal: string // e.g., 'taille', 'couleur'
   valeur: string // e.g., 'L', 'XL', 'Rouge'
+  value?: string // normalized value
+  code?: string
   color?: string | null // hex color for color variants
+  swatch?: string // color swatch
   image_url?: string | null // variant-specific image
   stock: number
+}
+
+// Drawer-specific view model
+export interface DrawerViewModel {
+  id: string
+  ref?: string
+  titre: string
+  description?: string
+  copywriting?: string
+  notes_admin?: string
+  prix_achat: number
+  prix_vente: number
+  prix_affilie: number
+  stock_total: number
+  rating_value?: number | null
+  categorie?: { id: string; nom: string } | null
+  gallery: {
+    main: string
+    thumbnails: Array<{ id?: string; url: string; ordre: number }>
+  }
+  sizes: Array<{ id: string; value: string; stock: number }>
+  colors: Array<{
+    id: string
+    name: string
+    swatch?: string
+    image_url?: string
+    stock: number
+  }>
+  matrix: Array<{
+    size?: string
+    color?: string
+    stock: number
+    variant_id: string
+  }>
+  images: Array<{ id?: string; url: string; ordre: number }>
+  videos: Array<{ id?: string; url: string; title?: string }>
 }
 
 export interface CatalogueFilters {
@@ -130,6 +181,14 @@ export const useCatalogueStore = defineStore('affiliate-catalogue', () => {
     items_count: 0,
     total_amount: 0
   })
+
+  // Drawer state
+  const selectedId = ref<string | null>(null)
+  const drawerProduct = ref<DrawerViewModel | null>(null)
+  const addingToCart = ref(false)
+  const selectedColor = ref<string>('')
+  const selectedSize = ref<string>('')
+  const selectedQty = ref(1)
 
   // Getters
   const hasItems = computed(() => items.value.length > 0)
@@ -328,6 +387,147 @@ export const useCatalogueStore = defineStore('affiliate-catalogue', () => {
     filters.page = page
   }
 
+  // Drawer actions
+  const fetchOneForDrawer = async (id: string) => {
+    selectedId.value = id
+    detailLoading.value = true
+    error.value = null
+
+    try {
+      const { data, error: apiError } = await useApi(`/affiliate/catalogue/${id}`)
+
+      if (apiError.value) {
+        error.value = apiError.value.message || 'Failed to fetch product details'
+        showError(error.value)
+        return
+      }
+
+      if (data.value) {
+        drawerProduct.value = mapToDrawerViewModel(data.value as any)
+        // Reset selections
+        selectedColor.value = ''
+        selectedSize.value = ''
+        selectedQty.value = 1
+      }
+    } catch (err: any) {
+      error.value = err.message || 'Failed to fetch product details'
+      showError(error.value)
+    } finally {
+      detailLoading.value = false
+    }
+  }
+
+  const mapToDrawerViewModel = (product: CatalogueProduct): DrawerViewModel => {
+    // Get main image and thumbnails
+    const images = product.images?.sort((a, b) => a.ordre - b.ordre) || []
+    const mainImage = images[0]?.url || ''
+
+    // Extract sizes and colors from variants
+    const sizes: Array<{ id: string; value: string; stock: number }> = []
+    const colors: Array<{ id: string; name: string; swatch?: string; image_url?: string; stock: number }> = []
+    const matrix: Array<{ size?: string; color?: string; stock: number; variant_id: string }> = []
+
+    product.variantes?.forEach(variant => {
+      const attributCode = (variant as any).attribut?.code || variant.attribut_principal?.toLowerCase()
+
+      if (['taille', 'size'].includes(attributCode)) {
+        sizes.push({
+          id: variant.id,
+          value: variant.valeur,
+          stock: variant.stock
+        })
+      } else if (['couleur', 'color'].includes(attributCode)) {
+        colors.push({
+          id: variant.id,
+          name: variant.valeur,
+          swatch: variant.color || variant.swatch,
+          image_url: variant.image_url,
+          stock: variant.stock
+        })
+      }
+
+      // Add to matrix
+      matrix.push({
+        size: ['taille', 'size'].includes(attributCode) ? variant.valeur : undefined,
+        color: ['couleur', 'color'].includes(attributCode) ? variant.valeur : undefined,
+        stock: variant.stock,
+        variant_id: variant.id
+      })
+    })
+
+    return {
+      id: product.id,
+      ref: product.ref,
+      titre: product.titre,
+      description: product.description,
+      copywriting: product.copywriting,
+      notes_admin: product.notes_admin,
+      prix_achat: product.prix_achat,
+      prix_vente: product.prix_vente,
+      prix_affilie: product.prix_affilie,
+      stock_total: product.stock_total,
+      rating_value: product.rating_value,
+      categorie: product.categorie,
+      gallery: {
+        main: mainImage,
+        thumbnails: images
+      },
+      sizes: sizes.sort((a, b) => a.value.localeCompare(b.value)),
+      colors: colors.sort((a, b) => a.name.localeCompare(b.name)),
+      matrix,
+      images,
+      videos: product.videos?.map(v => ({
+        id: v.id,
+        url: v.url,
+        title: v.titre || v.title
+      })) || []
+    }
+  }
+
+  const selectColor = (colorName: string) => {
+    selectedColor.value = colorName
+
+    // Update main image if color has specific image
+    if (drawerProduct.value) {
+      const colorVariant = drawerProduct.value.colors.find(c => c.name === colorName)
+      if (colorVariant?.image_url) {
+        drawerProduct.value.gallery.main = colorVariant.image_url
+      }
+    }
+  }
+
+  const selectSize = (sizeValue: string) => {
+    selectedSize.value = sizeValue
+  }
+
+  const addToCartFromDrawer = async (data: { produit_id: string; variante_id?: string; qty: number }) => {
+    addingToCart.value = true
+
+    try {
+      const { data: response, error: apiError } = await useApi('/affiliate/cart/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      })
+
+      if (apiError.value) {
+        showError(apiError.value.message || 'Failed to add to cart')
+        return false
+      }
+
+      if (response.value) {
+        showSuccess('Product added to cart successfully')
+        await fetchCartSummary()
+        return true
+      }
+    } catch (err: any) {
+      showError(err.message || 'Failed to add to cart')
+      return false
+    } finally {
+      addingToCart.value = false
+    }
+  }
+
   return {
     // State
     items,
@@ -338,6 +538,14 @@ export const useCatalogueStore = defineStore('affiliate-catalogue', () => {
     pagination,
     filters,
     cartSummary,
+
+    // Drawer state
+    selectedId,
+    drawerProduct,
+    addingToCart,
+    selectedColor,
+    selectedSize,
+    selectedQty,
 
     // Getters
     hasItems,
@@ -354,6 +562,12 @@ export const useCatalogueStore = defineStore('affiliate-catalogue', () => {
     resetFilters,
     clearSelectedProduct,
     setPage,
-    mapProductToNormalized
+    mapProductToNormalized,
+
+    // Drawer actions
+    fetchOneForDrawer,
+    selectColor,
+    selectSize,
+    addToCartFromDrawer
   }
 })

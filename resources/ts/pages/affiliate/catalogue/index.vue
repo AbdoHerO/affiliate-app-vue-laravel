@@ -44,6 +44,7 @@ const selectedProduct = computed(() => catalogueStore.selectedProduct)
 const isDetailLoading = computed(() => catalogueStore.isDetailLoading)
 
 const showProductDrawer = ref(false)
+const selectedProductId = ref<string | null>(null)
 
 const sortOptions = computed(() => [
   { value: 'created_at:desc', text: t('catalogue.filters.sort_newest') },
@@ -129,8 +130,8 @@ const handlePageChange = (page: number) => {
 
 const handleProductOpen = async (productId: string) => {
   try {
+    selectedProductId.value = productId
     showProductDrawer.value = true
-    await catalogueStore.fetchOne(productId)
   } catch (error) {
     showProductDrawer.value = false
     showError('Erreur lors du chargement du produit')
@@ -352,8 +353,7 @@ onMounted(async () => {
     <!-- Product Detail Drawer -->
     <ProductDrawer
       v-model="showProductDrawer"
-      :product="selectedProduct"
-      @add-to-cart="handleAddToCart"
+      :product-id="selectedProductId"
     />
   </div>
 </template>

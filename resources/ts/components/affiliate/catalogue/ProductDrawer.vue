@@ -1,36 +1,29 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, nextTick } from 'vue'
 import { onBeforeRouteLeave } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import type { CatalogueProduct } from '@/stores/affiliate/catalogue'
+import { useCatalogueStore } from '@/stores/affiliate/catalogue'
+import { useNotifications } from '@/composables/useNotifications'
 
 interface Props {
-  product: CatalogueProduct | null
   modelValue: boolean
+  productId: string | null
 }
 
 interface Emits {
   (e: 'update:modelValue', value: boolean): void
-  (e: 'addToCart', data: {
-    produit_id: string
-    size_variant_id?: string
-    color_variant_id?: string
-    qty: number
-    variants: { size?: string; color?: string }
-  }): void
 }
 
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
 const { t } = useI18n()
+const store = useCatalogueStore()
+const { showSuccess, showError } = useNotifications()
 
 // Local state
 const selectedImageIndex = ref(0)
-const selectedSizeId = ref<string>('')
-const selectedColorId = ref<string>('')
-const quantity = ref(1)
-const currentImage = ref('')
+const mainImageUrl = ref('')
 
 // Computed
 const isOpen = computed({
@@ -38,138 +31,180 @@ const isOpen = computed({
   set: (value) => emit('update:modelValue', value)
 })
 
-const images = computed(() => {
-  if (!props.product?.images?.length) return []
-  return props.product.images.sort((a, b) => a.ordre - b.ordre)
-})
+const product = computed(() => store.drawerProduct)
+const isLoading = computed(() => store.detailLoading)
+const isAddingToCart = computed(() => store.addingToCart)
 
-const availableSizes = computed(() => {
-  if (!props.product?.variantes) return []
-  return props.product.variantes
-    .filter(variant => {
-      // Use catalog system for consistent identification
-      const attributCode = variant.attribut?.code || variant.attribut_principal?.toLowerCase()
-      return ['taille', 'size'].includes(attributCode) && variant.stock > 0
-    })
-    .map(variant => ({
-      id: variant.id,
-      value: variant.valeur,
-      stock: variant.stock
-    }))
-})
-
-const availableColors = computed(() => {
-  if (!props.product?.variantes) return []
-  return props.product.variantes
-    .filter(variant => {
-      // Use catalog system for consistent identification
-      const attributCode = variant.attribut?.code || variant.attribut_principal?.toLowerCase()
-      return ['couleur', 'color'].includes(attributCode) && variant.stock > 0
-    })
-    .map(variant => ({
-      id: variant.id,
-      value: variant.valeur,
-      stock: variant.stock,
-      image_url: variant.image_url
-    }))
+const currentImage = computed(() => {
+  if (mainImageUrl.value) return mainImageUrl.value
+  if (product.value?.gallery.main) return product.value.gallery.main
+  return ''
 })
 
 const maxQuantity = computed(() => {
-  return Math.min(props.product?.stock_total || 0, 99)
+  if (!product.value) return 1
+
+  // If both size and color are selected, find specific variant stock
+  if (store.selectedSize && store.selectedColor) {
+    const variant = product.value.matrix.find(m =>
+      m.size === store.selectedSize && m.color === store.selectedColor
+    )
+    return Math.min(variant?.stock || 0, 10)
+  }
+
+  // If only size selected
+  if (store.selectedSize) {
+    const sizeVariant = product.value.sizes.find(s => s.value === store.selectedSize)
+    return Math.min(sizeVariant?.stock || 0, 10)
+  }
+
+  // If only color selected
+  if (store.selectedColor) {
+    const colorVariant = product.value.colors.find(c => c.name === store.selectedColor)
+    return Math.min(colorVariant?.stock || 0, 10)
+  }
+
+  return Math.min(product.value.stock_total, 10)
 })
 
 const canAddToCart = computed(() => {
-  if (!props.product || props.product.stock_total <= 0) return false
+  if (!product.value || store.selectedQty < 1 || store.selectedQty > maxQuantity.value) {
+    return false
+  }
+
+  const hasSizes = product.value.sizes.length > 0
+  const hasColors = product.value.colors.length > 0
 
   // If product has both sizes and colors, both must be selected
-  if (availableSizes.value.length > 0 && availableColors.value.length > 0) {
-    return selectedSizeId.value && selectedColorId.value
+  if (hasSizes && hasColors) {
+    return store.selectedSize && store.selectedColor
   }
 
   // If product has only sizes, size must be selected
-  if (availableSizes.value.length > 0) {
-    return selectedSizeId.value
+  if (hasSizes) {
+    return store.selectedSize
   }
 
   // If product has only colors, color must be selected
-  if (availableColors.value.length > 0) {
-    return selectedColorId.value
+  if (hasColors) {
+    return store.selectedColor
   }
 
-  // If no variants, can add to cart
+  // No variants required
   return true
+})
+
+const totalPrice = computed(() => {
+  if (!product.value) return 0
+  return product.value.prix_vente * store.selectedQty
+})
+
+const totalProfit = computed(() => {
+  if (!product.value) return 0
+  return product.value.prix_affilie * store.selectedQty
 })
 
 // Methods
 const handleImageSelect = (index: number) => {
   selectedImageIndex.value = index
-  currentImage.value = images.value[index]?.url || ''
+  if (product.value?.gallery.thumbnails[index]) {
+    mainImageUrl.value = product.value.gallery.thumbnails[index].url
+  }
 }
 
-const handleSizeSelect = (sizeId: string) => {
-  selectedSizeId.value = sizeId
-}
+const handleColorSelect = (colorName: string) => {
+  store.selectColor(colorName)
 
-const handleColorSelect = (colorId: string) => {
-  selectedColorId.value = colorId
-
-  // Update image if color has specific image
-  const color = availableColors.value.find(c => c.id === colorId)
+  // Update main image if color has specific image
+  const color = product.value?.colors.find(c => c.name === colorName)
   if (color?.image_url) {
-    currentImage.value = color.image_url
-    selectedImageIndex.value = -1 // Indicate it's a variant image
+    mainImageUrl.value = color.image_url
   }
 }
 
-const handleQuantityChange = (delta: number) => {
-  const newQty = quantity.value + delta
-  if (newQty >= 1 && newQty <= maxQuantity.value) {
-    quantity.value = newQty
+const handleSizeSelect = (sizeValue: string) => {
+  store.selectSize(sizeValue)
+}
+
+const downloadFile = (url: string, filename: string) => {
+  const link = document.createElement('a')
+  link.href = url
+  link.download = filename
+  link.target = '_blank'
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+}
+
+const copyToClipboard = async (text: string) => {
+  try {
+    await navigator.clipboard.writeText(text)
+    showSuccess('Texte copié dans le presse-papiers')
+  } catch (err) {
+    showError('Erreur lors de la copie')
   }
 }
 
-const handleAddToCart = () => {
-  if (!canAddToCart.value || !props.product) return
+const handleAddToCart = async () => {
+  if (!product.value || !canAddToCart.value) return
 
-  emit('addToCart', {
-    produit_id: props.product.id,
-    size_variant_id: selectedSizeId.value || undefined,
-    color_variant_id: selectedColorId.value || undefined,
-    qty: quantity.value,
-    variants: {
-      size: selectedSizeId.value,
-      color: selectedColorId.value
-    }
+  // Find the variant ID based on selections
+  let variantId: string | undefined
+
+  if (store.selectedSize && store.selectedColor) {
+    const variant = product.value.matrix.find(m =>
+      m.size === store.selectedSize && m.color === store.selectedColor
+    )
+    variantId = variant?.variant_id
+  } else if (store.selectedSize) {
+    const sizeVariant = product.value.sizes.find(s => s.value === store.selectedSize)
+    variantId = sizeVariant?.id
+  } else if (store.selectedColor) {
+    const colorVariant = product.value.colors.find(c => c.name === store.selectedColor)
+    variantId = colorVariant?.id
+  }
+
+  const success = await store.addToCartFromDrawer({
+    produit_id: product.value.id,
+    variante_id: variantId,
+    qty: store.selectedQty
   })
+
+  if (success) {
+    // Reset selections
+    store.selectedQty = 1
+  }
 }
 
-const closeDrawer = () => {
-  isOpen.value = false
-}
+// Watchers
+watch(() => props.productId, async (newId) => {
+  if (newId && props.modelValue) {
+    await store.fetchOneForDrawer(newId)
+    // Reset image selection
+    selectedImageIndex.value = 0
+    mainImageUrl.value = ''
+  }
+}, { immediate: true })
 
-const openVideo = (url: string) => {
-  window.open(url, '_blank')
-}
+watch(() => props.modelValue, (isOpen) => {
+  if (isOpen && props.productId) {
+    store.fetchOneForDrawer(props.productId)
+  } else if (!isOpen) {
+    // Reset state when closing
+    store.selectedColor = ''
+    store.selectedSize = ''
+    store.selectedQty = 1
+    selectedImageIndex.value = 0
+    mainImageUrl.value = ''
+  }
+})
 
-const downloadImage = (url: string, filename: string) => {
-  const link = document.createElement('a')
-  link.href = url
-  link.download = `${filename}.jpg`
-  link.target = '_blank'
-  document.body.appendChild(link)
-  link.click()
-  document.body.removeChild(link)
-}
-
-const downloadVideo = (url: string, filename: string) => {
-  const link = document.createElement('a')
-  link.href = url
-  link.download = `${filename}.mp4`
-  link.target = '_blank'
-  document.body.appendChild(link)
-  link.click()
-  document.body.removeChild(link)
-}
+// Route guard to close drawer
+onBeforeRouteLeave(() => {
+  if (isOpen.value) {
+    isOpen.value = false
+  }
+})
 
 // Format copywriting with line breaks and bold text
 const formatCopywriting = (text: string): string => {
@@ -185,428 +220,395 @@ const formatCopywriting = (text: string): string => {
     // Preserve emojis and special characters
     .trim()
 }
-
-// Initialize current image when product changes
-watch(() => props.product, (newProduct) => {
-  if (newProduct && images.value.length > 0) {
-    currentImage.value = images.value[0].url
-    selectedImageIndex.value = 0
-  }
-  selectedSizeId.value = ''
-  selectedColorId.value = ''
-  quantity.value = 1
-}, { immediate: true })
-
-// Close drawer before route navigation
-onBeforeRouteLeave(() => {
-  if (isOpen.value) {
-    closeDrawer()
-  }
-})
 </script>
 
 <template>
   <VNavigationDrawer
     v-model="isOpen"
     location="end"
-    width="500"
+    width="1000"
     temporary
     class="product-drawer"
   >
-    <template v-if="product">
-      <!-- Header with Close Button -->
-      <div class="product-drawer__header d-flex align-center justify-space-between pa-4 border-b">
-        <div class="d-flex align-center">
-          <span class="text-caption text-medium-emphasis me-2">REF:</span>
-          <span class="text-caption font-weight-medium">{{ product.id.slice(-8) }}</span>
-          <VDivider vertical class="mx-2" />
-          <span class="text-caption">{{ product.titre }}</span>
-        </div>
-        <VBtn
-          icon="tabler-x"
-          variant="text"
-          size="small"
-          color="error"
-          @click="closeDrawer"
+    <!-- Loading State -->
+    <template v-if="isLoading">
+      <div class="d-flex justify-center align-center" style="height: 100vh;">
+        <VProgressCircular
+          indeterminate
+          color="primary"
+          size="64"
         />
       </div>
+    </template>
 
-      <!-- Stats Row -->
-      <div class="d-flex justify-space-around pa-4 bg-grey-lighten-5">
-        <div class="text-center">
-          <div class="text-caption text-medium-emphasis">المبيعات</div>
-          <div class="text-h6 font-weight-bold text-primary">90+</div>
+    <!-- Product Content -->
+    <template v-else-if="product">
+      <!-- Header (Sticky) -->
+      <div class="product-drawer__header pa-4 border-b bg-surface position-sticky" style="top: 0; z-index: 10;">
+        <div class="d-flex justify-space-between align-center mb-3">
+          <div class="flex-grow-1">
+            <h2 class="text-h5 font-weight-bold mb-1">{{ product.titre }}</h2>
+            <div class="text-body-2 text-medium-emphasis">{{ product.categorie?.nom }}</div>
+          </div>
+          <VBtn
+            icon="tabler-x"
+            variant="text"
+            size="small"
+            @click="isOpen = false"
+          />
         </div>
-        <div class="text-center">
-          <div class="text-caption text-medium-emphasis">المتجر السعودي</div>
-          <div class="text-h6 font-weight-bold text-primary">220+</div>
-        </div>
-        <div class="text-center">
-          <div class="text-caption text-medium-emphasis">المتجر</div>
-          <div class="text-h6 font-weight-bold text-primary">130</div>
-        </div>
-        <div class="text-center">
-          <div class="text-caption text-medium-emphasis">المتجرون الطلبات</div>
-          <div class="text-h6 font-weight-bold text-primary">29</div>
+
+        <!-- KPIs Row -->
+        <div class="d-flex gap-3 flex-wrap">
+          <VChip
+            color="primary"
+            variant="tonal"
+            size="small"
+          >
+            <VIcon icon="tabler-package" start />
+            {{ t('catalogue.kpis.stock') }}: {{ product.stock_total }}
+          </VChip>
+          <VChip
+            color="success"
+            variant="tonal"
+            size="small"
+          >
+            <VIcon icon="tabler-coins" start />
+            {{ t('catalogue.kpis.profit') }}: +{{ product.prix_affilie }} MAD
+          </VChip>
+          <VChip
+            color="info"
+            variant="tonal"
+            size="small"
+          >
+            {{ t('catalogue.kpis.buy') }}: {{ product.prix_achat }} MAD
+          </VChip>
+          <VChip
+            color="warning"
+            variant="tonal"
+            size="small"
+          >
+            {{ t('catalogue.kpis.sell') }}: {{ product.prix_vente }} MAD
+          </VChip>
         </div>
       </div>
 
-      <!-- Main Content -->
-      <VContainer fluid class="pa-0">
-        <!-- Product Images Section -->
-        <div class="pa-4 border-b">
-          <!-- Main Product Image -->
-          <div class="product-drawer__main-image mb-4">
-            <VImg
-              :src="currentImage"
-              :alt="product.titre"
-              aspect-ratio="0.8"
-              cover
-              class="rounded-lg w-100"
-              style="max-height: 400px;"
-            />
+      <!-- Scrollable Content -->
+      <div class="drawer-content" style="height: calc(100vh - 140px); overflow-y: auto;">
+
+        <!-- Zone 1: Media + Variant Selectors -->
+        <div class="pa-6 border-b">
+          <VRow>
+            <!-- Left: Main Image + Thumbnails -->
+            <VCol cols="6">
+              <!-- Main Image -->
+              <div class="main-image-container mb-4">
+                <VImg
+                  :src="currentImage"
+                  :alt="product.titre"
+                  aspect-ratio="1"
+                  cover
+                  class="rounded-lg main-image"
+                  style="max-height: 350px;"
+                />
+              </div>
+
+              <!-- Thumbnail Rail (Vertical) -->
+              <div v-if="product.gallery.thumbnails.length > 1" class="thumbnails-rail">
+                <div class="d-flex gap-2 flex-wrap justify-center">
+                  <div
+                    v-for="(image, index) in product.gallery.thumbnails"
+                    :key="index"
+                    class="position-relative thumbnail-container"
+                  >
+                    <VImg
+                      :src="image.url"
+                      :alt="`${product.titre} - Image ${index + 1}`"
+                      width="60"
+                      height="60"
+                      cover
+                      class="rounded cursor-pointer thumbnail"
+                      :class="{ 'thumbnail--active': selectedImageIndex === index }"
+                      @click="handleImageSelect(index)"
+                    />
+                    <VBtn
+                      icon="tabler-download"
+                      size="x-small"
+                      variant="elevated"
+                      color="primary"
+                      class="download-btn"
+                      @click.stop="downloadFile(image.url, `${product.titre}_image_${index + 1}.jpg`)"
+                    />
+                  </div>
+                </div>
+              </div>
+            </VCol>
+
+            <!-- Right: Variant Selectors + Quantity + CTA -->
+            <VCol cols="6">
+              <!-- Colors -->
+              <div v-if="product.colors.length" class="mb-4">
+                <h4 class="text-subtitle-1 mb-3">{{ t('catalogue.variants.color') }}</h4>
+                <div class="d-flex gap-2 flex-wrap">
+                  <VChip
+                    v-for="color in product.colors"
+                    :key="color.id"
+                    :color="store.selectedColor === color.name ? 'primary' : 'default'"
+                    :variant="store.selectedColor === color.name ? 'flat' : 'outlined'"
+                    size="large"
+                    class="cursor-pointer color-chip"
+                    @click="handleColorSelect(color.name)"
+                  >
+                    <VIcon
+                      v-if="color.swatch"
+                      :style="{ color: color.swatch }"
+                      icon="tabler-circle-filled"
+                      start
+                    />
+                    {{ color.name }}
+                  </VChip>
+                </div>
+              </div>
+
+              <!-- Sizes -->
+              <div v-if="product.sizes.length" class="mb-4">
+                <h4 class="text-subtitle-1 mb-3">{{ t('catalogue.variants.size') }}</h4>
+                <div class="d-flex gap-2 flex-wrap">
+                  <VChip
+                    v-for="size in product.sizes"
+                    :key="size.id"
+                    :color="store.selectedSize === size.value ? 'primary' : 'default'"
+                    :variant="store.selectedSize === size.value ? 'flat' : 'outlined'"
+                    size="large"
+                    class="cursor-pointer"
+                    @click="handleSizeSelect(size.value)"
+                  >
+                    {{ size.value }}
+                  </VChip>
+                </div>
+              </div>
+
+              <!-- Quantity Selector -->
+              <div class="mb-4">
+                <h4 class="text-subtitle-1 mb-3">{{ t('catalogue.detail.quantity') }}</h4>
+                <div class="d-flex align-center gap-3">
+                  <VBtn
+                    icon="tabler-minus"
+                    size="small"
+                    variant="outlined"
+                    :disabled="store.selectedQty <= 1"
+                    @click="store.selectedQty--"
+                  />
+                  <VTextField
+                    v-model.number="store.selectedQty"
+                    type="number"
+                    variant="outlined"
+                    density="compact"
+                    style="width: 80px;"
+                    min="1"
+                    :max="maxQuantity"
+                    hide-details
+                  />
+                  <VBtn
+                    icon="tabler-plus"
+                    size="small"
+                    variant="outlined"
+                    :disabled="store.selectedQty >= maxQuantity"
+                    @click="store.selectedQty++"
+                  />
+                  <span class="text-caption text-medium-emphasis">Max: {{ maxQuantity }}</span>
+                </div>
+              </div>
+
+              <!-- Primary CTA -->
+              <VBtn
+                color="primary"
+                size="large"
+                block
+                :disabled="!canAddToCart"
+                :loading="isAddingToCart"
+                @click="handleAddToCart"
+              >
+                <VIcon icon="tabler-shopping-cart" start />
+                {{ t('catalogue.actions.add_to_cart') }}
+              </VBtn>
+            </VCol>
+          </VRow>
+        </div>
+
+        <!-- Zone 2: Info & Copy -->
+        <div class="pa-6 border-b">
+          <!-- Description -->
+          <div v-if="product.description" class="mb-6">
+            <h3 class="text-h6 mb-3">{{ t('catalogue.detail.description') }}</h3>
+            <div class="text-body-1" v-html="formatCopywriting(product.description)"></div>
           </div>
 
-          <!-- Thumbnail Images with Download -->
-          <div v-if="images.length > 1" class="product-drawer__thumbnails mb-4">
-            <div class="d-flex gap-2 justify-center flex-wrap">
+          <!-- Admin Note -->
+          <div v-if="product.notes_admin" class="mb-6">
+            <h3 class="text-h6 mb-3">{{ t('catalogue.admin_note') }}</h3>
+            <VAlert
+              type="info"
+              variant="tonal"
+              class="text-body-1"
+            >
+              <VIcon icon="tabler-info-circle" start />
+              {{ product.notes_admin }}
+            </VAlert>
+          </div>
+
+          <!-- Copywriting -->
+          <div v-if="product.copywriting" class="mb-6">
+            <div class="d-flex justify-space-between align-center mb-3">
+              <h3 class="text-h6">{{ t('catalogue.copywriting') }}</h3>
+              <VBtn
+                variant="outlined"
+                size="small"
+                prepend-icon="tabler-copy"
+                @click="copyToClipboard(product.copywriting)"
+              >
+                Copier
+              </VBtn>
+            </div>
+            <VCard variant="outlined" class="pa-4">
+              <div class="text-body-1 copywriting-content" v-html="formatCopywriting(product.copywriting)"></div>
+            </VCard>
+          </div>
+        </div>
+
+        <!-- Zone 3: Assets & Variants Tables -->
+        <div class="pa-6">
+          <!-- Stock Matrix Table -->
+          <div v-if="product.matrix.length" class="mb-6">
+            <h3 class="text-h6 mb-3">Matrice de stock</h3>
+            <VTable density="compact">
+              <thead>
+                <tr>
+                  <th>{{ t('catalogue.table.size') }}</th>
+                  <th>{{ t('catalogue.table.color') }}</th>
+                  <th>{{ t('catalogue.table.qty') }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(item, index) in product.matrix" :key="index">
+                  <td>{{ item.size || '-' }}</td>
+                  <td>{{ item.color || '-' }}</td>
+                  <td>
+                    <VChip
+                      :color="item.stock > 0 ? 'success' : 'error'"
+                      size="small"
+                      variant="tonal"
+                    >
+                      {{ item.stock }}
+                    </VChip>
+                  </td>
+                </tr>
+              </tbody>
+            </VTable>
+          </div>
+
+          <!-- Images Grid -->
+          <div v-if="product.images.length" class="mb-6">
+            <h3 class="text-h6 mb-3">{{ t('catalogue.assets.images') }}</h3>
+            <div class="d-flex gap-3 flex-wrap">
               <div
-                v-for="(image, index) in images"
+                v-for="(image, index) in product.images"
                 :key="index"
-                class="position-relative"
+                class="position-relative image-asset"
               >
                 <VImg
                   :src="image.url"
-                  :alt="`${product.titre} - Image ${index + 1}`"
-                  width="60"
-                  height="80"
+                  width="100"
+                  height="100"
                   cover
-                  class="rounded cursor-pointer thumbnail"
-                  :class="{ 'thumbnail--active': selectedImageIndex === index }"
-                  @click="handleImageSelect(index)"
+                  class="rounded"
                 />
+                <VTooltip
+                  activator="parent"
+                  location="top"
+                >
+                  {{ t('catalogue.actions.download') }}
+                </VTooltip>
                 <VBtn
                   icon="tabler-download"
-                  size="x-small"
+                  size="small"
                   variant="elevated"
                   color="primary"
-                  class="position-absolute download-btn"
-                  style="top: 2px; right: 2px;"
-                  @click.stop="downloadImage(image.url, `${product.titre}_image_${index + 1}`)"
+                  class="download-overlay"
+                  @click="downloadFile(image.url, `${product.titre}_image_${index + 1}.jpg`)"
                 />
               </div>
             </div>
           </div>
 
-          <!-- Videos Section -->
-          <div v-if="product.videos && product.videos.length" class="mb-4">
-            <h4 class="text-subtitle-2 mb-2">فيديوهات المنتج</h4>
-            <div class="d-flex gap-2 flex-wrap">
+          <!-- Videos List -->
+          <div v-if="product.videos.length" class="mb-6">
+            <h3 class="text-h6 mb-3">{{ t('catalogue.assets.videos') }}</h3>
+            <div class="d-flex gap-3 flex-wrap">
               <VCard
                 v-for="(video, index) in product.videos"
                 :key="index"
                 variant="outlined"
-                class="video-card"
-                width="120"
+                width="200"
+                class="video-asset"
               >
-                <VCardText class="pa-2 text-center">
-                  <VIcon icon="tabler-video" size="24" class="mb-1" />
-                  <div class="text-caption">{{ video.titre || `Video ${index + 1}` }}</div>
-                  <div class="d-flex gap-1 mt-2">
+                <VCardText class="pa-3">
+                  <div class="d-flex align-center mb-2">
+                    <VIcon icon="tabler-video" class="me-2" />
+                    <span class="text-body-2 font-weight-medium">{{ video.title || `Video ${index + 1}` }}</span>
+                  </div>
+                  <div class="d-flex gap-2">
                     <VBtn
-                      icon="tabler-eye"
-                      size="x-small"
+                      size="small"
                       variant="outlined"
-                      @click="openVideo(video.url)"
-                    />
+                      prepend-icon="tabler-eye"
+                      @click="() => window.open(video.url, '_blank')"
+                    >
+                      Voir
+                    </VBtn>
                     <VBtn
-                      icon="tabler-download"
-                      size="x-small"
+                      size="small"
                       variant="outlined"
-                      @click="downloadVideo(video.url, video.titre || `${product.titre}_video_${index + 1}`)"
-                    />
+                      prepend-icon="tabler-download"
+                      @click="downloadFile(video.url, `${product.titre}_video_${index + 1}.mp4`)"
+                    >
+                      {{ t('catalogue.actions.download') }}
+                    </VBtn>
                   </div>
                 </VCardText>
               </VCard>
             </div>
           </div>
         </div>
-        <!-- Product Information Section -->
-        <div class="pa-4 border-b">
-          <h3 class="text-h6 mb-3">معلومات المنتج</h3>
+      </div>
 
-          <VRow dense>
-            <VCol cols="6">
-              <div class="text-caption text-medium-emphasis">الفئة</div>
-              <div class="text-body-2 font-weight-medium">{{ product.categorie?.nom || 'غير محدد' }}</div>
-            </VCol>
-            <VCol cols="6">
-              <div class="text-caption text-medium-emphasis">المتجر</div>
-              <div class="text-body-2 font-weight-medium">{{ product.boutique?.nom || 'غير محدد' }}</div>
-            </VCol>
-            <VCol cols="6">
-              <div class="text-caption text-medium-emphasis">سعر الشراء</div>
-              <div class="text-body-2 font-weight-medium">{{ product.prix_achat }} MAD</div>
-            </VCol>
-            <VCol cols="6">
-              <div class="text-caption text-medium-emphasis">سعر البيع</div>
-              <div class="text-body-2 font-weight-medium">{{ product.prix_vente }} MAD</div>
-            </VCol>
-            <VCol cols="6">
-              <div class="text-caption text-medium-emphasis">عمولة الشريك</div>
-              <div class="text-body-2 font-weight-medium text-success">{{ product.prix_affilie }} MAD</div>
-            </VCol>
-            <VCol cols="6">
-              <div class="text-caption text-medium-emphasis">المخزون الإجمالي</div>
-              <div class="text-body-2 font-weight-medium">{{ product.stock_total }}</div>
-            </VCol>
-            <VCol v-if="product.quantite_min" cols="6">
-              <div class="text-caption text-medium-emphasis">الحد الأدنى للطلب</div>
-              <div class="text-body-2 font-weight-medium">{{ product.quantite_min }}</div>
-            </VCol>
-            <VCol v-if="product.rating_value" cols="6">
-              <div class="text-caption text-medium-emphasis">التقييم</div>
-              <div class="d-flex align-center">
-                <VRating
-                  :model-value="product.rating_value"
-                  readonly
-                  density="compact"
-                  size="small"
-                  color="warning"
-                />
-                <span class="text-caption ms-1">({{ product.rating_value }}/{{ product.rating_max || 5 }})</span>
-              </div>
-            </VCol>
-          </VRow>
-
-          <!-- Product Description -->
-          <div v-if="product.description" class="mt-4">
-            <div class="text-caption text-medium-emphasis mb-1">الوصف</div>
-            <div class="text-body-2">{{ product.description }}</div>
+      <!-- Footer (Sticky) -->
+      <div class="drawer-footer pa-4 border-t bg-surface position-sticky" style="bottom: 0; z-index: 10;">
+        <!-- Quick Recap -->
+        <div class="d-flex justify-space-between align-center mb-3">
+          <div class="text-body-2">
+            <span v-if="store.selectedColor" class="me-2">{{ store.selectedColor }}</span>
+            <span v-if="store.selectedSize" class="me-2">{{ store.selectedSize }}</span>
+            <span>Qty: {{ store.selectedQty }}</span>
           </div>
-
-          <!-- Admin Notes -->
-          <div v-if="product.notes_admin" class="mt-4">
-            <div class="text-caption text-medium-emphasis mb-1">ملاحظات الإدارة</div>
-            <VAlert
-              type="info"
-              variant="tonal"
-              density="compact"
-              class="text-body-2"
-            >
-              {{ product.notes_admin }}
-            </VAlert>
+          <div class="text-h6 font-weight-bold text-success">
+            +{{ totalProfit.toFixed(2) }} MAD
           </div>
         </div>
 
-        <!-- Variants Table Section -->
-        <div v-if="product.variantes && product.variantes.length" class="pa-4 border-b">
-          <h3 class="text-h6 mb-3">جدول المتغيرات</h3>
-
-          <!-- Size Variants Table -->
-          <div v-if="availableSizes.length" class="mb-4">
-            <h4 class="text-subtitle-2 mb-2">الأحجام المتوفرة</h4>
-            <VTable density="compact">
-              <thead>
-                <tr>
-                  <th>الحجم</th>
-                  <th>المخزون</th>
-                  <th>الحالة</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="size in availableSizes" :key="size.id">
-                  <td class="font-weight-medium">{{ size.value }}</td>
-                  <td>{{ size.stock }}</td>
-                  <td>
-                    <VChip
-                      :color="size.stock > 0 ? 'success' : 'error'"
-                      size="small"
-                      variant="tonal"
-                    >
-                      {{ size.stock > 0 ? 'متوفر' : 'غير متوفر' }}
-                    </VChip>
-                  </td>
-                </tr>
-              </tbody>
-            </VTable>
-          </div>
-
-          <!-- Color Variants Table -->
-          <div v-if="availableColors.length" class="mb-4">
-            <h4 class="text-subtitle-2 mb-2">الألوان المتوفرة</h4>
-            <VTable density="compact">
-              <thead>
-                <tr>
-                  <th>اللون</th>
-                  <th>الصورة</th>
-                  <th>المخزون</th>
-                  <th>الحالة</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="color in availableColors" :key="color.id">
-                  <td class="font-weight-medium">{{ color.value }}</td>
-                  <td>
-                    <VImg
-                      v-if="color.image_url"
-                      :src="color.image_url"
-                      width="30"
-                      height="30"
-                      cover
-                      class="rounded"
-                    />
-                    <span v-else class="text-caption text-medium-emphasis">لا توجد صورة</span>
-                  </td>
-                  <td>{{ color.stock }}</td>
-                  <td>
-                    <VChip
-                      :color="color.stock > 0 ? 'success' : 'error'"
-                      size="small"
-                      variant="tonal"
-                    >
-                      {{ color.stock > 0 ? 'متوفر' : 'غير متوفر' }}
-                    </VChip>
-                  </td>
-                </tr>
-              </tbody>
-            </VTable>
-          </div>
-        </div>
-
-        <!-- Copywriting Section -->
-        <div v-if="product.copywriting" class="pa-4 border-b">
-          <h3 class="text-h6 mb-3">النص التسويقي</h3>
-          <div class="copywriting-section pa-3 bg-grey-lighten-5 rounded">
-            <div class="text-body-2 copywriting-content" v-html="formatCopywriting(product.copywriting)"></div>
-          </div>
-        </div>
-
-        <!-- Variant Selection Section -->
-        <div class="pa-4 border-b">
-          <h3 class="text-h6 mb-3">اختيار المتغيرات</h3>
-
-          <!-- Size Selection -->
-          <div v-if="availableSizes.length" class="mb-3">
-            <div class="text-body-2 font-weight-medium mb-2">الأحجام المتوفرة</div>
-            <div class="d-flex gap-2 flex-wrap">
-              <VChip
-                v-for="size in availableSizes"
-                :key="size.id"
-                :color="selectedSizeId === size.id ? 'primary' : 'default'"
-                :variant="selectedSizeId === size.id ? 'flat' : 'outlined'"
-                size="large"
-                class="cursor-pointer"
-                @click="handleSizeSelect(size.id)"
-              >
-                {{ size.value }}
-              </VChip>
-            </div>
-          </div>
-
-          <!-- Color Selection -->
-          <div v-if="availableColors.length" class="mb-3">
-            <div class="text-body-2 font-weight-medium mb-2">الألوان المتوفرة</div>
-            <div class="d-flex gap-2 flex-wrap">
-              <VChip
-                v-for="color in availableColors"
-                :key="color.id"
-                :color="selectedColorId === color.id ? 'primary' : 'default'"
-                :variant="selectedColorId === color.id ? 'flat' : 'outlined'"
-                size="large"
-                class="cursor-pointer"
-                @click="handleColorSelect(color.id)"
-              >
-                {{ color.value }}
-              </VChip>
-            </div>
-          </div>
-        </div>
-
-        <!-- Order Section -->
-        <div class="pa-4">
-          <h3 class="text-h6 mb-3">إضافة إلى السلة</h3>
-
-          <!-- Quantity Selection -->
-          <div class="mb-4">
-            <div class="text-body-2 font-weight-medium mb-2">الكمية</div>
-            <div class="d-flex align-center gap-2">
-              <VBtn
-                icon="tabler-minus"
-                size="small"
-                variant="outlined"
-                :disabled="quantity <= 1"
-                @click="quantity--"
-              />
-              <VTextField
-                v-model.number="quantity"
-                type="number"
-                variant="outlined"
-                density="compact"
-                style="width: 80px;"
-                min="1"
-                :max="maxQuantity"
-                hide-details
-              />
-              <VBtn
-                icon="tabler-plus"
-                size="small"
-                variant="outlined"
-                :disabled="quantity >= maxQuantity"
-                @click="quantity++"
-              />
-              <span class="text-caption text-medium-emphasis">الحد الأقصى: {{ maxQuantity }}</span>
-            </div>
-          </div>
-
-          <!-- Price Summary -->
-          <div class="mb-4 pa-3 bg-grey-lighten-5 rounded">
-            <div class="d-flex justify-space-between mb-1">
-              <span class="text-body-2">سعر الوحدة:</span>
-              <span class="text-body-2 font-weight-medium">{{ product.prix_vente }} MAD</span>
-            </div>
-            <div class="d-flex justify-space-between mb-1">
-              <span class="text-body-2">الكمية:</span>
-              <span class="text-body-2 font-weight-medium">{{ quantity }}</span>
-            </div>
-            <VDivider class="my-2" />
-            <div class="d-flex justify-space-between">
-              <span class="text-body-1 font-weight-medium">المجموع:</span>
-              <span class="text-body-1 font-weight-bold text-primary">{{ (product.prix_vente * quantity).toFixed(2) }} MAD</span>
-            </div>
-            <div class="d-flex justify-space-between mt-1">
-              <span class="text-caption text-success">عمولتك:</span>
-              <span class="text-caption font-weight-medium text-success">{{ (product.prix_affilie * quantity).toFixed(2) }} MAD</span>
-            </div>
-          </div>
-        </div>
-        <!-- Order Button -->
-        <div class="pa-4 border-t">
-          <VBtn
-            color="primary"
-            size="large"
-            block
-            :disabled="!canAddToCart"
-            @click="handleAddToCart"
-          >
-            <VIcon icon="tabler-shopping-cart" class="me-2" />
-            إضافة إلى السلة
-          </VBtn>
-
-          <!-- Selection Status -->
-          <div v-if="availableSizes.length > 0 && availableColors.length > 0" class="mt-3">
-            <div class="text-caption text-center">
-              <VIcon
-                :icon="selectedSizeId && selectedColorId ? 'tabler-check-circle' : 'tabler-alert-circle'"
-                :color="selectedSizeId && selectedColorId ? 'success' : 'warning'"
-                size="14"
-                class="me-1"
-              />
-              {{ selectedSizeId && selectedColorId ? 'تم اختيار المقاس واللون' : 'يرجى اختيار المقاس واللون' }}
-            </div>
-          </div>
-        </div>
-      </VContainer>
+        <!-- CTA -->
+        <VBtn
+          color="primary"
+          size="large"
+          block
+          :disabled="!canAddToCart"
+          :loading="isAddingToCart"
+          @click="handleAddToCart"
+        >
+          <VIcon icon="tabler-shopping-cart" start />
+          {{ t('catalogue.actions.add_to_cart') }} - {{ totalPrice.toFixed(2) }} MAD
+        </VBtn>
+      </div>
 
     </template>
 
@@ -620,20 +622,43 @@ onBeforeRouteLeave(() => {
 
 <style scoped>
 .product-drawer {
-  direction: rtl;
+  direction: ltr;
 }
 
 .product-drawer__header {
-  position: sticky;
-  top: 0;
-  z-index: 2;
-  background: rgb(var(--v-theme-surface));
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid rgba(var(--v-border-color), 0.12);
 }
 
-.product-drawer__main-image {
+.drawer-content {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(var(--v-theme-primary), 0.3) transparent;
+}
+
+.drawer-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.drawer-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.drawer-content::-webkit-scrollbar-thumb {
+  background: rgba(var(--v-theme-primary), 0.3);
+  border-radius: 3px;
+}
+
+.drawer-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(var(--v-theme-primary), 0.5);
+}
+
+.main-image {
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.thumbnail-container {
   position: relative;
-  overflow: hidden;
 }
 
 .thumbnail {
@@ -645,6 +670,87 @@ onBeforeRouteLeave(() => {
 .thumbnail:hover {
   border-color: rgb(var(--v-theme-primary));
   transform: scale(1.05);
+}
+
+.thumbnail--active {
+  border-color: rgb(var(--v-theme-primary));
+  box-shadow: 0 0 0 1px rgb(var(--v-theme-primary));
+}
+
+.download-btn {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.thumbnail-container:hover .download-btn {
+  opacity: 1;
+}
+
+.color-chip {
+  transition: all 0.2s ease;
+}
+
+.color-chip:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.image-asset {
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+.download-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.image-asset:hover .download-overlay {
+  opacity: 1;
+}
+
+.video-asset {
+  transition: all 0.2s ease;
+}
+
+.video-asset:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.copywriting-content {
+  line-height: 1.6;
+}
+
+.copywriting-content strong {
+  font-weight: 600;
+  color: rgb(var(--v-theme-primary));
+}
+
+.copywriting-content em {
+  font-style: italic;
+  color: rgb(var(--v-theme-secondary));
+}
+
+.border-b {
+  border-bottom: 1px solid rgba(var(--v-border-color), 0.12);
+}
+
+.border-t {
+  border-top: 1px solid rgba(var(--v-border-color), 0.12);
+}
+
+.drawer-footer {
+  backdrop-filter: blur(8px);
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .thumbnail--active {
