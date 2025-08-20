@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Commande;
 use App\Services\CommissionService;
+use App\Services\OrderService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
@@ -12,7 +13,8 @@ use Illuminate\Support\Facades\DB;
 class PreordersController extends Controller
 {
     public function __construct(
-        protected CommissionService $commissionService
+        protected CommissionService $commissionService,
+        protected OrderService $orderService
     ) {}
     /**
      * Display a listing of pre-orders (orders not yet shipped).
@@ -23,14 +25,15 @@ class PreordersController extends Controller
             'boutique:id,nom',
             'affiliate:id,nom_complet,email', // Changed from affilie.utilisateur to affiliate
             'client:id,nom_complet,telephone',
+            'clientFinal:id,nom_complet,telephone,email', // Add client final relationship
             'adresse:id,ville,adresse',
             'articles.produit:id,titre',
             'articles.variante:id,nom'
         ])
         ->select([
-            'id', 'boutique_id', 'user_id', 'client_id', 'adresse_id', 'statut',
+            'id', 'boutique_id', 'user_id', 'client_id', 'client_final_id', 'adresse_id', 'adresse_livraison_id', 'statut',
             'confirmation_cc', 'mode_paiement', 'total_ht', 'total_ttc', 'devise',
-            'notes', 'no_answer_count', 'created_at', 'updated_at'
+            'notes', 'no_answer_count', 'client_final_snapshot', 'created_at', 'updated_at'
         ])
         ->whereIn('statut', ['en_attente', 'confirmee', 'injoignable', 'refusee', 'annulee'])
         ->whereDoesntHave('shippingParcel');
@@ -79,9 +82,19 @@ class PreordersController extends Controller
         $perPage = $request->get('perPage', 15);
         $orders = $query->paginate($perPage);
 
+        // Transform data to include client final information
+        $transformedData = $orders->getCollection()->map(function ($order) {
+            $clientFinalData = $this->orderService->getClientFinalData($order);
+
+            $orderArray = $order->toArray();
+            $orderArray['client_final_data'] = $clientFinalData;
+
+            return $orderArray;
+        });
+
         return response()->json([
             'success' => true,
-            'data' => $orders->items(),
+            'data' => $transformedData,
             'pagination' => [
                 'current_page' => $orders->currentPage(),
                 'last_page' => $orders->lastPage(),
@@ -100,16 +113,22 @@ class PreordersController extends Controller
             'boutique',
             'affiliate', // Changed from affilie.utilisateur to affiliate
             'client',
+            'clientFinal', // Add client final relationship
             'adresse',
+            'adresseLivraison', // Add delivery address relationship
             'articles.produit.images',
             'articles.variante',
             'offre',
             'shippingParcel'
         ])->findOrFail($id);
 
+        // Add client final data to response
+        $orderArray = $order->toArray();
+        $orderArray['client_final_data'] = $this->orderService->getClientFinalData($order);
+
         return response()->json([
             'success' => true,
-            'data' => $order,
+            'data' => $orderArray,
         ]);
     }
 
@@ -128,11 +147,29 @@ class PreordersController extends Controller
             'articles.*.id' => 'sometimes|exists:commande_articles,id',
             'articles.*.quantite' => 'sometimes|integer|min:1',
             'articles.*.prix_unitaire' => 'sometimes|numeric|min:0',
+            // Client final validation
+            'client' => 'sometimes|array',
+            'client.nom_complet' => 'required_with:client|string|min:2|max:255',
+            'client.telephone' => 'required_with:client|string|regex:/^[0-9+\-\s()]{10,}$/',
+            'client.email' => 'sometimes|nullable|email|max:255',
+            'client.adresse' => 'required_with:client|string|max:500',
+            'client.ville' => 'required_with:client|string|max:100',
+            'client.ville_id' => 'sometimes|nullable|string',
+            'client.code_postal' => 'sometimes|nullable|string|max:20',
+            'client.pays' => 'sometimes|string|max:2',
         ]);
 
         DB::transaction(function () use ($order, $validated) {
-            // Update order fields
-            $order->update(collect($validated)->except('articles')->toArray());
+            // Update order fields (excluding articles and client)
+            $order->update(collect($validated)->except(['articles', 'client'])->toArray());
+
+            // Handle client final update if provided
+            if (isset($validated['client'])) {
+                $result = $this->orderService->updateOrderClientFinal($order, $validated['client']);
+                if (!$result['success']) {
+                    throw new \Exception($result['message']);
+                }
+            }
 
             // Update articles if provided
             if (isset($validated['articles'])) {

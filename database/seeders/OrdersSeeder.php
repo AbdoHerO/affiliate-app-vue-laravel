@@ -10,6 +10,7 @@ use App\Models\Adresse;
 use App\Models\ProfilAffilie;
 use App\Models\Boutique;
 use App\Models\Produit;
+use App\Services\OrderService;
 
 class OrdersSeeder extends Seeder
 {
@@ -52,6 +53,9 @@ class OrdersSeeder extends Seeder
             $clients[] = ['client' => $client, 'adresse' => $adresse];
         }
 
+        // Initialize OrderService
+        $orderService = app(OrderService::class);
+
         // Create sample orders
         foreach ($clients as $index => $clientData) {
             $affiliate = $affiliates->random();
@@ -59,6 +63,7 @@ class OrdersSeeder extends Seeder
 
             $commande = Commande::create([
                 'boutique_id' => $boutique->id,
+                'user_id' => $affiliate->utilisateur->id, // Add user_id
                 'affilie_id' => $affiliate->id,
                 'client_id' => $clientData['client']->id,
                 'adresse_id' => $clientData['adresse']->id,
@@ -70,6 +75,22 @@ class OrdersSeeder extends Seeder
                 'devise' => 'MAD',
                 'notes' => $index % 3 === 0 ? 'Commande test avec note spéciale' : null,
             ]);
+
+            // Attach client final data using OrderService
+            $clientFinalData = [
+                'nom_complet' => $clientData['client']->nom_complet,
+                'telephone' => $clientData['client']->telephone,
+                'email' => $clientData['client']->email,
+                'adresse' => $clientData['adresse']->adresse,
+                'ville' => $clientData['adresse']->ville,
+                'code_postal' => $clientData['adresse']->code_postal,
+                'pays' => $clientData['adresse']->pays,
+            ];
+
+            $result = $orderService->attachClientFinal($commande, $clientFinalData);
+            if (!$result['success']) {
+                $this->command->warn("Failed to attach client final to order {$commande->id}: " . $result['message']);
+            }
 
             // Add 1-3 articles per order
             $totalHT = 0;

@@ -64,6 +64,7 @@ use App\Models\Commande;
 use App\Models\CommandeArticle;
 use App\Models\ShippingParcel;
 use App\Models\ProfilAffilie;
+use App\Services\OrderService;
 use Spatie\Permission\Models\Role;
 
 class OrdersE2ETestSeeder extends Seeder
@@ -229,6 +230,7 @@ class OrdersE2ETestSeeder extends Seeder
     private function createOrders($affiliateUsers, $clients, $boutique, $products, int $totalCount = 60): \Illuminate\Support\Collection
     {
         $orders = collect();
+        $orderService = app(OrderService::class);
 
         // Distribute orders across statuses proportionally
         $statusDistribution = [
@@ -274,6 +276,22 @@ class OrdersE2ETestSeeder extends Seeder
                     'notes' => "Commande test {$status} #{$i}",
                     'created_at' => now()->subDays(rand(1, 30)),
                 ]);
+
+                // Attach client final data using OrderService
+                $clientFinalData = [
+                    'nom_complet' => $client->nom_complet,
+                    'telephone' => $client->telephone,
+                    'email' => $client->email,
+                    'adresse' => $clientAddress->adresse,
+                    'ville' => $clientAddress->ville,
+                    'code_postal' => $clientAddress->code_postal,
+                    'pays' => $clientAddress->pays,
+                ];
+
+                $result = $orderService->attachClientFinal($order, $clientFinalData);
+                if (!$result['success']) {
+                    $this->command->warn("Failed to attach client final to order {$order->id}: " . $result['message']);
+                }
 
                 // Create 1-3 order items
                 $this->createOrderItems($order, $products, rand(1, 3));

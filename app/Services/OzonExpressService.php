@@ -65,34 +65,40 @@ class OzonExpressService
                 ];
             })->toArray();
 
-            // Look up the city ID from the shipping cities table (OzonExpress expects city ID)
-            $shippingCity = \App\Models\ShippingCity::where('provider', 'ozonexpress')
-                ->where('name', $commande->adresse->ville)
-                ->where('active', true)
-                ->first();
+            // Get client final data from snapshot (preferred) or fallback to relationships
+            $clientData = $this->getClientDataForShipping($commande);
+            if (!$clientData) {
+                return [
+                    'success' => false,
+                    'message' => 'No client data available for shipping',
+                    'error' => 'Missing client data',
+                ];
+            }
 
-            if (!$shippingCity || empty($shippingCity->city_id)) {
+            // Get city ID for OzonExpress
+            $cityId = $this->getCityIdForShipping($clientData);
+            if (!$cityId) {
                 Log::error('City not found in shipping cities', [
                     'commande_id' => $commande->id,
-                    'requested_city' => $commande->adresse->ville,
+                    'requested_city' => $clientData['ville'],
                     'available_cities_count' => \App\Models\ShippingCity::where('provider', 'ozonexpress')->where('active', true)->count()
                 ]);
 
                 return [
                     'success' => false,
-                    'message' => "City '{$commande->adresse->ville}' not found in OzonExpress shipping cities. Please use a valid city.",
+                    'message' => "City '{$clientData['ville']}' not found in OzonExpress shipping cities. Please use a valid city.",
                     'error' => 'Invalid city',
-                    'requested_city' => $commande->adresse->ville,
+                    'requested_city' => $clientData['ville'],
                 ];
             }
 
-            // Prepare form data for OzonExpress API (use city ID like testCreateParcel)
+            // Prepare form data for OzonExpress API using client final snapshot
             $formData = [
                 'tracking-number' => $trackingNumber ?? '',
-                'parcel-receiver' => $commande->client->nom_complet,
-                'parcel-phone' => $commande->client->telephone,
-                'parcel-city' => $shippingCity->city_id, // Use city ID like testCreateParcel method
-                'parcel-address' => $commande->adresse->adresse,
+                'parcel-receiver' => $clientData['nom_complet'],
+                'parcel-phone' => $clientData['telephone'],
+                'parcel-city' => $cityId,
+                'parcel-address' => $clientData['adresse'],
                 'parcel-note' => $commande->notes ?? '',
                 'parcel-price' => (string) intval($commande->total_ttc),
                 'parcel-nature' => 'Produits divers',
@@ -384,21 +390,31 @@ class OzonExpressService
     {
         $mockTrackingNumber = 'MOCK' . now()->format('YmdHis') . rand(1000, 9999);
 
+        // Get client data from snapshot or fallback
+        $clientData = $this->getClientDataForShipping($commande);
+        if (!$clientData) {
+            return [
+                'success' => false,
+                'message' => 'No client data available for mock parcel creation',
+            ];
+        }
+
         $parcel = ShippingParcel::create([
             'commande_id' => $commande->id,
             'provider' => 'ozonexpress',
             'tracking_number' => $mockTrackingNumber,
             'status' => 'pending',
-            'city_name' => $commande->adresse->ville,
-            'receiver' => $commande->client->nom_complet,
-            'phone' => $commande->client->telephone,
-            'address' => $commande->adresse->adresse,
+            'city_name' => $clientData['ville'],
+            'receiver' => $clientData['nom_complet'],
+            'phone' => $clientData['telephone'],
+            'address' => $clientData['adresse'],
             'price' => 35.00, // Mock delivery price
             'note' => 'Mock parcel created for testing (OzonExpress disabled)',
             'last_synced_at' => now(),
             'meta' => [
                 'mock_data' => true,
                 'created_at' => now()->toISOString(),
+                'client_data_source' => $commande->client_final_snapshot ? 'snapshot' : 'relationships'
             ],
         ]);
 
@@ -1453,5 +1469,69 @@ class OzonExpressService
                 'error' => $e->getMessage(),
             ];
         }
+    }
+
+    /**
+     * Get client data for shipping from snapshot or fallback to relationships
+     */
+    private function getClientDataForShipping(Commande $commande): ?array
+    {
+        // Prefer client_final_snapshot (immutable)
+        if ($commande->client_final_snapshot) {
+            return $commande->client_final_snapshot;
+        }
+
+        // Fallback to clientFinal relationship
+        if ($commande->clientFinal && $commande->adresse) {
+            return [
+                'nom_complet' => $commande->clientFinal->nom_complet,
+                'telephone' => $commande->clientFinal->telephone,
+                'email' => $commande->clientFinal->email,
+                'adresse' => $commande->adresse->adresse,
+                'ville' => $commande->adresse->ville,
+                'ville_id' => null, // Would need lookup
+                'code_postal' => $commande->adresse->code_postal,
+                'pays' => $commande->adresse->pays ?? 'MA'
+            ];
+        }
+
+        // Final fallback to legacy client/address
+        if ($commande->client && $commande->adresse) {
+            return [
+                'nom_complet' => $commande->client->nom_complet,
+                'telephone' => $commande->client->telephone,
+                'email' => $commande->client->email,
+                'adresse' => $commande->adresse->adresse,
+                'ville' => $commande->adresse->ville,
+                'ville_id' => null,
+                'code_postal' => $commande->adresse->code_postal,
+                'pays' => $commande->adresse->pays ?? 'MA'
+            ];
+        }
+
+        return null;
+    }
+
+    /**
+     * Get city ID for shipping from client data
+     */
+    private function getCityIdForShipping(array $clientData): ?string
+    {
+        // If ville_id is already in snapshot, use it
+        if (!empty($clientData['ville_id'])) {
+            return $clientData['ville_id'];
+        }
+
+        // Look up city ID from shipping cities table
+        if (!empty($clientData['ville'])) {
+            $shippingCity = \App\Models\ShippingCity::where('provider', 'ozonexpress')
+                ->where('name', $clientData['ville'])
+                ->where('active', true)
+                ->first();
+
+            return $shippingCity ? $shippingCity->city_id : null;
+        }
+
+        return null;
     }
 }

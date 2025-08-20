@@ -29,6 +29,9 @@ class Commande extends Model
         'affilie_id', // Keep temporarily for rollback safety
         'client_id',
         'adresse_id',
+        'client_final_id',
+        'adresse_livraison_id',
+        'client_final_snapshot',
         'offre_id',
         'statut',
         'confirmation_cc',
@@ -49,6 +52,7 @@ class Commande extends Model
         'total_ht' => 'decimal:2',
         'total_ttc' => 'decimal:2',
         'no_answer_count' => 'integer',
+        'client_final_snapshot' => 'array',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
@@ -84,6 +88,22 @@ class Commande extends Model
     public function client(): BelongsTo
     {
         return $this->belongsTo(Client::class, 'client_id');
+    }
+
+    /**
+     * Get the client final for this order.
+     */
+    public function clientFinal(): BelongsTo
+    {
+        return $this->belongsTo(Client::class, 'client_final_id');
+    }
+
+    /**
+     * Get the delivery address for this order.
+     */
+    public function adresseLivraison(): BelongsTo
+    {
+        return $this->belongsTo(Adresse::class, 'adresse_livraison_id');
     }
 
     /**

@@ -390,4 +390,30 @@ return [
     'validation_integer' => 'Ce champ doit être un nombre entier',
     'validation_uuid' => 'Ce champ doit être un identifiant valide',
     'validation_exists' => 'L\'élément sélectionné n\'existe pas',
+
+    // Client Final
+    'orders' => [
+        'client_final' => [
+            'title' => 'Client final',
+            'copy_address' => 'Copier l\'adresse',
+            'name' => 'Nom complet',
+            'phone' => 'Téléphone',
+            'email' => 'Email',
+            'address' => 'Adresse',
+            'city' => 'Ville',
+            'postal_code' => 'Code postal',
+            'country' => 'Pays',
+            'address_copied' => 'Adresse copiée dans le presse-papiers',
+            'copy_failed' => 'Échec de la copie de l\'adresse',
+        ],
+        'validation' => [
+            'client_name_required' => 'Le nom du client est requis',
+            'client_name_min' => 'Le nom du client doit contenir au moins 2 caractères',
+            'client_phone_required' => 'Le téléphone du client est requis',
+            'client_phone_format' => 'Le format du téléphone est invalide',
+            'client_address_required' => 'L\'adresse du client est requise',
+            'client_city_required' => 'La ville du client est requise',
+            'client_email_format' => 'Le format de l\'email est invalide',
+        ]
+    ],
 ];

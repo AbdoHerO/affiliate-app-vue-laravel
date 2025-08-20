@@ -236,6 +236,50 @@ const goBack = () => {
   router.push({ name: 'admin-orders-pre' })
 }
 
+// Client Final helpers
+const getClientFinalName = () => {
+  return preorder.value?.client_final_data?.nom_complet || preorder.value?.client?.nom_complet || '-'
+}
+
+const getClientFinalPhone = () => {
+  return preorder.value?.client_final_data?.telephone || preorder.value?.client?.telephone || '-'
+}
+
+const getClientFinalEmail = () => {
+  return preorder.value?.client_final_data?.email || preorder.value?.client?.email || null
+}
+
+const getClientFinalCity = () => {
+  return preorder.value?.client_final_data?.ville || preorder.value?.adresse?.ville || '-'
+}
+
+const getClientFinalAddress = () => {
+  return preorder.value?.client_final_data?.adresse || preorder.value?.adresse?.adresse || '-'
+}
+
+const getClientFinalPostalCode = () => {
+  return preorder.value?.client_final_data?.code_postal || preorder.value?.adresse?.code_postal || null
+}
+
+const getClientFinalCountry = () => {
+  return preorder.value?.client_final_data?.pays || preorder.value?.adresse?.pays || 'MA'
+}
+
+// Copy address functionality
+const copyAddress = async () => {
+  const address = `${getClientFinalName()}
+${getClientFinalPhone()}
+${getClientFinalAddress()}
+${getClientFinalCity()}, ${getClientFinalCountry()}`
+
+  try {
+    await navigator.clipboard.writeText(address)
+    showSuccess('Adresse copiée dans le presse-papiers')
+  } catch (error) {
+    showError('Échec de la copie de l\'adresse')
+  }
+}
+
 // Lifecycle
 onMounted(() => {
   fetchPreorder()
@@ -373,38 +417,66 @@ onMounted(() => {
       <VWindow v-model="activeTab">
         <!-- Client Tab -->
         <VWindowItem value="client">
-          <VRow>
-            <VCol cols="12" md="6">
-              <VCard>
-                <VCardTitle>Informations Client</VCardTitle>
-                <VCardText>
+          <!-- Client Final Card -->
+          <VCard class="mb-6">
+            <VCardTitle class="d-flex align-center justify-space-between">
+              <span>{{ $t('orders.client_final.title') }}</span>
+              <VBtn
+                v-if="getClientFinalAddress()"
+                size="small"
+                color="primary"
+                variant="outlined"
+                prepend-icon="tabler-copy"
+                @click="copyAddress"
+              >
+                {{ $t('orders.client_final.copy_address') }}
+              </VBtn>
+            </VCardTitle>
+            <VCardText>
+              <VRow>
+                <VCol cols="12" md="6">
                   <div class="mb-4">
-                    <div class="text-body-2 text-medium-emphasis mb-1">Nom complet</div>
-                    <div class="text-h6">{{ preorder?.client?.nom_complet || '-' }}</div>
+                    <div class="text-body-2 text-medium-emphasis mb-1">{{ $t('orders.client_final.name') }}</div>
+                    <div class="text-h6">{{ getClientFinalName() }}</div>
                   </div>
                   <div class="mb-4">
-                    <div class="text-body-2 text-medium-emphasis mb-1">Téléphone</div>
-                    <div class="text-body-1">{{ preorder?.client?.telephone || '-' }}</div>
+                    <div class="text-body-2 text-medium-emphasis mb-1">{{ $t('orders.client_final.phone') }}</div>
+                    <div class="text-body-1">
+                      <a :href="`tel:${getClientFinalPhone()}`" class="text-decoration-none">
+                        {{ getClientFinalPhone() }}
+                      </a>
+                    </div>
                   </div>
-                </VCardText>
-              </VCard>
-            </VCol>
-            <VCol cols="12" md="6">
-              <VCard>
-                <VCardTitle>Adresse de Livraison</VCardTitle>
-                <VCardText>
+                  <div v-if="getClientFinalEmail()" class="mb-4">
+                    <div class="text-body-2 text-medium-emphasis mb-1">{{ $t('orders.client_final.email') }}</div>
+                    <div class="text-body-1">{{ getClientFinalEmail() }}</div>
+                  </div>
+                </VCol>
+                <VCol cols="12" md="6">
                   <div class="mb-4">
-                    <div class="text-body-2 text-medium-emphasis mb-1">Ville</div>
-                    <div class="text-h6">{{ preorder?.adresse?.ville || '-' }}</div>
+                    <div class="text-body-2 text-medium-emphasis mb-1">{{ $t('orders.client_final.city') }}</div>
+                    <div class="text-h6">
+                      <VChip color="secondary" variant="tonal" size="small">
+                        {{ getClientFinalCity() }}
+                      </VChip>
+                    </div>
                   </div>
                   <div class="mb-4">
-                    <div class="text-body-2 text-medium-emphasis mb-1">Adresse complète</div>
-                    <div class="text-body-1">{{ preorder?.adresse?.adresse || '-' }}</div>
+                    <div class="text-body-2 text-medium-emphasis mb-1">{{ $t('orders.client_final.address') }}</div>
+                    <div class="text-body-1">{{ getClientFinalAddress() }}</div>
                   </div>
-                </VCardText>
-              </VCard>
-            </VCol>
-          </VRow>
+                  <div v-if="getClientFinalPostalCode()" class="mb-4">
+                    <div class="text-body-2 text-medium-emphasis mb-1">{{ $t('orders.client_final.postal_code') }}</div>
+                    <div class="text-body-1">{{ getClientFinalPostalCode() }}</div>
+                  </div>
+                  <div class="mb-4">
+                    <div class="text-body-2 text-medium-emphasis mb-1">{{ $t('orders.client_final.country') }}</div>
+                    <div class="text-body-1">{{ getClientFinalCountry() }}</div>
+                  </div>
+                </VCol>
+              </VRow>
+            </VCardText>
+          </VCard>
         </VWindowItem>
 
         <!-- Articles Tab -->

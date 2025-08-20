@@ -9,6 +9,7 @@ use App\Models\CommandeArticle;
 use App\Models\Produit;
 use App\Models\Adresse;
 use App\Services\OzonExpressService;
+use App\Services\OrderService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -20,6 +21,8 @@ class TestOrdersSeeder extends Seeder
     public function run(): void
     {
         $this->command->info('Creating test orders for OzonExpress shipping...');
+
+        $orderService = app(OrderService::class);
 
         // Test customers data
         $testCustomers = [
@@ -132,6 +135,22 @@ class TestOrdersSeeder extends Seeder
                     'mode_paiement' => 'cod', // Cash on delivery
                     'notes' => 'Commande de test pour OzonExpress - ' . now()->format('Y-m-d H:i'),
                 ]);
+
+                // Attach client final data using OrderService
+                $clientFinalData = [
+                    'nom_complet' => $client->nom_complet,
+                    'telephone' => $client->telephone,
+                    'email' => $client->email,
+                    'adresse' => $adresse->adresse,
+                    'ville' => $adresse->ville,
+                    'code_postal' => $adresse->code_postal,
+                    'pays' => $adresse->pays,
+                ];
+
+                $result = $orderService->attachClientFinal($commande, $clientFinalData);
+                if (!$result['success']) {
+                    $this->command->warn("Failed to attach client final to order {$commande->id}: " . $result['message']);
+                }
 
                 // Add order items
                 foreach ($selectedProducts as $product) {

@@ -4,12 +4,16 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Commande;
+use App\Services\OrderService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 
 class ShippingOrdersController extends Controller
 {
+    public function __construct(
+        protected OrderService $orderService
+    ) {}
     /**
      * Display a listing of shipping orders (orders with parcels).
      */
@@ -19,6 +23,7 @@ class ShippingOrdersController extends Controller
             'boutique:id,nom',
             'affiliate:id,nom_complet,email', // Changed from affilie.utilisateur to affiliate
             'client:id,nom_complet,telephone',
+            'clientFinal:id,nom_complet,telephone,email', // Add client final relationship
             'adresse:id,ville,adresse',
             'shippingParcel'
         ])
@@ -68,9 +73,19 @@ class ShippingOrdersController extends Controller
         $perPage = $request->get('perPage', 15);
         $orders = $query->paginate($perPage);
 
+        // Transform data to include client final information
+        $transformedData = $orders->getCollection()->map(function ($order) {
+            $clientFinalData = $this->orderService->getClientFinalData($order);
+
+            $orderArray = $order->toArray();
+            $orderArray['client_final_data'] = $clientFinalData;
+
+            return $orderArray;
+        });
+
         return response()->json([
             'success' => true,
-            'data' => $orders->items(),
+            'data' => $transformedData,
             'pagination' => [
                 'current_page' => $orders->currentPage(),
                 'last_page' => $orders->lastPage(),
@@ -90,7 +105,9 @@ class ShippingOrdersController extends Controller
             'affilie.utilisateur', // Load the legacy relationship with user
             'affiliate', // Also load the new relationship for compatibility
             'client',
+            'clientFinal', // Add client final relationship
             'adresse',
+            'adresseLivraison', // Add delivery address relationship
             'articles.produit.images',
             'articles.variante',
             'shippingParcel'
@@ -103,9 +120,13 @@ class ShippingOrdersController extends Controller
             ], 404);
         }
 
+        // Add client final data to response
+        $orderArray = $order->toArray();
+        $orderArray['client_final_data'] = $this->orderService->getClientFinalData($order);
+
         return response()->json([
             'success' => true,
-            'data' => $order,
+            'data' => $orderArray,
         ]);
     }
 

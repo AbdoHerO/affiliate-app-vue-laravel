@@ -54,6 +54,7 @@ class DatabaseSeeder extends Seeder
         // 5. ORDERS: Pre-orders and shipping orders
         $this->command->info('📦 Step 5: Orders (Pre-orders & Shipping)');
         $this->call([
+            OrdersSeeder::class,         // Basic orders with client final integration
             OrdersE2ETestSeeder::class,  // Comprehensive order scenarios
         ]);
 

@@ -181,6 +181,19 @@ const formatDate = (date: string) => {
   })
 }
 
+// Client Final helpers
+const getClientFinalName = (item: any) => {
+  return item.client_final_data?.nom_complet || item.client?.nom_complet || 'N/A'
+}
+
+const getClientFinalPhone = (item: any) => {
+  return item.client_final_data?.telephone || item.client?.telephone || 'N/A'
+}
+
+const getClientFinalCity = (item: any) => {
+  return item.client_final_data?.ville || item.adresse?.ville || null
+}
+
 const resetFilters = () => {
   searchQuery.value = ''
   selectedStatus.value = ''
@@ -495,10 +508,13 @@ onMounted(() => {
         <template #item.client="{ item }">
           <div>
             <div class="font-weight-medium">
-              {{ item.client.nom_complet }}
+              {{ getClientFinalName(item) }}
             </div>
             <div class="text-caption text-medium-emphasis">
-              {{ item.client.telephone }}
+              {{ getClientFinalPhone(item) }}
+            </div>
+            <div v-if="getClientFinalCity(item)" class="text-caption text-info">
+              {{ getClientFinalCity(item) }}
             </div>
           </div>
         </template>
