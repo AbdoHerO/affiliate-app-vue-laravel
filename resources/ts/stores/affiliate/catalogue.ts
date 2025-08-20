@@ -665,17 +665,27 @@ export const useCatalogueStore = defineStore('affiliate-catalogue', () => {
       })
 
       if (apiError.value) {
-        showError(apiError.value.message || 'Failed to add to cart')
+        // Handle specific error types
+        if (apiError.value.status === 422) {
+          const validationMessage = apiError.value.data?.message || 'Stock insuffisant ou données invalides'
+          showError(validationMessage)
+        } else if (apiError.value.status === 404) {
+          showError('Produit non trouvé')
+        } else {
+          showError(apiError.value.message || 'Erreur lors de l\'ajout au panier')
+        }
         return false
       }
 
       if (response.value) {
-        showSuccess('Product added to cart successfully')
+        // Don't show success message here - it will be shown in ProductDrawer
         await fetchCartSummary()
         return true
       }
+
+      return false
     } catch (err: any) {
-      showError(err.message || 'Failed to add to cart')
+      showError(err.message || 'Erreur lors de l\'ajout au panier')
       return false
     } finally {
       addingToCart.value = false

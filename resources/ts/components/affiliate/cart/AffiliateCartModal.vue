@@ -2,7 +2,7 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useAffiliateCartStore } from '@/stores/affiliate/cart'
-import { useOzonCitiesStore } from '@/stores/admin/ozonCities'
+// Remove admin store import - we'll use cart store's fetchCities
 import type { ClientFinalForm } from '@/stores/affiliate/cart'
 
 interface Props {
@@ -21,7 +21,10 @@ const emit = defineEmits<Emits>()
 // Composables
 const { t } = useI18n()
 const cartStore = useAffiliateCartStore()
-const citiesStore = useOzonCitiesStore()
+
+// Cities state
+const cities = ref<Array<{ id: string; name: string }>>([])
+const citiesLoading = ref(false)
 
 // State
 const step = ref<'cart' | 'checkout' | 'success'>('cart')
@@ -75,7 +78,7 @@ const canSubmitOrder = computed(() => {
 })
 
 const activeCities = computed(() => {
-  return citiesStore.cities.filter(city => city.active)
+  return cities.value
 })
 
 // Methods
@@ -140,13 +143,25 @@ const resetForm = () => {
   orderRef.value = ''
 }
 
+const loadCities = async () => {
+  if (citiesLoading.value || cities.value.length > 0) return
+
+  citiesLoading.value = true
+  try {
+    const citiesData = await cartStore.fetchCities()
+    cities.value = citiesData
+  } catch (error) {
+    console.error('Failed to load cities:', error)
+  } finally {
+    citiesLoading.value = false
+  }
+}
+
 // Watch for modal open/close
 watch(isOpen, (newValue) => {
   if (newValue) {
     cartStore.fetchCart()
-    if (activeCities.value.length === 0) {
-      citiesStore.fetchCities({ active: true })
-    }
+    loadCities()
   } else {
     resetForm()
   }
@@ -154,9 +169,7 @@ watch(isOpen, (newValue) => {
 
 // Load cities on mount
 onMounted(() => {
-  if (activeCities.value.length === 0) {
-    citiesStore.fetchCities({ active: true })
-  }
+  loadCities()
 })
 </script>
 

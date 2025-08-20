@@ -422,9 +422,31 @@ return [
         'updated' => 'Panier mis à jour',
         'removed' => 'Produit retiré du panier',
         'cleared' => 'Panier vidé',
+        'empty' => 'Votre panier est vide',
         'checkout_success' => 'Commande créée avec succès',
         'checkout_error' => 'Erreur lors de la création de la commande',
         'add_error' => 'Erreur lors de l\'ajout au panier',
         'route_not_found' => 'Route non trouvée'
     ],
+
+    'catalogue' => [
+        'added_to_cart' => 'Ajouté au panier',
+        'actions' => [
+            'add_to_cart' => 'Ajouter au panier'
+        ],
+        'cart' => [
+            'added_success' => 'Produit ajouté au panier avec succès'
+        ]
+    ],
+
+    'errors' => [
+        'add_to_cart_failed' => 'Erreur lors de l\'ajout au panier',
+        'stock_unavailable' => 'Stock insuffisant',
+        'route_not_found' => 'Route non trouvée',
+        'forbidden' => 'Action non autorisée'
+    ],
+
+    'checkout' => [
+        'success' => 'Commande envoyée avec succès'
+    ]
 ];

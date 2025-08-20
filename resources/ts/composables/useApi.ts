@@ -27,7 +27,11 @@ export const useApi = createFetch({
   },
   options: {
     refetch: true,
-    async beforeFetch({ options }) {
+    async beforeFetch({ url, options }) {
+      // Dev guard: warn about double /api paths
+      if (import.meta.env.DEV && url.startsWith('/api/')) {
+        console.warn(`⚠️ [useApi] URL starts with '/api/' but baseURL is already '${getApiBaseUrl()}'. This will result in '/api/api/...' URLs. Use '${url.substring(5)}' instead.`)
+      }
       // Get auth store instance
       const authStore = useAuthStore()
 

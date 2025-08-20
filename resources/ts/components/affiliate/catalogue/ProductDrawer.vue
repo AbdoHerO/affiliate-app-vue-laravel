@@ -3,7 +3,9 @@ import { ref, computed, watch, nextTick } from 'vue'
 import { onBeforeRouteLeave } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useCatalogueStore } from '@/stores/affiliate/catalogue'
+import { useAffiliateCartStore } from '@/stores/affiliate/cart'
 import { useNotifications } from '@/composables/useNotifications'
+import { useAffiliateCartUi } from '@/composables/useAffiliateCartUi'
 
 interface Props {
   modelValue: boolean
@@ -19,7 +21,9 @@ const emit = defineEmits<Emits>()
 
 const { t } = useI18n()
 const store = useCatalogueStore()
+const cartStore = useAffiliateCartStore()
 const { showSuccess, showError } = useNotifications()
+const { openCartDrawer } = useAffiliateCartUi()
 
 // Local state
 const selectedImageIndex = ref(0)
@@ -38,6 +42,7 @@ const isLoading = computed(() => store.detailLoading)
 const isAddingToCart = computed(() => store.addingToCart)
 
 const currentImage = computed(() => {
+  // activeImageUrl is the source of truth
   if (activeImageUrl.value) return activeImageUrl.value
   if (product.value?.gallery.main) return product.value.gallery.main
   return ''
@@ -93,6 +98,7 @@ const matrixTable = computed(() => {
 const handleImageSelect = (index: number) => {
   selectedImageIndex.value = index
   if (product.value?.gallery.thumbnails[index]) {
+    // Explicitly set activeImageUrl when user clicks gallery thumb
     activeImageUrl.value = product.value.gallery.thumbnails[index].url
   }
 }
@@ -101,14 +107,15 @@ const handleColorSelect = (colorName: string) => {
   selectedColor.value = colorName
   store.selectColor(colorName)
 
-  // Update main image if color has specific image
-  const color = product.value?.colors.find(c => c.name === colorName)
-  if (color?.image_url) {
-    activeImageUrl.value = color.image_url
-  } else {
-    // If no specific image, keep current or fallback to main
-    if (!activeImageUrl.value) {
-      activeImageUrl.value = product.value?.gallery.main || ''
+  // Always update activeImageUrl when color changes
+  if (product.value) {
+    const color = store.colors.find(c => c.name === colorName)
+    if (color?.image_url) {
+      // Color has specific image - use it
+      activeImageUrl.value = color.image_url
+    } else {
+      // No specific image for this color - fallback to main product image
+      activeImageUrl.value = product.value.gallery.main || ''
     }
   }
 }
@@ -144,15 +151,30 @@ const openVideo = (url: string) => {
 const handleAddToCart = async () => {
   if (!product.value || !canAddToCart.value) return
 
-  const success = await store.addToCartFromDrawer({
-    produit_id: product.value.id,
-    variante_id: store.selectedVariantId || undefined,
-    qty: store.selectedQty
-  })
+  try {
+    // Use cart store directly instead of catalogue store
+    await cartStore.addItem({
+      produit_id: product.value.id,
+      variante_id: store.selectedVariantId || undefined,
+      qty: store.selectedQty
+    })
 
-  if (success) {
+    // If we get here, the add was successful
+    showSuccess(t('catalogue.cart.added_success'))
+
     // Reset selections
     store.selectedQty = 1
+
+    // Auto-close the ProductDrawer
+    isOpen.value = false
+
+    // Optionally open cart drawer after a short delay
+    setTimeout(() => {
+      openCartDrawer()
+    }, 300)
+  } catch (error) {
+    // Error was already handled in cart store, just keep drawer open
+    console.error('Add to cart error:', error)
   }
 }
 
@@ -160,9 +182,9 @@ const handleAddToCart = async () => {
 watch(() => props.productId, async (newId) => {
   if (newId && props.modelValue) {
     await store.fetchOneForDrawer(newId)
-    // Reset image selection
+    // Reset image selection and set initial activeImageUrl
     selectedImageIndex.value = 0
-    activeImageUrl.value = ''
+    activeImageUrl.value = product.value?.gallery.main || ''
     selectedColor.value = ''
     selectedSize.value = ''
   }
@@ -171,6 +193,12 @@ watch(() => props.productId, async (newId) => {
 watch(() => props.modelValue, (isOpen) => {
   if (isOpen && props.productId) {
     store.fetchOneForDrawer(props.productId)
+    // Initialize activeImageUrl when opening
+    nextTick(() => {
+      if (!activeImageUrl.value && product.value?.gallery.main) {
+        activeImageUrl.value = product.value.gallery.main
+      }
+    })
   } else if (!isOpen) {
     // Reset state when closing
     store.selectedColor = null

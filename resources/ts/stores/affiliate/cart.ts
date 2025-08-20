@@ -75,35 +75,48 @@ export const useAffiliateCartStore = defineStore('affiliate-cart', () => {
   const fetchCart = async () => {
     loading.value = true
     error.value = null
+    console.log('🔄 [Cart Store] Fetching cart...')
 
     try {
-      const { data, error: apiError } = await useApi('/api/affiliate/cart/summary', {
+      const { data, error: apiError } = await useApi('affiliate/cart/summary', {
         method: 'GET'
       })
+
+      console.log('📡 [Cart Store] Fetch cart response:', { data: data.value, error: apiError.value })
 
       if (apiError.value) {
         throw apiError.value
       }
 
       if (data.value) {
-        items.value = data.value.items || []
+        const responseData = data.value as any
+        items.value = responseData.items || []
         summary.value = {
-          items_count: data.value.items_count || 0,
-          total_amount: data.value.total_amount || 0,
-          estimated_commission: data.value.estimated_commission || 0
+          items_count: responseData.items_count || 0,
+          total_amount: responseData.total_amount || 0,
+          estimated_commission: responseData.estimated_commission || 0
         }
+        
+        console.log('✅ [Cart Store] Cart updated:', {
+          itemsCount: items.value.length,
+          summaryCount: summary.value.items_count,
+          totalAmount: summary.value.total_amount
+        })
       }
     } catch (err: any) {
       error.value = err.message || 'Erreur lors du chargement du panier'
-      showError(error.value)
+      console.error('❌ [Cart Store] Fetch cart error:', err)
+      showError(error.value || 'Erreur lors du chargement du panier')
     } finally {
       loading.value = false
     }
   }
 
   const addItem = async (item: { produit_id: string; variante_id?: string; qty: number }) => {
+    console.log('🔄 [Cart Store] Adding item:', item)
+    
     try {
-      const { data, error: apiError } = await useApi('/api/affiliate/cart/add', {
+      const { data, error: apiError } = await useApi('affiliate/cart/add', {
         method: 'POST',
         body: JSON.stringify(item),
         headers: {
@@ -111,23 +124,41 @@ export const useAffiliateCartStore = defineStore('affiliate-cart', () => {
         }
       })
 
+      console.log('📡 [Cart Store] API response:', { data: data.value, error: apiError.value })
+
       if (apiError.value) {
-        throw apiError.value
+        // Handle specific error types
+        if (apiError.value.status === 422) {
+          // Validation errors (stock issues, etc.)
+          const validationMessage = apiError.value.data?.message || 'Stock insuffisant ou données invalides'
+          showError(validationMessage)
+          throw new Error(validationMessage)
+        } else if (apiError.value.status === 404) {
+          showError('Produit non trouvé')
+          throw new Error('Produit non trouvé')
+        } else {
+          throw apiError.value
+        }
       }
 
       showSuccess('Ajouté au panier')
+      console.log('✅ [Cart Store] Item added successfully, refreshing cart...')
       await fetchCart() // Refresh cart
+      console.log('🔄 [Cart Store] Cart refreshed, new count:', items.value.length)
       return data.value
     } catch (err: any) {
+      console.error('❌ [Cart Store] Add item error:', err)
       const message = err.message || 'Erreur lors de l\'ajout au panier'
-      showError(message)
+      if (!err.message) {
+        showError(message)
+      }
       throw err
     }
   }
 
   const updateItem = async (itemKey: string, updates: { qty?: number; variante_id?: string }) => {
     try {
-      const { data, error: apiError } = await useApi('/api/affiliate/cart/items', {
+      const { data, error: apiError } = await useApi('affiliate/cart/items', {
         method: 'PATCH',
         body: JSON.stringify({ item_key: itemKey, ...updates }),
         headers: {
@@ -151,7 +182,7 @@ export const useAffiliateCartStore = defineStore('affiliate-cart', () => {
 
   const removeItem = async (itemKey: string) => {
     try {
-      const { data, error: apiError } = await useApi('/api/affiliate/cart/items', {
+      const { data, error: apiError } = await useApi('affiliate/cart/items', {
         method: 'DELETE',
         body: JSON.stringify({ item_key: itemKey }),
         headers: {
@@ -175,7 +206,7 @@ export const useAffiliateCartStore = defineStore('affiliate-cart', () => {
 
   const clear = async () => {
     try {
-      const { data, error: apiError } = await useApi('/api/affiliate/cart/clear', {
+      const { data, error: apiError } = await useApi('affiliate/cart/clear', {
         method: 'DELETE'
       })
 
@@ -200,7 +231,7 @@ export const useAffiliateCartStore = defineStore('affiliate-cart', () => {
 
   const preview = async () => {
     try {
-      const { data, error: apiError } = await useApi('/api/affiliate/cart/preview', {
+      const { data, error: apiError } = await useApi('/affiliate/cart/preview', {
         method: 'POST'
       })
 
@@ -221,7 +252,7 @@ export const useAffiliateCartStore = defineStore('affiliate-cart', () => {
     error.value = null
 
     try {
-      const { data, error: apiError } = await useApi('/api/affiliate/checkout', {
+      const { data, error: apiError } = await useApi('affiliate/checkout', {
         method: 'POST',
         body: JSON.stringify({
           receiver_name: clientData.nom_complet,
@@ -239,8 +270,9 @@ export const useAffiliateCartStore = defineStore('affiliate-cart', () => {
         throw apiError.value
       }
 
-      if (data.value?.success) {
-        showSuccess(data.value.message || 'Commande créée avec succès')
+      const responseData = data.value as any
+      if (responseData?.success) {
+        showSuccess(responseData.message || 'Commande créée avec succès')
         // Clear cart after successful checkout
         items.value = []
         summary.value = {
@@ -253,10 +285,34 @@ export const useAffiliateCartStore = defineStore('affiliate-cart', () => {
       return data.value as CheckoutResponse
     } catch (err: any) {
       error.value = err.message || 'Erreur lors de la validation de la commande'
-      showError(error.value)
+      showError(error.value || 'Erreur lors de la validation de la commande')
       throw err
     } finally {
       loading.value = false
+    }
+  }
+
+  const fetchCities = async (searchQuery?: string) => {
+    try {
+      const params = new URLSearchParams()
+      if (searchQuery) {
+        params.append('q', searchQuery)
+      }
+      params.append('per_page', '100')
+
+      const { data, error: apiError } = await useApi(`affiliate/ozon/cities?${params.toString()}`, {
+        method: 'GET'
+      })
+
+      if (apiError.value) {
+        throw apiError.value
+      }
+
+      return (data.value as any)?.data || []
+    } catch (err: any) {
+      console.error('❌ [Cart Store] Fetch cities error:', err)
+      showError('Erreur lors du chargement des villes')
+      return []
     }
   }
 
@@ -281,6 +337,7 @@ export const useAffiliateCartStore = defineStore('affiliate-cart', () => {
     removeItem,
     clear,
     preview,
-    checkout
+    checkout,
+    fetchCities
   }
 })

@@ -5,8 +5,11 @@ import { useCatalogueStore } from '@/stores/affiliate/catalogue'
 import { useAffiliateCartStore } from '@/stores/affiliate/cart'
 import { useApi } from '@/composables/useApi'
 import { useNotifications } from '@/composables/useNotifications'
+import { useAffiliateCartUi } from '@/composables/useAffiliateCartUi'
 import CatalogueCard from '@/components/affiliate/catalogue/CatalogueCard.vue'
 import ProductDrawer from '@/components/affiliate/catalogue/ProductDrawer.vue'
+import AffiliateHeaderCart from '@/components/affiliate/cart/AffiliateHeaderCart.vue'
+import AffiliateCartModal from '@/components/affiliate/cart/AffiliateCartModal.vue'
 
 definePage({
   meta: {
@@ -19,6 +22,7 @@ const { t } = useI18n()
 const catalogueStore = useCatalogueStore()
 const cartStore = useAffiliateCartStore()
 const { showSuccess, showError } = useNotifications()
+const { cartDrawerOpen, openCartDrawer, closeCartDrawer } = useAffiliateCartUi()
 
 // Local state
 const searchQuery = ref('')
@@ -83,9 +87,7 @@ const loadData = async () => {
     size: selectedSize.value || undefined,
     color: selectedColor.value || undefined,
     page: pagination.value.current_page,
-    per_page: pagination.value.per_page,
-    sort,
-    dir
+    per_page: pagination.value.per_page
   })
 }
 
@@ -134,6 +136,8 @@ const handleProductOpen = async (productId: string) => {
   try {
     selectedProductId.value = productId
     showProductDrawer.value = true
+    // Note: Initial variant selection would be passed here if needed
+    // For now, the drawer will start with no variants selected
   } catch (error) {
     showProductDrawer.value = false
     showError('Erreur lors du chargement du produit')
@@ -142,9 +146,22 @@ const handleProductOpen = async (productId: string) => {
 
 const handleAddToCart = async (data: { produit_id: string; variante_id?: string; qty: number }) => {
   try {
+    console.log('🛒 [Catalogue] Adding to cart:', data)
+    
+    // Add item using cart store
     await cartStore.addItem(data)
+    
+    // Refresh cart to ensure sync
+    await cartStore.fetchCart()
+    
+    // Also refresh catalogue cart summary
+    await catalogueStore.fetchCartSummary()
+    
     showSuccess('Ajouté au panier')
+    
+    console.log('✅ [Catalogue] Item added, cart count:', cartStore.count)
   } catch (error) {
+    console.error('❌ [Catalogue] Add to cart error:', error)
     showError('Erreur lors de l\'ajout au panier')
   }
 }
@@ -170,8 +187,8 @@ const loadCategories = async () => {
       throw error.value
     }
 
-    if (data.value?.data) {
-      categories.value = data.value.data.filter((cat: any) => cat.actif)
+    if (data.value && (data.value as any).data) {
+      categories.value = (data.value as any).data.filter((cat: any) => cat.actif)
     }
   } catch (err) {
     console.error('Error loading categories:', err)
@@ -195,6 +212,9 @@ onMounted(async () => {
 
   // Load cart summary
   await catalogueStore.fetchCartSummary()
+  
+  // Load cart data
+  await cartStore.fetchCart()
 })
 </script>
 
@@ -219,16 +239,46 @@ onMounted(async () => {
         </p>
       </div>
       
-      <!-- Cart Summary -->
-      <VCard v-if="catalogueStore.cartSummary.items_count > 0" variant="outlined">
-        <VCardText class="d-flex align-center gap-3">
-          <VIcon icon="tabler-shopping-cart" color="primary" />
-          <div>
-            <div class="text-body-2">{{ t('catalogue.cart.items_count', { count: catalogueStore.cartSummary.items_count }) }}</div>
-            <div class="text-caption text-medium-emphasis">{{ catalogueStore.cartSummary.total_amount }} MAD</div>
-          </div>
-        </VCardText>
-      </VCard>
+      <div class="d-flex align-center gap-4">
+        <!-- Beautiful Cart Button -->
+        <div class="cart-button-container">
+          <!-- Cart Summary Badge (when has items) -->
+          <VChip
+            v-if="cartStore.count > 0"
+            color="success"
+            variant="elevated"
+            size="small"
+            class="cart-summary-chip mb-2"
+          >
+            <VIcon icon="tabler-check-circle" start size="16" />
+            {{ cartStore.count }} article{{ cartStore.count > 1 ? 's' : '' }} • {{ cartStore.subtotal.toFixed(2) }} MAD
+          </VChip>
+          
+          <!-- Main Cart Button -->
+          <VBtn
+            color="primary"
+            variant="elevated"
+            size="large"
+            class="cart-button"
+            @click="openCartDrawer"
+          >
+            <VBadge
+              :content="cartStore.count"
+              :model-value="cartStore.count > 0"
+              color="error"
+              offset-x="-5"
+              offset-y="-5"
+            >
+              <div class="d-flex align-center gap-2">
+                <VIcon icon="tabler-shopping-cart" size="20" />
+                <span class="cart-button-text">
+                  {{ cartStore.count > 0 ? 'Voir Panier' : 'Panier' }}
+                </span>
+              </div>
+            </VBadge>
+          </VBtn>
+        </div>
+      </div>
     </div>
 
     <!-- Filters Bar -->
@@ -357,6 +407,13 @@ onMounted(async () => {
       v-model="showProductDrawer"
       :product-id="selectedProductId"
     />
+
+    <!-- Cart Modal -->
+    <AffiliateCartModal
+      v-model="cartDrawerOpen"
+      @close="closeCartDrawer"
+      @success="closeCartDrawer"
+    />
   </div>
 </template>
 
@@ -389,6 +446,71 @@ onMounted(async () => {
 @media (max-width: 600px) {
   .affiliate-catalogue {
     padding: 12px;
+  }
+}
+
+/* Beautiful Cart Button Styles */
+.cart-button-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  position: relative;
+}
+
+.cart-summary-chip {
+  animation: slideInFromTop 0.3s ease-out;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.cart-button {
+  position: relative;
+  border-radius: 16px !important;
+  padding: 12px 20px !important;
+  box-shadow: 0 4px 12px rgba(var(--v-theme-primary), 0.3) !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  background: linear-gradient(135deg, rgb(var(--v-theme-primary)), rgba(var(--v-theme-primary), 0.8)) !important;
+}
+
+.cart-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(var(--v-theme-primary), 0.4) !important;
+}
+
+.cart-button:active {
+  transform: translateY(0);
+}
+
+.cart-button-text {
+  font-weight: 600;
+  font-size: 0.875rem;
+  white-space: nowrap;
+}
+
+/* Animation */
+@keyframes slideInFromTop {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive cart button */
+@media (max-width: 768px) {
+  .cart-button-text {
+    display: none;
+  }
+  
+  .cart-button {
+    padding: 10px !important;
+    min-width: 48px !important;
+  }
+  
+  .cart-summary-chip {
+    font-size: 0.75rem;
   }
 }
 </style>

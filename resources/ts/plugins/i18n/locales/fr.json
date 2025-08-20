@@ -1655,6 +1655,13 @@
   "catalogue.actions.add_to_cart": "Ajouter au panier",
   "catalogue.sizes": "Tailles disponibles",
   "catalogue.colors": "Couleurs disponibles",
+  "catalogue.detail.quantity": "Quantité",
+  "catalogue.select.color": "Sélectionnez une couleur",
+  "catalogue.select.size": "Sélectionnez une taille", 
+  "catalogue.qty.max_zero": "Stock épuisé pour cette variante",
+  "catalogue.table.quantity": "Quantité",
+  "catalogue.cart.added_success": "Produit ajouté au panier avec succès",
+  "catalogue.cart.items_count": "{count} article(s)",
   "drawer.table.size": "Taille",
   "drawer.table.qty": "Quantité disponible",
 
@@ -1716,6 +1723,13 @@
   "catalogue.cart.added_success": "Produit ajouté au panier avec succès",
   "catalogue.cart.removed_success": "Produit retiré du panier",
   "catalogue.cart.error": "Erreur lors de l'opération sur le panier",
+  "catalogue.cart.updated": "Panier mis à jour",
+  "catalogue.cart.cleared": "Panier vidé",
+  "catalogue.cart.stock_unavailable": "Stock insuffisant",
+  "catalogue.cart.product_not_found": "Produit non trouvé",
+  "catalogue.cart.validation_error": "Données invalides",
+  "catalogue.added_to_cart": "Ajouté au panier",
+  "error.route_not_found": "Route non trouvée",
 
   // Filters
   "catalogue.filters.apply": "Appliquer les filtres",

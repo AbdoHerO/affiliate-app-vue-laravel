@@ -190,10 +190,11 @@ const handleImageError = () => {
 
 // Reset selections when product changes
 watch(() => props.product.id, () => {
-  selectedSizeId.value = ''
-  selectedColorId.value = ''
+  selectedSize.value = ''
+  selectedColor.value = ''
   quantity.value = 1
-  currentImage.value = props.product.mainImage
+  imageError.value = false
+  imageLoading.value = true
 })
 </script>
 
@@ -201,7 +202,6 @@ watch(() => props.product.id, () => {
   <VCard
     class="catalogue-card"
     elevation="2"
-    @click="handleViewDetails"
   >
     <!-- Product Image -->
     <div class="catalogue-card__image-container">
@@ -240,7 +240,7 @@ watch(() => props.product.id, () => {
         class="catalogue-card__eye-btn"
         @click.stop="handleViewDetails"
       >
-        <VIcon icon="tabler-message-circle" />
+        <VIcon icon="tabler-eye" />
       </VBtn>
     </div>
 

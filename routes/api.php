@@ -436,6 +436,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
         // Categories for affiliate (read-only)
         Route::get('categories', [App\Http\Controllers\Admin\CategorieController::class, 'index']);
 
+        // Ozon cities for affiliate (read-only)
+        Route::get('ozon/cities', [App\Http\Controllers\Affiliate\OzonCitiesController::class, 'index']);
+
         // Cart routes
         Route::prefix('cart')->group(function () {
             Route::post('add', [App\Http\Controllers\Affiliate\CartController::class, 'addItem']);

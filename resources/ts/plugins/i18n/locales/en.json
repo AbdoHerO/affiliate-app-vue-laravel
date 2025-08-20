@@ -1554,6 +1554,11 @@
   "catalogue.cart.added_success": "Product added to cart successfully",
   "catalogue.cart.removed_success": "Product removed from cart",
   "catalogue.cart.error": "Error with cart operation",
+  "catalogue.cart.updated": "Cart updated",
+  "catalogue.cart.cleared": "Cart cleared",
+  "catalogue.cart.stock_unavailable": "Insufficient stock",
+  "catalogue.cart.product_not_found": "Product not found",
+  "catalogue.cart.validation_error": "Invalid data",
 
   // Filters
   "catalogue.filters.apply": "Apply filters",

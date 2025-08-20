@@ -1,26 +1,14 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { onMounted } from 'vue'
 import { useAffiliateCartStore } from '@/stores/affiliate/cart'
-import AffiliateCartModal from './AffiliateCartModal.vue'
+import { useAffiliateCartUi } from '@/composables/useAffiliateCartUi'
+import AffiliateCartDrawer from './AffiliateCartDrawer.vue'
 
-// Store
+// Store and UI state
 const cartStore = useAffiliateCartStore()
+const { cartDrawerOpen, openCartDrawer, closeCartDrawer } = useAffiliateCartUi()
 
-// State
-const showCartModal = ref(false)
-
-// Methods
-const openCart = () => {
-  showCartModal.value = true
-}
-
-const handleCartClose = () => {
-  showCartModal.value = false
-}
-
-const handleCartSuccess = () => {
-  showCartModal.value = false
-}
+// Methods are now handled directly by the composable
 
 // Load cart on mount
 onMounted(() => {
@@ -35,7 +23,7 @@ onMounted(() => {
       icon
       variant="text"
       color="default"
-      @click="openCart"
+      @click="openCartDrawer"
     >
       <VBadge
         :content="cartStore.count"
@@ -48,11 +36,11 @@ onMounted(() => {
       </VBadge>
     </VBtn>
 
-    <!-- Cart Modal -->
-    <AffiliateCartModal
-      v-model="showCartModal"
-      @close="handleCartClose"
-      @success="handleCartSuccess"
+    <!-- Cart Drawer -->
+    <AffiliateCartDrawer
+      v-model="cartDrawerOpen"
+      @close="closeCartDrawer"
+      @success="closeCartDrawer"
     />
   </div>
 </template>
