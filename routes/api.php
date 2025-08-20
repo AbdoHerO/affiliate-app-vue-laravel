@@ -184,6 +184,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('produits/{produit}/variantes/{variante}/image', [ProduitVarianteController::class, 'uploadImage']);
         Route::delete('produits/{produit}/variantes/{variante}', [ProduitVarianteController::class, 'destroy']);
 
+        // Product Stock Management
+        Route::post('produits/{produit}/stock/allocate', [ProduitController::class, 'allocateStock']);
+        Route::get('produits/{produit}/stock/summary', [ProduitController::class, 'getStockSummary']);
+
         // Product Propositions Management
         Route::get('produits/{produit}/propositions', [ProduitPropositionController::class, 'index']);
         Route::post('produits/{produit}/propositions', [ProduitPropositionController::class, 'store']);

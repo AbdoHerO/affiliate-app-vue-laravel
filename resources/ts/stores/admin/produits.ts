@@ -112,6 +112,7 @@ export interface ProduitFormData {
   slug?: string
   actif: boolean
   rating_value?: number | null
+  stock_total?: number | null
 }
 
 export interface ProduitFilters {

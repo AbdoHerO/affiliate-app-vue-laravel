@@ -7,6 +7,7 @@ use App\Http\Requests\Admin\StoreProduitRequest;
 use App\Http\Requests\Admin\UpdateProduitRequest;
 use App\Http\Resources\ProduitResource;
 use App\Models\Produit;
+use App\Services\StockAllocationService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Str;
@@ -345,6 +346,76 @@ class ProduitController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Error generating share link: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Allocate stock to product variants
+     */
+    public function allocateStock(Request $request, string $id): JsonResponse
+    {
+        try {
+            $request->validate([
+                'stock_total' => 'required|integer|min:0',
+                'variant_stocks' => 'required|array',
+                'variant_stocks.*.variante_id' => 'required|string|exists:produit_variantes,id',
+                'variant_stocks.*.qty' => 'required|integer|min:0',
+            ]);
+
+            $stockService = new StockAllocationService();
+
+            $updatedSnapshot = $stockService->allocate(
+                $id,
+                $request->input('stock_total'),
+                $request->input('variant_stocks')
+            );
+
+            // Get updated product data
+            $product = Produit::with(['boutique', 'categorie', 'images', 'videos', 'variantes'])
+                ->findOrFail($id);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Stock allocated successfully',
+                'data' => [
+                    'product' => new ProduitResource($product),
+                    'stock_snapshot' => $updatedSnapshot,
+                ]
+            ]);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error allocating stock: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get stock summary for a product
+     */
+    public function getStockSummary(string $id): JsonResponse
+    {
+        try {
+            $stockService = new StockAllocationService();
+            $summary = $stockService->getProductStockSummary($id);
+
+            return response()->json([
+                'success' => true,
+                'data' => $summary
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error getting stock summary: ' . $e->getMessage()
             ], 500);
         }
     }

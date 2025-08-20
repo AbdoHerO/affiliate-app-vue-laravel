@@ -68,6 +68,7 @@ const form = ref<ProduitFormData>({
   notes_admin: '',
   actif: true,
   rating_value: null,
+  stock_total: null,
 })
 
 // Form errors handling
@@ -120,6 +121,37 @@ const availableValues = ref<any[]>([])
 const loadingAttributes = ref(false)
 const loadingValues = ref(false)
 
+// Stock management state
+const stockForm = reactive({
+  stock_total: 0,
+  variant_stocks: [] as Array<{ variante_id: string; qty: number; reserved?: number }>
+})
+
+// Stock computed properties
+const sizeVariants = computed(() => {
+  return variantes.value.filter(variant => {
+    // Check the nom field which contains the attribute name
+    const attributeName = variant.nom?.toLowerCase() || ''
+    return ['taille', 'size'].includes(attributeName)
+  })
+})
+
+const totalVariantStock = computed(() => {
+  return stockForm.variant_stocks.reduce((sum, stock) => sum + (stock.qty || 0), 0)
+})
+
+const totalReservedStock = computed(() => {
+  return stockForm.variant_stocks.reduce((sum, stock) => sum + (stock.reserved || 0), 0)
+})
+
+const totalAvailableStock = computed(() => {
+  return totalVariantStock.value - totalReservedStock.value
+})
+
+const stockMismatch = computed(() => {
+  return stockForm.stock_total !== totalVariantStock.value
+})
+
 // Computed
 const readyForMedia = computed(() => !!localId.value)
 const isEditMode = computed(() => props.mode === 'edit')
@@ -166,7 +198,13 @@ const loadProduct = async () => {
           notes_admin: (p as any).notes_admin || '',
           actif: p.actif,
           rating_value: (p as any).rating_value || null,
+          stock_total: (p as any).stock_total || null,
         }
+
+        // Initialize stock form after loading product
+        nextTick(() => {
+          initializeStockForm()
+        })
         localId.value = p.id
         console.debug('[ProductForm] Edit mode - variants loaded:', variantes.value.map(v => ({ id: v.id, nom: v.nom, valeur: v.valeur, image_url: v.image_url })))
 
@@ -251,6 +289,9 @@ const saveProduct = async () => {
       emit('updated', updated)
       clearProductErrors()
       showSuccess('Product updated successfully')
+
+      // Handle stock allocation if there are changes
+      await handleStockAllocation()
     } else {
       console.error('[ProductForm] Invalid state: create mode but no localId and no create action')
       showError('Invalid form state')
@@ -758,6 +799,85 @@ const uploadVariantImage = async (id: string, file: File) => {
   }
 }
 
+// Stock management methods
+const getVariantStock = (variantId: string) => {
+  let stock = stockForm.variant_stocks.find(s => s.variante_id === variantId)
+  if (!stock) {
+    stock = { variante_id: variantId, qty: 0, reserved: 0 }
+    stockForm.variant_stocks.push(stock)
+  }
+  return stock
+}
+
+const updateVariantStock = (variantId: string, qty: string | number) => {
+  const stock = getVariantStock(variantId)
+  stock.qty = Number(qty) || 0
+}
+
+const distributeStock = () => {
+  if (!stockForm.stock_total || !sizeVariants.value.length) return
+
+  const perVariant = Math.floor(stockForm.stock_total / sizeVariants.value.length)
+  const remainder = stockForm.stock_total % sizeVariants.value.length
+
+  sizeVariants.value.forEach((variant, index) => {
+    const qty = perVariant + (index === 0 ? remainder : 0)
+    updateVariantStock(variant.id, qty)
+  })
+
+  showSuccess('Stock distributed across size variants')
+}
+
+const initializeStockForm = () => {
+  if (form.value.stock_total) {
+    stockForm.stock_total = form.value.stock_total
+  }
+
+  // Initialize variant stocks from existing data
+  sizeVariants.value.forEach(variant => {
+    if (!stockForm.variant_stocks.find(s => s.variante_id === variant.id)) {
+      stockForm.variant_stocks.push({
+        variante_id: variant.id,
+        qty: 0,
+        reserved: 0
+      })
+    }
+  })
+}
+
+const handleStockAllocation = async () => {
+  if (!localId.value || !stockForm.variant_stocks.length) return
+
+  // Check if there are any stock changes
+  const hasStockChanges = stockForm.variant_stocks.some(stock => stock.qty > 0) || stockForm.stock_total > 0
+  if (!hasStockChanges) return
+
+  // Show confirmation if there's a stock mismatch
+  if (stockMismatch.value) {
+    const confirmed = await confirmUpdate('stock allocation', 'Stock totals do not match. Continue anyway?')
+    if (!confirmed) return
+  }
+
+  try {
+    const { data, error } = await useApi(`/admin/produits/${localId.value}/stock/allocate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        stock_total: stockForm.stock_total,
+        variant_stocks: stockForm.variant_stocks.filter(stock => stock.qty > 0)
+      })
+    })
+
+    if (error.value) {
+      showError(error.value.message || 'Failed to allocate stock')
+    } else if (data.value && (data.value as any).success) {
+      showSuccess('Stock allocated successfully')
+    }
+  } catch (error: any) {
+    showError(error.message || 'Failed to allocate stock')
+  }
+}
+
 // Proposition methods
 const addProposition = async (propositionData: { titre: string; description: string; type: string }) => {
   if (!localId.value) return
@@ -1110,6 +1230,10 @@ onMounted(async () => {
           <VIcon icon="tabler-versions" class="me-2" />
           Variants
         </VTab>
+        <VTab :disabled="!readyForMedia" value="stock">
+          <VIcon icon="tabler-package" class="me-2" />
+          {{ $t('product.tabs.stock') }}
+        </VTab>
         <VTab :disabled="!readyForMedia" value="propositions">
           <VIcon icon="tabler-list-details" class="me-2" />
           Propositions
@@ -1319,7 +1443,7 @@ onMounted(async () => {
                   <label class="text-subtitle-2 mb-2 d-block">{{ $t('products.rating.value') }}</label>
                   <VRating
                     :model-value="form.rating_value || 0"
-                    @update:model-value="(value) => form.rating_value = value || null"
+                    @update:model-value="(value) => form.rating_value = Number(value) || null"
                     half-increments
                     length="5"
                     color="warning"
@@ -1737,6 +1861,121 @@ onMounted(async () => {
             <VAlert v-else type="info" variant="tonal">
               No variants created yet. Add variants to offer different options for your product.
             </VAlert>
+          </div>
+        </VTabsWindowItem>
+
+        <!-- Stock Tab -->
+        <VTabsWindowItem value="stock">
+          <div v-if="!readyForMedia" class="text-center py-12">
+            <VIcon icon="tabler-package-off" size="64" color="grey-lighten-1" class="mb-4" />
+            <h3 class="text-h6 mb-2">Save Product First</h3>
+            <p class="text-body-2 text-medium-emphasis">
+              You need to save the product details before managing stock.
+            </p>
+          </div>
+
+          <div v-else>
+            <!-- Global Stock Section -->
+            <VCard variant="outlined" class="mb-6">
+              <VCardTitle>{{ $t('product.stock.global') }}</VCardTitle>
+              <VCardText>
+                <VRow>
+                  <VCol cols="12" md="6">
+                    <VTextField
+                      v-model.number="stockForm.stock_total"
+                      :label="$t('product.stock.total')"
+                      type="number"
+                      variant="outlined"
+                      min="0"
+                      suffix="unités"
+                    />
+                  </VCol>
+                  <VCol cols="12" md="6" class="d-flex align-end">
+                    <VBtn
+                      color="primary"
+                      variant="outlined"
+                      :disabled="!sizeVariants.length || !stockForm.stock_total"
+                      @click="distributeStock"
+                    >
+                      <VIcon icon="tabler-arrows-split" start />
+                      {{ $t('product.stock.distribute') }}
+                    </VBtn>
+                  </VCol>
+                </VRow>
+              </VCardText>
+            </VCard>
+
+            <!-- Per-Variant Stock Section -->
+            <VCard variant="outlined" class="mb-6">
+              <VCardTitle>{{ $t('product.stock.per_variant') }}</VCardTitle>
+              <VCardText>
+                <div v-if="!sizeVariants.length" class="text-center py-8">
+                  <VIcon icon="tabler-versions-off" size="48" color="grey-lighten-1" class="mb-4" />
+                  <p class="text-body-2 text-medium-emphasis">
+                    No size variants found. Create size variants first to manage stock per variant.
+                  </p>
+                </div>
+
+                <div v-else>
+                  <!-- Stock Table -->
+                  <VTable density="compact">
+                    <thead>
+                      <tr>
+                        <th>{{ $t('product.stock.size') }}</th>
+                        <th>{{ $t('product.stock.qty') }}</th>
+                        <th>{{ $t('product.stock.reserved') }}</th>
+                        <th>{{ $t('product.stock.available') }}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="variant in sizeVariants" :key="variant.id">
+                        <td class="font-weight-medium">{{ variant.valeur }}</td>
+                        <td>
+                          <VTextField
+                            v-model.number="getVariantStock(variant.id).qty"
+                            type="number"
+                            variant="outlined"
+                            density="compact"
+                            min="0"
+                            style="width: 100px;"
+                            hide-details
+                            @update:model-value="updateVariantStock(variant.id, $event)"
+                          />
+                        </td>
+                        <td class="text-medium-emphasis">
+                          {{ getVariantStock(variant.id).reserved || 0 }}
+                        </td>
+                        <td class="font-weight-medium">
+                          {{ Math.max(0, (getVariantStock(variant.id).qty || 0) - (getVariantStock(variant.id).reserved || 0)) }}
+                        </td>
+                      </tr>
+                    </tbody>
+                    <tfoot>
+                      <tr class="bg-grey-lighten-4">
+                        <td class="font-weight-bold">Total</td>
+                        <td class="font-weight-bold">{{ totalVariantStock }}</td>
+                        <td class="font-weight-bold">{{ totalReservedStock }}</td>
+                        <td class="font-weight-bold">{{ totalAvailableStock }}</td>
+                      </tr>
+                    </tfoot>
+                  </VTable>
+
+                  <!-- Stock Mismatch Warning -->
+                  <VAlert
+                    v-if="stockMismatch"
+                    type="warning"
+                    variant="tonal"
+                    class="mt-4"
+                  >
+                    <VIcon icon="tabler-alert-triangle" start />
+                    {{ $t('product.stock.mismatch_warning') }}
+                    <br>
+                    <strong>Stock total: {{ stockForm.stock_total }}</strong> |
+                    <strong>Somme variantes: {{ totalVariantStock }}</strong>
+                  </VAlert>
+                </div>
+              </VCardText>
+            </VCard>
           </div>
         </VTabsWindowItem>
 

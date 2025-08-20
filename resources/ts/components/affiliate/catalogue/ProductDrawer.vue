@@ -104,6 +104,27 @@ const totalProfit = computed(() => {
   return product.value.prix_affilie * store.selectedQty
 })
 
+// Size-only stock table (aggregated by size across all colors)
+const sizesTable = computed(() => {
+  if (!product.value?.matrix) return []
+
+  const sizeStockMap = new Map<string, number>()
+
+  // Aggregate stock by size across all colors
+  product.value.matrix.forEach(item => {
+    if (item.size) {
+      const currentQty = sizeStockMap.get(item.size) || 0
+      sizeStockMap.set(item.size, currentQty + item.stock)
+    }
+  })
+
+  // Convert to array format
+  return Array.from(sizeStockMap.entries()).map(([size, qty]) => ({
+    size,
+    qty
+  }))
+})
+
 // Methods
 const handleImageSelect = (index: number) => {
   selectedImageIndex.value = index
@@ -220,6 +241,9 @@ const formatCopywriting = (text: string): string => {
     // Preserve emojis and special characters
     .trim()
 }
+
+// Utility methods
+
 </script>
 
 <template>
@@ -478,28 +502,26 @@ const formatCopywriting = (text: string): string => {
 
         <!-- Zone 3: Assets & Variants Tables -->
         <div class="pa-6">
-          <!-- Stock Matrix Table -->
-          <div v-if="product.matrix.length" class="mb-6">
-            <h3 class="text-h6 mb-3">Matrice de stock</h3>
+          <!-- Size Stock Table (Simplified) -->
+          <div v-if="sizesTable.length" class="mb-6">
+            <h3 class="text-h6 mb-3">{{ t('drawer.table.size') }} - Stock disponible</h3>
             <VTable density="compact">
               <thead>
                 <tr>
-                  <th>{{ t('catalogue.table.size') }}</th>
-                  <th>{{ t('catalogue.table.color') }}</th>
-                  <th>{{ t('catalogue.table.qty') }}</th>
+                  <th>{{ t('drawer.table.size') }}</th>
+                  <th>{{ t('drawer.table.qty') }}</th>
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="(item, index) in product.matrix" :key="index">
-                  <td>{{ item.size || '-' }}</td>
-                  <td>{{ item.color || '-' }}</td>
+                <tr v-for="(item, index) in sizesTable" :key="index">
+                  <td class="font-weight-medium">{{ item.size }}</td>
                   <td>
                     <VChip
-                      :color="item.stock > 0 ? 'success' : 'error'"
+                      :color="item.qty > 0 ? 'success' : 'error'"
                       size="small"
                       variant="tonal"
                     >
-                      {{ item.stock }}
+                      {{ item.qty }}
                     </VChip>
                   </td>
                 </tr>
