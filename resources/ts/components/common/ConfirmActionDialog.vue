@@ -3,7 +3,6 @@
     :model-value="isDialogVisible"
     max-width="500"
     persistent
-    @update:model-value="handleCancel"
     @keydown.enter="handleConfirm"
     @keydown.esc="handleCancel"
   >

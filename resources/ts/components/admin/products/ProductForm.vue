@@ -105,10 +105,14 @@ const newVideoUrl = ref('')
 const newVariant = reactive({
   attribut_id: '',
   valeur_id: '',
+  valeur_ids: [] as string[], // For multi-select
   nom: '',
   valeur: '',
   prix_vente_variante: null as number | null
 })
+
+// Multi-select mode toggle
+const isMultiSelectMode = ref(false)
 
 // Variant catalog state
 const availableAttributes = ref<any[]>([])
@@ -583,6 +587,7 @@ const fetchValues = async (attributId: string) => {
 
 const onAttributeChange = () => {
   newVariant.valeur_id = ''
+  newVariant.valeur_ids = []
   availableValues.value = []
   if (newVariant.attribut_id) {
     fetchValues(newVariant.attribut_id)
@@ -620,14 +625,7 @@ const addVariant = async () => {
       const response = data.value as any
       if (response.success) {
         variantes.value.push(response.data)
-        Object.assign(newVariant, {
-          attribut_id: '',
-          valeur_id: '',
-          nom: '',
-          valeur: '',
-          prix_vente_variante: null
-        })
-        availableValues.value = []
+        resetVariantForm()
         showSuccess('Variant added successfully')
       }
     }
@@ -635,6 +633,66 @@ const addVariant = async () => {
     console.error('Error adding variant:', error)
     showError(error.message || 'Failed to add variant')
   }
+}
+
+const addVariantsBulk = async () => {
+  if (!localId.value || !newVariant.attribut_id || !newVariant.valeur_ids.length) {
+    console.warn('[ProductForm] Cannot add variants: missing product ID, attribute, or values')
+    return
+  }
+
+  // Show confirm dialog before adding
+  const confirmed = await confirmCreate(`${newVariant.valeur_ids.length} variantes`)
+  if (!confirmed) return
+
+  console.debug('[ProductForm] [productId] add-variants-bulk:', localId.value, newVariant.valeur_ids)
+  try {
+    const { data, error: apiError } = await useApi(`/admin/produits/${localId.value}/variantes/bulk`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        attribut_id: newVariant.attribut_id,
+        valeur_ids: newVariant.valeur_ids,
+        prix_vente_variante: newVariant.prix_vente_variante,
+        actif: true
+      })
+    })
+
+    if (apiError.value) {
+      showError(apiError.value.message || 'Failed to add variants')
+      console.error('Add variants bulk error:', apiError.value)
+    } else if (data.value) {
+      const response = data.value as any
+      if (response.success) {
+        // Add created variants to the list
+        if (response.data.created) {
+          variantes.value.push(...response.data.created)
+        }
+        resetVariantForm()
+        showSuccess(response.message || 'Variants added successfully')
+
+        // Show additional info if some were skipped
+        if (response.data.skipped && response.data.skipped.length > 0) {
+          console.info('Skipped variants:', response.data.skipped)
+        }
+      }
+    }
+  } catch (error: any) {
+    console.error('Error adding variants bulk:', error)
+    showError(error.message || 'Failed to add variants')
+  }
+}
+
+const resetVariantForm = () => {
+  Object.assign(newVariant, {
+    attribut_id: '',
+    valeur_id: '',
+    valeur_ids: [],
+    nom: '',
+    valeur: '',
+    prix_vente_variante: null
+  })
+  availableValues.value = []
 }
 const deleteVariant = async (id: string) => {
   if (!localId.value) return
@@ -1506,7 +1564,16 @@ onMounted(async () => {
 
             <VCard variant="outlined" class="mb-6">
               <VCardTitle class="d-flex justify-space-between align-center">
-                Add New Variant
+                <div class="d-flex align-center gap-4">
+                  <span>Add New Variant</span>
+                  <VSwitch
+                    v-model="isMultiSelectMode"
+                    label="Multi-select"
+                    color="primary"
+                    density="compact"
+                    hide-details
+                  />
+                </div>
                 <VBtn
                   variant="text"
                   size="small"
@@ -1533,7 +1600,9 @@ onMounted(async () => {
                     />
                   </VCol>
                   <VCol cols="12" md="3">
+                    <!-- Single Select Mode -->
                     <VSelect
+                      v-if="!isMultiSelectMode"
                       v-model="newVariant.valeur_id"
                       label="Value"
                       variant="outlined"
@@ -1542,6 +1611,21 @@ onMounted(async () => {
                       item-value="id"
                       placeholder="Select value"
                       :disabled="!newVariant.attribut_id"
+                    />
+                    <!-- Multi Select Mode -->
+                    <VSelect
+                      v-else
+                      v-model="newVariant.valeur_ids"
+                      label="Values"
+                      variant="outlined"
+                      :items="availableValues"
+                      item-title="libelle"
+                      item-value="id"
+                      placeholder="Select multiple values"
+                      :disabled="!newVariant.attribut_id"
+                      multiple
+                      chips
+                      closable-chips
                     />
                   </VCol>
                   <VCol cols="12" md="3">
@@ -1556,13 +1640,25 @@ onMounted(async () => {
                     />
                   </VCol>
                   <VCol cols="12" md="3" class="d-flex align-end">
+                    <!-- Single Mode Button -->
                     <VBtn
+                      v-if="!isMultiSelectMode"
                       color="primary"
                       block
                       :disabled="!newVariant.attribut_id || !newVariant.valeur_id"
                       @click="addVariant"
                     >
                       Add Variant
+                    </VBtn>
+                    <!-- Multi Mode Button -->
+                    <VBtn
+                      v-else
+                      color="primary"
+                      block
+                      :disabled="!newVariant.attribut_id || !newVariant.valeur_ids.length"
+                      @click="addVariantsBulk"
+                    >
+                      Add {{ newVariant.valeur_ids.length || 0 }} Variants
                     </VBtn>
                   </VCol>
                 </VRow>

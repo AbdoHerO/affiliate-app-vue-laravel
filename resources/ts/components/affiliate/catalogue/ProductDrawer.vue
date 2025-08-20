@@ -46,10 +46,11 @@ const images = computed(() => {
 const availableSizes = computed(() => {
   if (!props.product?.variantes) return []
   return props.product.variantes
-    .filter(variant =>
-      ['taille', 'size'].includes(variant.attribut_principal.toLowerCase()) &&
-      variant.stock > 0
-    )
+    .filter(variant => {
+      // Use catalog system for consistent identification
+      const attributCode = variant.attribut?.code || variant.attribut_principal?.toLowerCase()
+      return ['taille', 'size'].includes(attributCode) && variant.stock > 0
+    })
     .map(variant => ({
       id: variant.id,
       value: variant.valeur,
@@ -60,10 +61,11 @@ const availableSizes = computed(() => {
 const availableColors = computed(() => {
   if (!props.product?.variantes) return []
   return props.product.variantes
-    .filter(variant =>
-      ['couleur', 'color'].includes(variant.attribut_principal.toLowerCase()) &&
-      variant.stock > 0
-    )
+    .filter(variant => {
+      // Use catalog system for consistent identification
+      const attributCode = variant.attribut?.code || variant.attribut_principal?.toLowerCase()
+      return ['couleur', 'color'].includes(attributCode) && variant.stock > 0
+    })
     .map(variant => ({
       id: variant.id,
       value: variant.valeur,
@@ -149,6 +151,26 @@ const openVideo = (url: string) => {
   window.open(url, '_blank')
 }
 
+const downloadImage = (url: string, filename: string) => {
+  const link = document.createElement('a')
+  link.href = url
+  link.download = `${filename}.jpg`
+  link.target = '_blank'
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+}
+
+const downloadVideo = (url: string, filename: string) => {
+  const link = document.createElement('a')
+  link.href = url
+  link.download = `${filename}.mp4`
+  link.target = '_blank'
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+}
+
 // Format copywriting with line breaks and bold text
 const formatCopywriting = (text: string): string => {
   if (!text) return ''
@@ -230,42 +252,244 @@ onBeforeRouteLeave(() => {
       </div>
 
       <!-- Main Content -->
-      <div class="pa-4">
-        <!-- Main Product Image -->
-        <div class="product-drawer__main-image mb-4">
-          <VImg
-            :src="currentImage"
-            :alt="product.titre"
-            aspect-ratio="0.8"
-            cover
-            class="rounded-lg w-100"
-            style="max-height: 400px;"
-          />
-        </div>
-
-        <!-- Thumbnail Images -->
-        <div v-if="images.length > 1" class="product-drawer__thumbnails mb-4">
-          <div class="d-flex gap-2 justify-center">
+      <VContainer fluid class="pa-0">
+        <!-- Product Images Section -->
+        <div class="pa-4 border-b">
+          <!-- Main Product Image -->
+          <div class="product-drawer__main-image mb-4">
             <VImg
-              v-for="(image, index) in images.slice(0, 4)"
-              :key="index"
-              :src="image.url"
-              :alt="`${product.titre} - Image ${index + 1}`"
-              width="60"
-              height="80"
+              :src="currentImage"
+              :alt="product.titre"
+              aspect-ratio="0.8"
               cover
-              class="rounded cursor-pointer thumbnail"
-              :class="{ 'thumbnail--active': selectedImageIndex === index }"
-              @click="handleImageSelect(index)"
+              class="rounded-lg w-100"
+              style="max-height: 400px;"
             />
           </div>
+
+          <!-- Thumbnail Images with Download -->
+          <div v-if="images.length > 1" class="product-drawer__thumbnails mb-4">
+            <div class="d-flex gap-2 justify-center flex-wrap">
+              <div
+                v-for="(image, index) in images"
+                :key="index"
+                class="position-relative"
+              >
+                <VImg
+                  :src="image.url"
+                  :alt="`${product.titre} - Image ${index + 1}`"
+                  width="60"
+                  height="80"
+                  cover
+                  class="rounded cursor-pointer thumbnail"
+                  :class="{ 'thumbnail--active': selectedImageIndex === index }"
+                  @click="handleImageSelect(index)"
+                />
+                <VBtn
+                  icon="tabler-download"
+                  size="x-small"
+                  variant="elevated"
+                  color="primary"
+                  class="position-absolute download-btn"
+                  style="top: 2px; right: 2px;"
+                  @click.stop="downloadImage(image.url, `${product.titre}_image_${index + 1}`)"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Videos Section -->
+          <div v-if="product.videos && product.videos.length" class="mb-4">
+            <h4 class="text-subtitle-2 mb-2">فيديوهات المنتج</h4>
+            <div class="d-flex gap-2 flex-wrap">
+              <VCard
+                v-for="(video, index) in product.videos"
+                :key="index"
+                variant="outlined"
+                class="video-card"
+                width="120"
+              >
+                <VCardText class="pa-2 text-center">
+                  <VIcon icon="tabler-video" size="24" class="mb-1" />
+                  <div class="text-caption">{{ video.titre || `Video ${index + 1}` }}</div>
+                  <div class="d-flex gap-1 mt-2">
+                    <VBtn
+                      icon="tabler-eye"
+                      size="x-small"
+                      variant="outlined"
+                      @click="openVideo(video.url)"
+                    />
+                    <VBtn
+                      icon="tabler-download"
+                      size="x-small"
+                      variant="outlined"
+                      @click="downloadVideo(video.url, video.titre || `${product.titre}_video_${index + 1}`)"
+                    />
+                  </div>
+                </VCardText>
+              </VCard>
+            </div>
+          </div>
         </div>
+        <!-- Product Information Section -->
+        <div class="pa-4 border-b">
+          <h3 class="text-h6 mb-3">معلومات المنتج</h3>
+
+          <VRow dense>
+            <VCol cols="6">
+              <div class="text-caption text-medium-emphasis">الفئة</div>
+              <div class="text-body-2 font-weight-medium">{{ product.categorie?.nom || 'غير محدد' }}</div>
+            </VCol>
+            <VCol cols="6">
+              <div class="text-caption text-medium-emphasis">المتجر</div>
+              <div class="text-body-2 font-weight-medium">{{ product.boutique?.nom || 'غير محدد' }}</div>
+            </VCol>
+            <VCol cols="6">
+              <div class="text-caption text-medium-emphasis">سعر الشراء</div>
+              <div class="text-body-2 font-weight-medium">{{ product.prix_achat }} MAD</div>
+            </VCol>
+            <VCol cols="6">
+              <div class="text-caption text-medium-emphasis">سعر البيع</div>
+              <div class="text-body-2 font-weight-medium">{{ product.prix_vente }} MAD</div>
+            </VCol>
+            <VCol cols="6">
+              <div class="text-caption text-medium-emphasis">عمولة الشريك</div>
+              <div class="text-body-2 font-weight-medium text-success">{{ product.prix_affilie }} MAD</div>
+            </VCol>
+            <VCol cols="6">
+              <div class="text-caption text-medium-emphasis">المخزون الإجمالي</div>
+              <div class="text-body-2 font-weight-medium">{{ product.stock_total }}</div>
+            </VCol>
+            <VCol v-if="product.quantite_min" cols="6">
+              <div class="text-caption text-medium-emphasis">الحد الأدنى للطلب</div>
+              <div class="text-body-2 font-weight-medium">{{ product.quantite_min }}</div>
+            </VCol>
+            <VCol v-if="product.rating_value" cols="6">
+              <div class="text-caption text-medium-emphasis">التقييم</div>
+              <div class="d-flex align-center">
+                <VRating
+                  :model-value="product.rating_value"
+                  readonly
+                  density="compact"
+                  size="small"
+                  color="warning"
+                />
+                <span class="text-caption ms-1">({{ product.rating_value }}/{{ product.rating_max || 5 }})</span>
+              </div>
+            </VCol>
+          </VRow>
+
+          <!-- Product Description -->
+          <div v-if="product.description" class="mt-4">
+            <div class="text-caption text-medium-emphasis mb-1">الوصف</div>
+            <div class="text-body-2">{{ product.description }}</div>
+          </div>
+
+          <!-- Admin Notes -->
+          <div v-if="product.notes_admin" class="mt-4">
+            <div class="text-caption text-medium-emphasis mb-1">ملاحظات الإدارة</div>
+            <VAlert
+              type="info"
+              variant="tonal"
+              density="compact"
+              class="text-body-2"
+            >
+              {{ product.notes_admin }}
+            </VAlert>
+          </div>
+        </div>
+
+        <!-- Variants Table Section -->
+        <div v-if="product.variantes && product.variantes.length" class="pa-4 border-b">
+          <h3 class="text-h6 mb-3">جدول المتغيرات</h3>
+
+          <!-- Size Variants Table -->
+          <div v-if="availableSizes.length" class="mb-4">
+            <h4 class="text-subtitle-2 mb-2">الأحجام المتوفرة</h4>
+            <VTable density="compact">
+              <thead>
+                <tr>
+                  <th>الحجم</th>
+                  <th>المخزون</th>
+                  <th>الحالة</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="size in availableSizes" :key="size.id">
+                  <td class="font-weight-medium">{{ size.value }}</td>
+                  <td>{{ size.stock }}</td>
+                  <td>
+                    <VChip
+                      :color="size.stock > 0 ? 'success' : 'error'"
+                      size="small"
+                      variant="tonal"
+                    >
+                      {{ size.stock > 0 ? 'متوفر' : 'غير متوفر' }}
+                    </VChip>
+                  </td>
+                </tr>
+              </tbody>
+            </VTable>
+          </div>
+
+          <!-- Color Variants Table -->
+          <div v-if="availableColors.length" class="mb-4">
+            <h4 class="text-subtitle-2 mb-2">الألوان المتوفرة</h4>
+            <VTable density="compact">
+              <thead>
+                <tr>
+                  <th>اللون</th>
+                  <th>الصورة</th>
+                  <th>المخزون</th>
+                  <th>الحالة</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="color in availableColors" :key="color.id">
+                  <td class="font-weight-medium">{{ color.value }}</td>
+                  <td>
+                    <VImg
+                      v-if="color.image_url"
+                      :src="color.image_url"
+                      width="30"
+                      height="30"
+                      cover
+                      class="rounded"
+                    />
+                    <span v-else class="text-caption text-medium-emphasis">لا توجد صورة</span>
+                  </td>
+                  <td>{{ color.stock }}</td>
+                  <td>
+                    <VChip
+                      :color="color.stock > 0 ? 'success' : 'error'"
+                      size="small"
+                      variant="tonal"
+                    >
+                      {{ color.stock > 0 ? 'متوفر' : 'غير متوفر' }}
+                    </VChip>
+                  </td>
+                </tr>
+              </tbody>
+            </VTable>
+          </div>
+        </div>
+
+        <!-- Copywriting Section -->
+        <div v-if="product.copywriting" class="pa-4 border-b">
+          <h3 class="text-h6 mb-3">النص التسويقي</h3>
+          <div class="copywriting-section pa-3 bg-grey-lighten-5 rounded">
+            <div class="text-body-2 copywriting-content" v-html="formatCopywriting(product.copywriting)"></div>
+          </div>
+        </div>
+
         <!-- Variant Selection Section -->
-        <div class="variant-selection mb-4">
+        <div class="pa-4 border-b">
+          <h3 class="text-h6 mb-3">اختيار المتغيرات</h3>
+
           <!-- Size Selection -->
           <div v-if="availableSizes.length" class="mb-3">
-            <div class="text-body-2 font-weight-medium mb-2 text-center">الأحجام المتوفرة</div>
-            <div class="d-flex justify-center gap-2 flex-wrap">
+            <div class="text-body-2 font-weight-medium mb-2">الأحجام المتوفرة</div>
+            <div class="d-flex gap-2 flex-wrap">
               <VChip
                 v-for="size in availableSizes"
                 :key="size.id"
@@ -282,8 +506,8 @@ onBeforeRouteLeave(() => {
 
           <!-- Color Selection -->
           <div v-if="availableColors.length" class="mb-3">
-            <div class="text-body-2 font-weight-medium mb-2 text-center">الألوان المتوفرة</div>
-            <div class="d-flex justify-center gap-2 flex-wrap">
+            <div class="text-body-2 font-weight-medium mb-2">الألوان المتوفرة</div>
+            <div class="d-flex gap-2 flex-wrap">
               <VChip
                 v-for="color in availableColors"
                 :key="color.id"
@@ -299,66 +523,65 @@ onBeforeRouteLeave(() => {
           </div>
         </div>
 
-        <!-- Copywriting Section -->
-        <div v-if="product.copywriting" class="copywriting-section mb-4 pa-3 bg-grey-lighten-5 rounded">
-          <div class="text-body-2 copywriting-content" v-html="formatCopywriting(product.copywriting)"></div>
-        </div>
+        <!-- Order Section -->
+        <div class="pa-4">
+          <h3 class="text-h6 mb-3">إضافة إلى السلة</h3>
 
-        <!-- Rating Section -->
-        <div v-if="product.rating_value" class="rating-section mb-4 text-center">
-          <VRating
-            :model-value="product.rating_value"
-            readonly
-            length="5"
-            half-increments
-            color="warning"
-            size="large"
-            class="mb-2"
-          />
-          <div class="text-caption text-medium-emphasis">
-            {{ product.rating_value }} من 5 نجوم
+          <!-- Quantity Selection -->
+          <div class="mb-4">
+            <div class="text-body-2 font-weight-medium mb-2">الكمية</div>
+            <div class="d-flex align-center gap-2">
+              <VBtn
+                icon="tabler-minus"
+                size="small"
+                variant="outlined"
+                :disabled="quantity <= 1"
+                @click="quantity--"
+              />
+              <VTextField
+                v-model.number="quantity"
+                type="number"
+                variant="outlined"
+                density="compact"
+                style="width: 80px;"
+                min="1"
+                :max="maxQuantity"
+                hide-details
+              />
+              <VBtn
+                icon="tabler-plus"
+                size="small"
+                variant="outlined"
+                :disabled="quantity >= maxQuantity"
+                @click="quantity++"
+              />
+              <span class="text-caption text-medium-emphasis">الحد الأقصى: {{ maxQuantity }}</span>
+            </div>
           </div>
-        </div>
 
-        <!-- Videos Section -->
-        <div v-if="product.videos && product.videos.length > 0" class="videos-section mb-4">
-          <div class="text-body-2 font-weight-medium mb-2 text-center">فيديوهات المنتج</div>
-          <div class="d-flex gap-2 justify-center flex-wrap">
-            <VBtn
-              v-for="(video, index) in product.videos.slice(0, 2)"
-              :key="index"
-              variant="outlined"
-              color="primary"
-              size="small"
-              prepend-icon="tabler-play"
-              @click="openVideo(video.url)"
-            >
-              فيديو {{ index + 1 }}
-            </VBtn>
-          </div>
-        </div>
-
-        <!-- Product Features -->
-        <div class="product-features mb-4">
-          <div class="d-flex align-center mb-2">
-            <VIcon icon="tabler-check-circle" color="success" size="16" class="me-2" />
-            <span class="text-body-2">الشحن مجاني لجميع المدن</span>
-          </div>
-          <div class="d-flex align-center mb-2">
-            <VIcon icon="tabler-check-circle" color="success" size="16" class="me-2" />
-            <span class="text-body-2">متوفر بجميع المقاسات</span>
-          </div>
-          <div class="d-flex align-center mb-2">
-            <VIcon icon="tabler-check-circle" color="success" size="16" class="me-2" />
-            <span class="text-body-2">جودة عالية ومضمونة</span>
-          </div>
-          <div class="d-flex align-center">
-            <VIcon icon="tabler-currency-dirham" color="warning" size="16" class="me-2" />
-            <span class="text-body-2 font-weight-medium">السعر: {{ product.prix_vente }} درهم</span>
+          <!-- Price Summary -->
+          <div class="mb-4 pa-3 bg-grey-lighten-5 rounded">
+            <div class="d-flex justify-space-between mb-1">
+              <span class="text-body-2">سعر الوحدة:</span>
+              <span class="text-body-2 font-weight-medium">{{ product.prix_vente }} MAD</span>
+            </div>
+            <div class="d-flex justify-space-between mb-1">
+              <span class="text-body-2">الكمية:</span>
+              <span class="text-body-2 font-weight-medium">{{ quantity }}</span>
+            </div>
+            <VDivider class="my-2" />
+            <div class="d-flex justify-space-between">
+              <span class="text-body-1 font-weight-medium">المجموع:</span>
+              <span class="text-body-1 font-weight-bold text-primary">{{ (product.prix_vente * quantity).toFixed(2) }} MAD</span>
+            </div>
+            <div class="d-flex justify-space-between mt-1">
+              <span class="text-caption text-success">عمولتك:</span>
+              <span class="text-caption font-weight-medium text-success">{{ (product.prix_affilie * quantity).toFixed(2) }} MAD</span>
+            </div>
           </div>
         </div>
         <!-- Order Button -->
-        <div class="order-section pa-4 border-t">
+        <div class="pa-4 border-t">
           <VBtn
             color="primary"
             size="large"
@@ -367,7 +590,7 @@ onBeforeRouteLeave(() => {
             @click="handleAddToCart"
           >
             <VIcon icon="tabler-shopping-cart" class="me-2" />
-            تحميل
+            إضافة إلى السلة
           </VBtn>
 
           <!-- Selection Status -->
@@ -383,7 +606,7 @@ onBeforeRouteLeave(() => {
             </div>
           </div>
         </div>
-      </div>
+      </VContainer>
 
     </template>
 
@@ -472,4 +695,44 @@ onBeforeRouteLeave(() => {
   color: rgb(var(--v-theme-secondary));
 }
 
+.download-btn {
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.thumbnail:hover .download-btn {
+  opacity: 1;
+}
+
+.video-card {
+  transition: all 0.2s ease;
+}
+
+.video-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.border-b {
+  border-bottom: 1px solid rgba(var(--v-border-color), 0.12);
+}
+
+.border-t {
+  border-top: 1px solid rgba(var(--v-border-color), 0.12);
+}
+
+/* Table styling */
+.v-table {
+  background: transparent;
+}
+
+.v-table th {
+  font-weight: 600;
+  color: rgb(var(--v-theme-on-surface));
+  background: rgba(var(--v-theme-surface-variant), 0.3);
+}
+
+.v-table td {
+  border-bottom: 1px solid rgba(var(--v-border-color), 0.08);
+}
 </style>

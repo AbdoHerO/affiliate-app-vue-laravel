@@ -113,6 +113,101 @@ class ProduitVarianteController extends Controller
     }
 
     /**
+     * Store multiple variants at once.
+     */
+    public function storeBulk(Request $request, Produit $produit): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'attribut_id' => 'required|exists:variant_attributs,id,actif,1',
+            'valeur_ids' => 'required|array|min:1',
+            'valeur_ids.*' => 'required|exists:variant_valeurs,id,actif,1',
+            'prix_vente_variante' => 'nullable|numeric|min:0',
+            'actif' => 'boolean'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            $attribut = VariantAttribut::find($request->attribut_id);
+            $createdVariants = [];
+            $skippedVariants = [];
+            $errors = [];
+
+            foreach ($request->valeur_ids as $valeurId) {
+                // Validate that the valeur belongs to the attribut
+                $valeur = VariantValeur::where('id', $valeurId)
+                    ->where('attribut_id', $request->attribut_id)
+                    ->first();
+
+                if (!$valeur) {
+                    $errors[] = "Value ID {$valeurId} does not belong to the selected attribute";
+                    continue;
+                }
+
+                // Check for duplicate combination
+                $existingVariant = $produit->variantes()
+                    ->where('attribut_id', $request->attribut_id)
+                    ->where('valeur_id', $valeurId)
+                    ->first();
+
+                if ($existingVariant) {
+                    $skippedVariants[] = [
+                        'attribut' => $attribut->nom,
+                        'valeur' => $valeur->libelle,
+                        'reason' => 'Already exists'
+                    ];
+                    continue;
+                }
+
+                // Create the variant
+                $variante = $produit->variantes()->create([
+                    'attribut_id' => $request->attribut_id,
+                    'valeur_id' => $valeurId,
+                    'nom' => $attribut->nom, // Mirror to legacy field
+                    'valeur' => $valeur->libelle, // Mirror to legacy field
+                    'prix_vente_variante' => $request->prix_vente_variante,
+                    'actif' => $request->boolean('actif', true)
+                ]);
+
+                // Load relationships for response
+                $variante->load(['attribut', 'valeur']);
+                $createdVariants[] = $variante;
+            }
+
+            $message = count($createdVariants) . ' variant(s) created successfully';
+            if (count($skippedVariants) > 0) {
+                $message .= ', ' . count($skippedVariants) . ' variant(s) skipped (already exist)';
+            }
+            if (count($errors) > 0) {
+                $message .= ', ' . count($errors) . ' error(s) occurred';
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => $message,
+                'data' => [
+                    'created' => $createdVariants,
+                    'skipped' => $skippedVariants,
+                    'errors' => $errors
+                ]
+            ], 201);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Bulk variant creation failed',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Display the specified variant.
      */
     public function show(Produit $produit, ProduitVariante $variante): JsonResponse

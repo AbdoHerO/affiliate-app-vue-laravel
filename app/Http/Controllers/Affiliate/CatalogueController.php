@@ -29,7 +29,7 @@ class CatalogueController extends Controller
                     },
                     'variantes' => function ($query) {
                         $query->where('actif', true)->orderBy('nom', 'asc')
-                              ->with(['stocks']);
+                              ->with(['stocks', 'attribut', 'valeur']);
                     }
                 ]);
 

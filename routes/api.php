@@ -178,6 +178,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         // Product Variants Management
         Route::get('produits/{produit}/variantes', [ProduitVarianteController::class, 'index']);
         Route::post('produits/{produit}/variantes', [ProduitVarianteController::class, 'store']);
+        Route::post('produits/{produit}/variantes/bulk', [ProduitVarianteController::class, 'storeBulk']);
         Route::get('produits/{produit}/variantes/{variante}', [ProduitVarianteController::class, 'show']);
         Route::put('produits/{produit}/variantes/{variante}', [ProduitVarianteController::class, 'update']);
         Route::post('produits/{produit}/variantes/{variante}/image', [ProduitVarianteController::class, 'uploadImage']);

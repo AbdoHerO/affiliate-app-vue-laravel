@@ -7,7 +7,22 @@ import { useNotifications } from '@/composables/useNotifications'
 export interface CatalogueProduct {
   id: string
   titre: string
+  description?: string
+  copywriting?: string
+  prix_achat: number
+  prix_vente: number
+  prix_affilie: number
+  stock_total: number
+  quantite_min?: number
+  notes_admin?: string
+  rating_value?: number | null
+  rating_max?: number
+  slug?: string
   categorie: {
+    id: string
+    nom: string
+  } | null
+  boutique?: {
     id: string
     nom: string
   } | null
@@ -20,15 +35,7 @@ export interface CatalogueProduct {
     titre?: string
     ordre?: number
   }>
-  prix_achat: number
-  prix_vente: number
-  prix_affilie: number
-  stock_total: number
   variantes: CatalogueVariant[]
-  rating_value?: number | null
-  slug?: string
-  description?: string
-  copywriting?: string
 }
 
 export interface CatalogueVariant {
@@ -145,20 +152,23 @@ export const useCatalogueStore = defineStore('affiliate-catalogue', () => {
     product.variantes?.forEach(v => {
       const stock = v.stock || 0
 
-      if (v.attribut_principal === 'taille' || v.attribut_principal === 'size') {
+      // Use catalog system for consistent identification
+      const attributCode = (v as any).attribut?.code || v.attribut_principal?.toLowerCase()
+
+      if (['taille', 'size'].includes(attributCode)) {
         // Individual size variant
         sizes.push({
           id: v.id,
           value: v.valeur,
           stock
         })
-      } else if (v.attribut_principal === 'couleur' || v.attribut_principal === 'color') {
+      } else if (['couleur', 'color'].includes(attributCode)) {
         // Individual color variant
         colors.push({
           id: v.id,
           value: v.valeur,
-          color: v.color,
-          image_url: v.image_url,
+          color: v.color || undefined,
+          image_url: v.image_url || undefined,
           stock
         })
       }

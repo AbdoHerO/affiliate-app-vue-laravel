@@ -16,10 +16,14 @@ class VariantAttribut extends Model
         'code',
         'nom',
         'actif',
+        'is_mandatory',
+        'display_order',
     ];
 
     protected $casts = [
         'actif' => 'boolean',
+        'is_mandatory' => 'boolean',
+        'display_order' => 'integer',
         'deleted_at' => 'datetime',
     ];
 
@@ -45,5 +49,41 @@ class VariantAttribut extends Model
     public function scopeActif($query)
     {
         return $query->where('actif', true);
+    }
+
+    /**
+     * Scope to get only mandatory attributes
+     */
+    public function scopeMandatory($query)
+    {
+        return $query->where('is_mandatory', true);
+    }
+
+    /**
+     * Scope to order by display order
+     */
+    public function scopeOrdered($query)
+    {
+        return $query->orderBy('display_order')->orderBy('nom');
+    }
+
+    /**
+     * Get the color attribute (mandatory)
+     */
+    public static function getColorAttribute()
+    {
+        return static::where('is_mandatory', true)
+            ->whereIn('code', ['couleur', 'color'])
+            ->first();
+    }
+
+    /**
+     * Get the size attribute (mandatory)
+     */
+    public static function getSizeAttribute()
+    {
+        return static::where('is_mandatory', true)
+            ->whereIn('code', ['taille', 'size'])
+            ->first();
     }
 }
