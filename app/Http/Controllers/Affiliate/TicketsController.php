@@ -441,9 +441,30 @@ class TicketsController extends Controller
                 $query->where('requester_id', $user->id);
             })->findOrFail($id);
 
-            $filePath = storage_path('app/' . $attachment->disk . '/' . $attachment->path);
+            // Construct the correct file path
+            $disk = $attachment->disk ?? 'public';
+            $filePath = null;
+
+            if ($disk === 'public') {
+                $filePath = storage_path('app/public/' . $attachment->path);
+            } else {
+                $filePath = storage_path('app/' . $attachment->path);
+            }
+
+            Log::info('Attempting to download attachment', [
+                'attachment_id' => $attachment->id,
+                'disk' => $disk,
+                'path' => $attachment->path,
+                'full_path' => $filePath,
+                'exists' => file_exists($filePath)
+            ]);
 
             if (!file_exists($filePath)) {
+                Log::error('Attachment file not found', [
+                    'attachment_id' => $attachment->id,
+                    'path' => $filePath
+                ]);
+
                 return response()->json([
                     'success' => false,
                     'message' => 'Fichier non trouvé.',

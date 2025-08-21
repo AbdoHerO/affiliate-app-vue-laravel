@@ -122,13 +122,16 @@ class OrderResource extends JsonResource
                     return [
                         'id' => $commission->id,
                         'type' => $commission->type,
-                        'amount' => $commission->amount,
-                        'currency' => $commission->currency,
+                        'base_amount' => $commission->base_amount ?? 0,
+                        'rate' => $commission->rate ?? null,
+                        'amount' => $commission->amount ?? 0,
+                        'currency' => $commission->currency ?? 'MAD',
                         'status' => $commission->status,
                         'status_badge' => $commission->getStatusBadge(),
                         'eligible_at' => $commission->eligible_at?->format('Y-m-d H:i:s'),
                         'approved_at' => $commission->approved_at?->format('Y-m-d H:i:s'),
                         'paid_at' => $commission->paid_at?->format('Y-m-d H:i:s'),
+                        'created_at' => $commission->created_at?->format('Y-m-d H:i:s'),
                     ];
                 });
             }),

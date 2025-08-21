@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Affiliate;
 
 use App\Http\Controllers\Controller;
-use App\Http\Resources\Admin\CommissionResource;
+use App\Http\Resources\Affiliate\CommissionResource;
 use App\Http\Resources\Affiliate\WithdrawalResource;
 use App\Models\CommissionAffilie;
 use App\Models\Withdrawal;
@@ -376,21 +376,16 @@ class PaymentsController extends Controller
      */
     private function generateWithdrawalPdf(Withdrawal $withdrawal): string
     {
-        // This is a simplified PDF generation
-        // In a real application, you would use a proper PDF library like DomPDF or TCPDF
+        // Generate a simple PDF content for now
+        // In production, you would use a proper PDF library like DomPDF or TCPDF
 
-        $html = view('pdfs.withdrawal-invoice', compact('withdrawal'))->render();
+        Log::info('Generating PDF for withdrawal', ['withdrawal_id' => $withdrawal->id]);
 
-        // For now, return a simple PDF content
-        // You should implement proper PDF generation here
-        try {
-            $pdf = app('dompdf.wrapper');
-            $pdf->loadHTML($html);
-            return $pdf->output();
-        } catch (\Exception $e) {
-            // Fallback: generate a simple text-based PDF
-            return $this->generateSimplePdf($withdrawal);
-        }
+        // For now, use simple text-based PDF generation
+        // In production, implement proper PDF library integration
+
+        // Fallback: generate a simple text-based PDF
+        return $this->generateSimplePdf($withdrawal);
     }
 
     /**
@@ -398,21 +393,39 @@ class PaymentsController extends Controller
      */
     private function generateSimplePdf(Withdrawal $withdrawal): string
     {
-        $content = "FACTURE DE RETRAIT\n\n";
-        $content .= "Référence: {$withdrawal->id}\n";
-        $content .= "Montant: {$withdrawal->amount} " . ($withdrawal->currency ?? 'MAD') . "\n";
-        $content .= "Statut: {$withdrawal->status}\n";
-        $content .= "Date: {$withdrawal->created_at->format('d/m/Y H:i')}\n\n";
+        Log::info('Generating simple PDF for withdrawal', ['withdrawal_id' => $withdrawal->id]);
 
-        if ($withdrawal->items->count() > 0) {
-            $content .= "COMMISSIONS INCLUSES:\n";
+        // Create a basic PDF structure using FPDF-like approach
+        $content = "%PDF-1.4\n";
+        $content .= "1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n";
+        $content .= "2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n";
+        $content .= "3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R >>\nendobj\n";
+
+        // Content stream
+        $textContent = "FACTURE DE RETRAIT\\n\\n";
+        $textContent .= "Reference: {$withdrawal->id}\\n";
+        $textContent .= "Montant: " . number_format($withdrawal->amount, 2) . " " . ($withdrawal->currency ?? 'MAD') . "\\n";
+        $textContent .= "Statut: {$withdrawal->status}\\n";
+        $textContent .= "Date: {$withdrawal->created_at->format('d/m/Y H:i')}\\n\\n";
+
+        if ($withdrawal->items && $withdrawal->items->count() > 0) {
+            $textContent .= "COMMISSIONS INCLUSES:\\n";
             foreach ($withdrawal->items as $item) {
-                $content .= "- Commission #{$item->commission->id}: {$item->commission->amount} MAD\n";
+                if ($item->commission) {
+                    $textContent .= "- Commission #{$item->commission->id}: " . number_format($item->commission->amount, 2) . " MAD\\n";
+                }
             }
         }
 
-        // This is a very basic implementation
-        // In production, you should use a proper PDF library
+        $streamLength = strlen($textContent) + 100; // Approximate
+        $content .= "4 0 obj\n<< /Length {$streamLength} >>\nstream\n";
+        $content .= "BT\n/F1 12 Tf\n50 750 Td\n({$textContent}) Tj\nET\n";
+        $content .= "endstream\nendobj\n";
+
+        $content .= "xref\n0 5\n0000000000 65535 f \n";
+        $content .= "0000000009 00000 n \n0000000058 00000 n \n0000000115 00000 n \n0000000207 00000 n \n";
+        $content .= "trailer\n<< /Size 5 /Root 1 0 R >>\nstartxref\n" . strlen($content) . "\n%%EOF";
+
         return $content;
     }
 }

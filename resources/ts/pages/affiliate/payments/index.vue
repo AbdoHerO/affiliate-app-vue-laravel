@@ -163,11 +163,14 @@ const requestPayout = async () => {
   }
 }
 
-const formatCurrency = (amount: number) => {
+const formatCurrency = (amount: number | null | undefined) => {
+  if (amount === null || amount === undefined || isNaN(Number(amount))) {
+    return '0,00 MAD'
+  }
   return new Intl.NumberFormat('fr-FR', {
     style: 'currency',
     currency: 'MAD',
-  }).format(amount)
+  }).format(Number(amount))
 }
 
 const formatDate = (date: string) => {
@@ -178,8 +181,12 @@ const formatDate = (date: string) => {
   })
 }
 
-const formatPercentage = (rate: number) => {
-  return `${(rate * 100).toFixed(2)}%`
+const formatPercentage = (rate: number | null | undefined) => {
+  if (rate === null || rate === undefined || isNaN(Number(rate))) {
+    return 'N/A'
+  }
+  // Rate is stored as decimal (0.0830 = 8.30%), so multiply by 100
+  return `${(Number(rate) * 100).toFixed(2)}%`
 }
 
 const viewWithdrawalDetails = async (withdrawalId: string) => {
