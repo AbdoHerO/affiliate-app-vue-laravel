@@ -165,12 +165,19 @@ const downloadAttachment = async (attachmentId: string, filename: string) => {
       throw new Error('Session expirée. Veuillez vous reconnecter.')
     }
 
+    // Use AbortController for timeout handling
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 30000) // 30 second timeout
+
     const response = await fetch(`/api/affiliate/tickets/attachments/${attachmentId}/download`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`,
       },
+      signal: controller.signal,
     })
+
+    clearTimeout(timeoutId)
 
     if (!response.ok) {
       if (response.status === 401) {
@@ -182,6 +189,12 @@ const downloadAttachment = async (attachmentId: string, filename: string) => {
 
     // Create blob and download
     const blob = await response.blob()
+
+    // Validate that we received a file
+    if (blob.size === 0) {
+      throw new Error('Le fichier est vide ou n\'existe pas')
+    }
+
     const url = window.URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = url
@@ -193,7 +206,12 @@ const downloadAttachment = async (attachmentId: string, filename: string) => {
 
     showSuccess('Fichier téléchargé avec succès')
   } catch (err: any) {
-    showError(err.message || 'Erreur lors du téléchargement du fichier')
+    console.error('Attachment download error:', err)
+    if (err.name === 'AbortError') {
+      showError('Le téléchargement a expiré. Veuillez réessayer.')
+    } else {
+      showError(err.message || 'Erreur lors du téléchargement du fichier')
+    }
   }
 }
 

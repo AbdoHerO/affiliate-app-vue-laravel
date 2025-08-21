@@ -218,6 +218,10 @@ const downloadPdf = async (withdrawalId: string) => {
       throw new Error('Session expirée. Veuillez vous reconnecter.')
     }
 
+    // Use AbortController for timeout handling
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 30000) // 30 second timeout
+
     const response = await fetch(`/api/affiliate/withdrawals/${withdrawalId}/pdf`, {
       method: 'GET',
       headers: {
@@ -225,7 +229,10 @@ const downloadPdf = async (withdrawalId: string) => {
         'Accept': 'application/pdf',
         'X-Requested-With': 'XMLHttpRequest',
       },
+      signal: controller.signal,
     })
+
+    clearTimeout(timeoutId)
 
     if (!response.ok) {
       if (response.status === 401) {
@@ -237,6 +244,12 @@ const downloadPdf = async (withdrawalId: string) => {
 
     // Create blob and download
     const blob = await response.blob()
+
+    // Validate that we received a PDF
+    if (blob.type !== 'application/pdf' && !blob.type.includes('pdf')) {
+      throw new Error('Le fichier reçu n\'est pas un PDF valide')
+    }
+
     const url = window.URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = url
@@ -248,7 +261,12 @@ const downloadPdf = async (withdrawalId: string) => {
 
     showSuccess('PDF téléchargé avec succès')
   } catch (err: any) {
-    showError(err.message || 'Erreur lors du téléchargement du PDF')
+    console.error('PDF download error:', err)
+    if (err.name === 'AbortError') {
+      showError('Le téléchargement a expiré. Veuillez réessayer.')
+    } else {
+      showError(err.message || 'Erreur lors du téléchargement du PDF')
+    }
   } finally {
     downloadingPdf.value = null
   }

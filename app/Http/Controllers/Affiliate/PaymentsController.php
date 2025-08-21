@@ -206,7 +206,11 @@ class PaymentsController extends Controller
                 ], 403);
             }
 
-            $withdrawal = Withdrawal::with(['items.commission'])
+            $withdrawal = Withdrawal::with([
+                'items.commission:id,amount,status,type,created_at,commande_id,commande_article_id',
+                'items.commission.commande:id,statut,total_ttc,created_at',
+                'items.commission.commandeArticle.produit:id,titre'
+            ])
                 ->where('user_id', $user->id) // Ensure ownership
                 ->findOrFail($id);
 
