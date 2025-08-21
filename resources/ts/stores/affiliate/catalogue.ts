@@ -121,6 +121,7 @@ export interface CartItem {
   produit_id: string
   variante_id?: string
   qty: number
+  sell_price?: number
 }
 
 export interface CartSummary {

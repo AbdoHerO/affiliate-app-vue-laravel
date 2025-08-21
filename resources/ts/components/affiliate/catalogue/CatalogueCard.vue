@@ -2,6 +2,7 @@
 import { ref, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useCatalogueStore } from '@/stores/affiliate/catalogue'
+import { useVariantSelection } from '@/composables/useVariantSelection'
 import type { NormalizedProduct } from '@/stores/affiliate/catalogue'
 
 interface Props {
@@ -21,10 +22,11 @@ const emit = defineEmits<Emits>()
 const { t } = useI18n()
 const catalogueStore = useCatalogueStore()
 
+// Use shared variant selection logic
+const variantSelection = useVariantSelection(computed(() => props.product))
+
 // Local state
 const isHovered = ref(false)
-const selectedSize = ref<string>('')
-const selectedColor = ref<string>('')
 const quantity = ref(1)
 const imageLoading = ref(true)
 const imageError = ref(false)
@@ -44,21 +46,8 @@ const stockBadgeText = computed(() => {
 })
 
 const profitText = computed(() => {
-  return `+${props.product.prix_affilie} MAD`
-})
-
-const availableSizes = computed(() => {
-  if (!props.product.variants || !props.product.variants.sizes) {
-    return []
-  }
-  return props.product.variants.sizes.filter(size => size.stock > 0)
-})
-
-const availableColors = computed(() => {
-  if (!props.product.variants || !props.product.variants.colors) {
-    return []
-  }
-  return props.product.variants.colors.filter(color => color.stock > 0)
+  const commission = Math.max(0, (props.product.prix_vente || 0) - (props.product.prix_achat || 0))
+  return `+${commission.toFixed(2)} MAD`
 })
 
 // Enhanced color swatches from normalized data
@@ -71,6 +60,11 @@ const sizeChips = computed(() => {
   return props.product.sizes || []
 })
 
+// Display image - use variant selection logic
+const displayImage = computed(() => {
+  return variantSelection.activeImageUrl || props.product.mainImage
+})
+
 // Computed image that updates based on color selection
 const displayImage = computed(() => {
   if (selectedColor.value) {
@@ -80,65 +74,21 @@ const displayImage = computed(() => {
   return props.product.mainImage
 })
 
-const selectedVariant = computed(() => {
-  // Find variant based on selected color and size
-  if (selectedSize.value && selectedColor.value) {
-    // Look for exact match in variantsByCombo
-    const comboKey = `couleur|${selectedColor.value}`
-    const colorVariant = props.product.variantsByCombo?.[comboKey]
-    if (colorVariant) return colorVariant
-  }
-
-  if (selectedSize.value) {
-    const sizeVariant = props.product.variants?.sizes?.find(s => s.value === selectedSize.value)
-    if (sizeVariant) return sizeVariant
-  }
-
-  if (selectedColor.value) {
-    const colorVariant = props.product.variants?.colors?.find(c => c.value === selectedColor.value)
-    if (colorVariant) return colorVariant
-  }
-
-  return null
-})
-
 const maxQuantity = computed(() => {
-  if (selectedVariant.value) {
-    return Math.min(selectedVariant.value.stock, 10)
-  }
-  return Math.min(props.product.stock_total, 10)
+  return Math.min(variantSelection.maxQty, 10)
 })
 
 const canAddToCart = computed(() => {
-  const hasStock = props.product.stock_total > 0 && quantity.value <= maxQuantity.value
-
-  // If product has both sizes and colors, both must be selected
-  if (sizeChips.value.length > 0 && colorSwatches.value.length > 0) {
-    return hasStock && selectedSize.value && selectedColor.value
-  }
-
-  // If product has only sizes, size must be selected
-  if (sizeChips.value.length > 0) {
-    return hasStock && selectedSize.value
-  }
-
-  // If product has only colors, color must be selected
-  if (colorSwatches.value.length > 0) {
-    return hasStock && selectedColor.value
-  }
-
-  // If no variants, just check stock
-  return hasStock
+  return variantSelection.canAddToCart(quantity.value)
 })
 
-// Methods - Updated to NOT emit variantChange (which opens drawer)
+// Methods - Updated to use variant selection composable
 const handleColorSwatchSelect = (colorName: string) => {
-  selectedColor.value = colorName
-  // Image will update automatically via displayImage computed
+  variantSelection.selectColor(colorName)
 }
 
 const handleSizeChipSelect = (sizeName: string) => {
-  selectedSize.value = sizeName
+  variantSelection.selectSize(sizeName)
 }
 
 const handleQuantityChange = (delta: number) => {
@@ -152,25 +102,9 @@ const handleQuantityChange = (delta: number) => {
 const handleAddToCart = () => {
   if (!canAddToCart.value) return
 
-  // Find the actual variant ID based on selections
-  let variantId: string | undefined
-
-  if (selectedColor.value && selectedSize.value) {
-    // Look for combined variant
-    const comboKey = `couleur|${selectedColor.value}`
-    const variant = props.product.variantsByCombo?.[comboKey]
-    if (variant) variantId = variant.id
-  } else if (selectedColor.value) {
-    const colorVariant = props.product.variants?.colors?.find(c => c.value === selectedColor.value)
-    if (colorVariant) variantId = colorVariant.id
-  } else if (selectedSize.value) {
-    const sizeVariant = props.product.variants?.sizes?.find(s => s.value === selectedSize.value)
-    if (sizeVariant) variantId = sizeVariant.id
-  }
-
   emit('addToCart', {
     produit_id: props.product.id,
-    variante_id: variantId,
+    variante_id: variantSelection.selectedVariantId || undefined,
     qty: quantity.value
   })
 }
@@ -190,8 +124,7 @@ const handleImageError = () => {
 
 // Reset selections when product changes
 watch(() => props.product.id, () => {
-  selectedSize.value = ''
-  selectedColor.value = ''
+  variantSelection.reset()
   quantity.value = 1
   imageError.value = false
   imageLoading.value = true
@@ -249,18 +182,40 @@ watch(() => props.product.id, () => {
       <!-- Color Swatches (Row 1) -->
       <div v-if="colorSwatches.length" class="mb-2">
         <div class="d-flex align-center gap-1 flex-wrap">
-          <VBtn
-            v-for="color in colorSwatches.slice(0, 4)"
+          <VChip
+            v-for="color in colorSwatches.slice(0, 3)"
             :key="color.name"
-            :color="selectedColor === color.name ? 'primary' : 'default'"
-            :variant="selectedColor === color.name ? 'flat' : 'outlined'"
-            size="x-small"
-            class="color-swatch"
-            :style="color.swatch ? { backgroundColor: color.swatch } : {}"
+            :color="variantSelection.selectedColor === color.name ? 'primary' : 'default'"
+            :variant="variantSelection.selectedColor === color.name ? 'flat' : 'outlined'"
+            size="small"
+            class="color-chip cursor-pointer"
             @click.stop="handleColorSwatchSelect(color.name)"
           >
-            <span v-if="!color.swatch" class="text-caption">{{ color.name.charAt(0) }}</span>
-          </VBtn>
+            <VIcon
+              v-if="color.swatch"
+              :style="{ color: color.swatch }"
+              icon="tabler-circle-filled"
+              start
+              size="14"
+            />
+            <span class="text-caption">{{ color.name }}</span>
+          </VChip>
+          <VTooltip
+            v-if="colorSwatches.length > 3"
+            location="top"
+          >
+            <template #activator="{ props: tooltipProps }">
+              <VChip
+                v-bind="tooltipProps"
+                size="small"
+                variant="outlined"
+                class="text-caption"
+              >
+                +{{ colorSwatches.length - 3 }}
+              </VChip>
+            </template>
+            <span>{{ colorSwatches.slice(3).map(c => c.name).join(', ') }}</span>
+          </VTooltip>
         </div>
       </div>
 
@@ -270,8 +225,8 @@ watch(() => props.product.id, () => {
           <VChip
             v-for="size in sizeChips.slice(0, 5)"
             :key="size"
-            :color="selectedSize === size ? 'primary' : 'default'"
-            :variant="selectedSize === size ? 'flat' : 'outlined'"
+            :color="variantSelection.selectedSize === size ? 'primary' : 'default'"
+            :variant="variantSelection.selectedSize === size ? 'flat' : 'outlined'"
             size="small"
             class="size-chip"
             @click.stop="handleSizeChipSelect(size)"
@@ -288,13 +243,13 @@ watch(() => props.product.id, () => {
       >
         <div class="text-caption d-flex align-center">
           <VIcon
-            :icon="selectedSize && selectedColor ? 'tabler-check-circle' : 'tabler-circle'"
-            :color="selectedSize && selectedColor ? 'success' : 'default'"
+            :icon="variantSelection.selectedSize && variantSelection.selectedColor ? 'tabler-check-circle' : 'tabler-circle'"
+            :color="variantSelection.selectedSize && variantSelection.selectedColor ? 'success' : 'default'"
             size="14"
             class="me-1"
           />
-          <span :class="selectedSize && selectedColor ? 'text-success' : 'text-medium-emphasis'">
-            {{ selectedSize && selectedColor ? 'Variantes sélectionnées' : 'Sélectionnez taille et couleur' }}
+          <span :class="variantSelection.selectedSize && variantSelection.selectedColor ? 'text-success' : 'text-medium-emphasis'">
+            {{ variantSelection.selectedSize && variantSelection.selectedColor ? 'Variantes sélectionnées' : 'Sélectionnez taille et couleur' }}
           </span>
         </div>
       </div>
@@ -414,17 +369,13 @@ watch(() => props.product.id, () => {
   z-index: 2;
 }
 
-.color-swatch {
-  min-width: 24px !important;
-  width: 24px;
-  height: 24px;
-  border-radius: 50% !important;
-  padding: 0 !important;
-  border: 2px solid rgba(var(--v-border-color), var(--v-border-opacity)) !important;
+.color-chip {
+  max-width: 80px;
+  font-size: 0.7rem;
 }
 
-.color-swatch.v-btn--variant-flat {
-  border: 2px solid rgb(var(--v-theme-primary)) !important;
+.color-chip .v-icon {
+  margin-right: 2px;
 }
 
 .size-chip {

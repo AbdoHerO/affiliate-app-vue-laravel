@@ -30,7 +30,8 @@ class CartController extends Controller
             $validated = $request->validate([
                 'produit_id' => 'required|uuid|exists:produits,id',
                 'variante_id' => 'nullable|uuid|exists:produit_variantes,id',
-                'qty' => 'required|integer|min:1|max:100'
+                'qty' => 'required|integer|min:1|max:100',
+                'sell_price' => 'nullable|numeric|min:0'
             ]);
 
             $userId = Auth::id();
@@ -45,6 +46,16 @@ class CartController extends Controller
                     'message' => 'Produit non disponible',
                     'success' => false
                 ], 404);
+            }
+
+            // Validate sell_price if provided
+            if (isset($validated['sell_price'])) {
+                if ($validated['sell_price'] < $product->prix_achat) {
+                    return response()->json([
+                        'message' => 'Le prix de vente ne peut pas être inférieur au prix d\'achat (' . $product->prix_achat . ' MAD)',
+                        'success' => false
+                    ], 422);
+                }
             }
 
             // If variant specified, verify it exists and has stock
@@ -102,13 +113,17 @@ class CartController extends Controller
                 ->where('variante_id', $validated['variante_id'])
                 ->first();
 
+            // Determine sell price (use provided or default to product's prix_vente)
+            $sellPrice = $validated['sell_price'] ?? $product->prix_vente;
+
             if ($cartItem) {
-                // Update existing item quantity
+                // Update existing item quantity and sell price
                 $cartItem->qty += $validated['qty'];
+                $cartItem->sell_price = $sellPrice;
                 $cartItem->added_at = now();
                 $cartItem->save();
-                
-                Log::info('✅ UPDATED EXISTING CART ITEM - New qty: ' . $cartItem->qty);
+
+                Log::info('✅ UPDATED EXISTING CART ITEM - New qty: ' . $cartItem->qty . ', Sell price: ' . $sellPrice);
             } else {
                 // Create new cart item using direct assignment to avoid mass assignment issues
                 $cartItem = new AffiliateCartItem();
@@ -116,10 +131,11 @@ class CartController extends Controller
                 $cartItem->produit_id = $validated['produit_id'];
                 $cartItem->variante_id = $validated['variante_id'];
                 $cartItem->qty = $validated['qty'];
+                $cartItem->sell_price = $sellPrice;
                 $cartItem->added_at = now();
                 $cartItem->save();
-                
-                Log::info('✅ CREATED NEW CART ITEM - ID: ' . $cartItem->id);
+
+                Log::info('✅ CREATED NEW CART ITEM - ID: ' . $cartItem->id . ', Sell price: ' . $sellPrice);
             }
 
             return response()->json([
@@ -474,8 +490,10 @@ class CartController extends Controller
                         $boutique_id = $product->boutique_id;
                     }
 
-                    $unitPrice = $product->prix_vente;
-                    $lineTotal = $unitPrice * $cartItem->qty;
+                    // Use sell_price from cart item or fallback to product prix_vente
+                    $sellPrice = $cartItem->sell_price ?? $product->prix_vente;
+                    $unitPrice = $product->prix_vente; // Keep original for reference
+                    $lineTotal = $sellPrice * $cartItem->qty;
 
                     $totalHT += $lineTotal;
                     $totalTTC += $lineTotal; // No tax for now
@@ -485,6 +503,8 @@ class CartController extends Controller
                         'variante_id' => $cartItem->variante_id,
                         'quantite' => $cartItem->qty,
                         'prix_unitaire' => $unitPrice,
+                        'sell_price' => $sellPrice,
+                        'prix_achat' => $product->prix_achat,
                         'total' => $lineTotal
                     ];
                 }
@@ -513,14 +533,20 @@ class CartController extends Controller
                     'notes' => $validated['note']
                 ]);
 
-                // Add order items
+                // Add order items with dynamic pricing
                 foreach ($orderItems as $item) {
+                    $sellPrice = $item['sell_price'] ?? $item['prix_unitaire'];
+                    $commissionAmount = max(0, ($sellPrice - $item['prix_achat']) * $item['quantite']);
+
                     CommandeArticle::create([
                         'commande_id' => $commande->id,
                         'produit_id' => $item['produit_id'],
                         'variante_id' => $item['variante_id'],
                         'quantite' => $item['quantite'],
                         'prix_unitaire' => $item['prix_unitaire'],
+                        'sell_price' => $sellPrice,
+                        'commission_amount' => $commissionAmount,
+                        'commission_rule_code' => 'default',
                         'remise' => 0, // No discount for now
                         'total_ligne' => $item['total']
                     ]);

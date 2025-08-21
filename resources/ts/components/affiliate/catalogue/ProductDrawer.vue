@@ -28,6 +28,9 @@ const { openCartDrawer } = useAffiliateCartUi()
 // Local state
 const selectedImageIndex = ref(0)
 const activeImageUrl = ref('')
+
+// Custom pricing
+const customSellPrice = ref<number | null>(null)
 const selectedColor = ref('')
 const selectedSize = ref('')
 
@@ -87,6 +90,20 @@ const totalPrice = computed(() => {
 const totalProfit = computed(() => {
   if (!product.value) return 0
   return product.value.prix_affilie * store.selectedQty
+})
+
+// Computed pricing with custom sell price
+const currentSellPrice = computed(() => {
+  return customSellPrice.value || product.value?.prix_vente || 0
+})
+
+const computedCommission = computed(() => {
+  if (!product.value) return 0
+  return Math.max(0, currentSellPrice.value - (product.value.prix_achat || 0))
+})
+
+const totalCommission = computed(() => {
+  return computedCommission.value * store.selectedQty
 })
 
 // Size × Color matrix table with columns [Quantité | Couleur | Taille]
@@ -156,7 +173,8 @@ const handleAddToCart = async () => {
     await cartStore.addItem({
       produit_id: product.value.id,
       variante_id: store.selectedVariantId || undefined,
-      qty: store.selectedQty
+      qty: store.selectedQty,
+      sell_price: customSellPrice.value || undefined
     })
 
     // If we get here, the add was successful
@@ -300,7 +318,7 @@ const formatCopywriting = (text: string): string => {
             size="small"
           >
             <VIcon icon="tabler-coins" start />
-            {{ t('catalogue.kpis.profit') }}: +{{ product.prix_affilie }} MAD
+            {{ t('catalogue.kpis.profit') }}: +{{ computedCommission.toFixed(2) }} MAD
           </VChip>
           <VChip
             color="info"
@@ -376,23 +394,31 @@ const formatCopywriting = (text: string): string => {
               <div v-if="store.colors.length" class="mb-4">
                 <h4 class="text-subtitle-1 mb-3">{{ t('catalogue.variants.color') }}</h4>
                 <div class="d-flex gap-2 flex-wrap">
-                  <VChip
+                  <VTooltip
                     v-for="color in store.colors"
                     :key="color.name"
-                    :color="store.selectedColor === color.name ? 'primary' : 'default'"
-                    :variant="store.selectedColor === color.name ? 'flat' : 'outlined'"
-                    size="large"
-                    class="cursor-pointer color-chip"
-                    @click="handleColorSelect(color.name)"
+                    location="top"
                   >
-                    <VIcon
-                      v-if="color.swatch"
-                      :style="{ color: color.swatch }"
-                      icon="tabler-circle-filled"
-                      start
-                    />
-                    {{ color.name }}
-                  </VChip>
+                    <template #activator="{ props: tooltipProps }">
+                      <VChip
+                        v-bind="tooltipProps"
+                        :color="store.selectedColor === color.name ? 'primary' : 'default'"
+                        :variant="store.selectedColor === color.name ? 'flat' : 'outlined'"
+                        size="large"
+                        class="cursor-pointer color-chip"
+                        @click="handleColorSelect(color.name)"
+                      >
+                        <VIcon
+                          v-if="color.swatch"
+                          :style="{ color: color.swatch }"
+                          icon="tabler-circle-filled"
+                          start
+                        />
+                        {{ color.name }}
+                      </VChip>
+                    </template>
+                    <span>{{ color.name }}</span>
+                  </VTooltip>
                 </div>
                 <div v-if="!store.selectedColor && store.colors.length" class="text-caption text-medium-emphasis mt-1">
                   {{ t('catalogue.select.color') }}
@@ -418,6 +444,42 @@ const formatCopywriting = (text: string): string => {
                 <div v-if="!store.selectedSize && store.sizes.length" class="text-caption text-medium-emphasis mt-1">
                   {{ t('catalogue.select.size') }}
                 </div>
+              </div>
+
+              <!-- Custom Pricing Section -->
+              <div class="mb-4">
+                <h4 class="text-subtitle-1 mb-3">Prix et Commission</h4>
+                <VCard variant="outlined" class="pa-4">
+                  <div class="d-flex justify-space-between align-center mb-3">
+                    <div>
+                      <div class="text-caption text-medium-emphasis">Prix d'achat</div>
+                      <div class="text-body-1">{{ product?.prix_achat || 0 }} MAD</div>
+                    </div>
+                    <div class="text-center">
+                      <div class="text-caption text-medium-emphasis">Prix recommandé</div>
+                      <div class="text-h6 text-primary">{{ product?.prix_vente || 0 }} MAD</div>
+                    </div>
+                    <div class="text-end">
+                      <div class="text-caption text-medium-emphasis">Commission unitaire</div>
+                      <div class="text-h6 text-success">+{{ computedCommission.toFixed(2) }} MAD</div>
+                    </div>
+                  </div>
+
+                  <!-- Custom Sell Price Input -->
+                  <VTextField
+                    v-model.number="customSellPrice"
+                    label="Prix de vente personnalisé (optionnel)"
+                    type="number"
+                    variant="outlined"
+                    density="compact"
+                    suffix="MAD"
+                    :min="product?.prix_achat || 0"
+                    :placeholder="product?.prix_vente?.toString() || '0'"
+                    hint="Laissez vide pour utiliser le prix recommandé"
+                    persistent-hint
+                    clearable
+                  />
+                </VCard>
               </div>
 
               <!-- Quantity Selector -->
@@ -644,7 +706,7 @@ const formatCopywriting = (text: string): string => {
           @click="handleAddToCart"
         >
           <VIcon icon="tabler-shopping-cart" start />
-          {{ t('catalogue.actions.add_to_cart') }} - {{ totalPrice.toFixed(2) }} MAD
+          {{ t('catalogue.actions.add_to_cart') }} - {{ (currentSellPrice * store.selectedQty).toFixed(2) }} MAD
         </VBtn>
       </div>
 

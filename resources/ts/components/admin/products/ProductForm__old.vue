@@ -54,11 +54,6 @@ const loading = ref(false)
 const saving = ref(false)
 const localId = ref<string | null>(props.mode === 'edit' ? (props.id || null) : null)
 
-// Form validation and dirty state
-const isValid = ref(true)
-const isDirty = ref(false)
-const formRef = ref<any>(null)
-
 // Form data
 const form = ref<ProduitFormData>({
   boutique_id: '',
@@ -68,11 +63,11 @@ const form = ref<ProduitFormData>({
   copywriting: '',
   prix_achat: null,
   prix_vente: null,
+  prix_affilie: null,
   quantite_min: 1,
   notes_admin: '',
   actif: true,
   rating_value: null,
-  stock_total: null,
 })
 
 // Form errors handling
@@ -110,14 +105,10 @@ const newVideoUrl = ref('')
 const newVariant = reactive({
   attribut_id: '',
   valeur_id: '',
-  valeur_ids: [] as string[], // For multi-select
   nom: '',
   valeur: '',
   prix_vente_variante: null as number | null
 })
-
-// Multi-select mode toggle
-const isMultiSelectMode = ref(false)
 
 // Variant catalog state
 const availableAttributes = ref<any[]>([])
@@ -125,83 +116,10 @@ const availableValues = ref<any[]>([])
 const loadingAttributes = ref(false)
 const loadingValues = ref(false)
 
-// Stock management state
-const stockForm = reactive({
-  stock_total: 0,
-  allocations: [] as Array<{ variante_id: string; qty: number; reserved?: number }>,
-  warehouse_id: null as string | null
-})
-
-// Warehouse state
-const warehouses = ref<Array<{ id: string; name: string; boutique: string; is_default: boolean }>>([])
-const stockMatrix = ref<Array<{
-  variante_id: string | null;
-  color: string | null;
-  size: string | null;
-  color_image: string | null;
-  qty: number;
-  reserved: number;
-  available: number;
-  is_combination?: boolean;
-  is_virtual?: boolean;
-  is_size_only?: boolean;
-  is_color_only?: boolean;
-}>>([])
-const loadingMatrix = ref(false)
-const generatingCombinations = ref(false)
-
-// Stock computed properties
-const totalVariantStock = computed(() => {
-  return stockMatrix.value.reduce((sum, item) => sum + (item.qty || 0), 0)
-})
-
-const totalReservedStock = computed(() => {
-  return stockMatrix.value.reduce((sum, item) => sum + (item.reserved || 0), 0)
-})
-
-const totalAvailableStock = computed(() => {
-  return totalVariantStock.value - totalReservedStock.value
-})
-
-const stockMismatch = computed(() => {
-  return stockForm.stock_total !== totalVariantStock.value
-})
-
-const stockExceeded = computed(() => {
-  return totalVariantStock.value > stockForm.stock_total
-})
-
-const canSaveStock = computed(() => {
-  return !stockExceeded.value && stockForm.stock_total > 0 && totalVariantStock.value > 0
-})
-
 // Computed
 const readyForMedia = computed(() => !!localId.value)
 const isEditMode = computed(() => props.mode === 'edit')
 const pageTitle = computed(() => isEditMode.value ? 'Edit Product' : 'Create Product')
-
-// Form state computed
-const canSave = computed(() => {
-  // For create mode, always allow save if not saving and basic validation passes
-  if (!isEditMode.value) {
-    return !saving.value && form.value.titre.trim() && form.value.boutique_id
-  }
-
-  // For edit mode, require changes (isDirty) and no critical stock issues
-  return !saving.value && isDirty.value && !stockExceeded.value
-})
-
-// Computed affiliate pricing
-const computedPrixAffilie = computed(() => {
-  if (!form.value.prix_vente || !form.value.prix_achat) {
-    return 0
-  }
-  return Math.max(0, form.value.prix_vente - form.value.prix_achat)
-})
-
-const estimatedCommission = computed(() => {
-  return computedPrixAffilie.value
-})
 
 // Helper function to get variant display name
 const getVariantDisplayName = (variantId: string | null | undefined) => {
@@ -239,17 +157,12 @@ const loadProduct = async () => {
           copywriting: (p as any).copywriting || '',
           prix_achat: p.prix_achat,
           prix_vente: p.prix_vente,
+          prix_affilie: p.prix_affilie,
           quantite_min: (p as any).quantite_min || 1,
           notes_admin: (p as any).notes_admin || '',
           actif: p.actif,
           rating_value: (p as any).rating_value || null,
-          stock_total: (p as any).stock_total || null,
         }
-
-        // Initialize stock form after loading product
-        nextTick(() => {
-          initializeStockForm()
-        })
         localId.value = p.id
         console.debug('[ProductForm] Edit mode - variants loaded:', variantes.value.map(v => ({ id: v.id, nom: v.nom, valeur: v.valeur, image_url: v.image_url })))
 
@@ -258,10 +171,6 @@ const loadProduct = async () => {
 
         await loadPropositions()
         await loadRuptures()
-
-        // Reset dirty state after loading data
-        await nextTick()
-        isDirty.value = false
       }
     } catch (error) {
       showError('Failed to load product')
@@ -338,12 +247,6 @@ const saveProduct = async () => {
       emit('updated', updated)
       clearProductErrors()
       showSuccess('Product updated successfully')
-
-      // Reset dirty state after successful update
-      isDirty.value = false
-
-      // Handle stock allocation if there are changes
-      await handleStockAllocation()
     } else {
       console.error('[ProductForm] Invalid state: create mode but no localId and no create action')
       showError('Invalid form state')
@@ -386,13 +289,6 @@ watch(() => form.value.copywriting, async (newValue) => {
   }
 }, { immediate: true })
 
-// Watch warehouse changes
-watch(() => stockForm.warehouse_id, (newWarehouseId) => {
-  if (newWarehouseId && readyForMedia.value) {
-    loadStockMatrix()
-  }
-})
-
 const formatText = (command: string) => {
   document.execCommand(command, false, '')
   richTextEditor.value?.focus()
@@ -422,10 +318,6 @@ const changeFontSize = (size: 'small' | 'normal' | 'large') => {
 const handleRichTextInput = (event: Event) => {
   const target = event.target as HTMLElement
   form.value.copywriting = target.innerHTML
-  // Mark form as dirty when rich text changes
-  if (!loading.value) {
-    isDirty.value = true
-  }
 }
 
 // Sync rich text editor content with form data
@@ -691,7 +583,6 @@ const fetchValues = async (attributId: string) => {
 
 const onAttributeChange = () => {
   newVariant.valeur_id = ''
-  newVariant.valeur_ids = []
   availableValues.value = []
   if (newVariant.attribut_id) {
     fetchValues(newVariant.attribut_id)
@@ -729,7 +620,14 @@ const addVariant = async () => {
       const response = data.value as any
       if (response.success) {
         variantes.value.push(response.data)
-        resetVariantForm()
+        Object.assign(newVariant, {
+          attribut_id: '',
+          valeur_id: '',
+          nom: '',
+          valeur: '',
+          prix_vente_variante: null
+        })
+        availableValues.value = []
         showSuccess('Variant added successfully')
       }
     }
@@ -737,66 +635,6 @@ const addVariant = async () => {
     console.error('Error adding variant:', error)
     showError(error.message || 'Failed to add variant')
   }
-}
-
-const addVariantsBulk = async () => {
-  if (!localId.value || !newVariant.attribut_id || !newVariant.valeur_ids.length) {
-    console.warn('[ProductForm] Cannot add variants: missing product ID, attribute, or values')
-    return
-  }
-
-  // Show confirm dialog before adding
-  const confirmed = await confirmCreate(`${newVariant.valeur_ids.length} variantes`)
-  if (!confirmed) return
-
-  console.debug('[ProductForm] [productId] add-variants-bulk:', localId.value, newVariant.valeur_ids)
-  try {
-    const { data, error: apiError } = await useApi(`/admin/produits/${localId.value}/variantes/bulk`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        attribut_id: newVariant.attribut_id,
-        valeur_ids: newVariant.valeur_ids,
-        prix_vente_variante: newVariant.prix_vente_variante,
-        actif: true
-      })
-    })
-
-    if (apiError.value) {
-      showError(apiError.value.message || 'Failed to add variants')
-      console.error('Add variants bulk error:', apiError.value)
-    } else if (data.value) {
-      const response = data.value as any
-      if (response.success) {
-        // Add created variants to the list
-        if (response.data.created) {
-          variantes.value.push(...response.data.created)
-        }
-        resetVariantForm()
-        showSuccess(response.message || 'Variants added successfully')
-
-        // Show additional info if some were skipped
-        if (response.data.skipped && response.data.skipped.length > 0) {
-          console.info('Skipped variants:', response.data.skipped)
-        }
-      }
-    }
-  } catch (error: any) {
-    console.error('Error adding variants bulk:', error)
-    showError(error.message || 'Failed to add variants')
-  }
-}
-
-const resetVariantForm = () => {
-  Object.assign(newVariant, {
-    attribut_id: '',
-    valeur_id: '',
-    valeur_ids: [],
-    nom: '',
-    valeur: '',
-    prix_vente_variante: null
-  })
-  availableValues.value = []
 }
 const deleteVariant = async (id: string) => {
   if (!localId.value) return
@@ -859,177 +697,6 @@ const uploadVariantImage = async (id: string, file: File) => {
   } catch (error) {
     console.error('Error uploading variant image:', error)
     showError('Failed to upload variant image')
-  }
-}
-
-// Stock management methods
-const loadWarehouses = async () => {
-  try {
-    const { data } = await useApi('/admin/warehouses')
-    const response = data.value as any
-    if (response?.success) {
-      warehouses.value = response.data
-      // Set default warehouse if none selected
-      if (!stockForm.warehouse_id && warehouses.value.length > 0) {
-        const defaultWarehouse = warehouses.value.find(w => w.is_default) || warehouses.value[0]
-        stockForm.warehouse_id = defaultWarehouse.id
-      }
-    }
-  } catch (error) {
-    console.error('Failed to load warehouses:', error)
-  }
-}
-
-const loadStockMatrix = async () => {
-  if (!localId.value) return
-
-  loadingMatrix.value = true
-  try {
-    const params = stockForm.warehouse_id ? `?warehouse_id=${stockForm.warehouse_id}` : ''
-    const { data } = await useApi(`/admin/produits/${localId.value}/stock/matrix${params}`)
-    const response = data.value as any
-
-    if (response?.success) {
-      stockMatrix.value = response.data.matrix || []
-      // Update warehouse info if returned
-      if (response.data.warehouse && !stockForm.warehouse_id) {
-        stockForm.warehouse_id = response.data.warehouse.id
-      }
-    }
-  } catch (error) {
-    console.error('Failed to load stock matrix:', error)
-    stockMatrix.value = []
-  } finally {
-    loadingMatrix.value = false
-  }
-}
-
-const updateMatrixQuantity = (variantId: string | null, qty: string | number) => {
-  const item = stockMatrix.value.find(m => m.variante_id === variantId)
-  if (item) {
-    item.qty = Number(qty) || 0
-    item.available = Math.max(0, item.qty - item.reserved)
-  }
-}
-
-const distributeStock = () => {
-  if (!stockForm.stock_total || !stockMatrix.value.length) return
-
-  const perVariant = Math.floor(stockForm.stock_total / stockMatrix.value.length)
-  const remainder = stockForm.stock_total % stockMatrix.value.length
-
-  stockMatrix.value.forEach((item, index) => {
-    const qty = perVariant + (index === 0 ? remainder : 0)
-    item.qty = qty
-    item.available = Math.max(0, qty - item.reserved)
-  })
-
-  showSuccess('Stock distributed across variant combinations')
-}
-
-const generateCombinations = async () => {
-  if (!localId.value) return
-
-  generatingCombinations.value = true
-  try {
-    const { data, error } = await useApi(`/admin/produits/${localId.value}/stock/generate-combinations`, {
-      method: 'POST'
-    })
-
-    const response = data.value as any
-    if (response?.success) {
-      showSuccess(`${response.data.created} combinaisons créées avec succès`)
-      // Reload the stock matrix to show the new combinations
-      await loadStockMatrix()
-    } else if (error.value) {
-      showError('Erreur lors de la génération des combinaisons')
-    }
-  } catch (error) {
-    console.error('Failed to generate combinations:', error)
-    showError('Erreur inattendue lors de la génération des combinaisons')
-  } finally {
-    generatingCombinations.value = false
-  }
-}
-
-const initializeStockForm = async () => {
-  if (form.value.stock_total) {
-    stockForm.stock_total = form.value.stock_total
-  }
-
-  // Load warehouses and stock matrix
-  await loadWarehouses()
-  await loadStockMatrix()
-}
-
-const handleStockAllocation = async () => {
-  if (!localId.value || !stockMatrix.value.length) return
-
-  // Check if there are any stock changes
-  const hasStockChanges = stockMatrix.value.some(item => item.qty > 0) || stockForm.stock_total > 0
-  if (!hasStockChanges) return
-
-  // Block saving if stock is exceeded
-  if (stockExceeded.value) {
-    showError(`Impossible de sauvegarder : La somme des variantes (${totalVariantStock.value}) dépasse le stock total (${stockForm.stock_total})`)
-    return
-  }
-
-  // Show confirmation if there's a stock mismatch (but not exceeded)
-  if (stockMismatch.value && !stockExceeded.value) {
-    const confirmed = await confirmUpdate(
-      'Différence de stock détectée',
-      `Le stock total (${stockForm.stock_total}) ne correspond pas à la somme des variantes (${totalVariantStock.value}). Voulez-vous continuer quand même ?`
-    )
-    if (!confirmed) return
-  }
-
-  try {
-    // Build allocations from matrix, deduplicating by variant_id
-    const allocationMap = new Map<string, number>()
-
-    stockMatrix.value
-      .filter(item => item.variante_id && item.qty > 0)
-      .forEach(item => {
-        const currentQty = allocationMap.get(item.variante_id!) || 0
-        allocationMap.set(item.variante_id!, currentQty + item.qty)
-      })
-
-    const allocations = Array.from(allocationMap.entries()).map(([variante_id, qty]) => ({
-      variante_id,
-      qty
-    }))
-
-    const { data, error } = await useApi(`/admin/produits/${localId.value}/stock/allocate`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        stock_total: stockForm.stock_total,
-        allocations,
-        warehouse_id: stockForm.warehouse_id
-      })
-    })
-
-    if (error.value) {
-      // Provide user-friendly error messages using i18n
-      let errorMessage = 'Erreur lors de l\'allocation du stock'
-
-      if (error.value.message?.includes('No warehouse found')) {
-        errorMessage = t('product.stock.error_no_warehouse')
-      } else if (error.value.message?.includes('Some variant IDs are invalid')) {
-        errorMessage = t('product.stock.error_invalid_variants')
-      } else if (error.value.message?.includes('SQLSTATE') || error.value.message?.includes('Column not found')) {
-        errorMessage = t('product.stock.error_database')
-      }
-
-      showError(errorMessage)
-    } else if (data.value && (data.value as any).success) {
-      showSuccess(t('product.stock.save_success'))
-      // Refresh the stock matrix
-      await loadStockMatrix()
-    }
-  } catch (error: any) {
-    showError('Erreur inattendue lors de l\'allocation du stock')
   }
 }
 
@@ -1321,20 +988,6 @@ const handleDeleteRupture = async (ruptureId: string) => {
   }
 }
 
-// Watchers to track form changes
-watch(form, () => {
-  if (!loading.value) {
-    isDirty.value = true
-  }
-}, { deep: true })
-
-// Watch for copywriting changes specifically
-watch(() => form.value.copywriting, () => {
-  if (!loading.value) {
-    isDirty.value = true
-  }
-})
-
 // Lifecycle
 onMounted(async () => {
   await loadLookups()
@@ -1398,10 +1051,6 @@ onMounted(async () => {
         <VTab :disabled="!readyForMedia" value="variants">
           <VIcon icon="tabler-versions" class="me-2" />
           Variants
-        </VTab>
-        <VTab :disabled="!readyForMedia" value="stock">
-          <VIcon icon="tabler-package" class="me-2" />
-          {{ $t('product.tabs.stock') }}
         </VTab>
         <VTab :disabled="!readyForMedia" value="propositions">
           <VIcon icon="tabler-list-details" class="me-2" />
@@ -1557,29 +1206,15 @@ onMounted(async () => {
                 />
               </VCol>
               <VCol cols="12" md="4">
-                <VCard variant="outlined" class="pa-4">
-                  <div class="text-subtitle-2 mb-2">Commission Estimée</div>
-                  <div class="d-flex align-center justify-space-between">
-                    <div>
-                      <div class="text-h6 text-success">{{ computedPrixAffilie.toFixed(2) }} MAD</div>
-                      <div class="text-caption text-medium-emphasis">
-                        Prix de vente - Prix d'achat
-                      </div>
-                    </div>
-                    <VIcon icon="tabler-calculator" color="success" size="24" />
-                  </div>
-                  <VDivider class="my-3" />
-                  <div class="text-caption">
-                    <div class="d-flex justify-space-between">
-                      <span>Prix de vente:</span>
-                      <span>{{ form.prix_vente || 0 }} MAD</span>
-                    </div>
-                    <div class="d-flex justify-space-between">
-                      <span>Prix d'achat:</span>
-                      <span>{{ form.prix_achat || 0 }} MAD</span>
-                    </div>
-                  </div>
-                </VCard>
+                <VTextField
+                  v-model.number="form.prix_affilie"
+                  label="Affiliate Price"
+                  type="number"
+                  variant="outlined"
+                  step="0.01"
+                  suffix="MAD"
+                  :error-messages="productErrors.prix_affilie"
+                />
               </VCol>
               <VCol cols="12" md="6">
                 <VTextField
@@ -1626,7 +1261,7 @@ onMounted(async () => {
                   <label class="text-subtitle-2 mb-2 d-block">{{ $t('products.rating.value') }}</label>
                   <VRating
                     :model-value="form.rating_value || 0"
-                    @update:model-value="(value) => form.rating_value = Number(value) || null"
+                    @update:model-value="(value) => form.rating_value = value || null"
                     half-increments
                     length="5"
                     color="warning"
@@ -1871,16 +1506,7 @@ onMounted(async () => {
 
             <VCard variant="outlined" class="mb-6">
               <VCardTitle class="d-flex justify-space-between align-center">
-                <div class="d-flex align-center gap-4">
-                  <span>Add New Variant</span>
-                  <VSwitch
-                    v-model="isMultiSelectMode"
-                    label="Multi-select"
-                    color="primary"
-                    density="compact"
-                    hide-details
-                  />
-                </div>
+                Add New Variant
                 <VBtn
                   variant="text"
                   size="small"
@@ -1907,9 +1533,7 @@ onMounted(async () => {
                     />
                   </VCol>
                   <VCol cols="12" md="3">
-                    <!-- Single Select Mode -->
                     <VSelect
-                      v-if="!isMultiSelectMode"
                       v-model="newVariant.valeur_id"
                       label="Value"
                       variant="outlined"
@@ -1918,21 +1542,6 @@ onMounted(async () => {
                       item-value="id"
                       placeholder="Select value"
                       :disabled="!newVariant.attribut_id"
-                    />
-                    <!-- Multi Select Mode -->
-                    <VSelect
-                      v-else
-                      v-model="newVariant.valeur_ids"
-                      label="Values"
-                      variant="outlined"
-                      :items="availableValues"
-                      item-title="libelle"
-                      item-value="id"
-                      placeholder="Select multiple values"
-                      :disabled="!newVariant.attribut_id"
-                      multiple
-                      chips
-                      closable-chips
                     />
                   </VCol>
                   <VCol cols="12" md="3">
@@ -1947,25 +1556,13 @@ onMounted(async () => {
                     />
                   </VCol>
                   <VCol cols="12" md="3" class="d-flex align-end">
-                    <!-- Single Mode Button -->
                     <VBtn
-                      v-if="!isMultiSelectMode"
                       color="primary"
                       block
                       :disabled="!newVariant.attribut_id || !newVariant.valeur_id"
                       @click="addVariant"
                     >
                       Add Variant
-                    </VBtn>
-                    <!-- Multi Mode Button -->
-                    <VBtn
-                      v-else
-                      color="primary"
-                      block
-                      :disabled="!newVariant.attribut_id || !newVariant.valeur_ids.length"
-                      @click="addVariantsBulk"
-                    >
-                      Add {{ newVariant.valeur_ids.length || 0 }} Variants
                     </VBtn>
                   </VCol>
                 </VRow>
@@ -2044,243 +1641,6 @@ onMounted(async () => {
             <VAlert v-else type="info" variant="tonal">
               No variants created yet. Add variants to offer different options for your product.
             </VAlert>
-          </div>
-        </VTabsWindowItem>
-
-        <!-- Stock Tab -->
-        <VTabsWindowItem value="stock">
-          <div v-if="!readyForMedia" class="text-center py-12">
-            <VIcon icon="tabler-package-off" size="64" color="grey-lighten-1" class="mb-4" />
-            <h3 class="text-h6 mb-2">Save Product First</h3>
-            <p class="text-body-2 text-medium-emphasis">
-              You need to save the product details before managing stock.
-            </p>
-          </div>
-
-          <div v-else>
-            <!-- Global Stock Section -->
-            <VCard variant="outlined" class="mb-6">
-              <VCardTitle class="d-flex justify-space-between align-center">
-                <span>{{ $t('product.stock.global') }}</span>
-                <!-- Warehouse Selector -->
-                <VSelect
-                  v-if="warehouses.length > 1"
-                  v-model="stockForm.warehouse_id"
-                  :items="warehouses"
-                  item-title="name"
-                  item-value="id"
-                  :label="$t('product.stock.warehouse')"
-                  variant="outlined"
-                  density="compact"
-                  style="max-width: 300px;"
-                  @update:model-value="loadStockMatrix"
-                />
-                <VChip v-else-if="warehouses.length === 1" color="primary" variant="tonal">
-                  {{ warehouses[0].name }}
-                </VChip>
-              </VCardTitle>
-              <VCardText>
-                <VRow>
-                  <VCol cols="12" md="6">
-                    <VTextField
-                      v-model.number="stockForm.stock_total"
-                      :label="$t('product.stock.total')"
-                      type="number"
-                      variant="outlined"
-                      min="0"
-                      suffix="unités"
-                      :error="stockExceeded"
-                      :error-messages="stockExceeded ? `Total insuffisant (${totalVariantStock} alloués)` : []"
-                    />
-                  </VCol>
-                  <VCol cols="12" md="6" class="d-flex align-end">
-                    <VBtn
-                      color="primary"
-                      variant="outlined"
-                      :disabled="!stockMatrix.length || !stockForm.stock_total"
-                      @click="distributeStock"
-                    >
-                      <VIcon icon="tabler-arrows-split" start />
-                      {{ $t('product.stock.distribute') }}
-                    </VBtn>
-                  </VCol>
-                </VRow>
-              </VCardText>
-            </VCard>
-
-            <!-- Variant Matrix Section -->
-            <VCard variant="outlined" class="mb-6">
-              <VCardTitle>
-                <div class="d-flex justify-space-between align-center">
-                  <span>Stock par combinaison (Taille × Couleur)</span>
-                  <div class="d-flex gap-2">
-                    <VChip v-if="stockMatrix.some(item => item.is_combination)" color="success" variant="tonal" size="small">
-                      Combinaisons créées
-                    </VChip>
-                    <VChip v-else-if="stockMatrix.some(item => item.is_virtual)" color="warning" variant="tonal" size="small">
-                      Combinaisons virtuelles
-                    </VChip>
-                  </div>
-                </div>
-              </VCardTitle>
-              <VCardText>
-                <div v-if="loadingMatrix" class="text-center py-8">
-                  <VProgressCircular indeterminate color="primary" />
-                  <p class="text-body-2 text-medium-emphasis mt-2">Chargement de la matrice...</p>
-                </div>
-
-                <div v-else-if="!stockMatrix.length" class="text-center py-8">
-                  <VIcon icon="tabler-versions-off" size="48" color="grey-lighten-1" class="mb-4" />
-                  <p class="text-body-2 text-medium-emphasis">
-                    Aucune variante trouvée. Créez des variantes de taille et/ou couleur d'abord.
-                  </p>
-                </div>
-
-                <div v-else>
-                  <!-- Alert for Virtual Combinations -->
-                  <VAlert
-                    v-if="stockMatrix.some(item => item.is_virtual)"
-                    type="warning"
-                    variant="tonal"
-                    class="mb-4"
-                  >
-                    <div class="d-flex justify-space-between align-center">
-                      <div>
-                        <VIcon icon="tabler-alert-triangle" start />
-                        <strong>Combinaisons virtuelles détectées :</strong>
-                        Vous avez des variantes de taille et couleur séparées.
-                        Générez les combinaisons pour gérer le stock par taille × couleur.
-                      </div>
-                      <VBtn
-                        color="warning"
-                        variant="outlined"
-                        size="small"
-                        @click="generateCombinations"
-                        :loading="generatingCombinations"
-                      >
-                        <VIcon icon="tabler-plus" start />
-                        Générer combinaisons
-                      </VBtn>
-                    </div>
-                  </VAlert>
-
-                  <!-- Info Alert for Combinations -->
-                  <VAlert
-                    v-else-if="stockMatrix.some(item => item.is_combination)"
-                    type="success"
-                    variant="tonal"
-                    class="mb-4"
-                  >
-                    <VIcon icon="tabler-check-circle" start />
-                    <strong>Combinaisons Taille × Couleur :</strong>
-                    Le stock est géré individuellement pour chaque combinaison de taille et couleur.
-                  </VAlert>
-
-                  <!-- Stock Matrix Table -->
-                  <VTable density="compact">
-                    <thead>
-                      <tr>
-                        <th>{{ $t('product.stock.matrix.color') }}</th>
-                        <th>{{ $t('product.stock.matrix.size') }}</th>
-                        <th>{{ $t('product.stock.matrix.qty') }}</th>
-                        <th>{{ $t('product.stock.matrix.reserved') }}</th>
-                        <th>{{ $t('product.stock.matrix.available') }}</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr v-for="(item, index) in stockMatrix" :key="index">
-                        <td>
-                          <div v-if="item.color" class="d-flex align-center">
-                            <VImg
-                              v-if="item.color_image"
-                              :src="item.color_image"
-                              width="24"
-                              height="24"
-                              cover
-                              class="rounded me-2"
-                            />
-                            <span>{{ item.color }}</span>
-                          </div>
-                          <span v-else class="text-medium-emphasis">-</span>
-                        </td>
-                        <td>
-                          <span v-if="item.size" class="font-weight-medium">{{ item.size }}</span>
-                          <span v-else class="text-medium-emphasis">-</span>
-                        </td>
-                        <td>
-                          <VTextField
-                            v-if="!item.is_virtual"
-                            :model-value="item.qty"
-                            type="number"
-                            variant="outlined"
-                            density="compact"
-                            min="0"
-                            style="width: 100px;"
-                            hide-details
-                            @update:model-value="updateMatrixQuantity(item.variante_id, $event)"
-                          />
-                          <VChip v-else color="warning" variant="tonal" size="small">
-                            Virtuel
-                          </VChip>
-                        </td>
-                        <td class="text-medium-emphasis">
-                          {{ item.reserved || 0 }}
-                        </td>
-                        <td class="font-weight-medium">
-                          {{ item.available || 0 }}
-                        </td>
-                      </tr>
-                    </tbody>
-                    <tfoot>
-                      <tr :class="stockExceeded ? 'bg-red-lighten-4' : 'bg-grey-lighten-4'">
-                        <td colspan="2" class="font-weight-bold">Total</td>
-                        <td :class="stockExceeded ? 'font-weight-bold text-red' : 'font-weight-bold'">
-                          {{ totalVariantStock }}
-                          <VIcon v-if="stockExceeded" icon="tabler-alert-circle" size="small" color="red" class="ml-1" />
-                        </td>
-                        <td class="font-weight-bold">{{ totalReservedStock }}</td>
-                        <td class="font-weight-bold">{{ totalAvailableStock }}</td>
-                      </tr>
-                    </tfoot>
-                  </VTable>
-
-                  <!-- Stock Exceeded Error -->
-                  <VAlert
-                    v-if="stockExceeded"
-                    type="error"
-                    variant="tonal"
-                    class="mt-4"
-                  >
-                    <VIcon icon="tabler-alert-circle" start />
-                    <strong>❌ Erreur : Stock dépassé !</strong>
-                    <br>
-                    La somme des variantes ({{ totalVariantStock }}) dépasse le stock total ({{ stockForm.stock_total }}).
-                    <br>
-                    <small class="text-medium-emphasis">
-                      Réduisez les quantités des variantes ou augmentez le stock total.
-                    </small>
-                  </VAlert>
-
-                  <!-- Stock Mismatch Warning (when not exceeded) -->
-                  <VAlert
-                    v-else-if="stockMismatch"
-                    type="warning"
-                    variant="tonal"
-                    class="mt-4"
-                  >
-                    <VIcon icon="tabler-alert-triangle" start />
-                    {{ $t('product.stock.mismatch_warning') }}
-                    <br>
-                    <strong>Stock total: {{ stockForm.stock_total }}</strong> |
-                    <strong>Somme variantes: {{ totalVariantStock }}</strong>
-                    <br>
-                    <small class="text-medium-emphasis">
-                      Utilisez le bouton "Répartir sur variantes" pour équilibrer automatiquement.
-                    </small>
-                  </VAlert>
-                </div>
-              </VCardText>
-            </VCard>
           </div>
         </VTabsWindowItem>
 
@@ -2600,7 +1960,6 @@ onMounted(async () => {
           size="large"
           type="button"
           :loading="saving"
-          :disabled="!canSave"
           @click="saveProduct"
         >
           {{ isEditMode ? 'Update Product' : 'Create Product' }}

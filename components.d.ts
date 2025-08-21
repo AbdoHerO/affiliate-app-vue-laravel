@@ -74,6 +74,7 @@ declare module 'vue' {
     ProductDescriptionEditor: typeof import('./resources/ts/@core/components/ProductDescriptionEditor.vue')['default']
     ProductDrawer: typeof import('./resources/ts/components/affiliate/catalogue/ProductDrawer.vue')['default']
     ProductForm: typeof import('./resources/ts/components/admin/products/ProductForm.vue')['default']
+    ProductForm__old: typeof import('./resources/ts/components/admin/products/ProductForm__old.vue')['default']
     ProductImageGallery: typeof import('./resources/ts/components/admin/ProductImageGallery.vue')['default']
     ProductImageManager: typeof import('./resources/ts/components/admin/products/ProductImageManager.vue')['default']
     ProductModal: typeof import('./resources/ts/components/affiliate/catalogue/ProductModal.vue')['default']

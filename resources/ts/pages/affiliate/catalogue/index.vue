@@ -147,22 +147,38 @@ const handleProductOpen = async (productId: string) => {
 const handleAddToCart = async (data: { produit_id: string; variante_id?: string; qty: number }) => {
   try {
     console.log('🛒 [Catalogue] Adding to cart:', data)
-    
+
+    // Validate the data before sending
+    if (!data.produit_id) {
+      showError('Produit invalide')
+      return
+    }
+
+    if (data.qty < 1) {
+      showError('Quantité invalide')
+      return
+    }
+
     // Add item using cart store
     await cartStore.addItem(data)
-    
+
     // Refresh cart to ensure sync
     await cartStore.fetchCart()
-    
+
     // Also refresh catalogue cart summary
     await catalogueStore.fetchCartSummary()
-    
+
     showSuccess('Ajouté au panier')
-    
+
     console.log('✅ [Catalogue] Item added, cart count:', cartStore.count)
+
+    // Open cart drawer after successful add
+    setTimeout(() => {
+      openCartDrawer()
+    }, 300)
   } catch (error) {
     console.error('❌ [Catalogue] Add to cart error:', error)
-    showError('Erreur lors de l\'ajout au panier')
+    // Don't show error here as cart store already handles it
   }
 }
 

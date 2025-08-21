@@ -106,7 +106,6 @@ export interface ProduitFormData {
   copywriting?: string | null
   prix_achat: number | null
   prix_vente: number | null
-  prix_affilie: number | null
   quantite_min: number | null
   notes_admin: string | null
   slug?: string

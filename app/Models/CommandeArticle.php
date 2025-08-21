@@ -28,6 +28,9 @@ class CommandeArticle extends Model
         'variante_id',
         'quantite',
         'prix_unitaire',
+        'sell_price',
+        'commission_amount',
+        'commission_rule_code',
         'remise',
         'total_ligne',
     ];
@@ -40,6 +43,8 @@ class CommandeArticle extends Model
     protected $casts = [
         'quantite' => 'integer',
         'prix_unitaire' => 'decimal:2',
+        'sell_price' => 'decimal:2',
+        'commission_amount' => 'decimal:2',
         'remise' => 'decimal:2',
         'total_ligne' => 'decimal:2',
     ];

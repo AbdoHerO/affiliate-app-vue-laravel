@@ -17,14 +17,16 @@ class AffiliateCartItem extends Model
         'produit_id',
         'variante_id',
         'qty',
+        'sell_price',
         'added_at',
     ];
 
     protected $casts = [
         'user_id' => 'string',
-        'produit_id' => 'string', 
+        'produit_id' => 'string',
         'variante_id' => 'string',
         'qty' => 'integer',
+        'sell_price' => 'decimal:2',
         'added_at' => 'datetime'
     ];
 
