@@ -54,6 +54,11 @@ const profitText = computed(() => {
 const colorSwatches = computed(() => {
   const colors: Array<{ id: string; name: string; swatch?: string; stock: number }> = []
   
+  console.log('🎨 [CatalogueCard] Computing color swatches for product:', props.product.id, {
+    enhancedColors: props.product.colors,
+    variantColors: props.product.variants?.colors
+  })
+  
   // Use the enhanced colors array from the store mapping
   if (props.product.colors && props.product.colors.length > 0) {
     props.product.colors.forEach(color => {
@@ -82,12 +87,18 @@ const colorSwatches = computed(() => {
     })
   }
   
+  console.log('🎨 [CatalogueCard] Final color swatches:', colors)
   return colors
 })
 
 // Size chips from variants - normalize to consistent interface
 const sizeChips = computed(() => {
   const sizes: Array<{ id: string; value: string; stock: number }> = []
+  
+  console.log('📏 [CatalogueCard] Computing size chips for product:', props.product.id, {
+    enhancedSizes: props.product.sizes,
+    variantSizes: props.product.variants?.sizes
+  })
   
   // Use the enhanced sizes array from the store mapping
   if (props.product.sizes && props.product.sizes.length > 0) {
@@ -111,11 +122,21 @@ const sizeChips = computed(() => {
     })
   }
   
+  console.log('📏 [CatalogueCard] Final size chips:', sizes)
   return sizes
 })
 
 // Initialize current image and reset loading states
 watch(() => props.product.mainImage, (newImage) => {
+  console.log('🖼️ [CatalogueCard] Image watch triggered:', { 
+    productId: props.product.id,
+    newImage, 
+    hasColors: props.product.colors?.length,
+    hasVariantColors: props.product.variants?.colors?.length,
+    hasSizes: props.product.sizes?.length,
+    hasVariantSizes: props.product.variants?.sizes?.length
+  })
+  
   if (newImage) {
     currentImage.value = newImage
     imageLoading.value = true
@@ -247,11 +268,14 @@ const handleImageLoad = () => {
   imageError.value = false
 }
 
+const placeholderImage = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDMwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjRjVGNUY1Ii8+CjxwYXRoIGQ9Ik0xNTAgMTAwQzE2MS4wNDYgMTAwIDE3MCA5MC45NTQzIDE3MCA4MEM1NyA2OS4wNDU3IDE0Ny45NTQgNjAgMTM2IDYwQzEyNC45NTQgNjAgMTE2IDY5LjA0NTcgMTE2IDgwQzExNiA5MC45NTQzIDEyNC45NTQgMTAwIDEzNiAxMDBIMTUwWiIgZmlsbD0iI0NDQ0NDQyIvPgo8cGF0aCBkPSJNMTgwIDEyMEgxMjBDMTE2LjY4NiAxMjAgMTE0IDEyMi42ODYgMTE0IDEyNlYyMDBDMTE0IDIwMy4zMTQgMTE2LjY4NiAyMDYgMTIwIDIwNkgxODBDMTgzLjMxNCAyMDYgMTg2IDIwMy4zMTQgMTg2IDIwMFYxMjZDMTg2IDEyMi42ODYgMTgzLjMxNCAxMjAgMTgwIDEyMFoiIGZpbGw9IiNDQ0NDQ0MiLz4KPC9zdmc+'
+
 const handleImageError = () => {
   imageLoading.value = false
   imageError.value = true
-  // Set fallback image
-  currentImage.value = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDMwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjRjVGNUY1Ii8+CjxwYXRoIGQ9Ik0xNTAgMTAwQzE2MS4wNDYgMTAwIDE3MCA5MC45NTQzIDE3MCA4MEM1NyA2OS4wNDU3IDE0Ny45NTQgNjAgMTM2IDYwQzEyNC45NTQgNjAgMTE2IDY5LjA0NTcgMTE2IDgwQzExNiA5MC45NTQzIDEyNC45NTQgMTAwIDEzNiAxMDBIMTUwWiIgZmlsbD0iI0NDQ0NDQyIvPgo8cGF0aCBkPSJNMTgwIDEyMEgxMjBDMTE2LjY4NiAxMjAgMTE0IDEyMi42ODYgMTE0IDEyNlYyMDBDMTE0IDIwMy4zMTQgMTE2LjY4NiAyMDYgMTIwIDIwNkgxODBDMTgzLjMxNCAyMDYgMTg2IDIwMy4zMTQgMTg2IDIwMFYxMjZDMTg2IDEyMi42ODYgMTgzLjMxNCAxMjAgMTgwIDEyMFoiIGZpbGw9IiNDQ0NDQ0MiLz4KPC9zdmc+'
+  console.log('❌ [CatalogueCard] Image failed to load:', currentImage.value)
+  // Use fallback placeholder
+  currentImage.value = placeholderImage
 }
 </script>
 
@@ -263,7 +287,7 @@ const handleImageError = () => {
     <!-- Product Image -->
     <div class="catalogue-card__image-container">
       <VImg
-        :src="currentImage || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDMwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjRjVGNUY1Ii8+CjxwYXRoIGQ9Ik0xNTAgMTAwQzE2MS4wNDYgMTAwIDE3MCA5MC45NTQzIDE3MCA4MEM1NyA2OS4wNDU3IDE0Ny45NTQgNjAgMTM2IDYwQzEyNC45NTQgNjAgMTE2IDY5LjA0NTcgMTE2IDgwQzExNiA5MC45NTQzIDEyNC45NTQgMTAwIDEzNiAxMDBIMTUwWiIgZmlsbD0iI0NDQ0NDQyIvPgo8cGF0aCBkPSJNMTgwIDEyMEgxMjBDMTE2LjY4NiAxMjAgMTE0IDEyMi42ODYgMTE0IDEyNlYyMDBDMTE0IDIwMy4zMTQgMTE2LjY4NiAyMDYgMTIwIDIwNkgxODBDMTgzLjMxNCAyMDYgMTg2IDIwMy4zMTQgMTg2IDIwMFYxMjZDMTg2IDEyMi42ODYgMTgzLjMxNCAxMjAgMTgwIDEyMFoiIGZpbGw9IiNDQ0NDQ0MiLz4KPC9zdmc+'"
+        :src="currentImage || placeholderImage"
         :alt="product.titre"
         aspect-ratio="1.2"
         cover

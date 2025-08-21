@@ -450,7 +450,7 @@ onMounted(async () => {
         class="catalogue-grid__item"
       >
         <CatalogueCard
-          :product="catalogueStore.mapProductToNormalized(product)"
+          :product="product"
           @open="handleProductOpen"
           @add-to-cart="handleAddToCart"
           @variant-change="handleVariantChange"
