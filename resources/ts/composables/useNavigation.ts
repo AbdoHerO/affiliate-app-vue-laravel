@@ -198,9 +198,14 @@ export function useNavigation() {
             icon: { icon: 'tabler-shopping-cart' },
           },
           {
-            title: t('nav_my_commissions'),
-            to: 'affiliate-commissions',
+            title: t('nav_my_payments'),
+            to: 'affiliate-payments',
             icon: { icon: 'tabler-currency-dollar' },
+          },
+          {
+            title: t('nav_support'),
+            to: 'affiliate-tickets',
+            icon: { icon: 'tabler-headset' },
           },
           {
             title: t('nav_marketing_materials'),

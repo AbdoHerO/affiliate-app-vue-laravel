@@ -417,17 +417,22 @@ Route::middleware(['auth:sanctum'])->group(function () {
             return response()->json(['message' => 'Affiliate Dashboard']);
         });
 
-        Route::get('orders', function () {
-            return response()->json(['message' => 'My Orders - Affiliate Only']);
-        });
+        // Orders History
+        Route::get('orders', [App\Http\Controllers\Affiliate\OrdersController::class, 'index']);
+        Route::get('orders/{id}', [App\Http\Controllers\Affiliate\OrdersController::class, 'show']);
 
-        Route::post('orders', function () {
-            return response()->json(['message' => 'Create Order - Affiliate Only']);
-        });
+        // Payments (Commissions & Withdrawals)
+        Route::get('commissions', [App\Http\Controllers\Affiliate\PaymentsController::class, 'commissions']);
+        Route::get('withdrawals', [App\Http\Controllers\Affiliate\PaymentsController::class, 'withdrawals']);
+        Route::get('withdrawals/{id}', [App\Http\Controllers\Affiliate\PaymentsController::class, 'showWithdrawal']);
+        Route::post('withdrawals/request', [App\Http\Controllers\Affiliate\PaymentsController::class, 'requestPayout']);
 
-        Route::get('commissions', function () {
-            return response()->json(['message' => 'My Commissions - Affiliate Only']);
-        });
+        // Support Tickets
+        Route::get('tickets', [App\Http\Controllers\Affiliate\TicketsController::class, 'index']);
+        Route::post('tickets', [App\Http\Controllers\Affiliate\TicketsController::class, 'store']);
+        Route::get('tickets/{id}', [App\Http\Controllers\Affiliate\TicketsController::class, 'show']);
+        Route::post('tickets/{id}/messages', [App\Http\Controllers\Affiliate\TicketsController::class, 'addMessage']);
+        Route::patch('tickets/{id}/status', [App\Http\Controllers\Affiliate\TicketsController::class, 'updateStatus']);
 
         // Catalogue routes
         Route::get('catalogue', [App\Http\Controllers\Affiliate\CatalogueController::class, 'index']);

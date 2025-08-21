@@ -185,9 +185,14 @@ const affiliateNavigation = [
     icon: { icon: 'tabler-shopping-cart' },
   },
   {
-    title: 'nav_my_commissions',
-    to: '/affiliate/commissions',
+    title: 'nav_my_payments',
+    to: '/affiliate/payments',
     icon: { icon: 'tabler-currency-dollar' },
+  },
+  {
+    title: 'nav_support',
+    to: '/affiliate/tickets',
+    icon: { icon: 'tabler-headset' },
   },
   {
     title: 'nav_marketing_materials',
