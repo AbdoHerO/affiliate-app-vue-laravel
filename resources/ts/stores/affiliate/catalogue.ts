@@ -298,7 +298,8 @@ export const useCatalogueStore = defineStore('affiliate-catalogue', () => {
     console.log('🔄 [Store] Mapping product to normalized:', product.id, {
       title: product.titre,
       images: product.images,
-      variantes: product.variantes
+      variantes: product.variantes,
+      variants: (product as any).variants // Check if API provides parsed variants
     })
 
     // Get main image (first image or fallback)
@@ -306,96 +307,127 @@ export const useCatalogueStore = defineStore('affiliate-catalogue', () => {
 
     console.log('🖼️ [Store] Main image extracted:', mainImage)
 
-    // Parse variant data - handle combined variants like "Red - Medium"
-    const sizeSet = new Set<string>()
-    const colorMap = new Map<string, { name: string; swatch?: string; image_url?: string }>()
-    const variantsByCombo: Record<string, any> = {}
-    const variantSizes: Array<{ id: string; value: string; stock: number }> = []
-    const variantColors: Array<{ id: string; value: string; color?: string; image_url?: string; stock: number }> = []
+    // Initialize variant arrays
+    let variantSizes: Array<{ id: string; value: string; stock: number }> = []
+    let variantColors: Array<{ id: string; value: string; color?: string; image_url?: string; stock: number }> = []
+    let colors: Array<{ name: string; swatch?: string; image_url?: string }> = []
+    let sizes: string[] = []
 
-    product.variantes?.forEach(v => {
-      const stock = v.stock || 0
-      const attributCode = (v as any).attribut?.code || v.attribut_principal?.toLowerCase()
+    // Check if API provides pre-parsed variants structure
+    const apiVariants = (product as any).variants
+    if (apiVariants && (apiVariants.sizes || apiVariants.colors)) {
+      console.log('🎯 [Store] Using API-parsed variants:', apiVariants)
 
-      console.log('🔧 [Store] Processing variant:', {
-        id: v.id,
-        attribut_principal: v.attribut_principal,
-        valeur: v.valeur,
-        stock,
-        attributCode,
-        color: v.color,
-        image_url: v.image_url
+      // Use API-parsed sizes
+      if (apiVariants.sizes && Array.isArray(apiVariants.sizes)) {
+        variantSizes = apiVariants.sizes.filter((s: any) => s.stock > 0)
+        sizes = variantSizes.map((s: any) => s.value)
+      }
+
+      // Use API-parsed colors
+      if (apiVariants.colors && Array.isArray(apiVariants.colors)) {
+        variantColors = apiVariants.colors.filter((c: any) => c.stock > 0)
+        colors = variantColors.map((c: any) => ({
+          name: c.value,
+          swatch: c.color || c.value,
+          image_url: c.image_url
+        }))
+      }
+    } else {
+      // Fallback: Parse variant data manually from variantes array
+      console.log('🔧 [Store] Manually parsing variants from variantes array')
+
+      const sizeSet = new Set<string>()
+      const colorMap = new Map<string, { name: string; swatch?: string; image_url?: string }>()
+
+      product.variantes?.forEach(v => {
+        const stock = v.stock || 0
+        if (stock <= 0) return // Skip variants with no stock
+
+        const attributCode = v.attribut_principal?.toLowerCase()
+
+        console.log('🔧 [Store] Processing variant:', {
+          id: v.id,
+          attribut_principal: v.attribut_principal,
+          valeur: v.valeur,
+          stock,
+          attributCode,
+          color: v.color,
+          image_url: v.image_url
+        })
+
+        // Handle combined variants like "Red - Medium"
+        if (v.valeur?.includes(' - ')) {
+          const [colorPart, sizePart] = v.valeur.split(' - ')
+
+          // Add to sets
+          if (colorPart) {
+            colorMap.set(colorPart, {
+              name: colorPart,
+              swatch: v.color || colorPart,
+              image_url: v.image_url || undefined
+            })
+          }
+          if (sizePart) {
+            sizeSet.add(sizePart)
+          }
+
+          // Add to variant arrays
+          if (colorPart) {
+            variantColors.push({
+              id: v.id,
+              value: colorPart,
+              color: v.color || undefined,
+              image_url: v.image_url || undefined,
+              stock
+            })
+          }
+          if (sizePart) {
+            variantSizes.push({
+              id: v.id,
+              value: sizePart,
+              stock
+            })
+          }
+        } else {
+          // Handle individual variants
+          if (['taille', 'size'].includes(attributCode)) {
+            sizeSet.add(v.valeur)
+            variantSizes.push({
+              id: v.id,
+              value: v.valeur,
+              stock
+            })
+          } else if (['couleur', 'color'].includes(attributCode)) {
+            colorMap.set(v.valeur, {
+              name: v.valeur,
+              swatch: v.color || v.valeur,
+              image_url: v.image_url || undefined
+            })
+            variantColors.push({
+              id: v.id,
+              value: v.valeur,
+              color: v.color || undefined,
+              image_url: v.image_url || undefined,
+              stock
+            })
+          }
+        }
       })
 
-      // Handle combined variants like "Red - Medium"
-      if (v.valeur?.includes(' - ')) {
-        const [colorPart, sizePart] = v.valeur.split(' - ')
-
-        // Add to sets
-        if (colorPart) {
-          colorMap.set(colorPart, {
-            name: colorPart,
-            swatch: v.color || colorPart,
-            image_url: v.image_url || undefined
-          })
-        }
-        if (sizePart) {
-          sizeSet.add(sizePart)
-        }
-
-        // Build combo key for variant lookup
-        const comboKey = `${colorPart || '∅'}|${sizePart || '∅'}`
-        variantsByCombo[comboKey] = {
-          id: v.id,
-          stock_available: stock,
-          image_url: v.image_url || null
-        }
-      } else {
-        // Handle individual variants
-        if (['taille', 'size'].includes(attributCode)) {
-          sizeSet.add(v.valeur)
-          variantSizes.push({
-            id: v.id,
-            value: v.valeur,
-            stock
-          })
-        } else if (['couleur', 'color'].includes(attributCode)) {
-          colorMap.set(v.valeur, {
-            name: v.valeur,
-            swatch: v.color || v.valeur,
-            image_url: v.image_url || undefined
-          })
-          variantColors.push({
-            id: v.id,
-            value: v.valeur,
-            color: v.color || undefined,
-            image_url: v.image_url || undefined,
-            stock
-          })
-        }
-
-        // Build combo key for single variants
-        const comboKey = `${attributCode || 'default'}|${v.valeur || 'default'}`
-        variantsByCombo[comboKey] = {
-          id: v.id,
-          stock_available: stock,
-          image_url: v.image_url || null
-        }
-      }
-    })
-
-    // Convert to arrays for card display
-    const colors = Array.from(colorMap.values()).sort((a, b) => a.name.localeCompare(b.name))
-    const sizes = Array.from(sizeSet).sort((a, b) => {
-      // Custom size sorting: S < M < L < XL < 2XL < 3XL
-      const sizeOrder = ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL', '4XL', '5XL']
-      const aIndex = sizeOrder.indexOf(a)
-      const bIndex = sizeOrder.indexOf(b)
-      if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex
-      if (aIndex !== -1) return -1
-      if (bIndex !== -1) return 1
-      return a.localeCompare(b)
-    })
+      // Convert to arrays for card display
+      colors = Array.from(colorMap.values()).sort((a, b) => a.name.localeCompare(b.name))
+      sizes = Array.from(sizeSet).sort((a, b) => {
+        // Custom size sorting: S < M < L < XL < 2XL < 3XL
+        const sizeOrder = ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL', '4XL', '5XL']
+        const aIndex = sizeOrder.indexOf(a)
+        const bIndex = sizeOrder.indexOf(b)
+        if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex
+        if (aIndex !== -1) return -1
+        if (bIndex !== -1) return 1
+        return a.localeCompare(b)
+      })
+    }
 
     console.log('✅ [Store] Final normalized product:', {
       id: product.id,
@@ -424,7 +456,7 @@ export const useCatalogueStore = defineStore('affiliate-catalogue', () => {
       // Enhanced variant data for cards (what CatalogueCard expects)
       colors, // Array of { name, swatch, image_url }
       sizes,  // Array of strings
-      variantsByCombo,
+      variantsByCombo: {}, // Will be populated if needed
       slug: product.slug,
       description: product.description
     }

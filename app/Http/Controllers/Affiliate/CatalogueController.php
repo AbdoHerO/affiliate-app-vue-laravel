@@ -148,7 +148,7 @@ class CatalogueController extends Controller
                             'stock' => (int) $variantStock,
                         ];
                     }),
-                    'variants' => $this->parseVariants($product->variantes),
+                    'variants' => $this->parseVariants($product->variantes, $warehouse),
                 ];
             });
 
@@ -177,7 +177,7 @@ class CatalogueController extends Controller
     /**
      * Parse variants into sizes and colors structure
      */
-    private function parseVariants($variants)
+    private function parseVariants($variants, $warehouse = null)
     {
         $sizes = [];
         $colors = [];
@@ -185,7 +185,13 @@ class CatalogueController extends Controller
         $colorStocks = [];
 
         foreach ($variants as $variant) {
-            $stock = $variant->stocks->sum('qte_disponible') ?? 0;
+            // Calculate variant stock from the correct warehouse only
+            $stock = 0;
+            if ($warehouse) {
+                $stock = $variant->stocks->where('entrepot_id', $warehouse->id)->sum('qte_disponible') ?? 0;
+            } else {
+                $stock = $variant->stocks->sum('qte_disponible') ?? 0;
+            }
 
             if ($variant->nom === 'couleur_taille' && strpos($variant->valeur, ' - ') !== false) {
                 // Parse combined variant (e.g., "Rouge - M")
@@ -195,7 +201,7 @@ class CatalogueController extends Controller
                 if (!isset($sizeStocks[$size])) {
                     $sizeStocks[$size] = 0;
                     $sizes[$size] = [
-                        'id' => $size,
+                        'id' => $variant->id, // Use variant ID for proper identification
                         'value' => $size,
                         'stock' => 0
                     ];
@@ -207,10 +213,11 @@ class CatalogueController extends Controller
                 if (!isset($colorStocks[$color])) {
                     $colorStocks[$color] = 0;
                     $colors[$color] = [
-                        'id' => $color,
+                        'id' => $variant->id, // Use variant ID for proper identification
                         'value' => $color,
                         'stock' => 0,
-                        'image_url' => $variant->image_url
+                        'color' => $this->getColorHex($color), // Add color hex if available
+                        'image_url' => $variant->image_url ? $this->getFullImageUrl($variant->image_url) : null
                     ];
                 }
                 $colorStocks[$color] += $stock;
@@ -219,17 +226,18 @@ class CatalogueController extends Controller
             } elseif ($variant->nom === 'taille') {
                 // Individual size variant
                 $sizes[$variant->valeur] = [
-                    'id' => $variant->valeur,
+                    'id' => $variant->id,
                     'value' => $variant->valeur,
                     'stock' => $stock
                 ];
             } elseif ($variant->nom === 'couleur') {
                 // Individual color variant
                 $colors[$variant->valeur] = [
-                    'id' => $variant->valeur,
+                    'id' => $variant->id,
                     'value' => $variant->valeur,
                     'stock' => $stock,
-                    'image_url' => $variant->image_url
+                    'color' => $this->getColorHex($variant->valeur),
+                    'image_url' => $variant->image_url ? $this->getFullImageUrl($variant->image_url) : null
                 ];
             }
         }
@@ -238,6 +246,40 @@ class CatalogueController extends Controller
             'sizes' => array_values($sizes),
             'colors' => array_values($colors)
         ];
+    }
+
+    /**
+     * Get color hex value for common color names
+     */
+    private function getColorHex($colorName)
+    {
+        $colorMap = [
+            'rouge' => '#FF0000',
+            'red' => '#FF0000',
+            'bleu' => '#0000FF',
+            'blue' => '#0000FF',
+            'vert' => '#00FF00',
+            'green' => '#00FF00',
+            'noir' => '#000000',
+            'black' => '#000000',
+            'blanc' => '#FFFFFF',
+            'white' => '#FFFFFF',
+            'jaune' => '#FFFF00',
+            'yellow' => '#FFFF00',
+            'rose' => '#FFC0CB',
+            'pink' => '#FFC0CB',
+            'violet' => '#800080',
+            'purple' => '#800080',
+            'orange' => '#FFA500',
+            'gris' => '#808080',
+            'gray' => '#808080',
+            'grey' => '#808080',
+            'beige' => '#F5F5DC',
+            'marron' => '#8B4513',
+            'brown' => '#8B4513',
+        ];
+
+        return $colorMap[strtolower($colorName)] ?? null;
     }
 
     /**

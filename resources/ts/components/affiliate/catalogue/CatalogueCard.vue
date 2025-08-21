@@ -128,23 +128,24 @@ const sizeChips = computed(() => {
 
 // Initialize current image and reset loading states
 watch(() => props.product.mainImage, (newImage) => {
-  console.log('🖼️ [CatalogueCard] Image watch triggered:', { 
+  console.log('🖼️ [CatalogueCard] Image watch triggered:', {
     productId: props.product.id,
-    newImage, 
+    newImage,
     hasColors: props.product.colors?.length,
     hasVariantColors: props.product.variants?.colors?.length,
     hasSizes: props.product.sizes?.length,
     hasVariantSizes: props.product.variants?.sizes?.length
   })
-  
+
   if (newImage) {
     currentImage.value = newImage
     imageLoading.value = true
     imageError.value = false
   } else {
-    currentImage.value = ''
+    // Use placeholder if no image
+    currentImage.value = placeholderImage
     imageLoading.value = false
-    imageError.value = true
+    imageError.value = false
   }
 }, { immediate: true })
 
@@ -315,8 +316,10 @@ const handleImageError = () => {
   imageLoading.value = false
   imageError.value = true
   console.log('❌ [CatalogueCard] Image failed to load:', currentImage.value)
-  // Use fallback placeholder
-  currentImage.value = placeholderImage
+  // Use fallback placeholder only if not already using it
+  if (currentImage.value !== placeholderImage) {
+    currentImage.value = placeholderImage
+  }
 }
 </script>
 
