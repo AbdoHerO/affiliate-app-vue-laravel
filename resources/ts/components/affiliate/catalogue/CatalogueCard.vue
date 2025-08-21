@@ -334,6 +334,7 @@ const handleImageError = () => {
   <VCard
     class="catalogue-card"
     elevation="2"
+    @click="handleViewDetails"
   >
     <!-- Product Image -->
     <div class="catalogue-card__image-container">
@@ -465,8 +466,7 @@ const handleImageError = () => {
       </div>
 
       <!-- Quantity and Add to Cart Row -->
-      <div class="d-flex align-center justify-space-between mb-3">
-        <!-- Quantity Selector -->
+      <!-- <div class="d-flex align-center justify-space-between mb-3">
         <div class="d-flex align-center">
           <VBtn
             icon
@@ -488,7 +488,6 @@ const handleImageError = () => {
             <VIcon icon="tabler-plus" size="14" />
           </VBtn>
           
-          <!-- Max quantity indicator -->
           <VTooltip v-if="maxQuantity < 10" location="top">
             <template #activator="{ props: tooltipProps }">
               <VChip
@@ -505,7 +504,6 @@ const handleImageError = () => {
           </VTooltip>
         </div>
 
-        <!-- Add to Cart Button -->
         <VBtn
           color="primary"
           size="small"
@@ -513,6 +511,20 @@ const handleImageError = () => {
           @click.stop="handleAddToCart"
         >
           <VIcon icon="tabler-shopping-cart" size="16" />
+        </VBtn>
+      </div> -->
+
+      <!-- Commander Button -->
+      <div class="mb-3">
+        <VBtn
+          color="primary"
+          variant="flat"
+          size="small"
+          block
+          @click.stop="handleViewDetails"
+        >
+          <VIcon icon="tabler-shopping-cart" class="me-2" />
+          Commander
         </VBtn>
       </div>
 
