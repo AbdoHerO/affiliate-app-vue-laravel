@@ -870,7 +870,9 @@ const uploadVariantImage = async (id: string, file: File) => {
 // Stock management methods
 const loadWarehouses = async () => {
   try {
-    const { data, error } = await useApi('/admin/warehouses')
+    // Filter warehouses by product's boutique
+    const params = form.value.boutique_id ? `?boutique_id=${form.value.boutique_id}` : ''
+    const { data, error } = await useApi(`/admin/warehouses${params}`)
 
     if (error.value) {
       console.error('Failed to load warehouses:', error.value)
@@ -881,7 +883,8 @@ const loadWarehouses = async () => {
     const response = data.value as any
     if (response?.success) {
       warehouses.value = response.data
-      console.log('Loaded warehouses:', warehouses.value)
+      console.log('[ProductForm] Loaded warehouses for boutique:', form.value.boutique_id)
+      console.log('[ProductForm] Warehouses:', warehouses.value.map(w => ({ id: w.id, name: w.name, boutique: w.boutique })))
 
       // Set default warehouse if none selected
       if (!stockForm.warehouse_id && warehouses.value.length > 0) {

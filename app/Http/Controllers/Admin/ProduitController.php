@@ -451,26 +451,41 @@ class ProduitController extends Controller
     {
         try {
             $warehouseService = new WarehouseService();
+            $boutiqueId = $request->query('boutique_id');
 
-            // Get existing warehouses
-            $warehouses = \App\Models\Entrepot::where('actif', true)
-                ->with('boutique:id,nom')
-                ->orderBy('nom')
-                ->get();
+            // Build warehouse query
+            $query = \App\Models\Entrepot::where('actif', true)
+                ->with('boutique:id,nom');
 
-            // If no warehouses exist, create default ones for each boutique
+            // Filter by boutique if provided
+            if ($boutiqueId) {
+                $query->where('boutique_id', $boutiqueId);
+            }
+
+            $warehouses = $query->orderBy('nom')->get();
+
+            // If no warehouses exist, create default ones
             if ($warehouses->isEmpty()) {
-                $boutiques = \App\Models\Boutique::all();
-
-                foreach ($boutiques as $boutique) {
-                    $warehouseService->getOrCreateDefaultWarehouse($boutique->id);
+                if ($boutiqueId) {
+                    // Create warehouse for specific boutique
+                    $warehouseService->getOrCreateDefaultWarehouse($boutiqueId);
+                } else {
+                    // Create warehouses for all boutiques
+                    $boutiques = \App\Models\Boutique::all();
+                    foreach ($boutiques as $boutique) {
+                        $warehouseService->getOrCreateDefaultWarehouse($boutique->id);
+                    }
                 }
 
                 // Reload warehouses after creation
-                $warehouses = \App\Models\Entrepot::where('actif', true)
-                    ->with('boutique:id,nom')
-                    ->orderBy('nom')
-                    ->get();
+                $query = \App\Models\Entrepot::where('actif', true)
+                    ->with('boutique:id,nom');
+
+                if ($boutiqueId) {
+                    $query->where('boutique_id', $boutiqueId);
+                }
+
+                $warehouses = $query->orderBy('nom')->get();
             }
 
             $warehouseData = $warehouses->map(function ($warehouse) {
