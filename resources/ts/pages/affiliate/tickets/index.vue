@@ -63,10 +63,12 @@ const priorityOptions = [
 
 const categoryOptions = [
   { value: 'general', title: 'Général' },
+  { value: 'orders', title: 'Commandes' },
+  { value: 'payments', title: 'Paiements' },
+  { value: 'commissions', title: 'Commissions' },
+  { value: 'kyc', title: 'KYC' },
   { value: 'technical', title: 'Technique' },
-  { value: 'billing', title: 'Facturation' },
-  { value: 'account', title: 'Compte' },
-  { value: 'order', title: 'Commande' },
+  { value: 'other', title: 'Autre' },
 ]
 
 const headers = [

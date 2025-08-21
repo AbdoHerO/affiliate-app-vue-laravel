@@ -33,12 +33,12 @@ export interface AffiliateTicket {
 export interface TicketMessage {
   id: string
   ticket_id: string
-  user_id: string
-  message: string
-  is_internal: boolean
+  sender_id: string
+  type: 'public' | 'internal'
+  body: string
   created_at: string
   updated_at: string
-  user?: {
+  sender?: {
     id: string
     nom_complet: string
     email: string
@@ -372,10 +372,12 @@ export const useAffiliateTicketsStore = defineStore('affiliateTickets', () => {
   const getCategoryLabel = (category: string): string => {
     const categoryLabels: Record<string, string> = {
       'general': 'Général',
+      'orders': 'Commandes',
+      'payments': 'Paiements',
+      'commissions': 'Commissions',
+      'kyc': 'KYC',
       'technical': 'Technique',
-      'billing': 'Facturation',
-      'account': 'Compte',
-      'order': 'Commande',
+      'other': 'Autre',
     }
     return categoryLabels[category] || category
   }

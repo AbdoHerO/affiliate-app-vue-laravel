@@ -266,9 +266,9 @@ onMounted(() => {
                 <div class="flex-grow-1">
                   <div class="d-flex align-center justify-space-between mb-2">
                     <div>
-                      <span class="font-weight-medium">{{ message.user?.nom_complet || 'Support' }}</span>
+                      <span class="font-weight-medium">{{ message.sender?.nom_complet || 'Support' }}</span>
                       <VChip
-                        v-if="message.user?.id === currentTicket.requester_id"
+                        v-if="message.sender?.id === currentTicket.requester_id"
                         size="x-small"
                         color="primary"
                         variant="tonal"
@@ -291,7 +291,7 @@ onMounted(() => {
                     </span>
                   </div>
                   <div class="message-content">
-                    <p class="text-body-1 mb-2" style="white-space: pre-wrap;">{{ message.message }}</p>
+                    <p class="text-body-1 mb-2" style="white-space: pre-wrap;">{{ message.body }}</p>
                     
                     <!-- Attachments -->
                     <div v-if="message.attachments?.length" class="attachments">

@@ -63,7 +63,6 @@ declare module 'vue-router/auto-routes' {
     'affiliate-commissions': RouteRecordInfo<'affiliate-commissions', '/affiliate/commissions', Record<never, never>, Record<never, never>>,
     'affiliate-dashboard': RouteRecordInfo<'affiliate-dashboard', '/affiliate/dashboard', Record<never, never>, Record<never, never>>,
     'affiliate-marketing': RouteRecordInfo<'affiliate-marketing', '/affiliate/marketing', Record<never, never>, Record<never, never>>,
-    'affiliate-orders-parent': RouteRecordInfo<'affiliate-orders-parent', '/affiliate/orders', Record<never, never>, Record<never, never>>,
     'affiliate-orders': RouteRecordInfo<'affiliate-orders', '/affiliate/orders', Record<never, never>, Record<never, never>>,
     'affiliate-orders-id': RouteRecordInfo<'affiliate-orders-id', '/affiliate/orders/:id', { id: ParamValue<true> }, { id: ParamValue<false> }>,
     'affiliate-payments': RouteRecordInfo<'affiliate-payments', '/affiliate/payments', Record<never, never>, Record<never, never>>,

@@ -126,7 +126,7 @@ class TicketsController extends Controller
             // Validate request
             $validated = $request->validate([
                 'subject' => 'required|string|max:255',
-                'category' => 'required|string|in:general,technical,billing,account,order',
+                'category' => 'required|string|in:general,orders,payments,commissions,kyc,technical,other',
                 'priority' => 'required|string|in:low,normal,high,urgent',
                 'message' => 'required|string|max:5000',
                 'attachments' => 'nullable|array|max:5',
@@ -148,9 +148,9 @@ class TicketsController extends Controller
             // Create initial message
             $message = TicketMessage::create([
                 'ticket_id' => $ticket->id,
-                'user_id' => $user->id,
-                'message' => $validated['message'],
-                'is_internal' => false,
+                'sender_id' => $user->id,
+                'type' => 'public',
+                'body' => $validated['message'],
             ]);
 
             // Handle attachments if any
@@ -217,8 +217,8 @@ class TicketsController extends Controller
                 'requester:id,nom_complet,email',
                 'assignee:id,nom_complet,email',
                 'messages' => function ($query) {
-                    $query->where('is_internal', false) // Hide internal admin notes
-                          ->with(['user:id,nom_complet,email', 'attachments'])
+                    $query->where('type', 'public') // Hide internal admin notes
+                          ->with(['sender:id,nom_complet,email', 'attachments'])
                           ->orderBy('created_at', 'asc');
                 }
             ])
@@ -289,9 +289,9 @@ class TicketsController extends Controller
             // Create message
             $message = TicketMessage::create([
                 'ticket_id' => $ticket->id,
-                'user_id' => $user->id,
-                'message' => $validated['message'],
-                'is_internal' => false,
+                'sender_id' => $user->id,
+                'type' => 'public',
+                'body' => $validated['message'],
             ]);
 
             // Handle attachments if any
@@ -318,7 +318,7 @@ class TicketsController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Message ajouté avec succès.',
-                'data' => $message->load(['user:id,nom_complet,email', 'attachments']),
+                'data' => $message->load(['sender:id,nom_complet,email', 'attachments']),
             ], 201);
 
         } catch (ValidationException $e) {
