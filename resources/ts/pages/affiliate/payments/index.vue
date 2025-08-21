@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { useAffiliatePaymentsStore } from '@/stores/affiliate/payments'
+import { useAuthStore } from '@/stores/auth'
 import { useNotifications } from '@/composables/useNotifications'
 import { useQuickConfirm } from '@/composables/useConfirmAction'
 import Breadcrumbs from '@/components/common/Breadcrumbs.vue'
@@ -202,11 +203,18 @@ const downloadPdf = async (withdrawalId: string) => {
   try {
     downloadingPdf.value = withdrawalId
 
-    // Use the $api utility to get proper authentication headers
+    // Get token from auth store or localStorage (consistent with other parts of the app)
+    const authStore = useAuthStore()
+    const token = authStore.token || localStorage.getItem('auth_token')
+
+    if (!token) {
+      throw new Error('Session expirée. Veuillez vous reconnecter.')
+    }
+
     const response = await fetch(`/api/affiliate/withdrawals/${withdrawalId}/pdf`, {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('accessToken') || sessionStorage.getItem('accessToken')}`,
+        'Authorization': `Bearer ${token}`,
         'Accept': 'application/pdf',
         'X-Requested-With': 'XMLHttpRequest',
       },

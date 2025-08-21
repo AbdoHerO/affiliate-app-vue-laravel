@@ -158,15 +158,25 @@ const formatFileSize = (bytes: number) => {
 
 const downloadAttachment = async (attachmentId: string, filename: string) => {
   try {
+    // Get token from localStorage (consistent with auth store)
+    const token = localStorage.getItem('auth_token')
+
+    if (!token) {
+      throw new Error('Session expirée. Veuillez vous reconnecter.')
+    }
+
     const response = await fetch(`/api/affiliate/tickets/attachments/${attachmentId}/download`, {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+        'Authorization': `Bearer ${token}`,
       },
     })
 
     if (!response.ok) {
-      const errorData = await response.json()
+      if (response.status === 401) {
+        throw new Error('Session expirée. Veuillez vous reconnecter.')
+      }
+      const errorData = await response.json().catch(() => ({ message: 'Erreur inconnue' }))
       throw new Error(errorData.message || 'Erreur lors du téléchargement')
     }
 

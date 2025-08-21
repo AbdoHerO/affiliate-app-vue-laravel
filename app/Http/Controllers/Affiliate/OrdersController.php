@@ -139,7 +139,7 @@ class OrdersController extends Controller
                 'articles.produit:id,titre',
                 'articles.variante:id,nom',
                 'shippingParcel',
-                'expeditions.events',
+                'expeditions.evenements',
                 'commissions' => function ($query) use ($user) {
                     $query->where('user_id', $user->id);
                 },

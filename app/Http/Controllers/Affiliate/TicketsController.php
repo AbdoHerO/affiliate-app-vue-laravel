@@ -377,7 +377,6 @@ class TicketsController extends Controller
             $ticket = Ticket::where('requester_id', $user->id) // Ensure ownership
                            ->findOrFail($id);
 
-            $oldStatus = $ticket->status;
             $newStatus = $validated['status'];
 
             // Update ticket status
@@ -390,7 +389,7 @@ class TicketsController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => $newStatus === 'closed' ? 'Ticket fermé avec succès.' : 'Ticket rouvert avec succès.',
-                'data' => new TicketResource($ticket->load(['requester', 'assignee'])),
+                'data' => new TicketResource($ticket->load(['requester', 'assignee', 'messages.sender', 'messages.attachments'])),
             ]);
 
         } catch (ValidationException $e) {

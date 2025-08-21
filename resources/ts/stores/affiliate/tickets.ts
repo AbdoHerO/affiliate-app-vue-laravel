@@ -277,19 +277,30 @@ export const useAffiliateTicketsStore = defineStore('affiliateTickets', () => {
         method: 'PATCH',
         body: JSON.stringify({ status }),
       })
-      
+
       if (response.success) {
-        // Update current ticket if it's the same one
+        // Update current ticket if it's the same one - preserve messages
         if (currentTicket.value?.id === ticketId) {
-          currentTicket.value = response.data
+          // Keep the existing messages and only update status-related fields
+          const existingMessages = currentTicket.value.messages
+          currentTicket.value = {
+            ...response.data,
+            messages: existingMessages // Preserve conversation
+          }
         }
-        
-        // Update ticket in the list
+
+        // Update ticket in the list (without messages for performance)
         const ticketIndex = tickets.value.findIndex(t => t.id === ticketId)
         if (ticketIndex !== -1) {
-          tickets.value[ticketIndex] = response.data
+          tickets.value[ticketIndex] = {
+            ...tickets.value[ticketIndex],
+            status: response.data.status,
+            resolved_at: response.data.resolved_at,
+            last_activity_at: response.data.last_activity_at,
+            updated_at: response.data.updated_at,
+          }
         }
-        
+
         return response.data
       } else {
         throw new Error(response.message || 'Failed to update ticket status')

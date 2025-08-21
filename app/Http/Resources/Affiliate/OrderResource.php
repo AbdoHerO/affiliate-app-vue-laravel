@@ -99,21 +99,20 @@ class OrderResource extends JsonResource
                 return $this->expeditions->map(function ($expedition) {
                     return [
                         'id' => $expedition->id,
-                        'tracking_no' => $expedition->tracking_no,
-                        'statut' => $expedition->statut,
-                        'poids_kg' => $expedition->poids_kg,
-                        'frais_transport' => $expedition->frais_transport,
+                        'tracking_no' => $expedition->tracking_no ?? null,
+                        'statut' => $expedition->statut ?? 'preparee',
+                        'poids_kg' => $expedition->poids_kg ?? null,
+                        'frais_transport' => $expedition->frais_transport ?? 0,
                         'created_at' => $expedition->created_at?->format('Y-m-d H:i:s'),
-                        'events' => $expedition->relationLoaded('events') ? 
-                            $expedition->events->map(function ($event) {
+                        'events' => $expedition->relationLoaded('evenements') ?
+                            $expedition->evenements->map(function ($event) {
                                 return [
                                     'id' => $event->id,
-                                    'type' => $event->type,
-                                    'description' => $event->description,
-                                    'location' => $event->location,
-                                    'occurred_at' => $event->occurred_at?->format('Y-m-d H:i:s'),
+                                    'code' => $event->code ?? null,
+                                    'message' => $event->message ?? null,
+                                    'occurred_at' => $event->occured_at?->format('Y-m-d H:i:s'),
                                 ];
-                            }) : null,
+                            }) : [],
                     ];
                 });
             }),
@@ -183,8 +182,19 @@ class OrderResource extends JsonResource
             'annulee' => ['color' => 'error', 'text' => 'Annulée'],
             'retournee' => ['color' => 'secondary', 'text' => 'Retournée'],
             'echec_livraison' => ['color' => 'error', 'text' => 'Échec livraison'],
+            // Additional statuses for safety
+            'pending' => ['color' => 'warning', 'text' => 'En attente'],
+            'paid' => ['color' => 'success', 'text' => 'Payée'],
+            'confirmed' => ['color' => 'info', 'text' => 'Confirmée'],
+            'send' => ['color' => 'primary', 'text' => 'Envoyée'],
+            'annuler' => ['color' => 'error', 'text' => 'Annulée'],
         ];
 
-        return $statusMap[$this->statut] ?? ['color' => 'default', 'text' => $this->statut];
+        $status = $this->statut ?? 'en_attente';
+
+        return $statusMap[$status] ?? [
+            'color' => 'secondary',
+            'text' => ucfirst(str_replace('_', ' ', $status))
+        ];
     }
 }

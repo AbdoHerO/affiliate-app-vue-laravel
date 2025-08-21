@@ -147,23 +147,40 @@ export const useAffiliateOrdersStore = defineStore('affiliateOrders', () => {
     }
   }
 
+  // Track current request to allow cancellation
+  let currentOrderRequest: AbortController | null = null
+
   const fetchOrder = async (id: string) => {
+    // Cancel previous request if still pending
+    if (currentOrderRequest) {
+      currentOrderRequest.abort()
+    }
+
+    // Create new abort controller for this request
+    currentOrderRequest = new AbortController()
+
     loading.value = true
     error.value = null
 
     try {
-      const response = await $api(`/affiliate/orders/${id}`)
-      
+      const response = await $api(`/affiliate/orders/${id}`, {
+        signal: currentOrderRequest.signal
+      })
+
       if (response.success) {
         currentOrder.value = response.data
       } else {
         throw new Error(response.message || 'Failed to fetch order')
       }
     } catch (err: any) {
-      error.value = err.message || 'An error occurred while fetching the order'
-      console.error('Error fetching affiliate order:', err)
+      // Don't set error if request was aborted (user navigated away)
+      if (err.name !== 'AbortError') {
+        error.value = err.message || 'An error occurred while fetching the order'
+        console.error('Error fetching affiliate order:', err)
+      }
     } finally {
       loading.value = false
+      currentOrderRequest = null
     }
   }
 
