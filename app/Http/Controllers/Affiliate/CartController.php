@@ -459,16 +459,20 @@ class CartController extends Controller
                     'type' => 'livraison'
                 ]);
 
-                // Calculate totals
+                // Calculate totals and get boutique from first product
                 $totalHT = 0;
                 $totalTTC = 0;
                 $orderItems = [];
+                $boutique_id = null;
 
                 foreach ($cartItems as $cartItem) {
                     $product = $cartItem->produit;
                     if (!$product) continue;
 
-                    $variant = $cartItem->variante;
+                    // Get boutique_id from the first product
+                    if ($boutique_id === null) {
+                        $boutique_id = $product->boutique_id;
+                    }
 
                     $unitPrice = $product->prix_vente;
                     $lineTotal = $unitPrice * $cartItem->qty;
@@ -485,9 +489,17 @@ class CartController extends Controller
                     ];
                 }
 
+                // Ensure we have a boutique_id
+                if (!$boutique_id) {
+                    return response()->json([
+                        'message' => 'Aucun produit valide trouvé dans le panier',
+                        'success' => false
+                    ], 400);
+                }
+
                 // Create order
                 $commande = Commande::create([
-                    'boutique_id' => $affiliate->boutique_id,
+                    'boutique_id' => $boutique_id,
                     'user_id' => $user->id,
                     'affilie_id' => $affiliate->id,
                     'client_id' => $client->id,

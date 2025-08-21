@@ -308,7 +308,15 @@ export const useAffiliateCartStore = defineStore('affiliate-cart', () => {
         throw apiError.value
       }
 
-      return (data.value as any)?.data || []
+      const citiesData = (data.value as any)?.data || []
+
+      // Ensure each city has proper city_id and name
+      const validatedCities = citiesData.map((city: any) => ({
+        city_id: city.city_id,  // Should be the OzonExpress city ID
+        name: city.name         // Should be string
+      }))
+
+      return validatedCities
     } catch (err: any) {
       console.error('❌ [Cart Store] Fetch cities error:', err)
       showError('Erreur lors du chargement des villes')

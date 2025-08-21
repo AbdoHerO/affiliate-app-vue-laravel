@@ -23,7 +23,7 @@ const { t } = useI18n()
 const cartStore = useAffiliateCartStore()
 
 // Cities state
-const cities = ref<Array<{ id: string; name: string }>>([])
+const cities = ref<Array<{ city_id: string; name: string }>>([])
 const citiesLoading = ref(false)
 
 // State

@@ -22,7 +22,7 @@ const { t } = useI18n()
 const cartStore = useAffiliateCartStore()
 
 // Cities state
-const cities = ref<Array<{ id: string; name: string }>>([])
+const cities = ref<Array<{ city_id: string; name: string }>>([])
 const citiesLoading = ref(false)
 
 // State
@@ -114,7 +114,7 @@ const submitOrder = async () => {
 
 const loadCities = async () => {
   if (citiesLoading.value || cities.value.length > 0) return
-  
+
   citiesLoading.value = true
   try {
     const citiesData = await cartStore.fetchCities()
@@ -285,12 +285,13 @@ onMounted(() => {
             v-model="clientForm.city_id"
             :items="cities"
             item-title="name"
-            item-value="id"
+            item-value="city_id"
             label="Ville"
             :rules="rules.city_id"
             :loading="citiesLoading"
             required
             class="mb-2"
+
           />
           
           <VTextarea

@@ -17,7 +17,7 @@ class OzonCitiesController extends Controller
     {
         try {
             $query = ShippingCity::where('active', true)
-                ->select('id', 'name')
+                ->select('city_id', 'name')
                 ->orderBy('name');
 
             // Search functionality
