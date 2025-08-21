@@ -298,42 +298,85 @@ export const useCatalogueStore = defineStore('affiliate-catalogue', () => {
     // Get main image (first image or fallback)
     const mainImage = product.images?.[0]?.url || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDMwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjRjVGNUY1Ii8+CjxwYXRoIGQ9Ik0xNTAgMTAwQzE2MS4wNDYgMTAwIDE3MCA5MC45NTQzIDE3MCA4MEM1NyA2OS4wNDU3IDE0Ny45NTQgNjAgMTM2IDYwQzEyNC45NTQgNjAgMTE2IDY5LjA0NTcgMTE2IDgwQzExNiA5MC45NTQzIDEyNC45NTQgMTAwIDEzNiAxMDBIMTUwWiIgZmlsbD0iI0NDQ0NDQyIvPgo8cGF0aCBkPSJNMTgwIDEyMEgxMjBDMTE2LjY4NiAxMjAgMTE0IDEyMi42ODYgMTE0IDEyNlYyMDBDMTE0IDIwMy4zMTQgMTE2LjY4NiAyMDYgMTIwIDIwNkgxODBDMTgzLjMxNCAyMDYgMTg2IDIwMy4zMTQgMTg2IDIwMFYxMjZDMTg2IDEyMi42ODYgMTgzLjMxNCAxMjAgMTgwIDEyMFoiIGZpbGw9IiNDQ0NDQ0MiLz4KPC9zdmc+'
 
-    // Group variants by type - handle individual variants correctly
-    const sizes: Array<{ id: string; value: string; stock: number }> = []
-    const colors: Array<{ id: string; value: string; color?: string; image_url?: string; stock: number }> = []
+    // Parse variant data - handle combined variants like "Red - Medium"
+    const sizeSet = new Set<string>()
+    const colorMap = new Map<string, { name: string; swatch?: string; image_url?: string }>()
     const variantsByCombo: Record<string, any> = {}
+    const variantSizes: Array<{ id: string; value: string; stock: number }> = []
+    const variantColors: Array<{ id: string; value: string; color?: string; image_url?: string; stock: number }> = []
 
     product.variantes?.forEach(v => {
       const stock = v.stock || 0
-
-      // Use catalog system for consistent identification
       const attributCode = (v as any).attribut?.code || v.attribut_principal?.toLowerCase()
 
-      if (['taille', 'size'].includes(attributCode)) {
-        // Individual size variant
-        sizes.push({
-          id: v.id,
-          value: v.valeur,
-          stock
-        })
-      } else if (['couleur', 'color'].includes(attributCode)) {
-        // Individual color variant
-        colors.push({
-          id: v.id,
-          value: v.valeur,
-          color: v.color || undefined,
-          image_url: v.image_url || undefined,
-          stock
-        })
-      }
+      // Handle combined variants like "Red - Medium"
+      if (v.valeur?.includes(' - ')) {
+        const [colorPart, sizePart] = v.valeur.split(' - ')
 
-      // Build combo key for variant lookup
-      const comboKey = `${attributCode || 'default'}|${v.valeur || 'default'}`
-      variantsByCombo[comboKey] = {
-        id: v.id,
-        stock_available: stock,
-        image_url: v.image_url || null
+        // Add to sets
+        if (colorPart) {
+          colorMap.set(colorPart, {
+            name: colorPart,
+            swatch: v.color || colorPart,
+            image_url: v.image_url || undefined
+          })
+        }
+        if (sizePart) {
+          sizeSet.add(sizePart)
+        }
+
+        // Build combo key for variant lookup
+        const comboKey = `${colorPart || '∅'}|${sizePart || '∅'}`
+        variantsByCombo[comboKey] = {
+          id: v.id,
+          stock_available: stock,
+          image_url: v.image_url || null
+        }
+      } else {
+        // Handle individual variants
+        if (['taille', 'size'].includes(attributCode)) {
+          sizeSet.add(v.valeur)
+          variantSizes.push({
+            id: v.id,
+            value: v.valeur,
+            stock
+          })
+        } else if (['couleur', 'color'].includes(attributCode)) {
+          colorMap.set(v.valeur, {
+            name: v.valeur,
+            swatch: v.color || v.valeur,
+            image_url: v.image_url || undefined
+          })
+          variantColors.push({
+            id: v.id,
+            value: v.valeur,
+            color: v.color || undefined,
+            image_url: v.image_url || undefined,
+            stock
+          })
+        }
+
+        // Build combo key for single variants
+        const comboKey = `${attributCode || 'default'}|${v.valeur || 'default'}`
+        variantsByCombo[comboKey] = {
+          id: v.id,
+          stock_available: stock,
+          image_url: v.image_url || null
+        }
       }
+    })
+
+    // Convert to arrays for card display
+    const colors = Array.from(colorMap.values()).sort((a, b) => a.name.localeCompare(b.name))
+    const sizes = Array.from(sizeSet).sort((a, b) => {
+      // Custom size sorting: S < M < L < XL < 2XL < 3XL
+      const sizeOrder = ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL', '4XL', '5XL']
+      const aIndex = sizeOrder.indexOf(a)
+      const bIndex = sizeOrder.indexOf(b)
+      if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex
+      if (aIndex !== -1) return -1
+      if (bIndex !== -1) return 1
+      return a.localeCompare(b)
     })
 
     return {
@@ -347,16 +390,12 @@ export const useCatalogueStore = defineStore('affiliate-catalogue', () => {
       stock_total: product.stock_total,
       rating_value: product.rating_value || 0,
       variants: {
-        sizes,
-        colors
+        sizes: variantSizes,
+        colors: variantColors
       },
-      // Enhanced variant data for cards
-      colors: colors.map(c => ({
-        name: c.value,
-        swatch: c.color,
-        image_url: c.image_url
-      })),
-      sizes: sizes.map(s => s.value),
+      // Enhanced variant data for cards (what CatalogueCard expects)
+      colors, // Array of { name, swatch, image_url }
+      sizes,  // Array of strings
       variantsByCombo,
       slug: product.slug,
       description: product.description

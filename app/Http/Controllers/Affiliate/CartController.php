@@ -219,8 +219,20 @@ class CartController extends Controller
                     }
                 }
 
-                $itemTotal = $product->prix_vente * $cartItem->qty;
-                $itemCommission = $product->prix_affilie * $cartItem->qty;
+                // Use sell_price from cart item or fallback to product prix_vente
+                $sellPrice = $cartItem->sell_price ?? $product->prix_vente;
+                $itemTotal = $sellPrice * $cartItem->qty;
+
+                // Calculate commission: (sell_price - cost_price) * quantity
+                // If prix_affilie is set, use it; otherwise calculate from margin
+                if ($product->prix_affilie > 0) {
+                    $itemCommission = $product->prix_affilie * $cartItem->qty;
+                } else {
+                    // Calculate commission as margin: (sell_price - cost_price) * qty
+                    $margin = max(0, $sellPrice - $product->prix_achat);
+                    $itemCommission = $margin * $cartItem->qty;
+                }
+
                 $itemsCount += $cartItem->qty;
                 $totalAmount += $itemTotal;
                 $estimatedCommission += $itemCommission;
@@ -230,10 +242,13 @@ class CartController extends Controller
                     'produit_id' => $cartItem->produit_id,
                     'variante_id' => $cartItem->variante_id,
                     'qty' => $cartItem->qty,
+                    'sell_price' => $sellPrice,
+                    'item_commission' => $itemCommission,
                     'product' => [
                         'id' => $product->id,
                         'titre' => $product->titre,
                         'prix_vente' => (float) $product->prix_vente,
+                        'prix_achat' => (float) $product->prix_achat,
                         'prix_affilie' => (float) $product->prix_affilie,
                         'image' => $product->images->first()?->url,
                     ],
