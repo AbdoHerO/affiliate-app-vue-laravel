@@ -162,10 +162,24 @@ const selectedVariant = computed(() => {
 })
 
 const maxQuantity = computed(() => {
+  let maxStock = props.product.stock_total
+
+  // If we have a selected variant, use its specific stock
   if (selectedVariant.value) {
-    return Math.min(selectedVariant.value.stock, 10)
+    maxStock = selectedVariant.value.stock
   }
-  return Math.min(props.product.stock_total, 10)
+  
+  // Cap at 10 for UI purposes
+  const finalMax = Math.min(maxStock, 10)
+  console.log('📊 [CatalogueCard] Max quantity calculated:', {
+    productId: props.product.id,
+    totalStock: props.product.stock_total,
+    selectedVariant: selectedVariant.value,
+    variantStock: selectedVariant.value?.stock,
+    finalMax
+  })
+  
+  return finalMax
 })
 
 const canAddToCart = computed(() => {
@@ -198,20 +212,30 @@ const handleSizeSelect = (sizeId: string) => {
 
 const handleColorSelect = (colorId: string) => {
   selectedColorId.value = colorId
+  console.log('🎨 [CatalogueCard] Color selected:', colorId)
 
   // Update image if color has specific image
   const color = colorSwatches.value.find(c => c.id === colorId)
   if (color) {
+    console.log('🎨 [CatalogueCard] Found color:', color)
+    
     // First try to find the color variant with image
     const colorVariant = props.product.variants?.colors?.find(c => c.id === colorId)
     if (colorVariant?.image_url) {
+      console.log('🖼️ [CatalogueCard] Using variant image:', colorVariant.image_url)
       currentImage.value = colorVariant.image_url
+      imageLoading.value = true
+      imageError.value = false
     } else {
       // Use enhanced colors image if available
       const enhancedColor = props.product.colors?.find(c => c.name === color.name)
       if (enhancedColor?.image_url) {
+        console.log('🖼️ [CatalogueCard] Using enhanced color image:', enhancedColor.image_url)
         currentImage.value = enhancedColor.image_url
+        imageLoading.value = true
+        imageError.value = false
       } else {
+        console.log('🖼️ [CatalogueCard] No variant image, using main image')
         currentImage.value = props.product.mainImage
       }
     }
@@ -229,7 +253,17 @@ const handleQuantityChange = (delta: number) => {
 }
 
 const handleAddToCart = () => {
-  if (!canAddToCart.value) return
+  if (!canAddToCart.value) {
+    console.log('⚠️ [CatalogueCard] Cannot add to cart:', {
+      hasStock: props.product.stock_total > 0,
+      quantityValid: quantity.value <= maxQuantity.value,
+      sizeRequired: sizeChips.value.length > 0,
+      colorRequired: colorSwatches.value.length > 0,
+      sizeSelected: selectedSizeId.value,
+      colorSelected: selectedColorId.value
+    })
+    return
+  }
 
   // Find the variant ID based on selected size and color
   let variantId = undefined
@@ -242,6 +276,13 @@ const handleAddToCart = () => {
   } else if (selectedColorId.value) {
     variantId = selectedColorId.value
   }
+
+  console.log('🛒 [CatalogueCard] Adding to cart:', {
+    produit_id: props.product.id,
+    variante_id: variantId,
+    qty: quantity.value,
+    selectedVariant: selectedVariant.value
+  })
 
   emit('addToCart', {
     produit_id: props.product.id,
@@ -436,6 +477,22 @@ const handleImageError = () => {
           >
             <VIcon icon="tabler-plus" size="14" />
           </VBtn>
+          
+          <!-- Max quantity indicator -->
+          <VTooltip v-if="maxQuantity < 10" location="top">
+            <template #activator="{ props: tooltipProps }">
+              <VChip
+                v-bind="tooltipProps"
+                size="x-small"
+                color="warning"
+                variant="outlined"
+                class="ml-2"
+              >
+                Max: {{ maxQuantity }}
+              </VChip>
+            </template>
+            <span>Stock disponible: {{ maxQuantity }} unité{{ maxQuantity > 1 ? 's' : '' }}</span>
+          </VTooltip>
         </div>
 
         <!-- Add to Cart Button -->
