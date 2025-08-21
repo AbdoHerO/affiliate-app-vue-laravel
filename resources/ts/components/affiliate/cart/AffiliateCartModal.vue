@@ -240,8 +240,8 @@ onMounted(() => {
                     {{ item.variant.attribut_principal }}: {{ item.variant.valeur }}
                   </div>
                   <div class="d-flex align-center gap-4">
-                    <span class="text-body-2">{{ item.product.prix_vente }} MAD</span>
-                    <span class="text-caption text-success">+{{ item.product.prix_affilie }} MAD commission</span>
+                    <span class="text-body-2">{{ item.sell_price || item.product.prix_vente }} MAD</span>
+                    <span class="text-caption text-success">+{{ (item.item_commission / item.qty).toFixed(2) }} MAD commission</span>
                   </div>
                 </div>
 

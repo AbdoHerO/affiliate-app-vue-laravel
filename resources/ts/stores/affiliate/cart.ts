@@ -10,10 +10,12 @@ export interface CartItem {
   variante_id?: string
   qty: number
   sell_price?: number
+  item_commission?: number
   product: {
     id: string
     titre: string
     prix_vente: number
+    prix_achat: number
     prix_affilie: number
     image?: string
   }

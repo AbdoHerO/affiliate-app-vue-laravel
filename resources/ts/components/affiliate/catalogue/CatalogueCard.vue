@@ -22,12 +22,12 @@ const emit = defineEmits<Emits>()
 const { t } = useI18n()
 const catalogueStore = useCatalogueStore()
 
-// Use shared variant selection logic
-const variantSelection = useVariantSelection(computed(() => props.product))
-
 // Local state
 const isHovered = ref(false)
+const selectedSizeId = ref<string>('')
+const selectedColorId = ref<string>('')
 const quantity = ref(1)
+const currentImage = ref('')
 const imageLoading = ref(true)
 const imageError = ref(false)
 
@@ -60,40 +60,57 @@ const sizeChips = computed(() => {
   return props.product.sizes || []
 })
 
-// Display image - combines variant selection and color selection logic
-const displayImage = computed(() => {
-  // Priority 1: Use variant selection active image if available
-  if (variantSelection.activeImageUrl) {
-    return variantSelection.activeImageUrl
-  }
+// Initialize current image
+watch(() => props.product.mainImage, (newImage) => {
+  currentImage.value = newImage
+  imageLoading.value = true
+  imageError.value = false
+}, { immediate: true })
 
-  // Priority 2: Use color-specific image if color is selected
-  if (selectedColor.value) {
-    const colorImage = catalogueStore.imageForColor(props.product, selectedColor.value)
-    if (colorImage) {
-      return colorImage
-    }
+const availableSizes = computed(() => {
+  if (!props.product.variants || !props.product.variants.sizes) {
+    return []
   }
+  return props.product.variants.sizes.filter(size => size.stock > 0)
+})
 
-  // Priority 3: Fallback to main product image
-  return props.product.mainImage
+const availableColors = computed(() => {
+  if (!props.product.variants || !props.product.variants.colors) {
+    return []
+  }
+  return props.product.variants.colors.filter(color => color.stock > 0)
+})
+
+const hasStock = computed(() => {
+  return props.product.stock_total > 0
 })
 
 const maxQuantity = computed(() => {
-  return Math.min(variantSelection.maxQty, 10)
+  return Math.min(props.product.stock_total, 10)
 })
 
 const canAddToCart = computed(() => {
-  return variantSelection.canAddToCart(quantity.value)
+  return hasStock.value && quantity.value > 0 && quantity.value <= maxQuantity.value
 })
 
-// Methods - Updated to use variant selection composable
-const handleColorSwatchSelect = (colorName: string) => {
-  variantSelection.selectColor(colorName)
+// Methods
+const handleSizeSelect = (sizeId: string) => {
+  selectedSizeId.value = sizeId
+  emit('variantChange', sizeId)
 }
 
-const handleSizeChipSelect = (sizeName: string) => {
-  variantSelection.selectSize(sizeName)
+const handleColorSelect = (colorId: string) => {
+  selectedColorId.value = colorId
+
+  // Update image if color has specific image
+  const color = props.product.variants.colors.find(c => c.id === colorId)
+  if (color?.image_url) {
+    currentImage.value = color.image_url
+  } else {
+    currentImage.value = props.product.mainImage
+  }
+
+  emit('variantChange', colorId)
 }
 
 const handleQuantityChange = (delta: number) => {
@@ -107,9 +124,22 @@ const handleQuantityChange = (delta: number) => {
 const handleAddToCart = () => {
   if (!canAddToCart.value) return
 
+  // Find the variant ID based on selected size and color
+  let variantId = undefined
+  if (selectedSizeId.value && selectedColorId.value) {
+    // For combined variants, find by both size and color
+    const variant = props.product.variants.sizes.find(s => s.id === selectedSizeId.value) ||
+                   props.product.variants.colors.find(c => c.id === selectedColorId.value)
+    variantId = variant?.id
+  } else if (selectedSizeId.value) {
+    variantId = selectedSizeId.value
+  } else if (selectedColorId.value) {
+    variantId = selectedColorId.value
+  }
+
   emit('addToCart', {
     produit_id: props.product.id,
-    variante_id: variantSelection.selectedVariantId || undefined,
+    variante_id: variantId,
     qty: quantity.value
   })
 }
@@ -118,6 +148,15 @@ const handleViewDetails = () => {
   emit('open', props.product.id)
 }
 
+// Reset selections when product changes
+watch(() => props.product.id, () => {
+  selectedSizeId.value = ''
+  selectedColorId.value = ''
+  quantity.value = 1
+  currentImage.value = props.product.mainImage
+})
+
+// Image loading handlers
 const handleImageLoad = () => {
   imageLoading.value = false
 }
@@ -126,14 +165,6 @@ const handleImageError = () => {
   imageLoading.value = false
   imageError.value = true
 }
-
-// Reset selections when product changes
-watch(() => props.product.id, () => {
-  variantSelection.reset()
-  quantity.value = 1
-  imageError.value = false
-  imageLoading.value = true
-})
 </script>
 
 <template>
@@ -144,7 +175,7 @@ watch(() => props.product.id, () => {
     <!-- Product Image -->
     <div class="catalogue-card__image-container">
       <VImg
-        :src="imageError ? 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDMwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjRjVGNUY1Ii8+CjxwYXRoIGQ9Ik0xNTAgMTAwQzE2MS4wNDYgMTAwIDE3MCA5MC45NTQzIDE3MCA4MEM1NyA2OS4wNDU3IDE0Ny45NTQgNjAgMTM2IDYwQzEyNC45NTQgNjAgMTE2IDY5LjA0NTcgMTE2IDgwQzExNiA5MC45NTQzIDEyNC45NTQgMTAwIDEzNiAxMDBIMTUwWiIgZmlsbD0iI0NDQ0NDQyIvPgo8cGF0aCBkPSJNMTgwIDEyMEgxMjBDMTE2LjY4NiAxMjAgMTE0IDEyMi42ODYgMTE0IDEyNlYyMDBDMTE0IDIwMy4zMTQgMTE2LjY4NiAyMDYgMTIwIDIwNkgxODBDMTgzLjMxNCAyMDYgMTg2IDIwMy4zMTQgMTg2IDIwMFYxMjZDMTg2IDEyMi42ODYgMTgzLjMxNCAxMjAgMTgwIDEyMFoiIGZpbGw9IiNDQ0NDQ0MiLz4KPC9zdmc+' : displayImage"
+        :src="imageError ? 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDMwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjRjVGNUY1Ii8+CjxwYXRoIGQ9Ik0xNTAgMTAwQzE2MS4wNDYgMTAwIDE3MCA5MC45NTQzIDE3MCA4MEM1NyA2OS4wNDU3IDE0Ny45NTQgNjAgMTM2IDYwQzEyNC45NTQgNjAgMTE2IDY5LjA0NTcgMTE2IDgwQzExNiA5MC45NTQzIDEyNC45NTQgMTAwIDEzNiAxMDBIMTUwWiIgZmlsbD0iI0NDQ0NDQyIvPgo8cGF0aCBkPSJNMTgwIDEyMEgxMjBDMTE2LjY4NiAxMjAgMTE0IDEyMi42ODYgMTE0IDEyNlYyMDBDMTE0IDIwMy4zMTQgMTE2LjY4NiAyMDYgMTIwIDIwNkgxODBDMTgzLjMxNCAyMDYgMTg2IDIwMy4zMTQgMTg2IDIwMFYxMjZDMTg2IDEyMi42ODYgMTgzLjMxNCAxMjAgMTgwIDEyMFoiIGZpbGw9IiNDQ0NDQ0MiLz4KPC9zdmc+' : currentImage"
         :alt="product.titre"
         aspect-ratio="1.2"
         cover

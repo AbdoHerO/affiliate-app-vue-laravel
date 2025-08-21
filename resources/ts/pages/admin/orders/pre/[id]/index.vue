@@ -489,7 +489,9 @@ onMounted(() => {
                   { title: 'Produit', key: 'produit' },
                   { title: 'Variante', key: 'variante' },
                   { title: 'Quantité', key: 'quantite' },
-                  { title: 'Prix unitaire', key: 'prix_unitaire' },
+                  { title: 'Prix recommandé', key: 'prix_unitaire' },
+                  { title: 'Prix de vente', key: 'sell_price' },
+                  { title: 'Commission', key: 'commission_amount' },
                   { title: 'Total', key: 'total_ligne' },
                 ]"
                 :items="preorder?.articles || []"
@@ -531,7 +533,19 @@ onMounted(() => {
                 </template>
 
                 <template #item.prix_unitaire="{ item }">
-                  {{ formatCurrency(item.prix_unitaire) }}
+                  <span class="text-medium-emphasis">{{ formatCurrency(item.prix_unitaire) }}</span>
+                </template>
+
+                <template #item.sell_price="{ item }">
+                  <span class="font-weight-medium text-primary">
+                    {{ formatCurrency(item.sell_price || item.prix_unitaire) }}
+                  </span>
+                </template>
+
+                <template #item.commission_amount="{ item }">
+                  <span class="text-success font-weight-medium">
+                    +{{ formatCurrency(item.commission_amount || 0) }}
+                  </span>
                 </template>
 
                 <template #item.total_ligne="{ item }">
