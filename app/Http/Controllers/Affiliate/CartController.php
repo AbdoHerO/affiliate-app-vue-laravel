@@ -521,7 +521,8 @@ class CartController extends Controller
                         'variante_id' => $item['variante_id'],
                         'quantite' => $item['quantite'],
                         'prix_unitaire' => $item['prix_unitaire'],
-                        'total' => $item['total']
+                        'remise' => 0, // No discount for now
+                        'total_ligne' => $item['total']
                     ]);
                 }
 
