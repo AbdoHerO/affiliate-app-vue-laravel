@@ -34,6 +34,7 @@ class StoreProduitRequest extends FormRequest
             'actif' => 'required|boolean',
             'quantite_min' => 'nullable|integer|min:1',
             'notes_admin' => 'nullable|string',
+            'stock_total' => 'nullable|integer|min:0',
             'rating_value' => 'nullable|numeric|min:0|max:5',
         ];
     }
@@ -87,6 +88,8 @@ class StoreProduitRequest extends FormRequest
             'quantite_min.integer' => __('validation.integer', ['attribute' => 'quantité minimale']),
             'quantite_min.min' => __('validation.min', ['attribute' => 'quantité minimale', 'min' => 1]),
             'notes_admin.string' => __('validation.string', ['attribute' => 'notes admin']),
+            'stock_total.integer' => __('validation.integer', ['attribute' => 'stock total']),
+            'stock_total.min' => __('validation.min', ['attribute' => 'stock total', 'min' => 0]),
         ];
     }
 

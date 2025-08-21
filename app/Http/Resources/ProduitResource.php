@@ -27,6 +27,7 @@ class ProduitResource extends JsonResource
             'slug' => $this->slug,
             'actif' => $this->actif,
             'quantite_min' => $this->quantite_min,
+            'stock_total' => $this->stock_total,
             'notes_admin' => $this->notes_admin,
             'rating_value' => $this->rating_value,
             'rating' => [

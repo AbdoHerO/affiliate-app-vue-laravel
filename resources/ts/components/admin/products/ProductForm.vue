@@ -223,6 +223,14 @@ const loadProduct = async () => {
       await produitsStore.fetchProduit(props.id)
       if (currentProduit.value) {
         const p = currentProduit.value
+        console.log('[ProductForm] Loading product data:', {
+          id: p.id,
+          titre: p.titre,
+          stock_total: (p as any).stock_total,
+          quantite_min: (p as any).quantite_min,
+          notes_admin: (p as any).notes_admin
+        })
+
         form.value = {
           boutique_id: p.boutique_id,
           categorie_id: p.categorie_id,
@@ -237,6 +245,11 @@ const loadProduct = async () => {
           rating_value: (p as any).rating_value || null,
           stock_total: (p as any).stock_total || null,
         }
+
+        console.log('[ProductForm] Form data after loading:', {
+          stock_total: form.value.stock_total,
+          quantite_min: form.value.quantite_min
+        })
 
         // Initialize stock form after loading product
         nextTick(() => {
@@ -999,8 +1012,12 @@ const generateCombinations = async () => {
 
 const initializeStockForm = async () => {
   // Sync stock_total from main form to stock form
-  console.log('Initializing stock form with stock_total:', form.value.stock_total)
+  console.log('[ProductForm] Initializing stock form with stock_total:', form.value.stock_total)
+  console.log('[ProductForm] Current stockForm.stock_total before sync:', stockForm.stock_total)
+
   stockForm.stock_total = form.value.stock_total || 0
+
+  console.log('[ProductForm] stockForm.stock_total after sync:', stockForm.stock_total)
 
   // Load warehouses and stock matrix
   await loadWarehouses()
@@ -1008,11 +1025,16 @@ const initializeStockForm = async () => {
 }
 
 const handleStockAllocation = async () => {
-  if (!localId.value || !stockMatrix.value.length) return
+  if (!localId.value) return
 
-  // Check if there are any stock changes
-  const hasStockChanges = stockMatrix.value.some(item => item.qty > 0) || stockForm.stock_total > 0
-  if (!hasStockChanges) return
+  // Always save stock_total if it has changed, even without variant allocations
+  const hasStockTotalChange = stockForm.stock_total !== (form.value.stock_total || 0)
+  const hasVariantChanges = stockMatrix.value.some(item => item.qty > 0)
+
+  if (!hasStockTotalChange && !hasVariantChanges) {
+    console.log('No stock changes detected, skipping allocation')
+    return
+  }
 
   // Block saving if stock is exceeded
   if (stockExceeded.value) {
@@ -1045,6 +1067,12 @@ const handleStockAllocation = async () => {
       qty
     }))
 
+    console.log('Stock allocation data:', {
+      stock_total: stockForm.stock_total,
+      allocations_count: allocations.length,
+      warehouse_id: stockForm.warehouse_id
+    })
+
     const { data, error } = await useApi(`/admin/produits/${localId.value}/stock/allocate`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -1070,6 +1098,10 @@ const handleStockAllocation = async () => {
       showError(errorMessage)
     } else if (data.value && (data.value as any).success) {
       showSuccess(t('product.stock.save_success'))
+
+      // Update main form stock_total to match what was saved
+      form.value.stock_total = stockForm.stock_total
+
       // Refresh the stock matrix
       await loadStockMatrix()
     }

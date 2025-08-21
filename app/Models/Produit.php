@@ -41,6 +41,7 @@ class Produit extends Model
         'rating_max',
         'rating_updated_by',
         'rating_updated_at',
+        'stock_total',
     ];
 
     /**
@@ -54,6 +55,7 @@ class Produit extends Model
         'prix_affilie' => 'decimal:2',
         'actif' => 'boolean',
         'quantite_min' => 'integer',
+        'stock_total' => 'integer',
         'rating_value' => 'float',
         'rating_max' => 'integer',
         'rating_updated_at' => 'datetime',

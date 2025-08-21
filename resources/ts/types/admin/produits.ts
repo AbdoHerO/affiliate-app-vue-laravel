@@ -9,6 +9,9 @@ export interface Produit {
   prix_affilie: number | null
   slug: string
   actif: boolean
+  quantite_min?: number
+  stock_total?: number | null
+  notes_admin?: string | null
   rating_value?: number | null
   rating?: {
     value?: number | null

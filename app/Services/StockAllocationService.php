@@ -133,10 +133,14 @@ class StockAllocationService
                 ];
             }
 
-            // Update product stock_total if provided
-            if ($stockTotal !== null) {
-                $product->update(['stock_total' => $stockTotal]);
-            }
+            // Always update product stock_total (even if 0 or no allocations)
+            $product->update(['stock_total' => $stockTotal]);
+
+            Log::info('Product stock_total updated', [
+                'product_id' => $productId,
+                'old_stock_total' => $product->getOriginal('stock_total'),
+                'new_stock_total' => $stockTotal
+            ]);
 
             Log::info('Stock allocation completed', [
                 'product_id' => $productId,
