@@ -19,7 +19,12 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['*'],
+    'allowed_origins' => [
+        'http://localhost:8000',
+        'http://127.0.0.1:8000',
+        'http://localhost:3000', // If using Vite dev server
+        'http://localhost:5173', // Vite default port
+    ],
 
     'allowed_origins_patterns' => [],
 
@@ -29,6 +34,6 @@ return [
 
     'max_age' => 0,
 
-    'supports_credentials' => false,
+    'supports_credentials' => true,
 
 ];

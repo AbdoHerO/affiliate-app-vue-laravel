@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Affiliate;
 use App\Http\Controllers\Controller;
 use App\Models\Produit;
 use App\Models\ProduitVariante;
+use App\Models\AffiliateCartItem;
 use App\Models\Client;
 use App\Models\Adresse;
 use App\Models\Commande;
@@ -14,8 +15,8 @@ use App\Services\OrderService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 class CartController extends Controller
@@ -31,6 +32,8 @@ class CartController extends Controller
                 'variante_id' => 'nullable|uuid|exists:produit_variantes,id',
                 'qty' => 'required|integer|min:1|max:100'
             ]);
+
+            $userId = Auth::id();
 
             // Verify product is active
             $product = Produit::where('id', $validated['produit_id'])
@@ -89,30 +92,44 @@ class CartController extends Controller
                 }
             }
 
-            // Get or create cart session
-            $cart = Session::get('affiliate_cart', []);
-            
-            // Create cart item key
-            $itemKey = $validated['produit_id'] . '_' . ($validated['variante_id'] ?? 'default');
-            
-            // Add or update item in cart
-            if (isset($cart[$itemKey])) {
-                $cart[$itemKey]['qty'] += $validated['qty'];
-            } else {
-                $cart[$itemKey] = [
-                    'produit_id' => $validated['produit_id'],
-                    'variante_id' => $validated['variante_id'],
-                    'qty' => $validated['qty'],
-                    'added_at' => now()->toISOString()
-                ];
-            }
+            // DEBUG: Log user and cart operation
+            Log::info('🛒 ADD ITEM - User ID: ' . $userId);
+            Log::info('🛒 ADD ITEM - Product: ' . $validated['produit_id'] . ', Variant: ' . ($validated['variante_id'] ?? 'none') . ', Qty: ' . $validated['qty']);
 
-            // Save cart to session
-            Session::put('affiliate_cart', $cart);
+            // Find existing cart item or create new one
+            $cartItem = AffiliateCartItem::where('user_id', $userId)
+                ->where('produit_id', $validated['produit_id'])
+                ->where('variante_id', $validated['variante_id'])
+                ->first();
+
+            if ($cartItem) {
+                // Update existing item quantity
+                $cartItem->qty += $validated['qty'];
+                $cartItem->added_at = now();
+                $cartItem->save();
+                
+                Log::info('✅ UPDATED EXISTING CART ITEM - New qty: ' . $cartItem->qty);
+            } else {
+                // Create new cart item using direct assignment to avoid mass assignment issues
+                $cartItem = new AffiliateCartItem();
+                $cartItem->user_id = $userId;
+                $cartItem->produit_id = $validated['produit_id'];
+                $cartItem->variante_id = $validated['variante_id'];
+                $cartItem->qty = $validated['qty'];
+                $cartItem->added_at = now();
+                $cartItem->save();
+                
+                Log::info('✅ CREATED NEW CART ITEM - ID: ' . $cartItem->id);
+            }
 
             return response()->json([
                 'message' => 'Produit ajouté au panier',
-                'cart_item' => $cart[$itemKey],
+                'cart_item' => [
+                    'produit_id' => $cartItem->produit_id,
+                    'variante_id' => $cartItem->variante_id,
+                    'qty' => $cartItem->qty,
+                    'added_at' => $cartItem->added_at->toISOString()
+                ],
                 'success' => true
             ]);
 
@@ -123,6 +140,7 @@ class CartController extends Controller
                 'success' => false
             ], 422);
         } catch (\Exception $e) {
+            Log::error('❌ ADD ITEM ERROR: ' . $e->getMessage());
             return response()->json([
                 'message' => 'Erreur lors de l\'ajout au panier',
                 'error' => $e->getMessage(),
@@ -137,12 +155,21 @@ class CartController extends Controller
     public function summary(Request $request): JsonResponse
     {
         try {
-            $cart = Session::get('affiliate_cart', []);
+            $userId = Auth::id();
+
+            // DEBUG: Log user for summary operation
+            Log::info('📋 SUMMARY - User ID: ' . $userId);
+
+            // Get cart items from database (without relationships for now)
+            $cartItems = AffiliateCartItem::where('user_id', $userId)->get();
             
-            if (empty($cart)) {
+            Log::info('📋 SUMMARY - Found ' . $cartItems->count() . ' cart items in database');
+            
+            if ($cartItems->isEmpty()) {
                 return response()->json([
                     'items_count' => 0,
                     'total_amount' => 0,
+                    'estimated_commission' => 0,
                     'items' => []
                 ]);
             }
@@ -152,36 +179,41 @@ class CartController extends Controller
             $estimatedCommission = 0;
             $items = [];
 
-            foreach ($cart as $itemKey => $cartItem) {
-                // Get product details
-                $product = Produit::with(['images', 'variantes'])
-                    ->where('id', $cartItem['produit_id'])
+            foreach ($cartItems as $cartItem) {
+                // Manually fetch product to avoid relationship issues
+                $product = Produit::with('images')
+                    ->where('id', $cartItem->produit_id)
                     ->where('actif', true)
                     ->first();
-
+                
+                // Skip if product no longer exists or is inactive
                 if (!$product) {
-                    continue; // Skip if product no longer exists or is inactive
+                    continue;
                 }
 
                 $variant = null;
-                if ($cartItem['variante_id']) {
-                    $variant = $product->variantes->where('id', $cartItem['variante_id'])->first();
-                    if (!$variant || !$variant->actif) {
-                        continue; // Skip if variant no longer exists or is inactive
+                if ($cartItem->variante_id) {
+                    $variant = ProduitVariante::where('id', $cartItem->variante_id)
+                        ->where('actif', true)
+                        ->first();
+                    
+                    // Skip if variant is specified but no longer exists or is inactive
+                    if (!$variant) {
+                        continue;
                     }
                 }
 
-                $itemTotal = $product->prix_vente * $cartItem['qty'];
-                $itemCommission = $product->prix_affilie * $cartItem['qty'];
-                $itemsCount += $cartItem['qty'];
+                $itemTotal = $product->prix_vente * $cartItem->qty;
+                $itemCommission = $product->prix_affilie * $cartItem->qty;
+                $itemsCount += $cartItem->qty;
                 $totalAmount += $itemTotal;
                 $estimatedCommission += $itemCommission;
 
                 $items[] = [
-                    'key' => $itemKey,
-                    'produit_id' => $cartItem['produit_id'],
-                    'variante_id' => $cartItem['variante_id'],
-                    'qty' => $cartItem['qty'],
+                    'key' => $cartItem->produit_id . '_' . ($cartItem->variante_id ?? 'default'),
+                    'produit_id' => $cartItem->produit_id,
+                    'variante_id' => $cartItem->variante_id,
+                    'qty' => $cartItem->qty,
                     'product' => [
                         'id' => $product->id,
                         'titre' => $product->titre,
@@ -200,6 +232,8 @@ class CartController extends Controller
                 ];
             }
 
+            Log::info('✅ SUMMARY - Returning: ' . $itemsCount . ' items, Total: ' . $totalAmount);
+
             return response()->json([
                 'items_count' => $itemsCount,
                 'total_amount' => $totalAmount,
@@ -208,6 +242,7 @@ class CartController extends Controller
             ]);
 
         } catch (\Exception $e) {
+            Log::error('❌ SUMMARY ERROR: ' . $e->getMessage());
             return response()->json([
                 'message' => 'Erreur lors du chargement du panier',
                 'error' => $e->getMessage(),
@@ -226,12 +261,20 @@ class CartController extends Controller
                 'item_key' => 'required|string'
             ]);
 
-            $cart = Session::get('affiliate_cart', []);
+            $userId = Auth::id();
             
-            if (isset($cart[$validated['item_key']])) {
-                unset($cart[$validated['item_key']]);
-                Session::put('affiliate_cart', $cart);
-                
+            // Parse item key to get produit_id and variante_id
+            $parts = explode('_', $validated['item_key']);
+            $produitId = $parts[0];
+            $varianteId = ($parts[1] ?? 'default') === 'default' ? null : $parts[1];
+            
+            // Find and delete the cart item
+            $deleted = AffiliateCartItem::where('user_id', $userId)
+                ->where('produit_id', $produitId)
+                ->where('variante_id', $varianteId)
+                ->delete();
+            
+            if ($deleted) {
                 return response()->json([
                     'message' => 'Produit retiré du panier',
                     'success' => true
@@ -250,6 +293,7 @@ class CartController extends Controller
                 'success' => false
             ], 422);
         } catch (\Exception $e) {
+            Log::error('❌ REMOVE ITEM ERROR: ' . $e->getMessage());
             return response()->json([
                 'message' => 'Erreur lors de la suppression',
                 'error' => $e->getMessage(),
@@ -264,7 +308,10 @@ class CartController extends Controller
     public function clear(Request $request): JsonResponse
     {
         try {
-            Session::forget('affiliate_cart');
+            $userId = Auth::id();
+            
+            // Delete all cart items for this user
+            AffiliateCartItem::where('user_id', $userId)->delete();
             
             return response()->json([
                 'message' => 'Panier vidé',
@@ -272,6 +319,7 @@ class CartController extends Controller
             ]);
 
         } catch (\Exception $e) {
+            Log::error('❌ CLEAR CART ERROR: ' . $e->getMessage());
             return response()->json([
                 'message' => 'Erreur lors du vidage du panier',
                 'error' => $e->getMessage(),
@@ -292,9 +340,20 @@ class CartController extends Controller
                 'variante_id' => 'nullable|uuid|exists:produit_variantes,id'
             ]);
 
-            $cart = Session::get('affiliate_cart', []);
+            $userId = Auth::id();
+            
+            // Parse item key to get produit_id and variante_id
+            $parts = explode('_', $validated['item_key']);
+            $produitId = $parts[0];
+            $varianteId = ($parts[1] ?? 'default') === 'default' ? null : $parts[1];
 
-            if (!isset($cart[$validated['item_key']])) {
+            // Find the cart item
+            $cartItem = AffiliateCartItem::where('user_id', $userId)
+                ->where('produit_id', $produitId)
+                ->where('variante_id', $varianteId)
+                ->first();
+
+            if (!$cartItem) {
                 return response()->json([
                     'message' => 'Produit non trouvé dans le panier',
                     'success' => false
@@ -303,15 +362,15 @@ class CartController extends Controller
 
             // Update quantity if provided
             if (isset($validated['qty'])) {
-                $cart[$validated['item_key']]['qty'] = $validated['qty'];
+                $cartItem->qty = $validated['qty'];
             }
 
             // Update variant if provided
             if (isset($validated['variante_id'])) {
-                $cart[$validated['item_key']]['variante_id'] = $validated['variante_id'];
+                $cartItem->variante_id = $validated['variante_id'];
             }
 
-            Session::put('affiliate_cart', $cart);
+            $cartItem->save();
 
             return response()->json([
                 'message' => 'Panier mis à jour',
@@ -325,6 +384,7 @@ class CartController extends Controller
                 'success' => false
             ], 422);
         } catch (\Exception $e) {
+            Log::error('❌ UPDATE ITEM ERROR: ' . $e->getMessage());
             return response()->json([
                 'message' => 'Erreur lors de la mise à jour',
                 'error' => $e->getMessage(),
@@ -347,16 +407,19 @@ class CartController extends Controller
                 'note' => 'nullable|string|max:1000'
             ]);
 
-            $cart = Session::get('affiliate_cart', []);
+            $user = Auth::user();
+            
+            $cartItems = AffiliateCartItem::with(['produit', 'variante'])
+                ->where('user_id', $user->id)
+                ->get();
 
-            if (empty($cart)) {
+            if ($cartItems->isEmpty()) {
                 return response()->json([
                     'message' => 'Le panier est vide',
                     'success' => false
                 ], 400);
             }
 
-            $user = Auth::user();
             $affiliate = $user->profilAffilie;
 
             if (!$affiliate) {
@@ -401,25 +464,22 @@ class CartController extends Controller
                 $totalTTC = 0;
                 $orderItems = [];
 
-                foreach ($cart as $itemKey => $cartItem) {
-                    $product = Produit::find($cartItem['produit_id']);
+                foreach ($cartItems as $cartItem) {
+                    $product = $cartItem->produit;
                     if (!$product) continue;
 
-                    $variant = null;
-                    if ($cartItem['variante_id']) {
-                        $variant = ProduitVariante::find($cartItem['variante_id']);
-                    }
+                    $variant = $cartItem->variante;
 
                     $unitPrice = $product->prix_vente;
-                    $lineTotal = $unitPrice * $cartItem['qty'];
+                    $lineTotal = $unitPrice * $cartItem->qty;
 
                     $totalHT += $lineTotal;
                     $totalTTC += $lineTotal; // No tax for now
 
                     $orderItems[] = [
                         'produit_id' => $product->id,
-                        'variante_id' => $cartItem['variante_id'],
-                        'quantite' => $cartItem['qty'],
+                        'variante_id' => $cartItem->variante_id,
+                        'quantite' => $cartItem->qty,
                         'prix_unitaire' => $unitPrice,
                         'total' => $lineTotal
                     ];
@@ -474,7 +534,7 @@ class CartController extends Controller
                 DB::commit();
 
                 // Clear cart after successful order creation
-                Session::forget('affiliate_cart');
+                AffiliateCartItem::where('user_id', $user->id)->delete();
 
                 return response()->json([
                     'success' => true,

@@ -411,8 +411,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
         }
     });
 
-    // Affiliate only routes
-    Route::middleware(['role:affiliate'])->prefix('affiliate')->group(function () {
+    // Affiliate only routes (with session support for cart)
+    Route::middleware(['auth:sanctum', 'role:affiliate'])->prefix('affiliate')->group(function () {
         Route::get('dashboard', function () {
             return response()->json(['message' => 'Affiliate Dashboard']);
         });

@@ -24,6 +24,7 @@ export const useApi = createFetch({
     headers: {
       Accept: 'application/json',
     },
+    credentials: 'include', // Include cookies for session-based auth
   },
   options: {
     refetch: true,
@@ -46,6 +47,12 @@ export const useApi = createFetch({
 
       if (token) {
         options.headers = { ...options.headers, Authorization: `Bearer ${token}` }
+      }
+
+      // Add CSRF token for session-based requests if available
+      const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+      if (csrfToken) {
+        options.headers = { ...options.headers, 'X-CSRF-TOKEN': csrfToken }
       }
 
       // Do NOT force Content-Type when body is FormData
