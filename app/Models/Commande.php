@@ -177,4 +177,12 @@ class Commande extends Model
     {
         return $this->hasOne(ShippingParcel::class, 'commande_id');
     }
+
+    /**
+     * Get the commissions for this order.
+     */
+    public function commissions(): HasMany
+    {
+        return $this->hasMany(CommissionAffilie::class, 'commande_id');
+    }
 }

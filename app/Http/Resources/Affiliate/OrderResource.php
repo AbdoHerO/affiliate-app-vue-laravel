@@ -86,12 +86,10 @@ class OrderResource extends JsonResource
                         'produit' => $article->produit ? [
                             'id' => $article->produit->id,
                             'titre' => $article->produit->titre,
-                            'prix_unitaire' => $article->produit->prix_unitaire ?? null,
                         ] : null,
                         'variante' => $article->variante ? [
                             'id' => $article->variante->id,
                             'nom' => $article->variante->nom,
-                            'prix_supplement' => $article->variante->prix_supplement ?? null,
                         ] : null,
                     ];
                 });

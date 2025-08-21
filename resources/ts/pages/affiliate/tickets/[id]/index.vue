@@ -20,7 +20,8 @@ const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const { showSuccess, showError } = useNotifications()
-const { confirm } = useQuickConfirm()
+const confirmComposable = useQuickConfirm()
+const { confirm } = confirmComposable
 
 // Store
 const ticketsStore = useAffiliateTicketsStore()
@@ -33,8 +34,8 @@ const messagesContainer = ref<HTMLElement>()
 
 // Computed
 const breadcrumbs = computed(() => [
-  { title: 'Dashboard', to: { name: 'affiliate-dashboard' } },
-  { title: 'Support', to: { name: 'affiliate-tickets' } },
+  { title: 'Dashboard', to: '/affiliate/dashboard' },
+  { title: 'Support', to: '/affiliate/tickets' },
   { title: `Ticket #${route.params.id?.toString().slice(-8)}`, active: true },
 ])
 
@@ -422,7 +423,18 @@ onMounted(() => {
     </div>
 
     <!-- Confirm Dialog -->
-    <ConfirmActionDialog />
+    <ConfirmActionDialog
+      :is-dialog-visible="confirmComposable.isDialogVisible.value"
+      :is-loading="confirmComposable.isLoading.value"
+      :dialog-title="confirmComposable.dialogTitle.value"
+      :dialog-text="confirmComposable.dialogText.value"
+      :dialog-icon="confirmComposable.dialogIcon.value"
+      :dialog-color="confirmComposable.dialogColor.value"
+      :confirm-button-text="confirmComposable.confirmButtonText.value"
+      :cancel-button-text="confirmComposable.cancelButtonText.value"
+      @confirm="confirmComposable.handleConfirm"
+      @cancel="confirmComposable.handleCancel"
+    />
   </div>
 </template>
 

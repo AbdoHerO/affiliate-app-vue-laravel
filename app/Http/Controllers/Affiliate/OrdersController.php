@@ -136,8 +136,8 @@ class OrdersController extends Controller
                 'client:id,nom_complet,telephone,email',
                 'clientFinal:id,nom_complet,telephone,email',
                 'adresse:id,ville,adresse,code_postal',
-                'articles.produit:id,titre,prix_unitaire',
-                'articles.variante:id,nom,prix_supplement',
+                'articles.produit:id,titre',
+                'articles.variante:id,nom',
                 'shippingParcel',
                 'expeditions.events',
                 'commissions' => function ($query) use ($user) {

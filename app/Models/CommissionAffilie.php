@@ -214,4 +214,28 @@ class CommissionAffilie extends Model
     {
         return $this->belongsTo(Withdrawal::class, 'paid_withdrawal_id');
     }
+
+    /**
+     * Get status badge information for UI display.
+     */
+    public function getStatusBadge(): array
+    {
+        $statusMap = [
+            'calculated' => ['color' => 'info', 'text' => 'Calculée'],
+            'eligible' => ['color' => 'warning', 'text' => 'Éligible'],
+            'approved' => ['color' => 'success', 'text' => 'Approuvée'],
+            'paid' => ['color' => 'primary', 'text' => 'Payée'],
+            'cancelled' => ['color' => 'error', 'text' => 'Annulée'],
+            'adjusted' => ['color' => 'secondary', 'text' => 'Ajustée'],
+            // Legacy statuses
+            'en_attente' => ['color' => 'warning', 'text' => 'En attente'],
+            'valide' => ['color' => 'success', 'text' => 'Validée'],
+            'paye' => ['color' => 'primary', 'text' => 'Payée'],
+            'annule' => ['color' => 'error', 'text' => 'Annulée'],
+        ];
+
+        $status = $this->status ?? 'calculated';
+
+        return $statusMap[$status] ?? ['color' => 'secondary', 'text' => ucfirst($status)];
+    }
 }
