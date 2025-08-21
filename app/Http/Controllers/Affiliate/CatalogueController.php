@@ -87,10 +87,18 @@ class CatalogueController extends Controller
 
             // Transform data for frontend
             $transformedData = $products->getCollection()->map(function ($product) {
-                // Calculate total stock from all variants
-                $totalStock = $product->variantes->sum(function ($variant) {
-                    return $variant->stocks->sum('qte_disponible');
-                });
+                // Get the product's boutique warehouse
+                $warehouse = \App\Models\Entrepot::where('boutique_id', $product->boutique_id)
+                    ->where('actif', true)
+                    ->first();
+
+                // Calculate total stock from variants in the correct warehouse only
+                $totalStock = 0;
+                if ($warehouse) {
+                    $totalStock = $product->variantes->sum(function ($variant) use ($warehouse) {
+                        return $variant->stocks->where('entrepot_id', $warehouse->id)->sum('qte_disponible');
+                    });
+                }
 
                 return [
                     'id' => $product->id,
@@ -109,7 +117,7 @@ class CatalogueController extends Controller
                     ] : null,
                     'images' => $product->images->map(function ($image) {
                         return [
-                            'url' => $image->url,
+                            'url' => $this->getFullImageUrl($image->url),
                             'ordre' => $image->ordre,
                         ];
                     }),
@@ -120,13 +128,18 @@ class CatalogueController extends Controller
                             'ordre' => $video->ordre,
                         ];
                     }),
-                    'variantes' => $product->variantes->map(function ($variant) {
-                        $variantStock = $variant->stocks->sum('qte_disponible') ?? 0;
+                    'variantes' => $product->variantes->map(function ($variant) use ($warehouse) {
+                        // Calculate variant stock from the correct warehouse only
+                        $variantStock = 0;
+                        if ($warehouse) {
+                            $variantStock = $variant->stocks->where('entrepot_id', $warehouse->id)->sum('qte_disponible');
+                        }
+
                         return [
                             'id' => $variant->id,
                             'attribut_principal' => $variant->nom, // Use 'nom' instead of 'attribut_principal'
                             'valeur' => $variant->valeur,
-                            'image_url' => $variant->image_url,
+                            'image_url' => $variant->image_url ? $this->getFullImageUrl($variant->image_url) : null,
                             'stock' => (int) $variantStock,
                         ];
                     }),
@@ -256,10 +269,18 @@ class CatalogueController extends Controller
                 ], 404);
             }
 
-            // Calculate total stock from all variants
-            $stockTotal = $product->variantes->sum(function ($variant) {
-                return $variant->stocks->sum('qte_disponible');
-            });
+            // Get the product's boutique warehouse
+            $warehouse = \App\Models\Entrepot::where('boutique_id', $product->boutique_id)
+                ->where('actif', true)
+                ->first();
+
+            // Calculate total stock from variants in the correct warehouse only
+            $stockTotal = 0;
+            if ($warehouse) {
+                $stockTotal = $product->variantes->sum(function ($variant) use ($warehouse) {
+                    return $variant->stocks->where('entrepot_id', $warehouse->id)->sum('qte_disponible');
+                });
+            }
 
             $transformedProduct = [
                 'id' => $product->id,
@@ -282,7 +303,7 @@ class CatalogueController extends Controller
                 ] : null,
                 'images' => $product->images->map(function ($image) {
                     return [
-                        'url' => $image->url,
+                        'url' => $this->getFullImageUrl($image->url),
                         'ordre' => $image->ordre,
                     ];
                 }),
@@ -293,9 +314,14 @@ class CatalogueController extends Controller
                         'ordre' => $video->ordre,
                     ];
                 }),
-                'variantes' => $product->variantes->map(function ($variant) {
-                    $stockOnHand = $variant->stocks->sum('qte_disponible') ?? 0;
-                    $stockReserved = $variant->stocks->sum('qte_reservee') ?? 0;
+                'variantes' => $product->variantes->map(function ($variant) use ($warehouse) {
+                    // Calculate variant stock from the correct warehouse only
+                    $stockOnHand = 0;
+                    $stockReserved = 0;
+                    if ($warehouse) {
+                        $stockOnHand = $variant->stocks->where('entrepot_id', $warehouse->id)->sum('qte_disponible');
+                        $stockReserved = $variant->stocks->where('entrepot_id', $warehouse->id)->sum('qte_reservee');
+                    }
                     $stockAvailable = max(0, $stockOnHand - $stockReserved);
 
                     // Determine variant type and extract color/size
@@ -345,5 +371,24 @@ class CatalogueController extends Controller
                 'success' => false
             ], 500);
         }
+    }
+
+    /**
+     * Get full URL for image
+     */
+    private function getFullImageUrl(string $url): string
+    {
+        // If already a full URL, return as is
+        if (str_starts_with($url, 'http://') || str_starts_with($url, 'https://')) {
+            return $url;
+        }
+
+        // If starts with /, it's relative to domain
+        if (str_starts_with($url, '/')) {
+            return request()->getSchemeAndHttpHost() . $url;
+        }
+
+        // Otherwise, assume it's relative to storage
+        return request()->getSchemeAndHttpHost() . '/storage/' . $url;
     }
 }

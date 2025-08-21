@@ -157,7 +157,7 @@ export interface NormalizedProduct {
 
 export const useCatalogueStore = defineStore('affiliate-catalogue', () => {
   // State
-  const items = ref<CatalogueProduct[]>([])
+  const items = ref<NormalizedProduct[]>([])
   const selectedProduct = ref<CatalogueProduct | null>(null)
   const loading = ref(false)
   const detailLoading = ref(false)
@@ -400,7 +400,9 @@ export const useCatalogueStore = defineStore('affiliate-catalogue', () => {
 
       const response = data.value as any
       if (response) {
-        items.value = response.data || []
+        // Transform raw API data to normalized products
+        const rawProducts = response.data || []
+        items.value = rawProducts.map((product: CatalogueProduct) => mapProductToNormalized(product))
 
         // Update pagination
         if (response.meta) {
