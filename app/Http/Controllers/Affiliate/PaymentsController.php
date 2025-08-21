@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Affiliate;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Admin\CommissionResource;
-use App\Http\Resources\Admin\WithdrawalResource;
+use App\Http\Resources\Affiliate\WithdrawalResource;
 use App\Models\CommissionAffilie;
 use App\Models\Withdrawal;
 use App\Services\WithdrawalService;
@@ -136,7 +136,8 @@ class PaymentsController extends Controller
                 ], 403);
             }
 
-            $query = Withdrawal::where('user_id', $user->id); // Scope to current affiliate only
+            $query = Withdrawal::with(['items'])
+                ->where('user_id', $user->id); // Scope to current affiliate only
 
             // Apply filters
             if ($request->filled('status')) {

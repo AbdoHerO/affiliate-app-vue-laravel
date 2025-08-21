@@ -163,7 +163,7 @@ onMounted(() => {
     <VCard class="mb-6">
       <VCardText>
         <VRow>
-          <VCol cols="12" md="4">
+          <VCol cols="12" sm="6" md="4" lg="4">
             <VTextField
               v-model="searchQuery"
               label="Rechercher..."
@@ -173,7 +173,7 @@ onMounted(() => {
               @keyup.enter="applyFilters"
             />
           </VCol>
-          <VCol cols="12" md="3">
+          <VCol cols="12" sm="6" md="4" lg="3">
             <VSelect
               v-model="selectedStatus"
               :items="statusOptions"
@@ -185,30 +185,31 @@ onMounted(() => {
               item-value="value"
             />
           </VCol>
-          <VCol cols="12" md="2">
+          <VCol cols="12" sm="6" md="4" lg="2">
             <VTextField
               v-model="dateFrom"
               label="Date début"
               type="date"
             />
           </VCol>
-          <VCol cols="12" md="2">
+          <VCol cols="12" sm="6" md="4" lg="2">
             <VTextField
               v-model="dateTo"
               label="Date fin"
               type="date"
             />
           </VCol>
-          <VCol cols="12" md="1" class="d-flex align-center">
+          <VCol cols="12" sm="12" md="4" lg="1" class="d-flex align-center gap-2">
             <VBtn
               color="primary"
+              size="small"
               @click="applyFilters"
             >
               <VIcon icon="tabler-search" />
             </VBtn>
             <VBtn
               variant="outlined"
-              class="ml-2"
+              size="small"
               @click="resetFilters"
             >
               <VIcon icon="tabler-refresh" />

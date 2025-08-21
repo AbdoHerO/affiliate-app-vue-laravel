@@ -111,6 +111,7 @@ declare module 'vue' {
     UserUpgradePlanDialog: typeof import('./resources/ts/components/dialogs/UserUpgradePlanDialog.vue')['default']
     VariantChips: typeof import('./resources/ts/components/public/VariantChips.vue')['default']
     WithdrawalActionDialog: typeof import('./resources/ts/components/admin/withdrawals/WithdrawalActionDialog.vue')['default']
+    WithdrawalDetailsModal: typeof import('./resources/ts/components/affiliate/WithdrawalDetailsModal.vue')['default']
     WithdrawalStatusBadge: typeof import('./resources/ts/components/admin/withdrawals/WithdrawalStatusBadge.vue')['default']
   }
 }

@@ -8,6 +8,7 @@ import { useNotifications } from '@/composables/useNotifications'
 import { useQuickConfirm } from '@/composables/useConfirmAction'
 import Breadcrumbs from '@/components/common/Breadcrumbs.vue'
 import ConfirmActionDialog from '@/components/common/ConfirmActionDialog.vue'
+import WithdrawalDetailsModal from '@/components/affiliate/WithdrawalDetailsModal.vue'
 
 definePage({
   meta: {
@@ -43,6 +44,7 @@ const activeTab = ref('commissions')
 const showPayoutDialog = ref(false)
 const payoutNotes = ref('')
 const downloadingPdf = ref<string | null>(null)
+const showWithdrawalModal = ref(false)
 
 // Computed
 const breadcrumbs = computed(() => [
@@ -184,13 +186,8 @@ const viewWithdrawalDetails = async (withdrawalId: string) => {
     // Fetch withdrawal details from the API
     await paymentsStore.fetchWithdrawal(withdrawalId)
 
-    // Access the withdrawal from the store
-    const withdrawal = currentWithdrawal.value
-    if (withdrawal) {
-      // For now, show an alert with the details
-      // In a real implementation, you would open a modal or navigate to a detail page
-      alert(`Withdrawal Details:\nID: ${withdrawal.id}\nAmount: ${withdrawal.amount} MAD\nStatus: ${withdrawal.status}\nCommissions: ${withdrawal.commission_count || 0}`)
-    }
+    // Open the modal
+    showWithdrawalModal.value = true
   } catch (err: any) {
     showError(err.message || 'Erreur lors du chargement des détails du retrait')
   }
@@ -205,17 +202,21 @@ const downloadPdf = async (withdrawalId: string) => {
   try {
     downloadingPdf.value = withdrawalId
 
-    // Make API call to download PDF
+    // Use the $api utility to get proper authentication headers
     const response = await fetch(`/api/affiliate/withdrawals/${withdrawalId}/pdf`, {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+        'Authorization': `Bearer ${localStorage.getItem('accessToken') || sessionStorage.getItem('accessToken')}`,
         'Accept': 'application/pdf',
+        'X-Requested-With': 'XMLHttpRequest',
       },
     })
 
     if (!response.ok) {
-      const errorData = await response.json()
+      if (response.status === 401) {
+        throw new Error('Session expirée. Veuillez vous reconnecter.')
+      }
+      const errorData = await response.json().catch(() => ({ message: 'Erreur inconnue' }))
       throw new Error(errorData.message || 'Erreur lors du téléchargement du PDF')
     }
 
@@ -573,6 +574,12 @@ onMounted(() => {
         </VCardActions>
       </VCard>
     </VDialog>
+
+    <!-- Withdrawal Details Modal -->
+    <WithdrawalDetailsModal
+      v-model:is-visible="showWithdrawalModal"
+      :withdrawal="currentWithdrawal"
+    />
 
     <!-- Confirm Dialog -->
     <ConfirmActionDialog />

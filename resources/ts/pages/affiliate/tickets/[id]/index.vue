@@ -155,6 +155,37 @@ const formatFileSize = (bytes: number) => {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
 }
 
+const downloadAttachment = async (attachmentId: string, filename: string) => {
+  try {
+    const response = await fetch(`/api/affiliate/tickets/attachments/${attachmentId}/download`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+      },
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      throw new Error(errorData.message || 'Erreur lors du téléchargement')
+    }
+
+    // Create blob and download
+    const blob = await response.blob()
+    const url = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = filename
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    window.URL.revokeObjectURL(url)
+
+    showSuccess('Fichier téléchargé avec succès')
+  } catch (err: any) {
+    showError(err.message || 'Erreur lors du téléchargement du fichier')
+  }
+}
+
 const goBack = () => {
   router.push({ name: 'affiliate-tickets' })
 }
@@ -303,7 +334,11 @@ onMounted(() => {
                           size="small"
                           variant="outlined"
                           prepend-icon="tabler-paperclip"
+                          clickable
+                          color="primary"
+                          @click="downloadAttachment(attachment.id, attachment.filename)"
                         >
+                          <VIcon icon="tabler-download" size="16" class="me-1" />
                           {{ attachment.filename }} ({{ formatFileSize(attachment.size) }})
                         </VChip>
                       </div>
