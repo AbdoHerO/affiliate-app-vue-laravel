@@ -48,7 +48,12 @@ class CatalogueController extends Controller
 
             if ($request->filled('min_profit')) {
                 $minProfit = (float) $request->input('min_profit');
-                $query->where('prix_affilie', '>=', $minProfit);
+                // Filter by calculated commission: (prix_vente - prix_achat)
+                // Use prix_affilie if set, otherwise calculate margin
+                $query->where(function ($q) use ($minProfit) {
+                    $q->where('prix_affilie', '>=', $minProfit)
+                      ->orWhere(DB::raw('(prix_vente - prix_achat)'), '>=', $minProfit);
+                });
             }
 
             // Filter by variant attributes (size, color)

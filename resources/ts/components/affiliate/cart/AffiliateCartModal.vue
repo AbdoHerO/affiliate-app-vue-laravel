@@ -2,6 +2,7 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useAffiliateCartStore } from '@/stores/affiliate/cart'
+import { useNotifications } from '@/composables/useNotifications'
 // Remove admin store import - we'll use cart store's fetchCities
 import type { ClientFinalForm } from '@/stores/affiliate/cart'
 
@@ -20,6 +21,7 @@ const emit = defineEmits<Emits>()
 
 // Composables
 const { t } = useI18n()
+const { showSuccess, showError } = useNotifications()
 const cartStore = useAffiliateCartStore()
 
 // Cities state
@@ -118,14 +120,19 @@ const handleSubmitOrder = async () => {
 
   try {
     const response = await cartStore.checkout(clientForm.value)
-    
+
     if (response.success) {
       orderRef.value = response.data.commande.id
       step.value = 'success'
+
+      // Show success notification
+      showSuccess(`Commande créée avec succès! Référence: ${response.data.commande.id}`)
+
       emit('success')
     }
   } catch (error) {
     console.error('Checkout error:', error)
+    showError('Erreur lors de la création de la commande. Veuillez réessayer plus tard.')
   } finally {
     submitting.value = false
   }
@@ -241,7 +248,7 @@ onMounted(() => {
                   </div>
                   <div class="d-flex align-center gap-4">
                     <span class="text-body-2">{{ item.sell_price || item.product.prix_vente }} MAD</span>
-                    <span class="text-caption text-success">+{{ (item.item_commission / item.qty).toFixed(2) }} MAD commission</span>
+                    <span class="text-caption text-success">+{{ ((item.item_commission || 0) / item.qty).toFixed(2) }} MAD commission</span>
                   </div>
                 </div>
 

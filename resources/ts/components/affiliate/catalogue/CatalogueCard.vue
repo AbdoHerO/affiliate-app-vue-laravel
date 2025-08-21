@@ -12,7 +12,7 @@ interface Props {
 interface Emits {
   (e: 'open', productId: string): void
   (e: 'addToCart', data: { produit_id: string; variante_id?: string; qty: number }): void
-  (e: 'variantChange', variantId: string): void
+    (e: 'variantChange', variantId: string): void
   (e: 'qtyChange', qty: number): void
 }
 
@@ -50,14 +50,20 @@ const profitText = computed(() => {
   return `+${commission.toFixed(2)} MAD`
 })
 
-// Enhanced color swatches from normalized data
+// Color swatches from variants (old working structure)
 const colorSwatches = computed(() => {
-  return props.product.colors || []
+  if (!props.product.variants || !props.product.variants.colors) {
+    return []
+  }
+  return props.product.variants.colors.filter(color => color.stock > 0)
 })
 
-// Enhanced size chips from normalized data
+// Size chips from variants (old working structure)
 const sizeChips = computed(() => {
-  return props.product.sizes || []
+  if (!props.product.variants || !props.product.variants.sizes) {
+    return []
+  }
+  return props.product.variants.sizes.filter(size => size.stock > 0)
 })
 
 // Initialize current image
@@ -67,30 +73,46 @@ watch(() => props.product.mainImage, (newImage) => {
   imageError.value = false
 }, { immediate: true })
 
-const availableSizes = computed(() => {
-  if (!props.product.variants || !props.product.variants.sizes) {
-    return []
-  }
-  return props.product.variants.sizes.filter(size => size.stock > 0)
-})
 
-const availableColors = computed(() => {
-  if (!props.product.variants || !props.product.variants.colors) {
-    return []
-  }
-  return props.product.variants.colors.filter(color => color.stock > 0)
-})
 
-const hasStock = computed(() => {
-  return props.product.stock_total > 0
+// Selected variant logic (from old working version)
+const selectedVariant = computed(() => {
+  if (selectedSizeId.value) {
+    return props.product.variants?.sizes?.find(s => s.id === selectedSizeId.value)
+  }
+  if (selectedColorId.value) {
+    return props.product.variants?.colors?.find(c => c.id === selectedColorId.value)
+  }
+  return null
 })
 
 const maxQuantity = computed(() => {
+  if (selectedVariant.value) {
+    return Math.min(selectedVariant.value.stock, 10)
+  }
   return Math.min(props.product.stock_total, 10)
 })
 
 const canAddToCart = computed(() => {
-  return hasStock.value && quantity.value > 0 && quantity.value <= maxQuantity.value
+  const hasStock = props.product.stock_total > 0 && quantity.value <= maxQuantity.value
+
+  // If product has both sizes and colors, both must be selected
+  if (sizeChips.value.length > 0 && colorSwatches.value.length > 0) {
+    return hasStock && selectedSizeId.value && selectedColorId.value
+  }
+
+  // If product has only sizes, size must be selected
+  if (sizeChips.value.length > 0) {
+    return hasStock && selectedSizeId.value
+  }
+
+  // If product has only colors, color must be selected
+  if (colorSwatches.value.length > 0) {
+    return hasStock && selectedColorId.value
+  }
+
+  // If no variants, just check stock
+  return hasStock
 })
 
 // Methods
@@ -103,7 +125,7 @@ const handleColorSelect = (colorId: string) => {
   selectedColorId.value = colorId
 
   // Update image if color has specific image
-  const color = props.product.variants.colors.find(c => c.id === colorId)
+  const color = props.product.variants?.colors?.find(c => c.id === colorId)
   if (color?.image_url) {
     currentImage.value = color.image_url
   } else {
@@ -220,21 +242,21 @@ const handleImageError = () => {
         <div class="d-flex align-center gap-1 flex-wrap">
           <VChip
             v-for="color in colorSwatches.slice(0, 3)"
-            :key="color.name"
-            :color="variantSelection.selectedColor === color.name ? 'primary' : 'default'"
-            :variant="variantSelection.selectedColor === color.name ? 'flat' : 'outlined'"
+            :key="color.id"
+            :color="selectedColorId === color.id ? 'primary' : 'default'"
+            :variant="selectedColorId === color.id ? 'flat' : 'outlined'"
             size="small"
             class="color-chip cursor-pointer"
-            @click.stop="handleColorSwatchSelect(color.name)"
+            @click.stop="handleColorSelect(color.id)"
           >
             <VIcon
-              v-if="color.swatch"
-              :style="{ color: color.swatch }"
+              v-if="color.color"
+              :style="{ color: color.color }"
               icon="tabler-circle-filled"
               start
               size="14"
             />
-            <span class="text-caption">{{ color.name }}</span>
+            <span class="text-caption">{{ color.value }}</span>
           </VChip>
           <VTooltip
             v-if="colorSwatches.length > 3"
@@ -250,7 +272,7 @@ const handleImageError = () => {
                 +{{ colorSwatches.length - 3 }}
               </VChip>
             </template>
-            <span>{{ colorSwatches.slice(3).map(c => c.name).join(', ') }}</span>
+            <span>{{ colorSwatches.slice(3).map(c => c.value).join(', ') }}</span>
           </VTooltip>
         </div>
       </div>
@@ -260,14 +282,14 @@ const handleImageError = () => {
         <div class="d-flex align-center gap-1 flex-wrap">
           <VChip
             v-for="size in sizeChips.slice(0, 5)"
-            :key="size"
-            :color="variantSelection.selectedSize === size ? 'primary' : 'default'"
-            :variant="variantSelection.selectedSize === size ? 'flat' : 'outlined'"
+            :key="size.id"
+            :color="selectedSizeId === size.id ? 'primary' : 'default'"
+            :variant="selectedSizeId === size.id ? 'flat' : 'outlined'"
             size="small"
             class="size-chip"
-            @click.stop="handleSizeChipSelect(size)"
+            @click.stop="handleSizeSelect(size.id)"
           >
-            {{ size }}
+            {{ size.value }}
           </VChip>
         </div>
       </div>
@@ -279,13 +301,13 @@ const handleImageError = () => {
       >
         <div class="text-caption d-flex align-center">
           <VIcon
-            :icon="variantSelection.selectedSize && variantSelection.selectedColor ? 'tabler-check-circle' : 'tabler-circle'"
-            :color="variantSelection.selectedSize && variantSelection.selectedColor ? 'success' : 'default'"
+            :icon="selectedSizeId && selectedColorId ? 'tabler-check-circle' : 'tabler-circle'"
+            :color="selectedSizeId && selectedColorId ? 'success' : 'default'"
             size="14"
             class="me-1"
           />
-          <span :class="variantSelection.selectedSize && variantSelection.selectedColor ? 'text-success' : 'text-medium-emphasis'">
-            {{ variantSelection.selectedSize && variantSelection.selectedColor ? 'Variantes sélectionnées' : 'Sélectionnez taille et couleur' }}
+          <span :class="selectedSizeId && selectedColorId ? 'text-success' : 'text-medium-emphasis'">
+            {{ selectedSizeId && selectedColorId ? 'Variantes sélectionnées' : 'Sélectionnez taille et couleur' }}
           </span>
         </div>
       </div>

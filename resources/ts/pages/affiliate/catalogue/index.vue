@@ -64,16 +64,27 @@ const sortOptions = computed(() => [
 ])
 
 const profitOptions = computed(() => [
-  { value: undefined, text: 'Tous les profits' },
-  { value: 10, text: '10 MAD+' },
-  { value: 25, text: '25 MAD+' },
-  { value: 50, text: '50 MAD+' },
-  { value: 100, text: '100 MAD+' },
+  { value: undefined, text: 'Toutes les commissions' },
+  { value: 20, text: '20 MAD+ par unité' },
+  { value: 50, text: '50 MAD+ par unité' },
+  { value: 100, text: '100 MAD+ par unité' },
+  { value: 200, text: '200 MAD+ par unité' },
+  { value: 500, text: '500 MAD+ par unité' },
 ])
 
 const hasActiveFilters = computed(() => {
-  return !!(searchQuery.value || selectedCategory.value || minProfit.value || 
+  return !!(searchQuery.value || selectedCategory.value || minProfit.value ||
            selectedSize.value || selectedColor.value)
+})
+
+const activeFiltersCount = computed(() => {
+  let count = 0
+  if (searchQuery.value) count++
+  if (selectedCategory.value) count++
+  if (minProfit.value) count++
+  if (selectedSize.value) count++
+  if (selectedColor.value) count++
+  return count
 })
 
 // Methods
@@ -297,76 +308,116 @@ onMounted(async () => {
       </div>
     </div>
 
-    <!-- Filters Bar -->
-    <VCard class="mb-6" variant="outlined">
-      <VCardText>
-        <VRow>
-          <!-- Search -->
-          <VCol cols="12" md="3">
-            <VTextField
-              v-model="searchQuery"
-              :placeholder="t('catalogue.search_placeholder')"
-              prepend-inner-icon="tabler-search"
-              variant="outlined"
-              density="compact"
-              hide-details
-            />
-          </VCol>
-          
-          <!-- Category -->
-          <VCol cols="12" md="2">
-            <VSelect
-              v-model="selectedCategory"
-              :items="[
-                { value: '', title: t('catalogue.all_categories') },
-                ...categories.map(cat => ({ value: cat.id, title: cat.nom }))
-              ]"
-              :label="t('catalogue.category')"
-              variant="outlined"
-              density="compact"
-              hide-details
-            />
-          </VCol>
-          
-          <!-- Min Profit -->
-          <VCol cols="12" md="2">
-            <VSelect
-              v-model="minProfit"
-              :items="profitOptions"
-              :label="t('catalogue.min_profit')"
-              variant="outlined"
-              density="compact"
-              hide-details
-            />
-          </VCol>
-          
-          <!-- Sort -->
-          <VCol cols="12" md="3">
-            <VSelect
-              :model-value="sortBy + ':' + sortDirection"
-              :items="sortOptions"
-              :label="t('catalogue.filters.sort_by')"
-              variant="outlined"
-              density="compact"
-              hide-details
-              @update:model-value="handleSortChange"
-            />
-          </VCol>
-          
-          <!-- Clear Filters -->
-          <VCol cols="12" md="2">
+    <!-- Modern Filters Section -->
+    <div class="filters-section mb-6">
+      <!-- Search Bar (Primary) -->
+      <VCard class="search-card mb-4" elevation="1">
+        <VCardText class="py-3">
+          <VTextField
+            v-model="searchQuery"
+            :placeholder="t('catalogue.search_placeholder')"
+            prepend-inner-icon="tabler-search"
+            variant="solo"
+            density="comfortable"
+            hide-details
+            clearable
+            class="search-field"
+            bg-color="transparent"
+          />
+        </VCardText>
+      </VCard>
+
+      <!-- Advanced Filters (Secondary) -->
+      <VCard class="filters-card" elevation="1">
+        <VCardText class="py-4">
+          <!-- Filter Header -->
+          <div class="d-flex align-center justify-space-between mb-3">
+            <div class="d-flex align-center gap-2">
+              <VIcon icon="tabler-adjustments-horizontal" size="20" />
+              <span class="text-subtitle-1 font-weight-medium">Filtres avancés</span>
+              <VBadge
+                v-if="hasActiveFilters"
+                :content="activeFiltersCount"
+                color="primary"
+                inline
+              />
+            </div>
             <VBtn
-              :disabled="!hasActiveFilters"
-              variant="outlined"
-              block
+              v-if="hasActiveFilters"
+              variant="text"
+              size="small"
+              color="error"
+              prepend-icon="tabler-refresh"
               @click="clearFilters"
             >
-              {{ t('catalogue.clear_filters') }}
+              Réinitialiser
             </VBtn>
-          </VCol>
-        </VRow>
-      </VCardText>
-    </VCard>
+          </div>
+
+          <VRow class="align-center">
+            <!-- Category Filter -->
+            <VCol cols="12" md="3" sm="6">
+              <VSelect
+                v-model="selectedCategory"
+                :items="[
+                  { value: '', title: t('catalogue.all_categories') },
+                  ...categories.map(cat => ({ value: cat.id, title: cat.nom }))
+                ]"
+                label="Catégorie"
+                item-title="title"
+                item-value="value"
+                variant="outlined"
+                density="compact"
+                hide-details
+                prepend-inner-icon="tabler-category"
+                class="filter-select"
+              />
+            </VCol>
+
+            <!-- Commission Filter -->
+            <VCol cols="12" md="3" sm="6">
+              <VSelect
+                v-model="minProfit"
+                :items="profitOptions"
+                label="Commission min."
+                item-title="text"
+                item-value="value"
+                variant="outlined"
+                density="compact"
+                hide-details
+                prepend-inner-icon="tabler-coins"
+                class="filter-select"
+              />
+            </VCol>
+
+            <!-- Sort Filter -->
+            <VCol cols="12" md="4" sm="8">
+              <VSelect
+                :model-value="sortBy + ':' + sortDirection"
+                :items="sortOptions"
+                label="Trier par"
+                item-title="text"
+                item-value="value"
+                variant="outlined"
+                density="compact"
+                hide-details
+                prepend-inner-icon="tabler-sort-ascending"
+                class="filter-select"
+                @update:model-value="handleSortChange"
+              />
+            </VCol>
+
+            <!-- Results Info -->
+            <VCol cols="12" md="2" sm="4" class="text-center">
+              <div class="results-info">
+                <div class="text-h6 text-primary font-weight-bold">{{ pagination.total || 0 }}</div>
+                <div class="text-caption text-medium-emphasis">produits</div>
+              </div>
+            </VCol>
+          </VRow>
+        </VCardText>
+      </VCard>
+    </div>
 
     <!-- Products Grid -->
     <div v-if="isLoading" class="text-center py-8">
@@ -434,6 +485,64 @@ onMounted(async () => {
 </template>
 
 <style scoped>
+/* Modern Filter Styles */
+.filters-section {
+  position: relative;
+}
+
+.search-card {
+  border-radius: 20px;
+  border: 1px solid rgba(var(--v-theme-primary), 0.12);
+  background: rgba(var(--v-theme-surface), 0.8);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.search-card:hover {
+  border-color: rgba(var(--v-theme-primary), 0.3);
+  box-shadow: 0 8px 32px rgba(var(--v-theme-primary), 0.15);
+}
+
+.search-field {
+  font-size: 1.1rem;
+}
+
+:deep(.search-field .v-field__input) {
+  padding-top: 16px;
+  padding-bottom: 16px;
+}
+
+.filters-card {
+  border-radius: 16px;
+  border: 1px solid rgba(var(--v-border-color), 0.12);
+  background: rgba(var(--v-theme-surface), 0.95);
+  backdrop-filter: blur(8px);
+}
+
+.filter-select {
+  transition: all 0.2s ease;
+}
+
+:deep(.filter-select .v-field) {
+  border-radius: 12px;
+}
+
+:deep(.filter-select .v-field:hover) {
+  border-color: rgba(var(--v-theme-primary), 0.5);
+}
+
+:deep(.filter-select .v-field--focused) {
+  border-color: rgb(var(--v-theme-primary));
+  box-shadow: 0 0 0 2px rgba(var(--v-theme-primary), 0.2);
+}
+
+.results-info {
+  padding: 8px;
+  border-radius: 12px;
+  background: rgba(var(--v-theme-primary), 0.08);
+  border: 1px solid rgba(var(--v-theme-primary), 0.2);
+}
+
 .affiliate-catalogue {
   padding: 24px;
   max-width: 1400px;

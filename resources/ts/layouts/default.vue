@@ -3,6 +3,7 @@ import { useConfigStore } from '@core/stores/config'
 import { AppContentLayoutNav } from '@layouts/enums'
 import { switchToVerticalNavOnLtOverlayNavBreakpoint } from '@layouts/utils'
 import GlobalConfirmProvider from '@/components/common/GlobalConfirmProvider.vue'
+import GlobalSnackbar from '@/components/common/GlobalSnackbar.vue'
 
 
 const DefaultLayoutWithHorizontalNav = defineAsyncComponent(() => import('./components/DefaultLayoutWithHorizontalNav.vue'))
@@ -42,6 +43,9 @@ watch([isFallbackStateActive, refLoadingIndicator], () => {
 
   <!-- Global confirm dialog provider (renders once for entire app) -->
   <GlobalConfirmProvider />
+
+  <!-- Global snackbar for notifications -->
+  <GlobalSnackbar />
 
     <RouterView v-slot="{ Component }">
       <Suspense
