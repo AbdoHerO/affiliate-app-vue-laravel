@@ -452,24 +452,39 @@ class ProduitController extends Controller
         try {
             $warehouseService = new WarehouseService();
 
-            // For now, get warehouses for all boutiques the user has access to
-            // In a real scenario, you might filter by user permissions
+            // Get existing warehouses
             $warehouses = \App\Models\Entrepot::where('actif', true)
                 ->with('boutique:id,nom')
                 ->orderBy('nom')
-                ->get()
-                ->map(function ($warehouse) {
-                    return [
-                        'id' => $warehouse->id,
-                        'name' => $warehouse->nom,
-                        'boutique' => $warehouse->boutique->nom ?? 'Unknown',
-                        'is_default' => true, // For now, mark all as default
-                    ];
-                });
+                ->get();
+
+            // If no warehouses exist, create default ones for each boutique
+            if ($warehouses->isEmpty()) {
+                $boutiques = \App\Models\Boutique::all();
+
+                foreach ($boutiques as $boutique) {
+                    $warehouseService->getOrCreateDefaultWarehouse($boutique->id);
+                }
+
+                // Reload warehouses after creation
+                $warehouses = \App\Models\Entrepot::where('actif', true)
+                    ->with('boutique:id,nom')
+                    ->orderBy('nom')
+                    ->get();
+            }
+
+            $warehouseData = $warehouses->map(function ($warehouse) {
+                return [
+                    'id' => $warehouse->id,
+                    'name' => $warehouse->nom,
+                    'boutique' => $warehouse->boutique->nom ?? 'Unknown',
+                    'is_default' => true, // For now, mark all as default
+                ];
+            });
 
             return response()->json([
                 'success' => true,
-                'data' => $warehouses
+                'data' => $warehouseData
             ]);
 
         } catch (\Exception $e) {

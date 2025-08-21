@@ -41,7 +41,17 @@ class StockAllocationService
 
             // Get or create warehouse
             if ($warehouseId) {
-                $warehouse = $this->warehouseService->getWarehouse($warehouseId, $product->boutique_id);
+                try {
+                    $warehouse = $this->warehouseService->getWarehouse($warehouseId, $product->boutique_id);
+                } catch (\Exception $e) {
+                    // If specified warehouse not found, try to get/create default
+                    Log::warning('Specified warehouse not found, falling back to default', [
+                        'warehouse_id' => $warehouseId,
+                        'product_id' => $productId,
+                        'error' => $e->getMessage()
+                    ]);
+                    $warehouse = $this->warehouseService->getDefaultWarehouseForProduct($product);
+                }
             } else {
                 $warehouse = $this->warehouseService->getDefaultWarehouseForProduct($product);
             }
@@ -200,7 +210,17 @@ class StockAllocationService
 
         // Get or determine warehouse
         if ($warehouseId) {
-            $warehouse = $this->warehouseService->getWarehouse($warehouseId, $product->boutique_id);
+            try {
+                $warehouse = $this->warehouseService->getWarehouse($warehouseId, $product->boutique_id);
+            } catch (\Exception $e) {
+                // If specified warehouse not found, try to get/create default
+                Log::warning('Specified warehouse not found for matrix, falling back to default', [
+                    'warehouse_id' => $warehouseId,
+                    'product_id' => $productId,
+                    'error' => $e->getMessage()
+                ]);
+                $warehouse = $this->warehouseService->getDefaultWarehouseForProduct($product);
+            }
         } else {
             $warehouse = $this->warehouseService->getDefaultWarehouseForProduct($product);
         }

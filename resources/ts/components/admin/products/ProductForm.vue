@@ -180,16 +180,8 @@ const readyForMedia = computed(() => !!localId.value)
 const isEditMode = computed(() => props.mode === 'edit')
 const pageTitle = computed(() => isEditMode.value ? 'Edit Product' : 'Create Product')
 
-// Form state computed
-const canSave = computed(() => {
-  // For create mode, always allow save if not saving and basic validation passes
-  if (!isEditMode.value) {
-    return !saving.value && form.value.titre.trim() && form.value.boutique_id
-  }
-
-  // For edit mode, require changes (isDirty) and no critical stock issues
-  return !saving.value && isDirty.value && !stockExceeded.value
-})
+// Form state computed - keeping isDirty for potential future use
+// Stock validation is handled in saveProduct method, not by disabling button
 
 // Computed affiliate pricing
 const computedPrixAffilie = computed(() => {
@@ -865,18 +857,32 @@ const uploadVariantImage = async (id: string, file: File) => {
 // Stock management methods
 const loadWarehouses = async () => {
   try {
-    const { data } = await useApi('/admin/warehouses')
+    const { data, error } = await useApi('/admin/warehouses')
+
+    if (error.value) {
+      console.error('Failed to load warehouses:', error.value)
+      showError('Failed to load warehouses')
+      return
+    }
+
     const response = data.value as any
     if (response?.success) {
       warehouses.value = response.data
+      console.log('Loaded warehouses:', warehouses.value)
+
       // Set default warehouse if none selected
       if (!stockForm.warehouse_id && warehouses.value.length > 0) {
         const defaultWarehouse = warehouses.value.find(w => w.is_default) || warehouses.value[0]
         stockForm.warehouse_id = defaultWarehouse.id
+        console.log('Set default warehouse:', defaultWarehouse.id)
       }
+    } else {
+      console.error('Invalid warehouse response:', response)
+      showError('Invalid warehouse data received')
     }
   } catch (error) {
-    console.error('Failed to load warehouses:', error)
+    console.error('Exception loading warehouses:', error)
+    showError('Error loading warehouses')
   }
 }
 
@@ -886,19 +892,58 @@ const loadStockMatrix = async () => {
   loadingMatrix.value = true
   try {
     const params = stockForm.warehouse_id ? `?warehouse_id=${stockForm.warehouse_id}` : ''
-    const { data } = await useApi(`/admin/produits/${localId.value}/stock/matrix${params}`)
-    const response = data.value as any
+    const { data, error } = await useApi(`/admin/produits/${localId.value}/stock/matrix${params}`)
 
+    if (error.value) {
+      console.error('Stock matrix API error:', error.value)
+
+      // Handle specific warehouse not found error
+      if (error.value.message?.includes('Warehouse not found')) {
+        console.log('Warehouse not found, trying to load warehouses and retry...')
+        await loadWarehouses()
+
+        // Retry with new warehouse if available
+        if (stockForm.warehouse_id) {
+          const retryParams = `?warehouse_id=${stockForm.warehouse_id}`
+          const { data: retryData, error: retryError } = await useApi(`/admin/produits/${localId.value}/stock/matrix${retryParams}`)
+
+          if (!retryError.value && retryData.value) {
+            const retryResponse = retryData.value as any
+            if (retryResponse?.success) {
+              stockMatrix.value = retryResponse.data.matrix || []
+              console.log('Stock matrix loaded successfully on retry')
+              return
+            }
+          }
+        }
+
+        showError('Warehouse not found. Please check warehouse configuration.')
+      } else {
+        showError('Failed to load stock matrix: ' + (error.value.message || 'Unknown error'))
+      }
+
+      stockMatrix.value = []
+      return
+    }
+
+    const response = data.value as any
     if (response?.success) {
       stockMatrix.value = response.data.matrix || []
+      console.log('Stock matrix loaded:', stockMatrix.value.length, 'items')
+
       // Update warehouse info if returned
       if (response.data.warehouse && !stockForm.warehouse_id) {
         stockForm.warehouse_id = response.data.warehouse.id
+        console.log('Updated warehouse from response:', response.data.warehouse.id)
       }
+    } else {
+      console.error('Invalid stock matrix response:', response)
+      stockMatrix.value = []
     }
   } catch (error) {
-    console.error('Failed to load stock matrix:', error)
+    console.error('Exception loading stock matrix:', error)
     stockMatrix.value = []
+    showError('Error loading stock matrix')
   } finally {
     loadingMatrix.value = false
   }
@@ -953,9 +998,9 @@ const generateCombinations = async () => {
 }
 
 const initializeStockForm = async () => {
-  if (form.value.stock_total) {
-    stockForm.stock_total = form.value.stock_total
-  }
+  // Sync stock_total from main form to stock form
+  console.log('Initializing stock form with stock_total:', form.value.stock_total)
+  stockForm.stock_total = form.value.stock_total || 0
 
   // Load warehouses and stock matrix
   await loadWarehouses()
@@ -1331,6 +1376,23 @@ watch(form, () => {
 // Watch for copywriting changes specifically
 watch(() => form.value.copywriting, () => {
   if (!loading.value) {
+    isDirty.value = true
+  }
+})
+
+// Watch for stock_total changes to keep forms in sync
+watch(() => form.value.stock_total, (newValue) => {
+  if (!loading.value && newValue !== stockForm.stock_total) {
+    console.log('Syncing stock_total from main form to stock form:', newValue)
+    stockForm.stock_total = newValue || 0
+  }
+})
+
+// Watch for stock form changes to update main form
+watch(() => stockForm.stock_total, (newValue) => {
+  if (!loading.value && newValue !== form.value.stock_total) {
+    console.log('Syncing stock_total from stock form to main form:', newValue)
+    form.value.stock_total = newValue
     isDirty.value = true
   }
 })
@@ -2600,7 +2662,6 @@ onMounted(async () => {
           size="large"
           type="button"
           :loading="saving"
-          :disabled="!canSave"
           @click="saveProduct"
         >
           {{ isEditMode ? 'Update Product' : 'Create Product' }}
