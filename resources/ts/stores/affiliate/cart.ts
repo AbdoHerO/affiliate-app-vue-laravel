@@ -155,17 +155,17 @@ export const useAffiliateCartStore = defineStore('affiliate-cart', () => {
         // Handle specific error types
         if (apiError.value.status === 422) {
           // Validation errors (stock issues, minimum quantity, etc.)
-          // Use the exact message from backend
-          const validationMessage = apiError.value.data?.message || 'Stock insuffisant ou données invalides'
+          // Use the exact message from backend (ErrorService normalizes it to apiError.message)
+          const validationMessage = apiError.value.message || 'Stock insuffisant ou données invalides'
 
           showError(validationMessage)
           throw new Error(validationMessage)
         } else if (apiError.value.status === 404) {
-          const notFoundMessage = apiError.value.data?.message || 'Produit non trouvé'
+          const notFoundMessage = apiError.value.message || 'Produit non trouvé'
           showError(notFoundMessage)
           throw new Error(notFoundMessage)
         } else if (apiError.value.status === 400) {
-          const stockMessage = apiError.value.data?.message || 'Stock insuffisant'
+          const stockMessage = apiError.value.message || 'Stock insuffisant'
           showError(stockMessage)
           throw new Error(stockMessage)
         } else {
@@ -202,12 +202,12 @@ export const useAffiliateCartStore = defineStore('affiliate-cart', () => {
         // Handle specific error types for update
         if (apiError.value.status === 422) {
           // Use the exact message from backend
-          const validationMessage = apiError.value.data?.message || 'Données invalides'
+          const validationMessage = apiError.value.message || 'Données invalides'
 
           showError(validationMessage)
           throw new Error(validationMessage)
         } else if (apiError.value.status === 404) {
-          const notFoundMessage = apiError.value.data?.message || 'Article non trouvé'
+          const notFoundMessage = apiError.value.message || 'Article non trouvé'
           showError(notFoundMessage)
           throw new Error(notFoundMessage)
         } else {
@@ -241,11 +241,11 @@ export const useAffiliateCartStore = defineStore('affiliate-cart', () => {
         // Handle specific error types for removal
         if (apiError.value.status === 422) {
           // Minimum quantity validation error
-          const validationMessage = apiError.value.data?.message || 'Impossible de retirer ce produit'
+          const validationMessage = apiError.value.message || 'Impossible de retirer ce produit'
           showError(validationMessage)
           throw new Error(validationMessage)
         } else if (apiError.value.status === 404) {
-          const notFoundMessage = apiError.value.data?.message || 'Produit non trouvé dans le panier'
+          const notFoundMessage = apiError.value.message || 'Produit non trouvé dans le panier'
           showError(notFoundMessage)
           throw new Error(notFoundMessage)
         } else {
