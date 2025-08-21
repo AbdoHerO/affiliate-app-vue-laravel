@@ -434,6 +434,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('tickets/{id}', [App\Http\Controllers\Affiliate\TicketsController::class, 'show']);
         Route::post('tickets/{id}/messages', [App\Http\Controllers\Affiliate\TicketsController::class, 'addMessage']);
         Route::patch('tickets/{id}/status', [App\Http\Controllers\Affiliate\TicketsController::class, 'updateStatus']);
+        Route::get('tickets/attachments/{id}/download', [App\Http\Controllers\Affiliate\TicketsController::class, 'downloadAttachment'])->name('affiliate.tickets.attachments.download');
 
         // Catalogue routes
         Route::get('catalogue', [App\Http\Controllers\Affiliate\CatalogueController::class, 'index']);

@@ -26,6 +26,7 @@ const paymentsStore = useAffiliatePaymentsStore()
 const {
   commissions,
   withdrawals,
+  currentWithdrawal,
   commissionsSummary,
   loading,
   error,
@@ -178,11 +179,21 @@ const formatPercentage = (rate: number) => {
   return `${(rate * 100).toFixed(2)}%`
 }
 
-const viewWithdrawalDetails = (withdrawalId: string) => {
-  // Navigate to withdrawal detail page (to be created)
-  // For now, we'll use the existing route or create a modal
-  console.log('View withdrawal details:', withdrawalId)
-  // TODO: Implement withdrawal detail view
+const viewWithdrawalDetails = async (withdrawalId: string) => {
+  try {
+    // Fetch withdrawal details from the API
+    await paymentsStore.fetchWithdrawal(withdrawalId)
+
+    // Access the withdrawal from the store
+    const withdrawal = currentWithdrawal.value
+    if (withdrawal) {
+      // For now, show an alert with the details
+      // In a real implementation, you would open a modal or navigate to a detail page
+      alert(`Withdrawal Details:\nID: ${withdrawal.id}\nAmount: ${withdrawal.amount} MAD\nStatus: ${withdrawal.status}\nCommissions: ${withdrawal.commission_count || 0}`)
+    }
+  } catch (err: any) {
+    showError(err.message || 'Erreur lors du chargement des détails du retrait')
+  }
 }
 
 const canDownloadPdf = (withdrawal: any) => {

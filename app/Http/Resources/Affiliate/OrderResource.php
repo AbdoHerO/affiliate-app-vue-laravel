@@ -43,7 +43,6 @@ class OrderResource extends JsonResource
                     'id' => $this->boutique->id,
                     'nom' => $this->boutique->nom,
                     'adresse' => $this->boutique->adresse ?? null,
-                    'telephone' => $this->boutique->telephone ?? null,
                 ];
             }),
 

@@ -18,6 +18,14 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
             'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
         ]);
+
+        // Configure authentication redirects for API routes
+        $middleware->redirectGuestsTo(function ($request) {
+            if ($request->expectsJson() || $request->is('api/*')) {
+                abort(401, 'Unauthenticated.');
+            }
+            return '/login'; // Use path instead of route name
+        });
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

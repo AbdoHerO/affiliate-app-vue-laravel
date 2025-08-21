@@ -132,7 +132,7 @@ class OrdersController extends Controller
             }
 
             $order = Commande::with([
-                'boutique:id,nom,adresse,telephone',
+                'boutique:id,nom,adresse',
                 'client:id,nom_complet,telephone,email',
                 'clientFinal:id,nom_complet,telephone,email',
                 'adresse:id,ville,adresse,code_postal',

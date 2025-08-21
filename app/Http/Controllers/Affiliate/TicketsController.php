@@ -186,13 +186,15 @@ class TicketsController extends Controller
             DB::rollBack();
             Log::error('Error creating affiliate ticket', [
                 'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
                 'user_id' => $request->user()->id,
-                'data' => $request->all()
+                'data' => $request->except(['attachments']) // Don't log file data
             ]);
 
             return response()->json([
                 'success' => false,
                 'message' => 'Une erreur est survenue lors de la création du ticket.',
+                'debug' => config('app.debug') ? $e->getMessage() : null,
             ], 500);
         }
     }
@@ -415,6 +417,58 @@ class TicketsController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Une erreur est survenue lors de la mise à jour du statut.',
+            ], 500);
+        }
+    }
+
+    /**
+     * Download a ticket attachment.
+     */
+    public function downloadAttachment(Request $request, string $id): \Symfony\Component\HttpFoundation\BinaryFileResponse|\Illuminate\Http\JsonResponse
+    {
+        try {
+            $user = $request->user();
+
+            // Ensure user is an approved affiliate
+            if (!$user->isApprovedAffiliate()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Access denied. Only approved affiliates can download attachments.',
+                ], 403);
+            }
+
+            // Find the attachment and verify ownership through ticket
+            $attachment = \App\Models\TicketAttachment::whereHas('message.ticket', function ($query) use ($user) {
+                $query->where('requester_id', $user->id);
+            })->findOrFail($id);
+
+            $filePath = storage_path('app/' . $attachment->disk . '/' . $attachment->path);
+
+            if (!file_exists($filePath)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Fichier non trouvé.',
+                ], 404);
+            }
+
+            return response()->download($filePath, $attachment->original_name);
+
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Pièce jointe non trouvée ou accès non autorisé.',
+            ], 404);
+
+        } catch (\Exception $e) {
+            Log::error('Error downloading affiliate ticket attachment', [
+                'user_id' => $request->user()->id,
+                'attachment_id' => $id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Une erreur est survenue lors du téléchargement.',
             ], 500);
         }
     }
