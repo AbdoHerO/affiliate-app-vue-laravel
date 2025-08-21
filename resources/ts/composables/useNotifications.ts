@@ -1,4 +1,4 @@
-import { ref } from 'vue'
+import { ref, reactive } from 'vue'
 
 interface NotificationState {
   show: boolean
@@ -7,64 +7,63 @@ interface NotificationState {
   timeout: number
 }
 
+// Global state - shared across all component instances
+const globalSnackbar = reactive<NotificationState>({
+  show: false,
+  message: '',
+  color: 'success',
+  timeout: 4000,
+})
+
+const globalConfirmDialog = reactive({
+  show: false,
+  title: '',
+  message: '',
+  confirmText: 'Confirm',
+  cancelText: 'Cancel',
+  onConfirm: () => {},
+  onCancel: () => {},
+})
+
 export function useNotifications() {
-  // Snackbar state
-  const snackbar = ref<NotificationState>({
-    show: false,
-    message: '',
-    color: 'success',
-    timeout: 4000,
-  })
-
-  // Confirmation dialog state
-  const confirmDialog = ref({
-    show: false,
-    title: '',
-    message: '',
-    confirmText: 'Confirm',
-    cancelText: 'Cancel',
-    onConfirm: () => {},
-    onCancel: () => {},
-  })
-
   // Show success notification
   const showSuccess = (message: string, timeout = 4000) => {
-    snackbar.value = {
+    Object.assign(globalSnackbar, {
       show: true,
       message,
       color: 'success',
       timeout,
-    }
+    })
   }
 
   // Show error notification
   const showError = (message: string, timeout = 4000) => {
-    snackbar.value = {
+    Object.assign(globalSnackbar, {
       show: true,
       message,
       color: 'error',
       timeout,
-    }
+    })
   }
 
   // Show warning notification
   const showWarning = (message: string, timeout = 4000) => {
-    snackbar.value = {
+    Object.assign(globalSnackbar, {
       show: true,
       message,
       color: 'warning',
       timeout,
-    }
+    })
   }
 
   // Show info notification
   const showInfo = (message: string, timeout = 4000) => {
-    snackbar.value = {
+    Object.assign(globalSnackbar, {
       show: true,
       message,
       color: 'info',
       timeout,
-    }
+    })
   }
 
   // Show confirmation dialog
@@ -76,7 +75,7 @@ export function useNotifications() {
     confirmText = 'Confirm',
     cancelText = 'Cancel'
   ) => {
-    confirmDialog.value = {
+    Object.assign(globalConfirmDialog, {
       show: true,
       title,
       message,
@@ -84,29 +83,29 @@ export function useNotifications() {
       cancelText,
       onConfirm: () => {
         onConfirm()
-        confirmDialog.value.show = false
+        globalConfirmDialog.show = false
       },
       onCancel: () => {
         if (onCancel) onCancel()
-        confirmDialog.value.show = false
+        globalConfirmDialog.show = false
       },
-    }
+    })
   }
 
   // Hide snackbar
   const hideSnackbar = () => {
-    snackbar.value.show = false
+    globalSnackbar.show = false
   }
 
   // Hide confirmation dialog
   const hideConfirm = () => {
-    confirmDialog.value.show = false
+    globalConfirmDialog.show = false
   }
 
   return {
-    // State
-    snackbar: readonly(snackbar),
-    confirmDialog: readonly(confirmDialog),
+    // State (now reactive and shared)
+    snackbar: globalSnackbar,
+    confirmDialog: globalConfirmDialog,
     
     // Methods
     showSuccess,

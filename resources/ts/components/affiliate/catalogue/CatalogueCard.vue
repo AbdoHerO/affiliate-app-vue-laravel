@@ -50,38 +50,92 @@ const profitText = computed(() => {
   return `+${commission.toFixed(2)} MAD`
 })
 
-// Color swatches from variants (old working structure)
+// Color swatches from variants - normalize to consistent interface
 const colorSwatches = computed(() => {
-  if (!props.product.variants || !props.product.variants.colors) {
-    return []
+  const colors: Array<{ id: string; name: string; swatch?: string; stock: number }> = []
+  
+  // Use the enhanced colors array from the store mapping
+  if (props.product.colors && props.product.colors.length > 0) {
+    props.product.colors.forEach(color => {
+      // Find corresponding variant color for stock info
+      const variantColor = props.product.variants?.colors?.find(c => c.value === color.name)
+      if (variantColor && variantColor.stock > 0) {
+        colors.push({
+          id: variantColor.id,
+          name: color.name,
+          swatch: color.swatch || variantColor.color,
+          stock: variantColor.stock
+        })
+      }
+    })
+  } else if (props.product.variants?.colors) {
+    // Fallback to variants.colors if enhanced colors aren't available
+    props.product.variants.colors.forEach(color => {
+      if (color.stock > 0) {
+        colors.push({
+          id: color.id,
+          name: color.value,
+          swatch: color.color,
+          stock: color.stock
+        })
+      }
+    })
   }
-  return props.product.variants.colors.filter(color => color.stock > 0)
+  
+  return colors
 })
 
-// Size chips from variants (old working structure)
+// Size chips from variants - normalize to consistent interface
 const sizeChips = computed(() => {
-  if (!props.product.variants || !props.product.variants.sizes) {
-    return []
+  const sizes: Array<{ id: string; value: string; stock: number }> = []
+  
+  // Use the enhanced sizes array from the store mapping
+  if (props.product.sizes && props.product.sizes.length > 0) {
+    props.product.sizes.forEach(size => {
+      // Find corresponding variant size for stock info
+      const variantSize = props.product.variants?.sizes?.find(s => s.value === size)
+      if (variantSize && variantSize.stock > 0) {
+        sizes.push({
+          id: variantSize.id,
+          value: size,
+          stock: variantSize.stock
+        })
+      }
+    })
+  } else if (props.product.variants?.sizes) {
+    // Fallback to variants.sizes if enhanced sizes aren't available
+    props.product.variants.sizes.forEach(size => {
+      if (size.stock > 0) {
+        sizes.push(size)
+      }
+    })
   }
-  return props.product.variants.sizes.filter(size => size.stock > 0)
+  
+  return sizes
 })
 
-// Initialize current image
+// Initialize current image and reset loading states
 watch(() => props.product.mainImage, (newImage) => {
-  currentImage.value = newImage
-  imageLoading.value = true
-  imageError.value = false
+  if (newImage) {
+    currentImage.value = newImage
+    imageLoading.value = true
+    imageError.value = false
+  } else {
+    currentImage.value = ''
+    imageLoading.value = false
+    imageError.value = true
+  }
 }, { immediate: true })
 
 
 
-// Selected variant logic (from old working version)
+// Selected variant logic
 const selectedVariant = computed(() => {
   if (selectedSizeId.value) {
-    return props.product.variants?.sizes?.find(s => s.id === selectedSizeId.value)
+    return sizeChips.value.find(s => s.id === selectedSizeId.value)
   }
   if (selectedColorId.value) {
-    return props.product.variants?.colors?.find(c => c.id === selectedColorId.value)
+    return colorSwatches.value.find(c => c.id === selectedColorId.value)
   }
   return null
 })
@@ -125,11 +179,21 @@ const handleColorSelect = (colorId: string) => {
   selectedColorId.value = colorId
 
   // Update image if color has specific image
-  const color = props.product.variants?.colors?.find(c => c.id === colorId)
-  if (color?.image_url) {
-    currentImage.value = color.image_url
-  } else {
-    currentImage.value = props.product.mainImage
+  const color = colorSwatches.value.find(c => c.id === colorId)
+  if (color) {
+    // First try to find the color variant with image
+    const colorVariant = props.product.variants?.colors?.find(c => c.id === colorId)
+    if (colorVariant?.image_url) {
+      currentImage.value = colorVariant.image_url
+    } else {
+      // Use enhanced colors image if available
+      const enhancedColor = props.product.colors?.find(c => c.name === color.name)
+      if (enhancedColor?.image_url) {
+        currentImage.value = enhancedColor.image_url
+      } else {
+        currentImage.value = props.product.mainImage
+      }
+    }
   }
 
   emit('variantChange', colorId)
@@ -148,11 +212,10 @@ const handleAddToCart = () => {
 
   // Find the variant ID based on selected size and color
   let variantId = undefined
+  
   if (selectedSizeId.value && selectedColorId.value) {
-    // For combined variants, find by both size and color
-    const variant = props.product.variants.sizes.find(s => s.id === selectedSizeId.value) ||
-                   props.product.variants.colors.find(c => c.id === selectedColorId.value)
-    variantId = variant?.id
+    // For combined variants, prefer size variant if both are selected
+    variantId = selectedSizeId.value
   } else if (selectedSizeId.value) {
     variantId = selectedSizeId.value
   } else if (selectedColorId.value) {
@@ -181,11 +244,14 @@ watch(() => props.product.id, () => {
 // Image loading handlers
 const handleImageLoad = () => {
   imageLoading.value = false
+  imageError.value = false
 }
 
 const handleImageError = () => {
   imageLoading.value = false
   imageError.value = true
+  // Set fallback image
+  currentImage.value = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDMwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjRjVGNUY1Ii8+CjxwYXRoIGQ9Ik0xNTAgMTAwQzE2MS4wNDYgMTAwIDE3MCA5MC45NTQzIDE3MCA4MEM1NyA2OS4wNDU3IDE0Ny45NTQgNjAgMTM2IDYwQzEyNC45NTQgNjAgMTE2IDY5LjA0NTcgMTE2IDgwQzExNiA5MC45NTQzIDEyNC45NTQgMTAwIDEzNiAxMDBIMTUwWiIgZmlsbD0iI0NDQ0NDQyIvPgo8cGF0aCBkPSJNMTgwIDEyMEgxMjBDMTE2LjY4NiAxMjAgMTE0IDEyMi42ODYgMTE0IDEyNlYyMDBDMTE0IDIwMy4zMTQgMTE2LjY4NiAyMDYgMTIwIDIwNkgxODBDMTgzLjMxNCAyMDYgMTg2IDIwMy4zMTQgMTg2IDIwMFYxMjZDMTg2IDEyMi42ODYgMTgzLjMxNCAxMjAgMTgwIDEyMFoiIGZpbGw9IiNDQ0NDQ0MiLz4KPC9zdmc+'
 }
 </script>
 
@@ -197,7 +263,7 @@ const handleImageError = () => {
     <!-- Product Image -->
     <div class="catalogue-card__image-container">
       <VImg
-        :src="imageError ? 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDMwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjRjVGNUY1Ii8+CjxwYXRoIGQ9Ik0xNTAgMTAwQzE2MS4wNDYgMTAwIDE3MCA5MC45NTQzIDE3MCA4MEM1NyA2OS4wNDU3IDE0Ny45NTQgNjAgMTM2IDYwQzEyNC45NTQgNjAgMTE2IDY5LjA0NTcgMTE2IDgwQzExNiA5MC45NTQzIDEyNC45NTQgMTAwIDEzNiAxMDBIMTUwWiIgZmlsbD0iI0NDQ0NDQyIvPgo8cGF0aCBkPSJNMTgwIDEyMEgxMjBDMTE2LjY4NiAxMjAgMTE0IDEyMi42ODYgMTE0IDEyNlYyMDBDMTE0IDIwMy4zMTQgMTE2LjY4NiAyMDYgMTIwIDIwNkgxODBDMTgzLjMxNCAyMDYgMTg2IDIwMy4zMTQgMTg2IDIwMFYxMjZDMTg2IDEyMi42ODYgMTgzLjMxNCAxMjAgMTgwIDEyMFoiIGZpbGw9IiNDQ0NDQ0MiLz4KPC9zdmc+' : currentImage"
+        :src="currentImage || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDMwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjRjVGNUY1Ii8+CjxwYXRoIGQ9Ik0xNTAgMTAwQzE2MS4wNDYgMTAwIDE3MCA5MC45NTQzIDE3MCA4MEM1NyA2OS4wNDU3IDE0Ny45NTQgNjAgMTM2IDYwQzEyNC45NTQgNjAgMTE2IDY5LjA0NTcgMTE2IDgwQzExNiA5MC45NTQzIDEyNC45NTQgMTAwIDEzNiAxMDBIMTUwWiIgZmlsbD0iI0NDQ0NDQyIvPgo8cGF0aCBkPSJNMTgwIDEyMEgxMjBDMTE2LjY4NiAxMjAgMTE0IDEyMi42ODYgMTE0IDEyNlYyMDBDMTE0IDIwMy4zMTQgMTE2LjY4NiAyMDYgMTIwIDIwNkgxODBDMTgzLjMxNCAyMDYgMTg2IDIwMy4zMTQgMTg2IDIwMFYxMjZDMTg2IDEyMi42ODYgMTgzLjMxNCAxMjAgMTgwIDEyMFoiIGZpbGw9IiNDQ0NDQ0MiLz4KPC9zdmc+'"
         :alt="product.titre"
         aspect-ratio="1.2"
         cover
@@ -206,8 +272,19 @@ const handleImageError = () => {
         @error="handleImageError"
       >
         <template #placeholder>
-          <div class="d-flex align-center justify-center fill-height">
-            <VProgressCircular indeterminate color="primary" />
+          <div class="d-flex align-center justify-center fill-height bg-grey-lighten-4">
+            <VProgressCircular 
+              v-if="imageLoading && !imageError" 
+              indeterminate 
+              color="primary" 
+              size="40"
+            />
+            <VIcon 
+              v-else-if="imageError"
+              icon="tabler-photo-off" 
+              size="40" 
+              color="grey" 
+            />
           </div>
         </template>
       </VImg>
@@ -241,8 +318,8 @@ const handleImageError = () => {
       <div v-if="colorSwatches.length" class="mb-2">
         <div class="d-flex align-center gap-1 flex-wrap">
           <VChip
-            v-for="color in colorSwatches.slice(0, 3)"
-            :key="color.id"
+            v-for="(color, index) in colorSwatches.slice(0, 3)"
+            :key="color.id || index"
             :color="selectedColorId === color.id ? 'primary' : 'default'"
             :variant="selectedColorId === color.id ? 'flat' : 'outlined'"
             size="small"
@@ -250,13 +327,13 @@ const handleImageError = () => {
             @click.stop="handleColorSelect(color.id)"
           >
             <VIcon
-              v-if="color.color"
-              :style="{ color: color.color }"
+              v-if="color.swatch"
+              :style="{ color: color.swatch }"
               icon="tabler-circle-filled"
               start
               size="14"
             />
-            <span class="text-caption">{{ color.value }}</span>
+            <span class="text-caption">{{ color.name }}</span>
           </VChip>
           <VTooltip
             v-if="colorSwatches.length > 3"
@@ -272,7 +349,7 @@ const handleImageError = () => {
                 +{{ colorSwatches.length - 3 }}
               </VChip>
             </template>
-            <span>{{ colorSwatches.slice(3).map(c => c.value).join(', ') }}</span>
+            <span>{{ colorSwatches.slice(3).map(c => c.name).join(', ') }}</span>
           </VTooltip>
         </div>
       </div>
@@ -449,6 +526,7 @@ const handleImageError = () => {
   display: -webkit-box;
   -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
+  line-clamp: 1;
   overflow: hidden;
   line-height: 1.3;
 }
