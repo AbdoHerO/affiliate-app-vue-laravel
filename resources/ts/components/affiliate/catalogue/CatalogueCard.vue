@@ -60,17 +60,22 @@ const sizeChips = computed(() => {
   return props.product.sizes || []
 })
 
-// Display image - use variant selection logic
+// Display image - combines variant selection and color selection logic
 const displayImage = computed(() => {
-  return variantSelection.activeImageUrl || props.product.mainImage
-})
-
-// Computed image that updates based on color selection
-const displayImage = computed(() => {
-  if (selectedColor.value) {
-    // Use the store's imageForColor helper for consistent logic
-    return catalogueStore.imageForColor(props.product, selectedColor.value)
+  // Priority 1: Use variant selection active image if available
+  if (variantSelection.activeImageUrl) {
+    return variantSelection.activeImageUrl
   }
+
+  // Priority 2: Use color-specific image if color is selected
+  if (selectedColor.value) {
+    const colorImage = catalogueStore.imageForColor(props.product, selectedColor.value)
+    if (colorImage) {
+      return colorImage
+    }
+  }
+
+  // Priority 3: Fallback to main product image
   return props.product.mainImage
 })
 
