@@ -98,15 +98,25 @@ const handleProceedToCheckout = () => {
 }
 
 const handleUpdateQty = async (itemKey: string, newQty: number) => {
-  if (newQty <= 0) {
-    await cartStore.removeItem(itemKey)
-  } else {
-    await cartStore.updateItem(itemKey, { qty: newQty })
+  try {
+    if (newQty <= 0) {
+      await cartStore.removeItem(itemKey)
+    } else {
+      await cartStore.updateItem(itemKey, { qty: newQty })
+    }
+  } catch (error) {
+    // Error is already handled in the store with proper backend messages
+    console.error('Update quantity error:', error)
   }
 }
 
 const handleRemoveItem = async (itemKey: string) => {
-  await cartStore.removeItem(itemKey)
+  try {
+    await cartStore.removeItem(itemKey)
+  } catch (error) {
+    // Error is already handled in the store with proper backend messages
+    console.error('Remove item error:', error)
+  }
 }
 
 const handleClearCart = async () => {

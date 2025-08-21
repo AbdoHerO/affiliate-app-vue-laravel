@@ -75,11 +75,21 @@ const canSubmitOrder = computed(() => {
 // Methods
 const updateQuantity = async (itemKey: string, newQty: number) => {
   if (newQty < 1) return
-  await cartStore.updateItem(itemKey, { qty: newQty })
+  try {
+    await cartStore.updateItem(itemKey, { qty: newQty })
+  } catch (error) {
+    // Error is already handled in the store with proper backend messages
+    console.error('Update quantity error:', error)
+  }
 }
 
 const removeItem = async (itemKey: string) => {
-  await cartStore.removeItem(itemKey)
+  try {
+    await cartStore.removeItem(itemKey)
+  } catch (error) {
+    // Error is already handled in the store with proper backend messages
+    console.error('Remove item error:', error)
+  }
 }
 
 const clearCart = async () => {

@@ -58,8 +58,29 @@ class CartController extends Controller
                 }
             }
 
+            // Check global quantity (existing in cart + new quantity) against minimum requirement
+            $existingCartItem = AffiliateCartItem::where('user_id', $userId)
+                ->where('produit_id', $validated['produit_id'])
+                ->where('variante_id', $validated['variante_id'] ?? null)
+                ->first();
+
+            $currentQtyInCart = $existingCartItem ? $existingCartItem->qty : 0;
+            $totalQtyAfterAdd = $currentQtyInCart + $validated['qty'];
+
+            if ($product->quantite_min && $totalQtyAfterAdd < $product->quantite_min) {
+                return response()->json([
+                    'message' => 'Quantité minimale requise: ' . $product->quantite_min . ' unité' . ($product->quantite_min > 1 ? 's' : '') .
+                                 '. Vous avez actuellement ' . $currentQtyInCart . ' dans le panier.',
+                    'minimum_quantity' => $product->quantite_min,
+                    'current_quantity' => $currentQtyInCart,
+                    'requested_quantity' => $validated['qty'],
+                    'total_after_add' => $totalQtyAfterAdd,
+                    'success' => false
+                ], 422);
+            }
+
             // If variant specified, verify it exists and has stock
-            if ($validated['variante_id']) {
+            if (isset($validated['variante_id']) && $validated['variante_id']) {
                 $variant = ProduitVariante::with('stocks')
                     ->where('id', $validated['variante_id'])
                     ->where('produit_id', $validated['produit_id'])
@@ -110,7 +131,7 @@ class CartController extends Controller
             // Find existing cart item or create new one
             $cartItem = AffiliateCartItem::where('user_id', $userId)
                 ->where('produit_id', $validated['produit_id'])
-                ->where('variante_id', $validated['variante_id'])
+                ->where('variante_id', $validated['variante_id'] ?? null)
                 ->first();
 
             // Determine sell price (use provided or default to product's prix_vente)
@@ -129,7 +150,7 @@ class CartController extends Controller
                 $cartItem = new AffiliateCartItem();
                 $cartItem->user_id = $userId;
                 $cartItem->produit_id = $validated['produit_id'];
-                $cartItem->variante_id = $validated['variante_id'];
+                $cartItem->variante_id = $validated['variante_id'] ?? null;
                 $cartItem->qty = $validated['qty'];
                 $cartItem->sell_price = $sellPrice;
                 $cartItem->added_at = now();
@@ -293,18 +314,51 @@ class CartController extends Controller
             ]);
 
             $userId = Auth::id();
-            
+
             // Parse item key to get produit_id and variante_id
             $parts = explode('_', $validated['item_key']);
             $produitId = $parts[0];
             $varianteId = ($parts[1] ?? 'default') === 'default' ? null : $parts[1];
-            
-            // Find and delete the cart item
-            $deleted = AffiliateCartItem::where('user_id', $userId)
+
+            // Find the cart item first to check minimum quantity constraints
+            $cartItem = AffiliateCartItem::with('produit')
+                ->where('user_id', $userId)
                 ->where('produit_id', $produitId)
                 ->where('variante_id', $varianteId)
-                ->delete();
-            
+                ->first();
+
+            if (!$cartItem) {
+                return response()->json([
+                    'message' => 'Produit non trouvé dans le panier',
+                    'success' => false
+                ], 404);
+            }
+
+            // Check if removing this item would violate minimum quantity requirement
+            $product = $cartItem->produit;
+            if ($product->quantite_min && $product->quantite_min > 1) {
+                // Check if there are other cart items for the same product
+                $totalQtyInCart = AffiliateCartItem::where('user_id', $userId)
+                    ->where('produit_id', $produitId)
+                    ->sum('qty');
+
+                $qtyAfterRemoval = $totalQtyInCart - $cartItem->qty;
+
+                if ($qtyAfterRemoval > 0 && $qtyAfterRemoval < $product->quantite_min) {
+                    return response()->json([
+                        'message' => 'Impossible de retirer ce produit. Quantité minimale requise: ' . $product->quantite_min . ' unité' . ($product->quantite_min > 1 ? 's' : '') .
+                                     '. Après suppression, il resterait ' . $qtyAfterRemoval . ' unité' . ($qtyAfterRemoval > 1 ? 's' : '') . ' dans le panier.',
+                        'minimum_quantity' => $product->quantite_min,
+                        'current_total_quantity' => $totalQtyInCart,
+                        'quantity_after_removal' => $qtyAfterRemoval,
+                        'success' => false
+                    ], 422);
+                }
+            }
+
+            // Proceed with deletion
+            $deleted = $cartItem->delete();
+
             if ($deleted) {
                 return response()->json([
                     'message' => 'Produit retiré du panier',
@@ -313,9 +367,9 @@ class CartController extends Controller
             }
 
             return response()->json([
-                'message' => 'Produit non trouvé dans le panier',
+                'message' => 'Erreur lors de la suppression',
                 'success' => false
-            ], 404);
+            ], 500);
 
         } catch (ValidationException $e) {
             return response()->json([
@@ -393,6 +447,31 @@ class CartController extends Controller
 
             // Update quantity if provided
             if (isset($validated['qty'])) {
+                // Check minimum quantity requirement with global cart quantity
+                $product = Produit::find($cartItem->produit_id);
+                if ($product && $product->quantite_min) {
+                    // Calculate total quantity for this product across all cart items (excluding current item)
+                    $otherCartItemsQty = AffiliateCartItem::where('user_id', $userId)
+                        ->where('produit_id', $cartItem->produit_id)
+                        ->where('id', '!=', $cartItem->id)
+                        ->sum('qty');
+
+                    $totalQtyAfterUpdate = $otherCartItemsQty + $validated['qty'];
+
+                    if ($totalQtyAfterUpdate < $product->quantite_min) {
+                        return response()->json([
+                            'message' => 'Quantité minimale requise: ' . $product->quantite_min . ' unité' . ($product->quantite_min > 1 ? 's' : '') .
+                                         '. Total après modification: ' . $totalQtyAfterUpdate . ' unité' . ($totalQtyAfterUpdate > 1 ? 's' : '') . '.',
+                            'minimum_quantity' => $product->quantite_min,
+                            'current_quantity' => $cartItem->qty,
+                            'requested_quantity' => $validated['qty'],
+                            'other_items_quantity' => $otherCartItemsQty,
+                            'total_after_update' => $totalQtyAfterUpdate,
+                            'success' => false
+                        ], 422);
+                    }
+                }
+
                 $cartItem->qty = $validated['qty'];
             }
 

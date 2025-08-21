@@ -115,6 +115,7 @@ class CatalogueController extends Controller
                     'prix_vente' => (float) $product->prix_vente,
                     'prix_affilie' => (float) $product->prix_affilie,
                     'stock_total' => (int) $totalStock,
+                    'quantite_min' => (int) ($product->quantite_min ?? 1),
                     'rating_value' => $product->rating_value ? (float) $product->rating_value : null,
                     'categorie' => $product->categorie ? [
                         'id' => $product->categorie->id,

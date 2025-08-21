@@ -74,6 +74,28 @@ export const useAffiliateCartStore = defineStore('affiliate-cart', () => {
   const estimatedCommission = computed(() => summary.value.estimated_commission)
   const hasItems = computed(() => items.value.length > 0)
 
+  // Helper function to get current quantity for a product in cart
+  const getProductQuantityInCart = (produitId: string, varianteId?: string): number => {
+    return items.value
+      .filter(item => {
+        const itemVarianteId = item.variante_id || undefined
+        return item.produit_id === produitId && itemVarianteId === varianteId
+      })
+      .reduce((sum, item) => sum + item.qty, 0)
+  }
+
+  // Helper function to check if adding quantity would meet minimum requirements
+  const canAddQuantity = (produitId: string, quantiteMin: number, addingQty: number, varianteId?: string): { canAdd: boolean; currentQty: number; totalAfterAdd: number } => {
+    const currentQty = getProductQuantityInCart(produitId, varianteId)
+    const totalAfterAdd = currentQty + addingQty
+
+    return {
+      canAdd: totalAfterAdd >= quantiteMin,
+      currentQty,
+      totalAfterAdd
+    }
+  }
+
   // Actions
   const fetchCart = async () => {
     loading.value = true
@@ -132,13 +154,20 @@ export const useAffiliateCartStore = defineStore('affiliate-cart', () => {
       if (apiError.value) {
         // Handle specific error types
         if (apiError.value.status === 422) {
-          // Validation errors (stock issues, etc.)
+          // Validation errors (stock issues, minimum quantity, etc.)
+          // Use the exact message from backend
           const validationMessage = apiError.value.data?.message || 'Stock insuffisant ou données invalides'
+
           showError(validationMessage)
           throw new Error(validationMessage)
         } else if (apiError.value.status === 404) {
-          showError('Produit non trouvé')
-          throw new Error('Produit non trouvé')
+          const notFoundMessage = apiError.value.data?.message || 'Produit non trouvé'
+          showError(notFoundMessage)
+          throw new Error(notFoundMessage)
+        } else if (apiError.value.status === 400) {
+          const stockMessage = apiError.value.data?.message || 'Stock insuffisant'
+          showError(stockMessage)
+          throw new Error(stockMessage)
         } else {
           throw apiError.value
         }
@@ -170,7 +199,20 @@ export const useAffiliateCartStore = defineStore('affiliate-cart', () => {
       })
 
       if (apiError.value) {
-        throw apiError.value
+        // Handle specific error types for update
+        if (apiError.value.status === 422) {
+          // Use the exact message from backend
+          const validationMessage = apiError.value.data?.message || 'Données invalides'
+
+          showError(validationMessage)
+          throw new Error(validationMessage)
+        } else if (apiError.value.status === 404) {
+          const notFoundMessage = apiError.value.data?.message || 'Article non trouvé'
+          showError(notFoundMessage)
+          throw new Error(notFoundMessage)
+        } else {
+          throw apiError.value
+        }
       }
 
       showSuccess('Panier mis à jour')
@@ -178,7 +220,9 @@ export const useAffiliateCartStore = defineStore('affiliate-cart', () => {
       return data.value
     } catch (err: any) {
       const message = err.message || 'Erreur lors de la mise à jour'
-      showError(message)
+      if (!err.message) {
+        showError(message)
+      }
       throw err
     }
   }
@@ -194,7 +238,19 @@ export const useAffiliateCartStore = defineStore('affiliate-cart', () => {
       })
 
       if (apiError.value) {
-        throw apiError.value
+        // Handle specific error types for removal
+        if (apiError.value.status === 422) {
+          // Minimum quantity validation error
+          const validationMessage = apiError.value.data?.message || 'Impossible de retirer ce produit'
+          showError(validationMessage)
+          throw new Error(validationMessage)
+        } else if (apiError.value.status === 404) {
+          const notFoundMessage = apiError.value.data?.message || 'Produit non trouvé dans le panier'
+          showError(notFoundMessage)
+          throw new Error(notFoundMessage)
+        } else {
+          throw apiError.value
+        }
       }
 
       showSuccess('Produit retiré du panier')
@@ -202,7 +258,9 @@ export const useAffiliateCartStore = defineStore('affiliate-cart', () => {
       return data.value
     } catch (err: any) {
       const message = err.message || 'Erreur lors de la suppression'
-      showError(message)
+      if (!err.message) {
+        showError(message)
+      }
       throw err
     }
   }
@@ -340,6 +398,10 @@ export const useAffiliateCartStore = defineStore('affiliate-cart', () => {
     subtotal,
     estimatedCommission,
     hasItems,
+
+    // Helper functions
+    getProductQuantityInCart,
+    canAddQuantity,
 
     // Actions
     fetchCart,

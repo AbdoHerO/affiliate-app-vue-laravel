@@ -27,6 +27,13 @@ const isHovered = ref(false)
 const selectedSizeId = ref<string>('')
 const selectedColorId = ref<string>('')
 const quantity = ref(1)
+
+// Initialize quantity to minimum required
+watch(() => props.product.quantite_min, (newMin) => {
+  if (newMin && quantity.value < newMin) {
+    quantity.value = newMin
+  }
+}, { immediate: true })
 const currentImage = ref('')
 const imageLoading = ref(true)
 const imageError = ref(false)
@@ -300,7 +307,7 @@ const handleViewDetails = () => {
 watch(() => props.product.id, () => {
   selectedSizeId.value = ''
   selectedColorId.value = ''
-  quantity.value = 1
+  quantity.value = props.product.quantite_min || 1
   currentImage.value = props.product.mainImage
 })
 
@@ -524,6 +531,12 @@ const handleImageError = () => {
       <!-- Profit -->
       <div class="text-primary font-weight-bold mb-2">
         {{ profitText }} {{ t('catalogue.profit') }}
+      </div>
+
+      <!-- Minimum Quantity Info -->
+      <div v-if="product.quantite_min && product.quantite_min > 1" class="text-caption text-warning mb-2">
+        <VIcon icon="tabler-info-circle" size="14" class="me-1" />
+        Quantité min: {{ product.quantite_min }}
       </div>
 
       <!-- Product Name -->

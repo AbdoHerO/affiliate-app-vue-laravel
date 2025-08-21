@@ -14,7 +14,7 @@ export interface CatalogueProduct {
   prix_vente: number
   prix_affilie: number
   stock_total: number
-  quantite_min?: number
+  quantite_min: number
   notes_admin?: string
   rating_value?: number | null
   rating_max?: number
@@ -74,6 +74,7 @@ export interface DrawerViewModel {
   prix_vente: number
   prix_affilie: number
   stock_total: number
+  quantite_min: number
   rating_value?: number | null
   categorie?: { id: string; nom: string } | null
   gallery: {
@@ -142,6 +143,7 @@ export interface NormalizedProduct {
   prix_vente: number
   prix_affilie: number
   stock_total: number
+  quantite_min: number
   rating_value: number
   variants: {
     sizes: Array<{ id: string; value: string; stock: number }>
@@ -448,6 +450,7 @@ export const useCatalogueStore = defineStore('affiliate-catalogue', () => {
       prix_vente: product.prix_vente,
       prix_affilie: product.prix_affilie,
       stock_total: product.stock_total,
+      quantite_min: product.quantite_min || 1,
       rating_value: product.rating_value || 0,
       variants: {
         sizes: variantSizes,
@@ -643,7 +646,7 @@ export const useCatalogueStore = defineStore('affiliate-catalogue', () => {
         selectedColor.value = null
         selectedSize.value = null
         selectedVariantId.value = null
-        selectedQty.value = 1
+        selectedQty.value = product.quantite_min || 1
         maxQty.value = 0
       }
     } catch (err: any) {
@@ -703,6 +706,7 @@ export const useCatalogueStore = defineStore('affiliate-catalogue', () => {
       prix_vente: product.prix_vente,
       prix_affilie: product.prix_affilie,
       stock_total: product.stock_total,
+      quantite_min: product.quantite_min || 1,
       rating_value: product.rating_value,
       categorie: product.categorie,
       gallery: {
@@ -729,14 +733,17 @@ export const useCatalogueStore = defineStore('affiliate-catalogue', () => {
     if (variant) {
       selectedVariantId.value = variant.id
       maxQty.value = variant.stock_available
-      // Clamp current quantity to max available
+      // Clamp current quantity to max available and minimum required
+      const minQty = drawerProduct.value?.quantite_min || 1
       if (selectedQty.value > maxQty.value) {
-        selectedQty.value = Math.max(1, maxQty.value)
+        selectedQty.value = Math.max(minQty, Math.min(maxQty.value, minQty))
+      } else if (selectedQty.value < minQty) {
+        selectedQty.value = minQty
       }
     } else {
       selectedVariantId.value = null
       maxQty.value = 0
-      selectedQty.value = 1
+      selectedQty.value = drawerProduct.value?.quantite_min || 1
     }
   }
 

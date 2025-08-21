@@ -56,7 +56,8 @@ const maxQuantity = computed(() => {
 })
 
 const canAddToCart = computed(() => {
-  if (!product.value || store.selectedQty < 1 || store.selectedQty > maxQuantity.value) {
+  const minQty = product.value?.quantite_min || 1
+  if (!product.value || store.selectedQty < minQty || store.selectedQty > maxQuantity.value) {
     return false
   }
 
@@ -490,7 +491,7 @@ const formatCopywriting = (text: string): string => {
                     icon="tabler-minus"
                     size="small"
                     variant="outlined"
-                    :disabled="store.selectedQty <= 1 || maxQuantity === 0"
+                    :disabled="store.selectedQty <= (product?.quantite_min || 1) || maxQuantity === 0"
                     @click="store.selectedQty--"
                   />
                   <VTextField
@@ -499,7 +500,7 @@ const formatCopywriting = (text: string): string => {
                     variant="outlined"
                     density="compact"
                     style="width: 80px;"
-                    min="1"
+                    :min="product?.quantite_min || 1"
                     :max="maxQuantity"
                     :disabled="maxQuantity === 0"
                     hide-details
@@ -512,6 +513,12 @@ const formatCopywriting = (text: string): string => {
                     @click="store.selectedQty++"
                   />
                   <span class="text-caption text-medium-emphasis">Max: {{ maxQuantity }}</span>
+                </div>
+
+                <!-- Minimum quantity info -->
+                <div v-if="product?.quantite_min && product.quantite_min > 1" class="text-caption text-warning mt-2">
+                  <VIcon icon="tabler-info-circle" size="14" class="me-1" />
+                  Quantité minimale: {{ product.quantite_min }}
                 </div>
 
                 <!-- Stock out message -->
