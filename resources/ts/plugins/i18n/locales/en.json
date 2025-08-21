@@ -638,6 +638,13 @@
   "nav_financial_management": "Financial Management",
   "nav_commissions": "Commissions",
   "nav_payments": "Payments",
+  "nav_my_payments": "My Payments",
+  "payments": {
+    "actions": {
+      "view": "View Details",
+      "download_pdf": "Download PDF"
+    }
+  },
   "nav_reports_analytics": "Reports & Analytics",
   "nav_sales_reports": "Sales Reports",
   "nav_affiliate_performance": "Affiliate Performance",

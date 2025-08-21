@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { useAffiliatePaymentsStore } from '@/stores/affiliate/payments'
 import { useNotifications } from '@/composables/useNotifications'
@@ -16,6 +17,7 @@ definePage({
 })
 
 const { t } = useI18n()
+const router = useRouter()
 const { showSuccess, showError } = useNotifications()
 const { confirm } = useQuickConfirm()
 
@@ -39,6 +41,7 @@ const {
 const activeTab = ref('commissions')
 const showPayoutDialog = ref(false)
 const payoutNotes = ref('')
+const downloadingPdf = ref<string | null>(null)
 
 // Computed
 const breadcrumbs = computed(() => [
@@ -175,6 +178,55 @@ const formatPercentage = (rate: number) => {
   return `${(rate * 100).toFixed(2)}%`
 }
 
+const viewWithdrawalDetails = (withdrawalId: string) => {
+  // Navigate to withdrawal detail page (to be created)
+  // For now, we'll use the existing route or create a modal
+  console.log('View withdrawal details:', withdrawalId)
+  // TODO: Implement withdrawal detail view
+}
+
+const canDownloadPdf = (withdrawal: any) => {
+  // Only allow PDF download for approved/paid withdrawals
+  return ['approved', 'in_payment', 'paid'].includes(withdrawal.status)
+}
+
+const downloadPdf = async (withdrawalId: string) => {
+  try {
+    downloadingPdf.value = withdrawalId
+
+    // Make API call to download PDF
+    const response = await fetch(`/api/affiliate/withdrawals/${withdrawalId}/pdf`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+        'Accept': 'application/pdf',
+      },
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      throw new Error(errorData.message || 'Erreur lors du téléchargement du PDF')
+    }
+
+    // Create blob and download
+    const blob = await response.blob()
+    const url = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `facture-retrait-${withdrawalId}.pdf`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    window.URL.revokeObjectURL(url)
+
+    showSuccess('PDF téléchargé avec succès')
+  } catch (err: any) {
+    showError(err.message || 'Erreur lors du téléchargement du PDF')
+  } finally {
+    downloadingPdf.value = null
+  }
+}
+
 // Watchers
 watch(activeTab, (newTab) => {
   if (newTab === 'commissions') {
@@ -287,7 +339,7 @@ onMounted(() => {
                 variant="text"
                 size="small"
                 color="primary"
-                @click="$router.push({ name: 'affiliate-orders-id', params: { id: item.commande?.id } })"
+                @click="router.push({ name: 'affiliate-orders-id', params: { id: item.commande?.id } })"
               >
                 #{{ item.commande?.id?.toString().slice(-8) || 'N/A' }}
               </VBtn>
@@ -416,13 +468,35 @@ onMounted(() => {
 
             <!-- Actions Column -->
             <template #item.actions="{ item }">
-              <VBtn
-                icon="tabler-eye"
-                size="small"
-                variant="text"
-                color="primary"
-                @click="$router.push({ name: 'affiliate-payments-withdrawal', params: { id: item.id } })"
-              />
+              <div class="d-flex gap-1">
+                <VBtn
+                  icon="tabler-eye"
+                  size="small"
+                  variant="text"
+                  color="primary"
+                  @click="viewWithdrawalDetails(item.id)"
+                >
+                  <VIcon icon="tabler-eye" />
+                  <VTooltip activator="parent" location="top">
+                    {{ $t('payments.actions.view') }}
+                  </VTooltip>
+                </VBtn>
+
+                <VBtn
+                  v-if="canDownloadPdf(item)"
+                  icon="tabler-download"
+                  size="small"
+                  variant="text"
+                  color="success"
+                  :loading="downloadingPdf === item.id"
+                  @click="downloadPdf(item.id)"
+                >
+                  <VIcon icon="tabler-download" />
+                  <VTooltip activator="parent" location="top">
+                    {{ $t('payments.actions.download_pdf') }}
+                  </VTooltip>
+                </VBtn>
+              </div>
             </template>
 
             <!-- No data -->

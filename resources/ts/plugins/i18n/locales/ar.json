@@ -24,6 +24,13 @@
   "nav_commissions": "العمولات",
   "nav_withdrawals": "السحوبات",
   "nav_payments": "المدفوعات",
+  "nav_my_payments": "مدفوعاتي",
+  "payments": {
+    "actions": {
+      "view": "عرض التفاصيل",
+      "download_pdf": "تحميل PDF"
+    }
+  },
   "nav_gestion_stock": "إدارة المخزون",
   "nav_stock_management": "إدارة المخزون",
   "nav_parametres": "الإعدادات",

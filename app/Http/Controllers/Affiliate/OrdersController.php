@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Affiliate;
 
 use App\Http\Controllers\Controller;
-use App\Http\Resources\Admin\CommandeResource;
+use App\Http\Resources\Affiliate\OrderResource;
 use App\Models\Commande;
 use App\Services\OrderService;
 use Illuminate\Http\JsonResponse;
@@ -90,7 +90,7 @@ class OrdersController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data' => CommandeResource::collection($orders),
+                'data' => OrderResource::collection($orders),
                 'pagination' => [
                     'current_page' => $orders->currentPage(),
                     'last_page' => $orders->lastPage(),
@@ -151,7 +151,7 @@ class OrdersController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data' => new CommandeResource($order),
+                'data' => new OrderResource($order),
             ]);
 
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {

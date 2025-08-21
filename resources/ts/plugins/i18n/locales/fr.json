@@ -36,6 +36,13 @@
   "nav_commissions": "Commissions",
   "nav_withdrawals": "Retraits",
   "nav_payments": "Paiements",
+  "nav_my_payments": "Mes Paiements",
+  "payments": {
+    "actions": {
+      "view": "Voir Détails",
+      "download_pdf": "Télécharger PDF"
+    }
+  },
   "nav_gestion_stock": "Gestion Stock",
   "nav_parametres": "Paramètres",
   "nav_support": "Support",

@@ -425,6 +425,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('commissions', [App\Http\Controllers\Affiliate\PaymentsController::class, 'commissions']);
         Route::get('withdrawals', [App\Http\Controllers\Affiliate\PaymentsController::class, 'withdrawals']);
         Route::get('withdrawals/{id}', [App\Http\Controllers\Affiliate\PaymentsController::class, 'showWithdrawal']);
+        Route::get('withdrawals/{id}/pdf', [App\Http\Controllers\Affiliate\PaymentsController::class, 'downloadPdf'])->name('affiliate.withdrawals.pdf');
         Route::post('withdrawals/request', [App\Http\Controllers\Affiliate\PaymentsController::class, 'requestPayout']);
 
         // Support Tickets

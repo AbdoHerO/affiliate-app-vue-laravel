@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Affiliate;
 
 use App\Http\Controllers\Controller;
-use App\Http\Resources\Admin\TicketResource;
+use App\Http\Resources\Affiliate\TicketResource;
 use App\Models\Ticket;
 use App\Models\TicketMessage;
 use App\Services\TicketService;
@@ -158,7 +158,7 @@ class TicketsController extends Controller
                 foreach ($request->file('attachments') as $file) {
                     $path = $file->store('ticket-attachments', 'public');
                     $message->attachments()->create([
-                        'filename' => $file->getClientOriginalName(),
+                        'original_name' => $file->getClientOriginalName(),
                         'path' => $path,
                         'size' => $file->getSize(),
                         'mime_type' => $file->getMimeType(),
@@ -171,7 +171,7 @@ class TicketsController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Ticket créé avec succès.',
-                'data' => new TicketResource($ticket->load(['requester', 'messages.user', 'messages.attachments'])),
+                'data' => new TicketResource($ticket->load(['requester', 'messages.sender', 'messages.attachments'])),
             ], 201);
 
         } catch (ValidationException $e) {
@@ -299,7 +299,7 @@ class TicketsController extends Controller
                 foreach ($request->file('attachments') as $file) {
                     $path = $file->store('ticket-attachments', 'public');
                     $message->attachments()->create([
-                        'filename' => $file->getClientOriginalName(),
+                        'original_name' => $file->getClientOriginalName(),
                         'path' => $path,
                         'size' => $file->getSize(),
                         'mime_type' => $file->getMimeType(),

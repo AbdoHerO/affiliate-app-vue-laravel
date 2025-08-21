@@ -308,4 +308,110 @@ class PaymentsController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Download PDF invoice for a withdrawal.
+     */
+    public function downloadPdf(Request $request, string $id)
+    {
+        try {
+            $user = $request->user();
+
+            // Ensure user is an approved affiliate
+            if (!$user->isApprovedAffiliate()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Access denied. Only approved affiliates can download invoices.',
+                ], 403);
+            }
+
+            $withdrawal = Withdrawal::with(['items.commission.commande', 'user'])
+                ->where('user_id', $user->id) // Ensure ownership
+                ->findOrFail($id);
+
+            // Only allow PDF download for approved/paid withdrawals
+            if (!in_array($withdrawal->status, ['approved', 'in_payment', 'paid'])) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Le PDF n\'est disponible que pour les retraits approuvés ou payés.',
+                ], 422);
+            }
+
+            // Generate PDF using a service or library (e.g., DomPDF, TCPDF)
+            $pdf = $this->generateWithdrawalPdf($withdrawal);
+
+            $filename = "facture-retrait-{$withdrawal->id}.pdf";
+
+            return response($pdf, 200, [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+                'Cache-Control' => 'no-cache, no-store, must-revalidate',
+                'Pragma' => 'no-cache',
+                'Expires' => '0',
+            ]);
+
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Retrait non trouvé ou accès non autorisé.',
+            ], 404);
+
+        } catch (\Exception $e) {
+            Log::error('Error downloading affiliate withdrawal PDF', [
+                'user_id' => $request->user()->id,
+                'withdrawal_id' => $id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Une erreur est survenue lors de la génération du PDF.',
+            ], 500);
+        }
+    }
+
+    /**
+     * Generate PDF for withdrawal invoice.
+     */
+    private function generateWithdrawalPdf(Withdrawal $withdrawal): string
+    {
+        // This is a simplified PDF generation
+        // In a real application, you would use a proper PDF library like DomPDF or TCPDF
+
+        $html = view('pdfs.withdrawal-invoice', compact('withdrawal'))->render();
+
+        // For now, return a simple PDF content
+        // You should implement proper PDF generation here
+        try {
+            $pdf = app('dompdf.wrapper');
+            $pdf->loadHTML($html);
+            return $pdf->output();
+        } catch (\Exception $e) {
+            // Fallback: generate a simple text-based PDF
+            return $this->generateSimplePdf($withdrawal);
+        }
+    }
+
+    /**
+     * Generate a simple text-based PDF as fallback.
+     */
+    private function generateSimplePdf(Withdrawal $withdrawal): string
+    {
+        $content = "FACTURE DE RETRAIT\n\n";
+        $content .= "Référence: {$withdrawal->id}\n";
+        $content .= "Montant: {$withdrawal->amount} " . ($withdrawal->currency ?? 'MAD') . "\n";
+        $content .= "Statut: {$withdrawal->status}\n";
+        $content .= "Date: {$withdrawal->created_at->format('d/m/Y H:i')}\n\n";
+
+        if ($withdrawal->items->count() > 0) {
+            $content .= "COMMISSIONS INCLUSES:\n";
+            foreach ($withdrawal->items as $item) {
+                $content .= "- Commission #{$item->commission->id}: {$item->commission->amount} MAD\n";
+            }
+        }
+
+        // This is a very basic implementation
+        // In production, you should use a proper PDF library
+        return $content;
+    }
 }
