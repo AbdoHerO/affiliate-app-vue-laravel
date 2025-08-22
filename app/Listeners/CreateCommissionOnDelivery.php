@@ -33,7 +33,13 @@ class CreateCommissionOnDelivery implements ShouldQueue
     {
         try {
             $order = $event->order;
-            
+
+            Log::info('OrderDelivered event received', [
+                'order_id' => $order->id,
+                'trigger' => $event->trigger,
+                'metadata' => $event->metadata
+            ]);
+
             // Check if commissions already exist for this order (idempotency)
             $existingCommissions = $order->commissions()->count();
             

@@ -644,6 +644,9 @@ class ShippingOrdersController extends Controller
                 }
             });
 
+            // Check if commissions were created (for debugging)
+            $commissionsCount = $order->commissions()->count();
+
             return response()->json([
                 'success' => true,
                 'message' => "Statut mis à jour: {$oldStatus} → {$newStatus}" . ($newStatus === 'livree' ? ' (Commission créée automatiquement)' : ''),
@@ -652,6 +655,7 @@ class ShippingOrdersController extends Controller
                     'old_status' => $oldStatus,
                     'new_status' => $newStatus,
                     'commission_created' => $newStatus === 'livree',
+                    'commissions_count' => $commissionsCount,
                 ]
             ]);
 
