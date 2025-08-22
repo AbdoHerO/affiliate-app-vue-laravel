@@ -362,6 +362,25 @@ export const usePreordersStore = defineStore('preorders', () => {
     }
   }
 
+  const moveToShippingLocal = async (id: string, note?: string) => {
+    try {
+      const response = await axios.post(`/api/admin/preorders/${id}/move-to-shipping-local`, {
+        note
+      })
+
+      if (response.data.success) {
+        // Refresh the list to get updated shipping status
+        await fetchPreorders()
+      }
+
+      return response.data
+    } catch (err: any) {
+      const message = err.response?.data?.message || 'Erreur lors du déplacement vers l\'expédition locale'
+      error.value = message
+      throw new Error(message)
+    }
+  }
+
   return {
     // State
     preorders,
@@ -389,5 +408,6 @@ export const usePreordersStore = defineStore('preorders', () => {
     changeStatus,
     incrementNoAnswer,
     sendToShipping,
+    moveToShippingLocal,
   }
 })

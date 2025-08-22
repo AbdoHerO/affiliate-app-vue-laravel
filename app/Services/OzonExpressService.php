@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Commande;
 use App\Models\ShippingParcel;
+use App\Events\OrderDelivered;
 use App\Services\OzonSettingsService;
 use App\Services\CommissionService;
 use Illuminate\Support\Facades\DB;
@@ -193,6 +194,7 @@ class OzonExpressService
                     'provider' => 'ozonexpress',
                     'tracking_number' => $trackingNumber,
                     'status' => 'pending',
+                    'sent_to_carrier' => true, // This order was sent to carrier
                     'city_id' => $cityId,
                     'city_name' => $cityName,
                     'receiver' => $receiver,
@@ -1085,6 +1087,8 @@ class OzonExpressService
             }
 
             if ($parcel) {
+                $oldStatus = $parcel->status;
+
                 // Update existing parcel
                 $parcel->update([
                     'status' => $status,
@@ -1100,6 +1104,17 @@ class OzonExpressService
                         'last_status_time_str' => $lastStatusTime,
                     ])
                 ]);
+
+                // Fire OrderDelivered event if status changed to delivered and parcel has an order
+                if ($status === 'delivered' && $oldStatus !== 'delivered' && $parcel->commande) {
+                    OrderDelivered::dispatch($parcel->commande, 'carrier_webhook', [
+                        'tracking_number' => $trackingNumber,
+                        'previous_status' => $oldStatus,
+                        'carrier_status_text' => $lastStatusText,
+                        'carrier_comment' => $lastStatusComment,
+                        'status_time' => $lastStatusTime,
+                    ]);
+                }
             } else {
                 // Create new parcel record (for externally created parcels)
                 $parcel = ShippingParcel::create([

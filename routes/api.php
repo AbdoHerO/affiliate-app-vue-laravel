@@ -241,6 +241,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('preorders/{id}/status', [PreordersController::class, 'changeStatus']);
         Route::post('preorders/{id}/no-answer', [PreordersController::class, 'incrementNoAnswer']);
         Route::post('preorders/{id}/send-to-shipping', [PreordersController::class, 'sendToShipping']);
+        Route::post('preorders/{id}/move-to-shipping-local', [PreordersController::class, 'moveToShippingLocal']);
 
         // OzonExpress Shipping Integration
         Route::post('shipping/ozon/parcels', [OzonExpressController::class, 'addParcel']);
@@ -260,6 +261,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         // Shipping Orders Management (orders with parcels)
         Route::get('shipping/orders', [ShippingOrdersController::class, 'index']);
         Route::get('shipping/orders/{id}', [ShippingOrdersController::class, 'show']);
+        Route::post('shipping/orders/{id}/status', [ShippingOrdersController::class, 'updateShippingStatus']);
 
         // Tracking refresh endpoints
         Route::post('shipping/orders/refresh-tracking', [ShippingOrdersController::class, 'refreshTracking']);

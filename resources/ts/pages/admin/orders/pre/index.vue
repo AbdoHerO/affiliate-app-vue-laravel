@@ -52,6 +52,11 @@ const ozonDialogLoading = ref(false)
 const ozonDialogType = ref<'single' | 'bulk'>('single')
 const currentOrderId = ref<string>('')
 
+// Local shipping dialog state
+const showLocalShippingDialog = ref(false)
+const localShippingLoading = ref(false)
+const localShippingNote = ref('')
+
 // Computed
 const isLoading = computed(() => preordersStore.isLoading)
 const preorders = computed(() => preordersStore.preorders)
@@ -296,6 +301,12 @@ const quickSendToShipping = async (orderId: string) => {
   showOzonDialog.value = true
 }
 
+const quickMoveToLocalShipping = async (orderId: string) => {
+  currentOrderId.value = orderId
+  localShippingNote.value = ''
+  showLocalShippingDialog.value = true
+}
+
 const handleOzonConfirm = async (mode: 'ramassage' | 'stock') => {
   ozonDialogLoading.value = true
 
@@ -334,6 +345,28 @@ const handleOzonConfirm = async (mode: 'ramassage' | 'stock') => {
 
 const handleOzonCancel = () => {
   // Dialog will close automatically
+}
+
+const handleLocalShippingConfirm = async () => {
+  localShippingLoading.value = true
+
+  try {
+    const result = await preordersStore.moveToShippingLocal(currentOrderId.value, localShippingNote.value || undefined)
+    showSuccess('Commande déplacée vers l\'expédition locale avec succès')
+    showLocalShippingDialog.value = false
+
+    // Navigate to shipping orders detail page
+    router.push({ name: 'admin-orders-shipping-id', params: { id: currentOrderId.value } })
+  } catch (error: any) {
+    showError(error.message || 'Erreur lors du déplacement vers l\'expédition locale')
+  } finally {
+    localShippingLoading.value = false
+  }
+}
+
+const handleLocalShippingCancel = () => {
+  showLocalShippingDialog.value = false
+  localShippingNote.value = ''
 }
 
 // Lifecycle
@@ -685,6 +718,16 @@ onMounted(() => {
                     Envoyer OzonExpress
                   </VListItemTitle>
                 </VListItem>
+
+                <VListItem
+                  v-if="item.statut === 'confirmee' && !item.shipping_parcel"
+                  @click="quickMoveToLocalShipping(item.id)"
+                >
+                  <VListItemTitle>
+                    <VIcon start icon="tabler-package" color="warning" />
+                    Expédition Locale
+                  </VListItemTitle>
+                </VListItem>
               </VList>
             </VMenu>
           </div>
@@ -718,6 +761,55 @@ onMounted(() => {
       @confirm="handleOzonConfirm"
       @cancel="handleOzonCancel"
     />
+
+    <!-- Local Shipping Confirm Dialog -->
+    <VDialog
+      v-model="showLocalShippingDialog"
+      max-width="500"
+      persistent
+    >
+      <VCard>
+        <VCardTitle class="text-h6">
+          <VIcon start icon="tabler-package" color="warning" />
+          Déplacer vers Expédition Locale
+        </VCardTitle>
+
+        <VCardText>
+          <p class="mb-4">
+            Cette commande sera déplacée vers l'expédition locale/manuelle.
+            Vous pourrez gérer les statuts manuellement depuis la vue Expédition.
+          </p>
+
+          <VTextarea
+            v-model="localShippingNote"
+            label="Note (optionnelle)"
+            placeholder="Ajouter une note pour cette expédition locale..."
+            rows="3"
+            variant="outlined"
+          />
+        </VCardText>
+
+        <VCardActions>
+          <VSpacer />
+          <VBtn
+            variant="text"
+            @click="handleLocalShippingCancel"
+            :disabled="localShippingLoading"
+          >
+            Annuler
+          </VBtn>
+          <VBtn
+            color="warning"
+            variant="elevated"
+            :loading="localShippingLoading"
+            @click="handleLocalShippingConfirm"
+          >
+            <VIcon start icon="tabler-package" />
+            Déplacer
+          </VBtn>
+        </VCardActions>
+      </VCard>
+    </VDialog>
 
     <!-- Confirm Dialog -->
     <ConfirmActionDialog

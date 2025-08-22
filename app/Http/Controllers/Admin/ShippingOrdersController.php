@@ -4,10 +4,14 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Commande;
+use App\Models\ShippingParcel;
+use App\Models\AuditLog;
+use App\Events\OrderDelivered;
 use App\Services\OrderService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class ShippingOrdersController extends Controller
 {
@@ -531,6 +535,136 @@ class ShippingOrdersController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Error getting PDF links: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Update shipping status manually (for local deliveries)
+     */
+    public function updateShippingStatus(Request $request, string $id): JsonResponse
+    {
+        $request->validate([
+            'status' => 'required|in:pending,expediee,livree,refusee,retournee,annulee',
+            'note' => 'nullable|string|max:500'
+        ]);
+
+        try {
+            $order = Commande::with(['shippingParcel'])->findOrFail($id);
+
+            if (!$order->shippingParcel) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Cette commande n\'a pas de colis d\'expédition'
+                ], 422);
+            }
+
+            // Only allow manual updates for local deliveries
+            if ($order->shippingParcel->sent_to_carrier) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Les statuts des commandes envoyées au transporteur ne peuvent pas être modifiés manuellement'
+                ], 422);
+            }
+
+            $newStatus = $request->input('status');
+            $oldStatus = $order->shippingParcel->status;
+            $note = $request->input('note');
+
+            // Validate status transitions (more flexible for local deliveries)
+            $validTransitions = [
+                'pending' => ['expediee', 'livree', 'refusee', 'annulee'], // Allow direct delivery for local
+                'expediee' => ['livree', 'refusee', 'retournee'],
+                'livree' => ['retournee'], // Allow returns from delivered
+                'refusee' => ['retournee', 'livree'], // Allow re-delivery after refusal
+                'retournee' => ['livree'], // Allow re-delivery after return
+                'annulee' => [], // Final state
+            ];
+
+            if (!in_array($newStatus, $validTransitions[$oldStatus] ?? [])) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "Transition de statut invalide: {$oldStatus} → {$newStatus}. Transitions autorisées: " . implode(', ', $validTransitions[$oldStatus] ?? [])
+                ], 422);
+            }
+
+            DB::transaction(function () use ($order, $newStatus, $oldStatus, $note) {
+                // Update shipping parcel status
+                $order->shippingParcel->update([
+                    'status' => $newStatus,
+                    'last_status_text' => $newStatus,
+                    'last_status_at' => now(),
+                    'last_synced_at' => now(),
+                    'meta' => array_merge($order->shippingParcel->meta ?? [], [
+                        'manual_status_updates' => array_merge(
+                            $order->shippingParcel->meta['manual_status_updates'] ?? [],
+                            [[
+                                'from' => $oldStatus,
+                                'to' => $newStatus,
+                                'updated_at' => now()->toISOString(),
+                                'updated_by' => request()->user()?->id,
+                                'note' => $note,
+                            ]]
+                        )
+                    ])
+                ]);
+
+                // Update order status if needed
+                if ($newStatus === 'livree') {
+                    $order->update(['statut' => 'livree']);
+                } elseif ($newStatus === 'refusee') {
+                    $order->update(['statut' => 'refusee']);
+                } elseif ($newStatus === 'retournee') {
+                    $order->update(['statut' => 'retournee']);
+                }
+
+                // Create audit log entry
+                AuditLog::create([
+                    'auteur_id' => request()->user()?->id,
+                    'action' => 'manual_shipping_status_update',
+                    'table_name' => 'shipping_parcels',
+                    'record_id' => $order->shippingParcel->id,
+                    'old_values' => ['status' => $oldStatus],
+                    'new_values' => [
+                        'status' => $newStatus,
+                        'note' => $note,
+                        'order_id' => $order->id,
+                    ],
+                    'ip_address' => request()->ip(),
+                    'user_agent' => request()->userAgent(),
+                ]);
+
+                // Fire OrderDelivered event if status is delivered
+                if ($newStatus === 'livree' && $oldStatus !== 'livree') {
+                    OrderDelivered::dispatch($order, 'manual_update', [
+                        'previous_status' => $oldStatus,
+                        'updated_by' => request()->user()?->id,
+                        'note' => $note,
+                    ]);
+                }
+            });
+
+            return response()->json([
+                'success' => true,
+                'message' => "Statut mis à jour: {$oldStatus} → {$newStatus}" . ($newStatus === 'livree' ? ' (Commission créée automatiquement)' : ''),
+                'data' => [
+                    'order_id' => $order->id,
+                    'old_status' => $oldStatus,
+                    'new_status' => $newStatus,
+                    'commission_created' => $newStatus === 'livree',
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error updating shipping status manually', [
+                'order_id' => $id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de la mise à jour du statut: ' . $e->getMessage()
             ], 500);
         }
     }

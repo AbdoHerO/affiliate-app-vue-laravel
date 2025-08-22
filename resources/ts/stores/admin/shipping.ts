@@ -19,6 +19,7 @@ export interface ShippingParcel {
   provider: string
   tracking_number: string
   status: string
+  sent_to_carrier?: boolean
   city_id?: string
   city_name?: string
   receiver?: string
@@ -426,6 +427,27 @@ export const useShippingStore = defineStore('shipping', () => {
     currentShippingOrder.value = null
   }
 
+  const updateShippingStatus = async (orderId: string, data: { status: string; note?: string }) => {
+    loading.value = true
+    error.value = null
+
+    try {
+      const response = await axios.post(`/api/admin/shipping/orders/${orderId}/status`, data)
+
+      if (response.data.success) {
+        return response.data
+      } else {
+        throw new Error(response.data.message || 'Failed to update shipping status')
+      }
+    } catch (err: any) {
+      error.value = err.response?.data?.message || err.message || 'Failed to update shipping status'
+      console.error('Error updating shipping status:', err)
+      throw new Error(error.value)
+    } finally {
+      loading.value = false
+    }
+  }
+
   const refreshTracking = async (trackingNumber: string): Promise<any> => {
     try {
       const response = await axios.post('/api/admin/shipping/orders/refresh-tracking', {
@@ -495,5 +517,6 @@ export const useShippingStore = defineStore('shipping', () => {
     clearCurrentShippingOrder,
     refreshTracking,
     refreshTrackingBulk,
+    updateShippingStatus,
   }
 })

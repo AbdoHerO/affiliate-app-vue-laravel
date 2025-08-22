@@ -26,6 +26,12 @@ const parcelInfo = ref(null)
 const deliveryNoteRef = ref('')
 const selectedParcels = ref<string[]>([])
 
+// Manual status update state
+const showStatusUpdateDialog = ref(false)
+const statusUpdateLoading = ref(false)
+const newStatus = ref('')
+const statusNote = ref('')
+
 // Computed
 const isLoading = computed(() => shippingStore.isLoading)
 const shippingOrder = computed(() => shippingStore.currentShippingOrder)
@@ -150,6 +156,42 @@ const openPDF = (ref: string, type: string) => {
   if (url) {
     window.open(url, '_blank')
   }
+}
+
+// Manual status update methods
+const openStatusUpdateDialog = () => {
+  newStatus.value = shippingOrder.value?.shipping_parcel?.status || ''
+  statusNote.value = ''
+  showStatusUpdateDialog.value = true
+}
+
+const updateShippingStatus = async () => {
+  if (!newStatus.value || !shippingOrder.value) return
+
+  statusUpdateLoading.value = true
+  try {
+    await shippingStore.updateShippingStatus(shippingOrder.value.id, {
+      status: newStatus.value,
+      note: statusNote.value || undefined
+    })
+
+    showSuccess(`Statut mis à jour vers: ${getStatusText(newStatus.value)}` +
+                (newStatus.value === 'livree' ? ' (Commission créée automatiquement)' : ''))
+    showStatusUpdateDialog.value = false
+
+    // Refresh the order data
+    await fetchShippingOrder()
+  } catch (error: any) {
+    showError(error.message || 'Erreur lors de la mise à jour du statut')
+  } finally {
+    statusUpdateLoading.value = false
+  }
+}
+
+const cancelStatusUpdate = () => {
+  showStatusUpdateDialog.value = false
+  newStatus.value = ''
+  statusNote.value = ''
 }
 
 const getStatusColor = (status: string) => {
@@ -378,6 +420,17 @@ onMounted(() => {
               </VChip>
               <VChip
                 size="small"
+                :color="shippingOrder.shipping_parcel?.sent_to_carrier ? 'primary' : 'warning'"
+                variant="tonal"
+              >
+                <VIcon
+                  start
+                  :icon="shippingOrder.shipping_parcel?.sent_to_carrier ? 'tabler-truck' : 'tabler-package'"
+                />
+                {{ shippingOrder.shipping_parcel?.sent_to_carrier ? 'Transporteur' : 'Local' }}
+              </VChip>
+              <VChip
+                size="small"
                 color="info"
                 variant="tonal"
               >
@@ -406,6 +459,17 @@ onMounted(() => {
           >
             <VIcon start icon="tabler-info-circle" />
             Infos Colis
+          </VBtn>
+
+          <!-- Manual Status Update Button (only for local deliveries) -->
+          <VBtn
+            v-if="!shippingOrder.shipping_parcel?.sent_to_carrier"
+            color="warning"
+            variant="outlined"
+            @click="openStatusUpdateDialog"
+          >
+            <VIcon start icon="tabler-edit" />
+            Modifier Statut
           </VBtn>
 
           <VMenu v-if="shippingOrder.shipping_parcel?.delivery_note_ref">
@@ -948,4 +1012,69 @@ onMounted(() => {
       </VBtn>
     </div>
   </div>
+
+  <!-- Manual Status Update Dialog -->
+  <VDialog
+    v-model="showStatusUpdateDialog"
+    max-width="500"
+    persistent
+  >
+    <VCard>
+      <VCardTitle class="text-h6">
+        <VIcon start icon="tabler-edit" color="warning" />
+        Modifier le Statut d'Expédition
+      </VCardTitle>
+
+      <VCardText>
+        <p class="mb-4">
+          Modifier le statut de cette expédition locale.
+          <strong>Note:</strong> Le passage au statut "Livré" créera automatiquement la commission.
+        </p>
+
+        <VSelect
+          v-model="newStatus"
+          label="Nouveau statut"
+          :items="[
+            { title: 'En attente', value: 'pending' },
+            { title: 'Expédiée', value: 'expediee' },
+            { title: 'Livrée', value: 'livree' },
+            { title: 'Refusée', value: 'refusee' },
+            { title: 'Retournée', value: 'retournee' },
+            { title: 'Annulée', value: 'annulee' }
+          ]"
+          variant="outlined"
+          class="mb-4"
+        />
+
+        <VTextarea
+          v-model="statusNote"
+          label="Note (optionnelle)"
+          placeholder="Ajouter une note pour ce changement de statut..."
+          rows="3"
+          variant="outlined"
+        />
+      </VCardText>
+
+      <VCardActions>
+        <VSpacer />
+        <VBtn
+          variant="text"
+          @click="cancelStatusUpdate"
+          :disabled="statusUpdateLoading"
+        >
+          Annuler
+        </VBtn>
+        <VBtn
+          color="warning"
+          variant="elevated"
+          :loading="statusUpdateLoading"
+          :disabled="!newStatus"
+          @click="updateShippingStatus"
+        >
+          <VIcon start icon="tabler-check" />
+          Mettre à jour
+        </VBtn>
+      </VCardActions>
+    </VCard>
+  </VDialog>
 </template>

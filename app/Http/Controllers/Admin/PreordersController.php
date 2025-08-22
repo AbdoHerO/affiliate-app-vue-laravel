@@ -4,6 +4,9 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Commande;
+use App\Models\ShippingParcel;
+use App\Models\AuditLog;
+use App\Events\OrderDelivered;
 use App\Services\CommissionService;
 use App\Services\OrderService;
 use Illuminate\Http\Request;
@@ -297,9 +300,12 @@ class PreordersController extends Controller
             $triggerStatus = \App\Models\AppSetting::get('commission.trigger_status', 'livree');
             $cancelStatuses = ['retournee', 'refusee', 'annulee'];
 
-            // If order reaches trigger status, calculate commissions
+            // If order reaches trigger status, fire OrderDelivered event
             if ($newStatus === $triggerStatus && $oldStatus !== $triggerStatus) {
-                $this->commissionService->calculateForOrder($order);
+                OrderDelivered::dispatch($order, 'status_change', [
+                    'previous_status' => $oldStatus,
+                    'trigger' => 'preorder_status_change',
+                ]);
             }
 
             // If order is canceled/returned, apply return policy
@@ -510,6 +516,96 @@ class PreordersController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Erreur: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Move order to shipping (local/manual delivery)
+     */
+    public function moveToShippingLocal(Request $request, string $id)
+    {
+        $request->validate([
+            'note' => 'nullable|string|max:500'
+        ]);
+
+        $order = Commande::findOrFail($id);
+
+        // Validate order state
+        if ($order->statut !== 'confirmee') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Seules les commandes confirmées peuvent être déplacées vers l\'expédition'
+            ], 422);
+        }
+
+        // Check if already has shipping parcel
+        if ($order->shippingParcel) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Cette commande a déjà été expédiée'
+            ], 422);
+        }
+
+        try {
+            DB::transaction(function () use ($order, $request) {
+                // Create shipping parcel record for local delivery
+                ShippingParcel::create([
+                    'commande_id' => $order->id,
+                    'provider' => 'local',
+                    'tracking_number' => 'LOCAL-' . $order->id,
+                    'status' => 'pending',
+                    'sent_to_carrier' => false, // This is the key flag for local delivery
+                    'receiver' => $order->clientFinal->nom_complet ?? $order->client->nom_complet,
+                    'phone' => $order->clientFinal->telephone ?? $order->client->telephone,
+                    'address' => $order->adresseLivraison->adresse ?? $order->adresse->adresse,
+                    'city_name' => $order->adresseLivraison->ville ?? $order->adresse->ville,
+                    'price' => $order->total_ttc,
+                    'note' => $request->input('note', 'Livraison locale/manuelle'),
+                    'last_synced_at' => now(),
+                    'meta' => [
+                        'local_delivery' => true,
+                        'moved_to_shipping_at' => now()->toISOString(),
+                        'moved_by' => request()->user()?->id,
+                    ],
+                ]);
+
+                // Update order status to indicate it's in shipping
+                $order->update([
+                    'statut' => 'expediee'
+                ]);
+
+                // Create audit log entry
+                AuditLog::create([
+                    'auteur_id' => request()->user()?->id,
+                    'action' => 'move_to_shipping_local',
+                    'table_name' => 'commandes',
+                    'record_id' => $order->id,
+                    'old_values' => ['statut' => 'confirmee'],
+                    'new_values' => [
+                        'statut' => 'expediee',
+                        'shipping_mode' => 'local',
+                        'note' => $request->input('note'),
+                    ],
+                    'ip_address' => request()->ip(),
+                    'user_agent' => request()->userAgent(),
+                ]);
+            });
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Commande déplacée vers l\'expédition locale avec succès',
+                'data' => [
+                    'order_id' => $order->id,
+                    'shipping_mode' => 'local',
+                    'tracking_number' => 'LOCAL-' . $order->id,
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors du déplacement vers l\'expédition: ' . $e->getMessage()
             ], 500);
         }
     }
