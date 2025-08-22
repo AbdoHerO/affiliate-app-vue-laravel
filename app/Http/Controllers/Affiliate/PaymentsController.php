@@ -8,6 +8,7 @@ use App\Http\Resources\Affiliate\WithdrawalResource;
 use App\Models\CommissionAffilie;
 use App\Models\Withdrawal;
 use App\Services\WithdrawalService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -342,17 +343,23 @@ class PaymentsController extends Controller
                 ], 422);
             }
 
-            // Generate PDF using a service or library (e.g., DomPDF, TCPDF)
+            // Generate PDF using DomPDF
             $pdf = $this->generateWithdrawalPdf($withdrawal);
 
             $filename = "facture-retrait-{$withdrawal->id}.pdf";
 
-            return response($pdf, 200, [
+            // Return the PDF as a direct download response
+            return response()->streamDownload(function () use ($pdf) {
+                echo $pdf;
+            }, $filename, [
                 'Content-Type' => 'application/pdf',
-                'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+                'Content-Disposition' => 'attachment; filename="' . $filename . '"',
                 'Cache-Control' => 'no-cache, no-store, must-revalidate',
                 'Pragma' => 'no-cache',
                 'Expires' => '0',
+                'Access-Control-Allow-Origin' => '*',
+                'Access-Control-Allow-Methods' => 'GET',
+                'Access-Control-Allow-Headers' => 'Authorization, Content-Type, X-Requested-With',
             ]);
 
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
@@ -366,6 +373,7 @@ class PaymentsController extends Controller
                 'user_id' => $request->user()->id,
                 'withdrawal_id' => $id,
                 'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
             ]);
 
             return response()->json([
@@ -380,16 +388,34 @@ class PaymentsController extends Controller
      */
     private function generateWithdrawalPdf(Withdrawal $withdrawal): string
     {
-        // Generate a simple PDF content for now
-        // In production, you would use a proper PDF library like DomPDF or TCPDF
+        Log::info('Generating PDF for withdrawal using DomPDF', ['withdrawal_id' => $withdrawal->id]);
 
-        Log::info('Generating PDF for withdrawal', ['withdrawal_id' => $withdrawal->id]);
+        try {
+            // Use DomPDF to generate proper PDF
+            $pdf = Pdf::loadView('pdfs.withdrawal-invoice', [
+                'withdrawal' => $withdrawal,
+            ]);
 
-        // For now, use simple text-based PDF generation
-        // In production, implement proper PDF library integration
+            // Set PDF options for better compatibility
+            $pdf->setPaper('A4', 'portrait');
+            $pdf->setOptions([
+                'isHtml5ParserEnabled' => true,
+                'isPhpEnabled' => true,
+                'defaultFont' => 'DejaVu Sans',
+                'isRemoteEnabled' => false,
+            ]);
 
-        // Fallback: generate a simple text-based PDF
-        return $this->generateSimplePdf($withdrawal);
+            return $pdf->output();
+
+        } catch (\Exception $e) {
+            Log::error('DomPDF generation failed, using fallback', [
+                'withdrawal_id' => $withdrawal->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            // Fallback to simple PDF if DomPDF fails
+            return $this->generateSimplePdf($withdrawal);
+        }
     }
 
     /**

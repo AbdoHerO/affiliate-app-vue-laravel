@@ -24,6 +24,7 @@ const { showSuccess, showError } = useNotifications()
 const { confirm } = useQuickConfirm()
 
 // Store
+const authStore = useAuthStore()
 const paymentsStore = useAffiliatePaymentsStore()
 const {
   commissions,
@@ -206,71 +207,96 @@ const canDownloadPdf = (withdrawal: any) => {
   return ['approved', 'in_payment', 'paid'].includes(withdrawal.status)
 }
 
-const downloadPdf = async (withdrawalId: string) => {
-  try {
+  const downloadPdf = (withdrawalId: string): void => {
+    console.log('Starting PDF download for withdrawal:', withdrawalId)
+    
+    const token = authStore.token
+    const apiBaseUrl = 'http://localhost:8000/api'
+    const url = `${apiBaseUrl}/affiliate/withdrawals/${withdrawalId}/pdf`
+    
+    console.log('PDF download details:', {
+      token: token ? `${token.substring(0, 10)}...` : 'NO TOKEN',
+      url,
+      apiBaseUrl
+    })
+    
+    if (!token) {
+      console.error('No auth token available')
+      showError('Session expirée. Veuillez vous reconnecter.')
+      return
+    }
+
+    // Set downloading state
     downloadingPdf.value = withdrawalId
 
-    // Get token from auth store or localStorage (consistent with other parts of the app)
-    const authStore = useAuthStore()
-    const token = authStore.token || localStorage.getItem('auth_token')
-
-    if (!token) {
-      throw new Error('Session expirée. Veuillez vous reconnecter.')
+    // Use XMLHttpRequest for better error handling and proper authentication
+    const xhr = new XMLHttpRequest()
+    xhr.open('GET', url, true)
+    xhr.setRequestHeader('Authorization', `Bearer ${token}`)
+    xhr.setRequestHeader('Accept', 'application/pdf')
+    xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest')
+    xhr.responseType = 'blob'
+    
+    // Add progress tracking
+    xhr.onloadstart = function() {
+      console.log('PDF download started...')
     }
-
-    // Use AbortController for timeout handling
-    const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), 30000) // 30 second timeout
-
-    const response = await fetch(`/api/affiliate/withdrawals/${withdrawalId}/pdf`, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Accept': 'application/pdf',
-        'X-Requested-With': 'XMLHttpRequest',
-      },
-      signal: controller.signal,
-    })
-
-    clearTimeout(timeoutId)
-
-    if (!response.ok) {
-      if (response.status === 401) {
-        throw new Error('Session expirée. Veuillez vous reconnecter.')
+    
+    xhr.onprogress = function(event) {
+      if (event.lengthComputable) {
+        const percentComplete = (event.loaded / event.total) * 100
+        console.log(`PDF download progress: ${percentComplete.toFixed(1)}%`)
       }
-      const errorData = await response.json().catch(() => ({ message: 'Erreur inconnue' }))
-      throw new Error(errorData.message || 'Erreur lors du téléchargement du PDF')
     }
-
-    // Create blob and download
-    const blob = await response.blob()
-
-    // Validate that we received a PDF
-    if (blob.type !== 'application/pdf' && !blob.type.includes('pdf')) {
-      throw new Error('Le fichier reçu n\'est pas un PDF valide')
+    
+    xhr.onload = function() {
+      console.log(`PDF download completed with status: ${xhr.status}`)
+      downloadingPdf.value = null
+      
+      if (xhr.status === 200) {
+        const blob = xhr.response
+        console.log(`Received blob: ${blob.size} bytes, type: ${blob.type}`)
+        
+        // Validate blob type and size
+        if (blob.type === 'application/pdf' || blob.type.includes('pdf') || blob.size > 1000) {
+          const url = window.URL.createObjectURL(blob)
+          const link = document.createElement('a')
+          link.href = url
+          link.download = `facture-retrait-${withdrawalId}.pdf`
+          document.body.appendChild(link)
+          link.click()
+          document.body.removeChild(link)
+          window.URL.revokeObjectURL(url)
+          showSuccess('PDF téléchargé avec succès')
+        } else {
+          console.error('Invalid PDF blob:', { type: blob.type, size: blob.size })
+          showError('Le fichier téléchargé n\'est pas un PDF valide')
+        }
+      } else {
+        console.error(`PDF download failed with status: ${xhr.status}`)
+        console.error('Response:', xhr.response)
+        showError(`Erreur lors du téléchargement: ${xhr.status}`)
+      }
     }
-
-    const url = window.URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = `facture-retrait-${withdrawalId}.pdf`
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-    window.URL.revokeObjectURL(url)
-
-    showSuccess('PDF téléchargé avec succès')
-  } catch (err: any) {
-    console.error('PDF download error:', err)
-    if (err.name === 'AbortError') {
-      showError('Le téléchargement a expiré. Veuillez réessayer.')
-    } else {
-      showError(err.message || 'Erreur lors du téléchargement du PDF')
+    
+    xhr.onerror = function() {
+      console.error('PDF download network error')
+      downloadingPdf.value = null
+      showError('Erreur réseau lors du téléchargement')
     }
-  } finally {
-    downloadingPdf.value = null
+    
+    xhr.ontimeout = function() {
+      console.error('PDF download timeout')
+      downloadingPdf.value = null
+      showError('Timeout lors du téléchargement')
+    }
+    
+    // Set timeout to 60 seconds for PDF generation
+    xhr.timeout = 60000
+    
+    console.log('Sending PDF download request...')
+    xhr.send()
   }
-}
 
 // Watchers
 watch(activeTab, (newTab) => {
