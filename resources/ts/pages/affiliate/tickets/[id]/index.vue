@@ -156,65 +156,6 @@ const formatFileSize = (bytes: number) => {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
 }
 
-const downloadAttachment = async (attachmentId: string, filename: string) => {
-  try {
-    // Get token from localStorage (consistent with auth store)
-    const token = localStorage.getItem('auth_token')
-
-    if (!token) {
-      throw new Error('Session expirée. Veuillez vous reconnecter.')
-    }
-
-    // Use AbortController for timeout handling
-    const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), 30000) // 30 second timeout
-
-    const response = await fetch(`/api/affiliate/tickets/attachments/${attachmentId}/download`, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-      signal: controller.signal,
-    })
-
-    clearTimeout(timeoutId)
-
-    if (!response.ok) {
-      if (response.status === 401) {
-        throw new Error('Session expirée. Veuillez vous reconnecter.')
-      }
-      const errorData = await response.json().catch(() => ({ message: 'Erreur inconnue' }))
-      throw new Error(errorData.message || 'Erreur lors du téléchargement')
-    }
-
-    // Create blob and download
-    const blob = await response.blob()
-
-    // Validate that we received a file
-    if (blob.size === 0) {
-      throw new Error('Le fichier est vide ou n\'existe pas')
-    }
-
-    const url = window.URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = filename
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-    window.URL.revokeObjectURL(url)
-
-    showSuccess('Fichier téléchargé avec succès')
-  } catch (err: any) {
-    console.error('Attachment download error:', err)
-    if (err.name === 'AbortError') {
-      showError('Le téléchargement a expiré. Veuillez réessayer.')
-    } else {
-      showError(err.message || 'Erreur lors du téléchargement du fichier')
-    }
-  }
-}
-
 const goBack = () => {
   router.push({ name: 'affiliate-tickets' })
 }
@@ -365,10 +306,12 @@ onMounted(() => {
                           prepend-icon="tabler-paperclip"
                           clickable
                           color="primary"
-                          @click="downloadAttachment(attachment.id, attachment.filename)"
+                          :href="attachment.url"
+                          target="_blank"
+                          component="a"
                         >
                           <VIcon icon="tabler-download" size="16" class="me-1" />
-                          {{ attachment.filename }} ({{ formatFileSize(attachment.size) }})
+                          {{ attachment.original_name }} ({{ formatFileSize(attachment.size) }})
                         </VChip>
                       </div>
                     </div>

@@ -130,7 +130,7 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     public function tickets(): HasMany
     {
-        return $this->hasMany(Ticket::class, 'auteur_id');
+        return $this->hasMany(Ticket::class, 'requester_id');
     }
 
     /**

@@ -423,7 +423,7 @@ class TicketsController extends Controller
     /**
      * Download a ticket attachment.
      */
-    public function downloadAttachment(Request $request, string $id): \Symfony\Component\HttpFoundation\BinaryFileResponse|\Illuminate\Http\JsonResponse
+    public function downloadAttachment(Request $request, string $id): \Symfony\Component\HttpFoundation\StreamedResponse|\Illuminate\Http\JsonResponse
     {
         try {
             $user = $request->user();
@@ -471,7 +471,35 @@ class TicketsController extends Controller
                 ], 404);
             }
 
-            return response()->download($filePath, $attachment->original_name);
+            // Get file info
+            $filename = $attachment->original_name ?: basename($filePath);
+            $mimeType = $attachment->mime_type ?: mime_content_type($filePath) ?: 'application/octet-stream';
+            $fileSize = filesize($filePath);
+
+            // Use streamDownload for better browser compatibility
+            return response()->streamDownload(function () use ($filePath) {
+                $handle = fopen($filePath, 'rb');
+                if ($handle) {
+                    while (!feof($handle)) {
+                        echo fread($handle, 8192); // Read in 8KB chunks
+                        if (ob_get_level()) {
+                            ob_flush();
+                        }
+                        flush();
+                    }
+                    fclose($handle);
+                }
+            }, $filename, [
+                'Content-Type' => $mimeType,
+                'Content-Length' => $fileSize,
+                'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+                'Cache-Control' => 'no-cache, no-store, must-revalidate',
+                'Pragma' => 'no-cache',
+                'Expires' => '0',
+                'Access-Control-Allow-Origin' => '*',
+                'Access-Control-Allow-Methods' => 'GET',
+                'Access-Control-Allow-Headers' => 'Authorization, Content-Type, X-Requested-With',
+            ]);
 
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
@@ -484,6 +512,7 @@ class TicketsController extends Controller
                 'user_id' => $request->user()->id,
                 'attachment_id' => $id,
                 'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
             ]);
 
             return response()->json([

@@ -71,6 +71,7 @@ class TicketResource extends JsonResource
                                     'mime_type' => $attachment->mime_type,
                                     'created_at' => $attachment->created_at->format('Y-m-d H:i:s'),
                                     'download_url' => route('affiliate.tickets.attachments.download', $attachment->id),
+                                    'url' => $attachment->url, // Direct storage URL like admin panel
                                 ];
                             }) : [],
                     ];

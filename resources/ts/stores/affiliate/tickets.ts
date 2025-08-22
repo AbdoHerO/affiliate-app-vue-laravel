@@ -48,11 +48,14 @@ export interface TicketMessage {
 
 export interface TicketAttachment {
   id: string
-  filename: string
+  original_name: string
+  filename?: string // Keep for backward compatibility
   path: string
   size: number
   mime_type: string
   created_at: string
+  download_url: string
+  url: string // Direct storage URL
 }
 
 export interface CreateTicketData {
