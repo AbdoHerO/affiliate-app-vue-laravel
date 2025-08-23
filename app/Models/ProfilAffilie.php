@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class ProfilAffilie extends Model
 {
@@ -88,6 +89,30 @@ class ProfilAffilie extends Model
     public function commissions(): HasMany
     {
         return $this->hasMany(CommissionAffilie::class, 'affilie_id');
+    }
+
+    /**
+     * Get the referral code for this affiliate.
+     */
+    public function referralCode(): HasOne
+    {
+        return $this->hasOne(ReferralCode::class, 'affiliate_id');
+    }
+
+    /**
+     * Get the referral attributions made by this affiliate.
+     */
+    public function referralAttributions(): HasMany
+    {
+        return $this->hasMany(ReferralAttribution::class, 'referrer_affiliate_id');
+    }
+
+    /**
+     * Get the referral dispensations received by this affiliate.
+     */
+    public function referralDispensations(): HasMany
+    {
+        return $this->hasMany(ReferralDispensation::class, 'referrer_affiliate_id');
     }
 
     /**

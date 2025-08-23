@@ -63,6 +63,27 @@ export function useNavigation() {
             ],
           },
           {
+            title: t('nav_referral_management'),
+            icon: { icon: 'tabler-share' },
+            children: [
+              {
+                title: t('nav_referral_dashboard'),
+                to: 'admin-referrals-dashboard',
+                icon: { icon: 'tabler-dashboard' },
+              },
+              {
+                title: t('nav_referred_users'),
+                to: 'admin-referrals-referred-users',
+                icon: { icon: 'tabler-users' },
+              },
+              {
+                title: t('nav_dispensations'),
+                to: 'admin-referrals-dispensations',
+                icon: { icon: 'tabler-gift' },
+              },
+            ],
+          },
+          {
             title: t('nav_order_management'),
             icon: { icon: 'tabler-shopping-cart' },
             children: [
@@ -201,6 +222,11 @@ export function useNavigation() {
             title: t('nav_my_payments'),
             to: 'affiliate-payments',
             icon: { icon: 'tabler-currency-dollar' },
+          },
+          {
+            title: t('nav_my_referrals'),
+            to: 'affiliate-referrals',
+            icon: { icon: 'tabler-share' },
           },
           {
             title: t('nav_support'),

@@ -18,9 +18,9 @@ class SettingsController extends Controller
     {
         try {
             $settings = [
-                'commission' => $this->getCommissionSettings(),
-                'ozonexpress' => $this->getOzonExpressSettings(),
-                'system' => $this->getSystemSettings(),
+                'commission' => $this->getCommissionSettingsArray(),
+                'ozonexpress' => $this->getOzonExpressSettingsArray(),
+                'system' => $this->getSystemSettingsArray(),
             ];
 
             return response()->json([
@@ -350,7 +350,7 @@ class SettingsController extends Controller
     /**
      * Get commission settings (private helper)
      */
-    private function getCommissionSettings(): array
+    private function getCommissionSettingsArray(): array
     {
         return [
             'strategy' => AppSetting::get('commission.strategy', 'legacy'),
@@ -365,7 +365,7 @@ class SettingsController extends Controller
     /**
      * Get OzonExpress settings (private helper)
      */
-    private function getOzonExpressSettings(): array
+    private function getOzonExpressSettingsArray(): array
     {
         return [
             'enabled' => AppSetting::get('ozonexpress.enabled', true),
@@ -379,7 +379,7 @@ class SettingsController extends Controller
     /**
      * Get system settings (private helper)
      */
-    private function getSystemSettings(): array
+    private function getSystemSettingsArray(): array
     {
         return [
             'maintenance_mode' => AppSetting::get('system.maintenance_mode', false),

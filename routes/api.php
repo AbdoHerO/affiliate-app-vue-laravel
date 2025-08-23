@@ -27,6 +27,11 @@ use App\Http\Controllers\Admin\VariantAttributController;
 use App\Http\Controllers\Admin\VariantValeurController;
 use App\Http\Controllers\Admin\TestController;
 use App\Http\Controllers\Admin\CommissionsController;
+use App\Http\Controllers\Admin\ReferralController as AdminReferralController;
+use App\Http\Controllers\Admin\ReferralDispensationController;
+use App\Http\Controllers\Admin\AffiliateReferralController as AdminAffiliateReferralController;
+use App\Http\Controllers\Affiliate\ReferralController as AffiliateReferralController;
+use App\Http\Controllers\Public\ReferralTrackingController;
 use App\Http\Controllers\Admin\CommissionBackfillController;
 use App\Http\Controllers\Admin\SystemHealthController;
 use App\Http\Controllers\Admin\SettingsController;
@@ -57,6 +62,16 @@ Route::prefix('public')->group(function () {
 
     // Email verification route (no throttle for better UX)
     Route::get('affiliates/verify', [AffiliateSignupController::class, 'verify']);
+
+    // Referral tracking routes
+    Route::prefix('referrals')->middleware('throttle:10,1')->group(function () {
+        Route::post('track-click', [ReferralTrackingController::class, 'trackClick']);
+        Route::get('info', [ReferralTrackingController::class, 'getReferralInfo']);
+        Route::get('validate', [ReferralTrackingController::class, 'validateCode']);
+        Route::get('attribution-info', [ReferralTrackingController::class, 'getAttributionInfo']);
+        Route::post('redirect', [ReferralTrackingController::class, 'handleRedirect']);
+        Route::get('abuse-info', [ReferralTrackingController::class, 'getAbuseInfo']); // Admin only
+    });
 });
 
 // Public authentication routes
@@ -430,6 +445,25 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::post('cities/import', [\App\Http\Controllers\Admin\OzonCitiesController::class, 'import']);
         });
 
+        // Referral Management
+        Route::prefix('referrals')->group(function () {
+            // Dashboard and statistics
+            Route::get('dashboard/stats', [AdminReferralController::class, 'getDashboardStats']);
+            Route::get('referred-users', [AdminReferralController::class, 'getReferredUsers']);
+
+            // Dispensations (manual rewards)
+            Route::get('dispensations', [ReferralDispensationController::class, 'index']);
+            Route::post('dispensations', [ReferralDispensationController::class, 'store']);
+            Route::get('dispensations/{id}', [ReferralDispensationController::class, 'show']);
+            Route::get('dispensations/summary/stats', [ReferralDispensationController::class, 'getSummaryStats']);
+            Route::get('dispensations/affiliate/{affiliateId}', [ReferralDispensationController::class, 'getAffiliateDispensations']);
+
+            // Affiliate referral details
+            Route::get('affiliates/{affiliateId}', [AdminAffiliateReferralController::class, 'show']);
+            Route::get('affiliates/{affiliateId}/referred-users', [AdminAffiliateReferralController::class, 'getReferredUsers']);
+            Route::get('performance/comparison', [AdminAffiliateReferralController::class, 'getPerformanceComparison']);
+        });
+
         // Testing & Debug Routes (only in non-production)
         if (!app()->environment('production')) {
             Route::prefix('test')->group(function () {
@@ -494,6 +528,14 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
         // Checkout route
         Route::post('checkout', [App\Http\Controllers\Affiliate\CartController::class, 'checkout']);
+
+        // Referral Management
+        Route::prefix('referrals')->group(function () {
+            Route::get('dashboard', [AffiliateReferralController::class, 'getDashboard']);
+            Route::get('link', [AffiliateReferralController::class, 'getReferralLink']);
+            Route::get('referred-users', [AffiliateReferralController::class, 'getReferredUsers']);
+            Route::get('dispensations', [AffiliateReferralController::class, 'getDispensations']);
+        });
     });
 
     // File upload routes

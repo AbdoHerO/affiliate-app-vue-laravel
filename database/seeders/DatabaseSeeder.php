@@ -77,6 +77,12 @@ class DatabaseSeeder extends Seeder
             TicketSeeder::class,
         ]);
 
+        // 9. REFERRAL SYSTEM: Referral codes, clicks, attributions, and dispensations
+        $this->command->info('🔗 Step 9: Referral System');
+        $this->call([
+            ReferralSystemSeeder::class,
+        ]);
+
         $this->command->info('');
         $this->command->info('✅ Complete database seeding finished!');
         $this->command->info('🎯 Your system is ready for testing with comprehensive data.');

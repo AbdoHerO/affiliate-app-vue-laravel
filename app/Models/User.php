@@ -134,6 +134,22 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
+     * Get the referral attribution if this user was referred.
+     */
+    public function referralAttribution(): HasOne
+    {
+        return $this->hasOne(ReferralAttribution::class, 'new_user_id');
+    }
+
+    /**
+     * Get the dispensations created by this admin user.
+     */
+    public function createdDispensations(): HasMany
+    {
+        return $this->hasMany(ReferralDispensation::class, 'created_by_admin_id');
+    }
+
+    /**
      * Get the ticket messages by the user.
      */
     public function ticketMessages(): HasMany

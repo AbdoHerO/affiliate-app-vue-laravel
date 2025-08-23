@@ -45,6 +45,27 @@ const adminNavigation = [
     ],
   },
   {
+    title: 'nav_referral_management',
+    icon: { icon: 'tabler-share' },
+    children: [
+      {
+        title: 'nav_referral_dashboard',
+        to: '/admin/referrals/dashboard',
+        icon: { icon: 'tabler-dashboard' },
+      },
+      {
+        title: 'nav_referred_users',
+        to: '/admin/referrals/referred-users',
+        icon: { icon: 'tabler-users' },
+      },
+      {
+        title: 'nav_dispensations',
+        to: '/admin/referrals/dispensations',
+        icon: { icon: 'tabler-gift' },
+      },
+    ],
+  },
+  {
     title: 'nav_gestion_stock',
     icon: { icon: 'tabler-package' },
     children: [
@@ -188,6 +209,11 @@ const affiliateNavigation = [
     title: 'nav_my_payments',
     to: '/affiliate/payments',
     icon: { icon: 'tabler-currency-dollar' },
+  },
+  {
+    title: 'nav_my_referrals',
+    to: '/affiliate/referrals',
+    icon: { icon: 'tabler-share' },
   },
   {
     title: 'nav_support',

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\ReferralService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Hash;
@@ -11,6 +12,9 @@ use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
+    public function __construct(
+        protected ReferralService $referralService
+    ) {}
     /**
      * Login user and create token
      */
@@ -70,6 +74,9 @@ class AuthController extends Controller
 
         // Assign role
         $user->assignRole($request->role);
+
+        // Handle referral attribution if applicable
+        $this->referralService->attributeSignup($user, $request);
 
         // Create token
         $token = $user->createToken('auth-token')->plainTextToken;
