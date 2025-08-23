@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, onBeforeUnmount } from 'vue'
 import { useI18n } from 'vue-i18n'
 import axios from '@/plugins/axios'
 
@@ -40,6 +40,9 @@ const createForm = ref({
 })
 
 const affiliates = ref([])
+
+// State management
+let abortController: AbortController | null = null
 
 // Headers for the data table
 const headers = computed(() => [
