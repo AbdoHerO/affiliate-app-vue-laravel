@@ -40,6 +40,8 @@ const createForm = ref({
 })
 
 const affiliates = ref([])
+const affiliateOptions = ref([])
+const loadingAffiliates = ref(false)
 
 // State management
 let abortController: AbortController | null = null
@@ -52,6 +54,15 @@ const headers = computed(() => [
   { title: t('reference'), key: 'reference', sortable: false },
   { title: t('created_by'), key: 'created_by_admin', sortable: false },
   { title: t('date'), key: 'created_at', sortable: true },
+  { title: t('actions'), key: 'actions', sortable: false },
+])
+
+// Headers for affiliates table
+const affiliateHeaders = computed(() => [
+  { title: t('name'), key: 'nom_complet', sortable: true },
+  { title: t('email'), key: 'email', sortable: true },
+  { title: t('current_points'), key: 'profil_affilie.points', sortable: true },
+  { title: t('total_commissions'), key: 'total_commissions', sortable: true },
   { title: t('actions'), key: 'actions', sortable: false },
 ])
 
@@ -86,19 +97,26 @@ const fetchDispensations = async (page = 1) => {
 }
 
 const fetchAffiliates = async () => {
+  loadingAffiliates.value = true
   try {
     const response = await axios.get('/admin/affiliates', {
       params: { per_page: 100 }
     })
 
     if (response.data.success) {
-      affiliates.value = response.data.data.map(affiliate => ({
-        value: affiliate.id,
+      // Store full affiliate data for the table
+      affiliates.value = response.data.data
+
+      // Also create dropdown options for the create form
+      affiliateOptions.value = response.data.data.map(affiliate => ({
+        value: affiliate.profil_affilie?.id || affiliate.id,
         title: `${affiliate.nom_complet} (${affiliate.email})`,
       }))
     }
   } catch (error) {
     console.error('Failed to fetch affiliates:', error)
+  } finally {
+    loadingAffiliates.value = false
   }
 }
 
@@ -119,12 +137,12 @@ const clearFilters = () => {
   fetchDispensations()
 }
 
-const openCreateDialog = () => {
+const openCreateDialog = (affiliate = null) => {
   createForm.value = {
-    affiliate_id: '',
-    points: '',
-    comment: '',
-    reference: '',
+    affiliate_id: affiliate?.profil_affilie?.id || '',
+    points: affiliate?.profil_affilie?.points || '100', // Default points
+    comment: affiliate ? `Bonus pour ${affiliate.nom_complet}` : '',
+    reference: `REF-${Date.now()}`,
   }
   showCreateDialog.value = true
 }
@@ -171,15 +189,38 @@ onMounted(() => {
           {{ t('dispensations_subtitle') }}
         </p>
       </div>
-
-      <VBtn
-        color="primary"
-        @click="openCreateDialog"
-      >
-        <VIcon start icon="tabler-plus" />
-        {{ t('create_dispensation') }}
-      </VBtn>
     </div>
+
+    <!-- Affiliates Table with Create Dispensation Actions -->
+    <VCard class="mb-6">
+      <VCardTitle>{{ t('affiliates_list') }}</VCardTitle>
+      <VCardText>
+        <VDataTableServer
+          :headers="affiliateHeaders"
+          :items="affiliates"
+          :loading="loadingAffiliates"
+          item-value="id"
+          class="text-no-wrap"
+        >
+          <template #item.profil_affilie.points="{ item }">
+            <VChip color="primary" size="small">
+              {{ item.profil_affilie?.points || 0 }} pts
+            </VChip>
+          </template>
+
+          <template #item.actions="{ item }">
+            <VBtn
+              color="primary"
+              size="small"
+              @click="openCreateDialog(item)"
+            >
+              <VIcon start icon="tabler-plus" />
+              {{ t('create_dispensation') }}
+            </VBtn>
+          </template>
+        </VDataTableServer>
+      </VCardText>
+    </VCard>
 
     <!-- Filters -->
     <VCard class="mb-6">
@@ -200,7 +241,7 @@ onMounted(() => {
           <VCol cols="12" md="3">
             <VSelect
               v-model="filters.affiliate_id"
-              :items="affiliates"
+              :items="affiliateOptions"
               :label="t('affiliate')"
               clearable
               @update:model-value="onSearch"
@@ -335,7 +376,7 @@ onMounted(() => {
               icon="tabler-eye"
               size="small"
               variant="text"
-              @click="() => $router.push({ name: 'admin-referrals-dispensation-view', params: { id: item.id } })"
+              @click="() => $router.push({ name: 'admin-referrals-dispensations-id', params: { id: item.id } })"
             />
           </template>
 
@@ -363,7 +404,7 @@ onMounted(() => {
               <VCol cols="12">
                 <VSelect
                   v-model="createForm.affiliate_id"
-                  :items="affiliates"
+                  :items="affiliateOptions"
                   :label="t('affiliate')"
                   :rules="[v => !!v || t('affiliate_required')]"
                   required

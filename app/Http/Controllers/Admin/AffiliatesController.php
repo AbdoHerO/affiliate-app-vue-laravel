@@ -27,7 +27,6 @@ class AffiliatesController extends Controller
                 }
             ])
             ->withCount([
-                'profilAffilie.commandes as orders_count',
                 'commissions as commissions_count'
             ])
             ->withSum('commissions as total_commissions', 'amount');
@@ -107,9 +106,7 @@ class AffiliatesController extends Controller
             ->with([
                 'profilAffilie.gamme',
                 'profilAffilie.gammeHistorique.gamme:id,code,libelle',
-                'profilAffilie.commandes' => function ($q) {
-                    $q->latest()->take(10);
-                },
+                // Note: commandes relationship loaded separately if needed
                 'commissions' => function ($q) {
                     $q->latest()->take(10);
                 },
@@ -121,7 +118,6 @@ class AffiliatesController extends Controller
                 'parrain.parrain:id,nom_complet,email'
             ])
             ->withCount([
-                'profilAffilie.commandes as orders_count',
                 'commissions as commissions_count'
             ])
             ->withSum('commissions as total_commissions', 'amount')

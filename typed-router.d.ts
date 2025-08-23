@@ -50,6 +50,7 @@ declare module 'vue-router/auto-routes' {
     'admin-referrals-dispensations-id': RouteRecordInfo<'admin-referrals-dispensations-id', '/admin/referrals/dispensations/:id', { id: ParamValue<true> }, { id: ParamValue<false> }>,
     'admin-referrals-referred-users': RouteRecordInfo<'admin-referrals-referred-users', '/admin/referrals/referred-users', Record<never, never>, Record<never, never>>,
     'admin-referrals-referred-users-id': RouteRecordInfo<'admin-referrals-referred-users-id', '/admin/referrals/referred-users/:id', { id: ParamValue<true> }, { id: ParamValue<false> }>,
+    'admin-referrers': RouteRecordInfo<'admin-referrers', '/admin/referrers', Record<never, never>, Record<never, never>>,
     'admin-reports-affiliates': RouteRecordInfo<'admin-reports-affiliates', '/admin/reports-affiliates', Record<never, never>, Record<never, never>>,
     'admin-reports-sales': RouteRecordInfo<'admin-reports-sales', '/admin/reports-sales', Record<never, never>, Record<never, never>>,
     'admin-roles': RouteRecordInfo<'admin-roles', '/admin/roles', Record<never, never>, Record<never, never>>,

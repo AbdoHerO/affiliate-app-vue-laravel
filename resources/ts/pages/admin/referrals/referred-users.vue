@@ -300,7 +300,7 @@ onMounted(() => {
               icon="tabler-eye"
               size="small"
               variant="text"
-              @click="() => $router.push({ name: 'admin-users-view', params: { id: item.new_user.id } })"
+              @click="() => $router.push({ name: 'admin-referrals-referred-users-id', params: { id: item.id } })"
             />
           </template>
 

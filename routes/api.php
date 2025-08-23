@@ -31,7 +31,9 @@ use App\Http\Controllers\Admin\ReferralController as AdminReferralController;
 use App\Http\Controllers\Admin\AdminReferralController as AdminReferralStatsController;
 use App\Http\Controllers\Admin\ReferralDispensationController;
 use App\Http\Controllers\Admin\AffiliateReferralController as AdminAffiliateReferralController;
+use App\Http\Controllers\Admin\ReferrersController;
 use App\Http\Controllers\Affiliate\ReferralController as AffiliateReferralController;
+use App\Http\Controllers\Affiliate\PointsController;
 use App\Http\Controllers\Public\ReferralTrackingController;
 use App\Http\Controllers\Admin\CommissionBackfillController;
 use App\Http\Controllers\Admin\SystemHealthController;
@@ -465,6 +467,15 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::get('performance/comparison', [AdminAffiliateReferralController::class, 'getPerformanceComparison']);
         });
 
+        // Points Management (New Dispensation System)
+        Route::prefix('referrers')->group(function () {
+            Route::get('/', [ReferrersController::class, 'index']);
+            Route::get('statistics', [ReferrersController::class, 'getStatistics']);
+            Route::post('dispensations', [ReferrersController::class, 'createDispensation']);
+            Route::get('{affiliateId}/dispensations', [ReferrersController::class, 'getDispensationHistory']);
+            Route::get('{affiliateId}/points', [ReferrersController::class, 'getPointsSummary']);
+        });
+
         // Testing & Debug Routes (only in non-production)
         if (!app()->environment('production')) {
             Route::prefix('test')->group(function () {
@@ -536,6 +547,13 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::get('link', [AffiliateReferralController::class, 'getReferralLink']);
             Route::get('referred-users', [AffiliateReferralController::class, 'getReferredUsers']);
             Route::get('dispensations', [AffiliateReferralController::class, 'getDispensations']);
+        });
+
+        // Points Management (Affiliate View)
+        Route::prefix('points')->group(function () {
+            Route::get('summary', [PointsController::class, 'getPointsSummary']);
+            Route::get('dispensations', [PointsController::class, 'getDispensationHistory']);
+            Route::get('earnings-breakdown', [PointsController::class, 'getEarningsBreakdown']);
         });
     });
 

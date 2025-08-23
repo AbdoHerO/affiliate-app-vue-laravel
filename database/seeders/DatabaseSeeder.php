@@ -82,6 +82,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             ReferralSystemSeeder::class,
             CODReferralSeeder::class,  // Specific data for your test users
+            PointsSystemSeeder::class,  // New points dispensation system
         ]);
 
         $this->command->info('');

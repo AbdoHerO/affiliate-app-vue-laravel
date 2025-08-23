@@ -63,6 +63,11 @@ const adminNavigation = [
         to: '/admin/referrals/dispensations',
         icon: { icon: 'tabler-gift' },
       },
+      {
+        title: 'nav_referrers_management',
+        to: '/admin/referrers',
+        icon: { icon: 'tabler-coins' },
+      },
     ],
   },
   {

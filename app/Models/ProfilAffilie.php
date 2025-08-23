@@ -116,6 +116,21 @@ class ProfilAffilie extends Model
     }
 
     /**
+     * Get the referral clicks made through this affiliate's codes.
+     */
+    public function referralClicks()
+    {
+        // Get the referral code for this affiliate
+        $referralCode = $this->referralCode;
+
+        if (!$referralCode) {
+            return \App\Models\ReferralClick::whereRaw('1 = 0'); // Empty query
+        }
+
+        return \App\Models\ReferralClick::where('referral_code', $referralCode->code);
+    }
+
+    /**
      * Get the payment settlements for this affiliate.
      */
     public function reglements(): HasMany

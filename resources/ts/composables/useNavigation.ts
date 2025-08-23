@@ -81,6 +81,11 @@ export function useNavigation() {
                 to: 'admin-referrals-dispensations',
                 icon: { icon: 'tabler-gift' },
               },
+              {
+                title: t('nav_referrers_management'),
+                to: 'admin-referrers',
+                icon: { icon: 'tabler-coins' },
+              },
             ],
           },
           {
