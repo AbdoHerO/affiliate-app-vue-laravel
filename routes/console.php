@@ -10,3 +10,10 @@ Artisan::command('inspire', function () {
 
 // Schedule commission processing every hour
 Schedule::command('commissions:process-eligible')->hourly();
+
+// Schedule OzonExpress parcel tracking every 30 minutes during business hours
+Schedule::command('ozonexpress:track-parcels')
+    ->everyThirtyMinutes()
+    ->between('8:00', '20:00')
+    ->withoutOverlapping()
+    ->runInBackground();
