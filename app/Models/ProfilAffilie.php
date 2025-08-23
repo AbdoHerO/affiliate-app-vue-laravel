@@ -48,7 +48,7 @@ class ProfilAffilie extends Model
      */
     public function utilisateur(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'utilisateur_id');
+        return $this->belongsTo(\App\Models\User::class, 'utilisateur_id');
     }
 
     /**
@@ -56,7 +56,7 @@ class ProfilAffilie extends Model
      */
     public function gamme(): BelongsTo
     {
-        return $this->belongsTo(GammeAffilie::class, 'gamme_id');
+        return $this->belongsTo(\App\Models\GammeAffilie::class, 'gamme_id');
     }
 
     /**
@@ -64,7 +64,7 @@ class ProfilAffilie extends Model
      */
     public function gammeHistorique(): HasMany
     {
-        return $this->hasMany(ProfilAffilieGammeHisto::class, 'profil_id');
+        return $this->hasMany(\App\Models\ProfilAffilieGammeHisto::class, 'profil_id');
     }
 
     /**
@@ -72,7 +72,7 @@ class ProfilAffilie extends Model
      */
     public function commandes(): HasMany
     {
-        return $this->hasMany(Commande::class, 'affilie_id');
+        return $this->hasMany(\App\Models\Commande::class, 'affilie_id');
     }
 
     /**
@@ -80,7 +80,7 @@ class ProfilAffilie extends Model
      */
     public function lotsImport(): HasMany
     {
-        return $this->hasMany(LotImport::class, 'affilie_id');
+        return $this->hasMany(\App\Models\LotImport::class, 'affilie_id');
     }
 
     /**
@@ -88,7 +88,7 @@ class ProfilAffilie extends Model
      */
     public function commissions(): HasMany
     {
-        return $this->hasMany(CommissionAffilie::class, 'affilie_id');
+        return $this->hasMany(\App\Models\CommissionAffilie::class, 'affilie_id');
     }
 
     /**
@@ -104,7 +104,7 @@ class ProfilAffilie extends Model
      */
     public function referralAttributions(): HasMany
     {
-        return $this->hasMany(ReferralAttribution::class, 'referrer_affiliate_id');
+        return $this->hasMany(\App\Models\ReferralAttribution::class, 'referrer_affiliate_id');
     }
 
     /**
@@ -112,7 +112,7 @@ class ProfilAffilie extends Model
      */
     public function referralDispensations(): HasMany
     {
-        return $this->hasMany(ReferralDispensation::class, 'referrer_affiliate_id');
+        return $this->hasMany(\App\Models\ReferralDispensation::class, 'referrer_affiliate_id');
     }
 
     /**
@@ -120,7 +120,7 @@ class ProfilAffilie extends Model
      */
     public function reglements(): HasMany
     {
-        return $this->hasMany(ReglementAffilie::class, 'affilie_id');
+        return $this->hasMany(\App\Models\ReglementAffilie::class, 'affilie_id');
     }
 
     /**
@@ -128,7 +128,7 @@ class ProfilAffilie extends Model
      */
     public function reservationsStock(): HasMany
     {
-        return $this->hasMany(ReservationStock::class, 'affilie_id');
+        return $this->hasMany(\App\Models\ReservationStock::class, 'affilie_id');
     }
 
     /**
@@ -136,6 +136,6 @@ class ProfilAffilie extends Model
      */
     public function offreVisibiliteAffilies(): HasMany
     {
-        return $this->hasMany(OffreVisibiliteAffilie::class, 'affilie_id');
+        return $this->hasMany(\App\Models\OffreVisibiliteAffilie::class, 'affilie_id');
     }
 }
