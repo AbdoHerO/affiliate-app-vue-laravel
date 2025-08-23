@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import axios from '@/plugins/axios'
 
@@ -16,17 +16,66 @@ definePage({
 
 const { t } = useI18n()
 
+// Types
+interface Referrer {
+  id: string
+  user: {
+    nom_complet: string
+    email: string
+    photo_profil?: string
+  }
+  verified_signups: number
+  total_signups: number
+  points_earned: number
+  points_dispensed: number
+  points_balance: number
+  last_dispensation?: string
+}
+
+interface Statistics {
+  total_referrers: number
+  total_points_earned: number
+  total_points_dispensed: number
+  total_points_balance: number
+  total_verified_signups: number
+  total_signups: number
+  recent_dispensations: any[]
+}
+
 // State
 const loading = ref(false)
-const referrers = ref([])
-const statistics = ref({})
+const referrers = ref<Referrer[]>([])
+const allReferrers = ref<Referrer[]>([]) // Store all referrers for filtering
+const statistics = ref<Statistics>({
+  total_referrers: 0,
+  total_points_earned: 0,
+  total_points_dispensed: 0,
+  total_points_balance: 0,
+  total_verified_signups: 0,
+  total_signups: 0,
+  recent_dispensations: [],
+})
+
+// Filters
+const filters = ref({
+  search: '',
+  min_balance: '',
+  max_balance: '',
+  min_earned: '',
+  max_earned: '',
+  min_signups: '',
+  max_signups: '',
+  has_dispensations: '',
+  sort_by: 'points_balance',
+  sort_order: 'desc',
+})
 
 // Dispensation Modal
 const showDispensationModal = ref(false)
-const selectedAffiliate = ref(null)
+const selectedAffiliate = ref<Referrer | null>(null)
 const dispensationForm = ref({
   affiliate_id: '',
-  points: '',
+  points: 0,
   comment: '',
   reference: '',
 })
@@ -34,7 +83,15 @@ const dispensationLoading = ref(false)
 
 // History Modal
 const showHistoryModal = ref(false)
-const historyData = ref({
+const historyData = ref<{
+  dispensations: any[]
+  pagination: any
+  summary: {
+    earned?: number
+    dispensed?: number
+    balance?: number
+  }
+}>({
   dispensations: [],
   pagination: {},
   summary: {},
@@ -52,12 +109,83 @@ const headers = computed(() => [
   { title: t('actions'), key: 'actions', sortable: false },
 ])
 
+// Computed filtered referrers
+const filteredReferrers = computed(() => {
+  let filtered = [...allReferrers.value]
+
+  // Search filter
+  if (filters.value.search) {
+    const search = filters.value.search.toLowerCase()
+    filtered = filtered.filter(r =>
+      r.user.nom_complet.toLowerCase().includes(search) ||
+      r.user.email.toLowerCase().includes(search)
+    )
+  }
+
+  // Balance filters
+  if (filters.value.min_balance) {
+    filtered = filtered.filter(r => r.points_balance >= parseInt(filters.value.min_balance))
+  }
+  if (filters.value.max_balance) {
+    filtered = filtered.filter(r => r.points_balance <= parseInt(filters.value.max_balance))
+  }
+
+  // Earned points filters
+  if (filters.value.min_earned) {
+    filtered = filtered.filter(r => r.points_earned >= parseInt(filters.value.min_earned))
+  }
+  if (filters.value.max_earned) {
+    filtered = filtered.filter(r => r.points_earned <= parseInt(filters.value.max_earned))
+  }
+
+  // Signups filters
+  if (filters.value.min_signups) {
+    filtered = filtered.filter(r => r.total_signups >= parseInt(filters.value.min_signups))
+  }
+  if (filters.value.max_signups) {
+    filtered = filtered.filter(r => r.total_signups <= parseInt(filters.value.max_signups))
+  }
+
+  // Has dispensations filter
+  if (filters.value.has_dispensations !== '') {
+    const hasDispensations = filters.value.has_dispensations === 'true'
+    filtered = filtered.filter(r => hasDispensations ? r.points_dispensed > 0 : r.points_dispensed === 0)
+  }
+
+  // Sorting
+  filtered.sort((a, b) => {
+    const field = filters.value.sort_by
+    const order = filters.value.sort_order === 'desc' ? -1 : 1
+
+    let aVal: any
+    let bVal: any
+
+    // Handle nested user fields
+    if (field === 'user_name') {
+      aVal = a.user.nom_complet
+      bVal = b.user.nom_complet
+    } else {
+      aVal = (a as any)[field]
+      bVal = (b as any)[field]
+    }
+
+    if (typeof aVal === 'string') {
+      return aVal.localeCompare(bVal) * order
+    }
+
+    return (aVal - bVal) * order
+  })
+
+  return filtered
+})
+
 // Methods
 const fetchReferrers = async () => {
   loading.value = true
   try {
     const response = await axios.get('/admin/referrers')
     if (response.data.success) {
+      allReferrers.value = response.data.data
       referrers.value = response.data.data
     }
   } catch (error) {
@@ -65,6 +193,26 @@ const fetchReferrers = async () => {
   } finally {
     loading.value = false
   }
+}
+
+const applyFilters = () => {
+  referrers.value = filteredReferrers.value
+}
+
+const resetFilters = () => {
+  filters.value = {
+    search: '',
+    min_balance: '',
+    max_balance: '',
+    min_earned: '',
+    max_earned: '',
+    min_signups: '',
+    max_signups: '',
+    has_dispensations: '',
+    sort_by: 'points_balance',
+    sort_order: 'desc',
+  }
+  applyFilters()
 }
 
 const fetchStatistics = async () => {
@@ -78,11 +226,11 @@ const fetchStatistics = async () => {
   }
 }
 
-const openDispensationModal = (affiliate) => {
+const openDispensationModal = (affiliate: Referrer) => {
   selectedAffiliate.value = affiliate
   dispensationForm.value = {
     affiliate_id: affiliate.id,
-    points: affiliate.points_balance.toString(), // Default to full balance
+    points: affiliate.points_balance, // Default to full balance
     comment: `Points dispensation for ${affiliate.user.nom_complet}`,
     reference: `REF-${Date.now()}`,
   }
@@ -98,11 +246,13 @@ const createDispensation = async () => {
       showDispensationModal.value = false
       
       // Update the affiliate's data in the table
-      const affiliateIndex = referrers.value.findIndex(r => r.id === selectedAffiliate.value.id)
-      if (affiliateIndex !== -1) {
-        const updatedSummary = response.data.data.updated_summary
-        referrers.value[affiliateIndex].points_dispensed += dispensationForm.value.points
-        referrers.value[affiliateIndex].points_balance = updatedSummary.balance
+      if (selectedAffiliate.value) {
+        const affiliateIndex = referrers.value.findIndex(r => r.id === selectedAffiliate.value!.id)
+        if (affiliateIndex !== -1) {
+          const updatedSummary = response.data.data.updated_summary
+          referrers.value[affiliateIndex].points_dispensed += dispensationForm.value.points
+          referrers.value[affiliateIndex].points_balance = updatedSummary.balance
+        }
       }
       
       // Refresh statistics
@@ -120,10 +270,10 @@ const createDispensation = async () => {
   }
 }
 
-const openHistoryModal = async (affiliate) => {
+const openHistoryModal = async (affiliate: Referrer) => {
   selectedAffiliate.value = affiliate
   showHistoryModal.value = true
-  
+
   historyLoading.value = true
   try {
     const response = await axios.get(`/admin/referrers/${affiliate.id}/dispensations`)
@@ -137,11 +287,11 @@ const openHistoryModal = async (affiliate) => {
   }
 }
 
-const formatCurrency = (amount) => {
+const formatCurrency = (amount: number) => {
   return new Intl.NumberFormat('fr-FR').format(amount)
 }
 
-const formatDate = (dateString) => {
+const formatDate = (dateString: string) => {
   return new Date(dateString).toLocaleDateString('fr-FR', {
     year: 'numeric',
     month: 'short',
@@ -151,12 +301,17 @@ const formatDate = (dateString) => {
   })
 }
 
-const getBalanceColor = (balance) => {
+const getBalanceColor = (balance: number) => {
   if (balance === 0) return 'grey'
   if (balance < 100) return 'orange'
   if (balance < 500) return 'blue'
   return 'green'
 }
+
+// Watch for filter changes
+watch(filteredReferrers, (newValue) => {
+  referrers.value = newValue
+}, { immediate: true })
 
 // Lifecycle
 onMounted(() => {
@@ -237,6 +392,160 @@ onMounted(() => {
         </VCard>
       </VCol>
     </VRow>
+
+    <!-- Filters -->
+    <VCard class="mb-6">
+      <VCardTitle>{{ t('filters') }}</VCardTitle>
+      <VCardText>
+        <VRow>
+          <!-- Search -->
+          <VCol cols="12" md="4">
+            <VTextField
+              v-model="filters.search"
+              :label="t('search')"
+              :placeholder="t('search_by_name_email')"
+              prepend-inner-icon="tabler-search"
+              clearable
+              @input="applyFilters"
+            />
+          </VCol>
+
+          <!-- Balance Range -->
+          <VCol cols="12" md="2">
+            <VTextField
+              v-model="filters.min_balance"
+              :label="t('min_balance')"
+              type="number"
+              min="0"
+              @input="applyFilters"
+            />
+          </VCol>
+          <VCol cols="12" md="2">
+            <VTextField
+              v-model="filters.max_balance"
+              :label="t('max_balance')"
+              type="number"
+              min="0"
+              @input="applyFilters"
+            />
+          </VCol>
+
+          <!-- Earned Points Range -->
+          <VCol cols="12" md="2">
+            <VTextField
+              v-model="filters.min_earned"
+              :label="t('min_earned')"
+              type="number"
+              min="0"
+              @input="applyFilters"
+            />
+          </VCol>
+          <VCol cols="12" md="2">
+            <VTextField
+              v-model="filters.max_earned"
+              :label="t('max_earned')"
+              type="number"
+              min="0"
+              @input="applyFilters"
+            />
+          </VCol>
+        </VRow>
+
+        <VRow>
+          <!-- Signups Range -->
+          <VCol cols="12" md="2">
+            <VTextField
+              v-model="filters.min_signups"
+              :label="t('min_signups')"
+              type="number"
+              min="0"
+              @input="applyFilters"
+            />
+          </VCol>
+          <VCol cols="12" md="2">
+            <VTextField
+              v-model="filters.max_signups"
+              :label="t('max_signups')"
+              type="number"
+              min="0"
+              @input="applyFilters"
+            />
+          </VCol>
+
+          <!-- Has Dispensations -->
+          <VCol cols="12" md="3">
+            <VSelect
+              v-model="filters.has_dispensations"
+              :items="[
+                { value: '', title: t('all') },
+                { value: 'true', title: t('with_dispensations') },
+                { value: 'false', title: t('without_dispensations') },
+              ]"
+              :label="t('dispensation_status')"
+              @update:model-value="applyFilters"
+            />
+          </VCol>
+
+          <!-- Sort By -->
+          <VCol cols="12" md="3">
+            <VSelect
+              v-model="filters.sort_by"
+              :items="[
+                { value: 'points_balance', title: t('points_balance') },
+                { value: 'points_earned', title: t('points_earned') },
+                { value: 'points_dispensed', title: t('points_dispensed') },
+                { value: 'total_signups', title: t('total_signups') },
+                { value: 'verified_signups', title: t('verified_signups') },
+                { value: 'user_name', title: t('name') },
+              ]"
+              :label="t('sort_by')"
+              @update:model-value="applyFilters"
+            />
+          </VCol>
+
+          <!-- Sort Order -->
+          <VCol cols="12" md="2">
+            <VSelect
+              v-model="filters.sort_order"
+              :items="[
+                { value: 'desc', title: t('descending') },
+                { value: 'asc', title: t('ascending') },
+              ]"
+              :label="t('sort_order')"
+              @update:model-value="applyFilters"
+            />
+          </VCol>
+        </VRow>
+
+        <VRow>
+          <VCol cols="12">
+            <div class="d-flex gap-3">
+              <VBtn
+                color="primary"
+                @click="applyFilters"
+              >
+                <VIcon start icon="tabler-filter" />
+                {{ t('apply_filters') }}
+              </VBtn>
+
+              <VBtn
+                variant="outlined"
+                @click="resetFilters"
+              >
+                <VIcon start icon="tabler-filter-off" />
+                {{ t('reset_filters') }}
+              </VBtn>
+
+              <VSpacer />
+
+              <VChip color="info" size="small">
+                {{ t('showing_results', { count: referrers.length, total: allReferrers.length }) }}
+              </VChip>
+            </div>
+          </VCol>
+        </VRow>
+      </VCardText>
+    </VCard>
 
     <!-- Referrers Table -->
     <VCard>

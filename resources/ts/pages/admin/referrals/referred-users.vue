@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRouter } from 'vue-router'
 import axios from '@/plugins/axios'
 
 definePage({
@@ -11,6 +12,7 @@ definePage({
 })
 
 const { t } = useI18n()
+const router = useRouter()
 
 // State
 const loading = ref(false)
@@ -300,7 +302,7 @@ onMounted(() => {
               icon="tabler-eye"
               size="small"
               variant="text"
-              @click="() => $router.push({ name: 'admin-referrals-referred-users-id', params: { id: item.id } })"
+              @click="() => router.push({ name: 'admin-referrals-referred-users-id', params: { id: item.id } })"
             />
           </template>
 
