@@ -27,6 +27,9 @@ use App\Http\Controllers\Admin\VariantAttributController;
 use App\Http\Controllers\Admin\VariantValeurController;
 use App\Http\Controllers\Admin\TestController;
 use App\Http\Controllers\Admin\CommissionsController;
+use App\Http\Controllers\Admin\CommissionBackfillController;
+use App\Http\Controllers\Admin\SystemHealthController;
+use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\TicketsController;
 use App\Http\Controllers\Admin\StockController;
 use App\Http\Controllers\Admin\ReservationStockController;
@@ -322,6 +325,37 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::post('/{id}/mark-in-payment', [\App\Http\Controllers\Admin\WithdrawalsController::class, 'markInPayment']);
             Route::post('/{id}/mark-paid', [\App\Http\Controllers\Admin\WithdrawalsController::class, 'markPaid']);
             Route::get('/users/{user_id}/eligible-commissions', [\App\Http\Controllers\Admin\WithdrawalsController::class, 'getEligibleCommissions']);
+        });
+
+        // Commission Backfill
+        Route::prefix('commission-backfill')->group(function () {
+            Route::get('/', [CommissionBackfillController::class, 'index']);
+            Route::get('/statistics', [CommissionBackfillController::class, 'statistics']);
+            Route::post('/update-strategy', [CommissionBackfillController::class, 'updateStrategy']);
+            Route::get('/validate-sample', [CommissionBackfillController::class, 'validateSample']);
+            Route::get('/download-report', [CommissionBackfillController::class, 'downloadReport']);
+            Route::post('/dry-run', [CommissionBackfillController::class, 'runDryRun']);
+            Route::post('/apply', [CommissionBackfillController::class, 'runApply']);
+            Route::get('/reports', [CommissionBackfillController::class, 'getReports']);
+        });
+
+        // System Health
+        Route::prefix('system-health')->group(function () {
+            Route::get('/', [SystemHealthController::class, 'dashboard']);
+            Route::post('/ozonexpress-tracking', [SystemHealthController::class, 'runOzonExpressTracking']);
+            Route::post('/commission-processing', [SystemHealthController::class, 'runCommissionProcessing']);
+        });
+
+        // Settings Management
+        Route::prefix('settings')->group(function () {
+            Route::get('/', [SettingsController::class, 'index']);
+            Route::get('/commission', [SettingsController::class, 'getCommissionSettings']);
+            Route::put('/commission', [SettingsController::class, 'updateCommissionSettings']);
+            Route::get('/ozonexpress', [SettingsController::class, 'getOzonExpressSettings']);
+            Route::put('/ozonexpress', [SettingsController::class, 'updateOzonExpressSettings']);
+            Route::get('/system', [SettingsController::class, 'getSystemSettings']);
+            Route::put('/system', [SettingsController::class, 'updateSystemSettings']);
+            Route::post('/reset', [SettingsController::class, 'resetToDefaults']);
         });
 
         // Stock Management

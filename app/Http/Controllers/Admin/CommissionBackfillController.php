@@ -256,4 +256,107 @@ class CommissionBackfillController extends Controller
             'is_correct' => $isCorrect,
         ];
     }
+
+    /**
+     * Run commission backfill in DRY-RUN mode via web interface
+     */
+    public function runDryRun(Request $request)
+    {
+        try {
+            $limit = min($request->get('limit', 100), 500);
+
+            // Create and run the backfill job in DRY-RUN mode
+            $job = new \App\Jobs\CommissionBackfillJob(true, $limit); // true = dry-run
+            $job->handle();
+
+            Log::info('Commission backfill DRY-RUN triggered via web', [
+                'limit' => $limit,
+                'admin_id' => auth()->id()
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Commission backfill DRY-RUN completed successfully',
+                'mode' => 'dry-run',
+                'limit' => $limit
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Failed to run commission backfill DRY-RUN', [
+                'error' => $e->getMessage(),
+                'admin_id' => auth()->id()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to run commission backfill DRY-RUN: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Run commission backfill in APPLY mode via web interface
+     */
+    public function runApply(Request $request)
+    {
+        try {
+            $request->validate([
+                'confirmation' => 'required|string|in:I_UNDERSTAND_THIS_WILL_CREATE_ADJUSTMENTS',
+                'limit' => 'nullable|integer|min:1|max:500'
+            ]);
+
+            $limit = min($request->get('limit', 100), 500);
+
+            // Create and run the backfill job in APPLY mode
+            $job = new \App\Jobs\CommissionBackfillJob(false, $limit); // false = apply mode
+            $job->handle();
+
+            Log::info('Commission backfill APPLY triggered via web', [
+                'limit' => $limit,
+                'admin_id' => auth()->id(),
+                'confirmation' => $request->confirmation
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Commission backfill APPLY completed successfully',
+                'mode' => 'apply',
+                'limit' => $limit
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Failed to run commission backfill APPLY', [
+                'error' => $e->getMessage(),
+                'admin_id' => auth()->id()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to run commission backfill APPLY: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get backfill reports list
+     */
+    public function getReports()
+    {
+        try {
+            $reports = $this->getRecentReports();
+
+            return response()->json([
+                'success' => true,
+                'data' => $reports
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to load backfill reports'
+            ], 500);
+        }
+    }
+
+
 }
