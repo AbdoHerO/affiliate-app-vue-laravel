@@ -78,6 +78,7 @@ class RolePermissionSeeder extends Seeder
             'email_verifie' => true,
             'statut' => 'actif',
             'kyc_statut' => 'non_requis',
+            'approval_status' => 'approved', // Ensure affiliate is approved for testing
         ]);
 
         // Assign affiliate role to the user

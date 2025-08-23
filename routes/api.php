@@ -28,6 +28,7 @@ use App\Http\Controllers\Admin\VariantValeurController;
 use App\Http\Controllers\Admin\TestController;
 use App\Http\Controllers\Admin\CommissionsController;
 use App\Http\Controllers\Admin\ReferralController as AdminReferralController;
+use App\Http\Controllers\Admin\AdminReferralController as AdminReferralStatsController;
 use App\Http\Controllers\Admin\ReferralDispensationController;
 use App\Http\Controllers\Admin\AffiliateReferralController as AdminAffiliateReferralController;
 use App\Http\Controllers\Affiliate\ReferralController as AffiliateReferralController;

@@ -119,7 +119,7 @@ onMounted(() => {
 
       <VBtn
         color="primary"
-        :to="{ name: 'affiliate-referrals' }"
+        to="/affiliate/referrals"
       >
         <VIcon start icon="tabler-arrow-left" />
         {{ t('back_to_dashboard') }}

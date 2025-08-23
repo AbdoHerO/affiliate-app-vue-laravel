@@ -91,8 +91,24 @@ const fetchDashboard = async () => {
   }
 }
 
+const fetchReferralLink = async () => {
+  try {
+    const response = await axios.get('/affiliate/referrals/link')
+    if (response.data.success) {
+      referralLink.value = response.data.data.referral_url
+    }
+  } catch (error) {
+    console.error('Failed to fetch referral link:', error)
+  }
+}
+
 const copyReferralLink = async () => {
   try {
+    // Ensure we have a referral link
+    if (!referralLink.value) {
+      await fetchReferralLink()
+    }
+
     await navigator.clipboard.writeText(referralLink.value)
     showCopySuccess.value = true
     setTimeout(() => {
@@ -103,15 +119,26 @@ const copyReferralLink = async () => {
   }
 }
 
-const shareReferralLink = () => {
-  if (navigator.share) {
-    navigator.share({
-      title: t('referral_link_share_title'),
-      text: t('referral_link_share_text'),
-      url: referralLink.value,
-    })
-  } else {
-    copyReferralLink()
+const shareReferralLink = async () => {
+  try {
+    // Ensure we have a referral link
+    if (!referralLink.value) {
+      await fetchReferralLink()
+    }
+
+    if (navigator.share) {
+      await navigator.share({
+        title: t('referral_link_share_title'),
+        text: t('referral_link_share_text'),
+        url: referralLink.value,
+      })
+    } else {
+      await copyReferralLink()
+    }
+  } catch (error) {
+    console.error('Failed to share link:', error)
+    // Fallback to copy if share fails
+    await copyReferralLink()
   }
 }
 
@@ -132,8 +159,11 @@ const getActivityColor = (type: string) => {
 }
 
 // Lifecycle
-onMounted(() => {
-  fetchDashboard()
+onMounted(async () => {
+  // Always ensure we have a referral link first
+  await fetchReferralLink()
+  // Then fetch the full dashboard
+  await fetchDashboard()
 })
 </script>
 
@@ -314,7 +344,7 @@ onMounted(() => {
               block
               color="primary"
               class="mb-3"
-              :to="{ name: 'affiliate-referrals-users' }"
+              to="/affiliate/referrals/users"
             >
               <VIcon start icon="tabler-users" />
               {{ t('view_referred_users') }}
@@ -323,7 +353,7 @@ onMounted(() => {
               block
               color="secondary"
               class="mb-3"
-              :to="{ name: 'affiliate-referrals-rewards' }"
+              to="/affiliate/referrals/rewards"
             >
               <VIcon start icon="tabler-gift" />
               {{ t('view_rewards_history') }}

@@ -81,6 +81,7 @@ class DatabaseSeeder extends Seeder
         $this->command->info('🔗 Step 9: Referral System');
         $this->call([
             ReferralSystemSeeder::class,
+            CODReferralSeeder::class,  // Specific data for your test users
         ]);
 
         $this->command->info('');
