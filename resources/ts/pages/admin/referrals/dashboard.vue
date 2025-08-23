@@ -273,7 +273,7 @@ onMounted(() => {
             <VBtn
               block
               color="info"
-              :to="{ name: 'admin-referrals-performance' }"
+              :to="{ name: 'admin-referrals-referred-users' }"
             >
               <VIcon start icon="tabler-chart-line" />
               {{ t('performance_analysis') }}
