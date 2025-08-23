@@ -313,6 +313,9 @@ class OrderCommissionWithdrawalE2ETest extends TestCase
     {
         Log::info('Starting Test Case 6: Pricing Model Validation');
 
+        // Enable margin-based commission strategy
+        \App\Models\AppSetting::set('commission.strategy', 'margin');
+
         // Create products with specific pricing for validation
         $testProducts = $this->createPricingTestProducts();
 

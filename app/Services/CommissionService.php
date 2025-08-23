@@ -110,9 +110,89 @@ class CommissionService
     }
 
     /**
-     * Calculate commission amount based on product and affiliate
+     * Calculate commission amount using margin-based logic
      */
     protected function calculateCommissionAmount($article, Produit $product, User $affiliate): array
+    {
+        // Check feature flag for commission strategy
+        $strategy = AppSetting::get('commission.strategy', 'margin');
+
+        if ($strategy === 'margin') {
+            return $this->calculateMarginBasedCommission($article, $product, $affiliate);
+        }
+
+        // Fallback to legacy calculation for backward compatibility
+        return $this->calculateLegacyCommission($article, $product, $affiliate);
+    }
+
+    /**
+     * Calculate commission using margin-based business rules
+     */
+    protected function calculateMarginBasedCommission($article, Produit $product, User $affiliate): array
+    {
+        $salePrice = $article->prix_unitaire;
+        $costPrice = $product->prix_achat;
+        $recommendedPrice = $product->prix_vente;
+        $fixedCommission = $product->prix_affilie;
+        $quantity = $article->quantite;
+
+        // Log calculation inputs for audit
+        $calculationInputs = [
+            'product_id' => $product->id,
+            'cost_price' => $costPrice,
+            'recommended_price' => $recommendedPrice,
+            'fixed_commission' => $fixedCommission,
+            'sale_price' => $salePrice,
+            'quantity' => $quantity,
+        ];
+
+        Log::info('Commission calculation inputs', $calculationInputs);
+
+        // RULE 1: Recommended price with fixed commission
+        if (abs($salePrice - $recommendedPrice) < 0.01 && $fixedCommission && $fixedCommission > 0) {
+            $commissionAmount = round($fixedCommission * $quantity, 2);
+
+            Log::info('Applied FIXED_COMMISSION rule', [
+                'calculation' => "{$fixedCommission} × {$quantity} = {$commissionAmount}",
+                'commission_amount' => $commissionAmount
+            ]);
+
+            return [
+                'base_amount' => $fixedCommission * $quantity,
+                'rate' => null,
+                'amount' => $commissionAmount,
+                'rule_code' => 'FIXED_COMMISSION',
+                'notes' => 'Fixed commission per item from product settings'
+            ];
+        }
+
+        // RULE 2: Margin-based calculation (recommended or modified price)
+        $marginPerUnit = max(0, $salePrice - $costPrice);
+        $commissionAmount = round($marginPerUnit * $quantity, 2);
+
+        $ruleCode = abs($salePrice - $recommendedPrice) < 0.01 ? 'RECOMMENDED_MARGIN' : 'MODIFIED_MARGIN';
+
+        Log::info("Applied {$ruleCode} rule", [
+            'calculation' => "max(0, {$salePrice} - {$costPrice}) × {$quantity} = {$commissionAmount}",
+            'margin_per_unit' => $marginPerUnit,
+            'commission_amount' => $commissionAmount
+        ]);
+
+        return [
+            'base_amount' => $marginPerUnit * $quantity,
+            'rate' => null,
+            'amount' => $commissionAmount,
+            'rule_code' => $ruleCode,
+            'notes' => $ruleCode === 'RECOMMENDED_MARGIN'
+                ? 'Commission based on recommended price margin'
+                : 'Commission based on actual sale price margin'
+        ];
+    }
+
+    /**
+     * Legacy commission calculation (for backward compatibility)
+     */
+    protected function calculateLegacyCommission($article, Produit $product, User $affiliate): array
     {
         $baseAmount = $article->total_ligne;
         $qty = $article->quantite;
@@ -123,8 +203,8 @@ class CommissionService
                 'base_amount' => $baseAmount,
                 'rate' => null,
                 'amount' => $product->prix_affilie * $qty,
-                'rule_code' => 'PRODUCT_FIXED',
-                'notes' => 'Fixed commission per item from product settings'
+                'rule_code' => 'PRODUCT_FIXED_LEGACY',
+                'notes' => 'Fixed commission per item from product settings (legacy)'
             ];
         }
 
@@ -136,8 +216,8 @@ class CommissionService
                     'base_amount' => $baseAmount,
                     'rate' => null,
                     'amount' => $commissionRule->valeur * $qty,
-                    'rule_code' => 'RULE_FIXED',
-                    'notes' => 'Fixed commission from commission rule'
+                    'rule_code' => 'RULE_FIXED_LEGACY',
+                    'notes' => 'Fixed commission from commission rule (legacy)'
                 ];
             } else {
                 $rate = $commissionRule->valeur;
@@ -145,8 +225,8 @@ class CommissionService
                     'base_amount' => $baseAmount,
                     'rate' => $rate,
                     'amount' => ($baseAmount * $rate) / 100,
-                    'rule_code' => 'RULE_PERCENTAGE',
-                    'notes' => 'Percentage commission from commission rule'
+                    'rule_code' => 'RULE_PERCENTAGE_LEGACY',
+                    'notes' => 'Percentage commission from commission rule (legacy)'
                 ];
             }
         }
@@ -157,8 +237,8 @@ class CommissionService
             'base_amount' => $baseAmount,
             'rate' => $defaultRate,
             'amount' => ($baseAmount * $defaultRate) / 100,
-            'rule_code' => 'DEFAULT_RATE',
-            'notes' => 'Default commission rate from settings'
+            'rule_code' => 'DEFAULT_RATE_LEGACY',
+            'notes' => 'Default commission rate from settings (legacy)'
         ];
     }
 
