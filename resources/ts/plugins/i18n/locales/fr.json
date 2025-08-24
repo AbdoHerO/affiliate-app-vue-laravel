@@ -1,7 +1,4 @@
 {
-  // ===========================================
-  // NAVIGATION & MENU ITEMS
-  // ===========================================
   "nav_dashboard": "Tableau de bord",
   "nav_user_management": "Gestion des utilisateurs",
   "nav_all_users": "Tous les utilisateurs",
@@ -27,7 +24,6 @@
   "nav_dispensations": "Récompenses Manuelles",
   "nav_referrers_management": "Gestion des Parrains",
   "nav_my_referrals": "Mes Parrainages",
-
   "referral_clicks": "Clics de Parrainage",
   "signups": "Inscriptions",
   "verified_signups": "Inscriptions Vérifiées",
@@ -58,7 +54,6 @@
   "rewards_description": "Recevez des points pour chaque parrainage réussi",
   "referral_link_share_title": "Rejoignez-moi sur cette plateforme !",
   "referral_link_share_text": "Utilisez mon lien de parrainage pour vous inscrire :",
-
   "create_dispensation": "Créer une Dispensation",
   "dispensation_details": "Détails de la Dispensation",
   "view_dispensation_details": "Voir les détails de cette dispensation",
@@ -87,14 +82,12 @@
   "affiliates_list": "Liste des Affiliés",
   "current_points": "Points Actuels",
   "total_commissions": "Total Commissions",
-
   "referrers_management": "Gestion des Parrains",
   "manage_affiliate_points_and_dispensations": "Gérer les points des affiliés et les dispensations",
   "total_referrers": "Total Parrains",
   "total_points_earned": "Total Points Gagnés",
   "total_points_dispensed": "Total Points Dispensés",
   "total_points_balance": "Solde Total Points",
-  "verified_signups": "Inscriptions Vérifiées",
   "total_signups": "Total Inscriptions",
   "points_earned": "Points Gagnés",
   "points_dispensed": "Points Dispensés",
@@ -104,14 +97,13 @@
   "dispense_points": "Dispenser des Points",
   "points_to_dispense": "Points à Dispenser",
   "max_balance": "Solde Maximum",
-  "dispensation_comment_placeholder": "Ex: Téléphone offert, Laptop cadeau, Bon d'achat...",
+  "dispensation_comment_placeholder": "\"Ex: Téléphone offert",
   "dispensation_history": "Historique des Dispensations",
   "no_referrers_found": "Aucun Parrain Trouvé",
   "no_referrers_found_message": "Aucun affilié avec des parrainages n'a été trouvé.",
   "no_dispensations_found": "Aucune dispensation trouvée",
   "search_by_name_email": "Rechercher par nom ou email",
   "min_balance": "Solde Minimum",
-  "max_balance": "Solde Maximum",
   "min_earned": "Points Gagnés Min",
   "max_earned": "Points Gagnés Max",
   "min_signups": "Inscriptions Min",
@@ -125,11 +117,9 @@
   "ascending": "Croissant",
   "apply_filters": "Appliquer les Filtres",
   "reset_filters": "Réinitialiser les Filtres",
-  "showing_results": "Affichage {count} sur {total} résultats",
-
+  "showing_results": "\"Affichage {count",
   "create_account": "Créer un Compte",
   "signup_subtitle": "Rejoignez notre plateforme d'affiliation",
-  "referred_by": "Parrainé par",
   "referral_bonus_info": "Vous bénéficierez d'avantages spéciaux grâce à cette recommandation",
   "full_name": "Nom Complet",
   "phone": "Téléphone",
@@ -145,43 +135,28 @@
   "signup_success_message": "Votre compte a été créé avec succès. Vous pouvez maintenant vous connecter.",
   "go_to_login": "Aller à la Connexion",
   "signup_failed": "Échec de l'inscription",
-
   "my_referred_users": "Mes Utilisateurs Parrainés",
   "my_referred_users_subtitle": "Gérez et suivez vos utilisateurs parrainés",
-  "view_referred_users": "Voir les Utilisateurs Parrainés",
-  "view_rewards_history": "Voir l'Historique des Récompenses",
-  "share_referral_link": "Partager le Lien de Parrainage",
-  "quick_actions": "Actions Rapides",
   "back_to_dashboard": "Retour au Tableau de Bord",
   "search_users": "Rechercher des utilisateurs",
-  "verification_status": "Statut de Vérification",
-  "verified": "Vérifié",
   "unverified": "Non vérifié",
-  "start_date": "Date de début",
-  "end_date": "Date de fin",
-
   "admin_produits_drag_sort": "Glissez pour réorganiser les images",
-
   "common_basic_info": "Informations de base",
   "common_pricing_stock": "Prix et stock",
   "common_metadata": "Métadonnées",
   "common_view_original": "Voir l'original",
   "common_save_order": "Sauvegarder l'ordre",
   "common_slug_auto_generate": "Laisser vide pour générer automatiquement à partir du nom",
-
   "breadcrumb_home": "Accueil",
-  "nav_boutiques": "Boutiques",
   "nav_financial_management": "Gestion financière",
   "nav_commissions": "Commissions",
   "nav_withdrawals": "Retraits",
   "nav_payments": "Paiements",
   "nav_my_payments": "Mes Paiements",
-  "payments": {
-    "actions": {
-      "view": "Voir Détails",
-      "download_pdf": "Télécharger PDF"
-    }
-  },
+  "payments": "{",
+  "actions": "{",
+  "view": "Voir Détails",
+  "download_pdf": "Télécharger PDF",
   "nav_gestion_stock": "Gestion Stock",
   "nav_parametres": "Paramètres",
   "nav_support": "Support",
@@ -194,82 +169,53 @@
   "nav_my_commissions": "Mes commissions",
   "nav_marketing_materials": "Matériel marketing",
   "nav_catalogue": "Catalogue produits",
-
-  // ===========================================
-  // ACTIONS & BUTTONS
-  // ===========================================
-  "actions": {
-    "view": "Voir",
-    "edit": "Modifier",
-    "delete": "Supprimer",
-    "approve": "Approuver",
-    "reject": "Rejeter",
-    "adjust": "Ajuster",
-    "resend": "Renvoyer",
-    "track": "Suivre",
-    "refresh": "Actualiser",
-    "blCreate": "Créer BL",
-    "blAddParcels": "Ajouter colis",
-    "blSave": "Sauvegarder BL",
-    "restore": "Restaurer",
-    "force_delete": "Supprimer définitivement",
-    "confirm_delete": "Confirmer la suppression",
-    "confirm_delete_message": "Êtes-vous sûr de vouloir supprimer cet élément ? Cette action est irréversible.",
-    "backToHome": "Retour à l'Accueil",
-    "buyNow": "Acheter Maintenant",
-    "confirm": "Confirmer",
-    "cancel": "Annuler",
-    "previous": "Précédent",
-    "next": "Suivant",
-    "cancel": "Annuler",
-    "create": "Créer",
-    "back": "Retour",
-    "backToList": "Retour à la liste",
-    "backToCommissions": "Retour aux commissions",
-    "confirm_payment": "Confirmer le paiement",
-    "next": "Suivant",
-    "action": "Action",
-    "close": "Fermer",
-    "backToLogin": "Retour à la connexion",
-    "backToOrders": "Retour aux commandes",
-    "viewCart": "Voir Panier",
-    "viewOrder": "Voir Commande",
-    "viewDetails": "Voir les détails",
-    "viewTracking": "Voir le suivi",
-    "viewShipment": "Voir Expédition",
-    "viewPlatformPackage": "Voir Colis Plateforme",
-    "backToCart": "Retour au panier"
-  },
-
-  // ===========================================
-  // CART
-  // ===========================================
-  "cart": {
-    "title": "Panier"
-  },
-
-  // ===========================================
-  // ORDER STATUS
-  // ===========================================
-  "order": {
-    "status": {
-      "returned": "Retourné",
-      "returned_feminine": "Retournée",
-      "returnInProgress": "Retour en Cours",
-      "returnDelivered": "Retour Livré"
-    }
-  },
-
-  // ===========================================
-  // ERRORS
-  // ===========================================
-  "errors": {
-    "withdrawal_details_load": "Erreur lors du chargement des détails du retrait"
-  },
-
-  // ===========================================
-  // PAGE TITLES & HEADERS
-  // ===========================================
+  "edit": "Modifier",
+  "delete": "Supprimer",
+  "approve": "Approuver",
+  "reject": "Rejeter",
+  "adjust": "Ajuster",
+  "resend": "Renvoyer",
+  "track": "Suivre",
+  "refresh": "Actualiser",
+  "blCreate": "Créer BL",
+  "blAddParcels": "Ajouter colis",
+  "blSave": "Sauvegarder BL",
+  "restore": "Restaurer",
+  "force_delete": "Supprimer définitivement",
+  "confirm_delete": "Confirmer la suppression",
+  "confirm_delete_message": "Êtes-vous sûr de vouloir supprimer cet élément ? Cette action est irréversible.",
+  "backToHome": "Retour à l'Accueil",
+  "buyNow": "Acheter Maintenant",
+  "confirm": "Confirmer",
+  "cancel": "Annuler",
+  "previous": "Précédent",
+  "next": "Suivant",
+  "create": "Créer",
+  "back": "Retour",
+  "backToList": "Retour à la liste",
+  "backToCommissions": "Retour aux commissions",
+  "confirm_payment": "Confirmer le paiement",
+  "action": "Action",
+  "close": "Fermer",
+  "backToLogin": "Retour à la connexion",
+  "backToOrders": "Retour aux commandes",
+  "viewCart": "Voir Panier",
+  "viewOrder": "Voir Commande",
+  "viewDetails": "Voir les détails",
+  "viewTracking": "Voir le suivi",
+  "viewShipment": "Voir Expédition",
+  "viewPlatformPackage": "Voir Colis Plateforme",
+  "backToCart": "Retour au panier",
+  "cart": "{",
+  "title": "Panier",
+  "order": "{",
+  "status": "{",
+  "returned": "Retourné",
+  "returned_feminine": "Retournée",
+  "returnInProgress": "Retour en Cours",
+  "returnDelivered": "Retour Livré",
+  "errors": "{",
+  "withdrawal_details_load": "Erreur lors du chargement des détails du retrait",
   "title_admin_dashboard": "Tableau de bord administrateur",
   "title_affiliate_dashboard": "Tableau de bord affilié",
   "title_simple_admin_dashboard": "Tableau de bord administrateur simple",
@@ -282,105 +228,65 @@
   "title_all_affiliates": "Tous les affiliés",
   "title_affiliate_tiers": "Niveaux d'affiliés",
   "title_statistics": "Statistiques",
-
-  // ===========================================
-  // COMMON ACTIONS & BUTTONS
-  // ===========================================
   "action_login": "Connexion",
   "action_logout": "Déconnexion",
   "action_save": "Enregistrer",
   "action_cancel": "Annuler",
   "action_delete": "Supprimer",
   "action_edit": "Modifier",
-  "common": {
-    "actions": "Actions",
-    "all": "Tous",
-    "retry": "Réessayer",
-    "go_to_dashboard": "Aller au tableau de bord",
-    "error_occurred": "Une erreur s'est produite",
-    "unknown_error": "Erreur inconnue",
-    "max_retries_reached": "Nombre maximum de tentatives atteint",
-    "too_many_errors_redirecting": "Trop d'erreurs détectées, redirection en cours...",
-    "error_loading_data": "Erreur lors du chargement des données",
-    "guest": "Invité",
-    "noRole": "Aucun Rôle",
-    "notProvided": "Non renseignée",
-    "loading": "Chargement...",
-    "details": "Détails"
-  },
-
-  // ===========================================
-  // STOCK MANAGEMENT
-  // ===========================================
-  "stock": {
-    "title": "Gestion des Stocks",
-    "subtitle": "Gérez les niveaux de stock de vos produits",
-    "current_stock": "Stock actuel",
-    "on_hand": "En stock",
-    "reserved": "Réservé", 
-    "available": "Disponible",
-    "columns": {
-      "product": "Produit",
-      "variant": "Variante", 
-      "category": "Catégorie",
-      "boutique": "Boutique",
-      "on_hand": "En stock",
-      "reserved": "Réservé",
-      "available": "Disponible",
-      "last_movement": "Dernier mouvement"
-    },
-    "kpi": {
-      "products": "Produits",
-      "on_hand": "En stock",
-      "reserved": "Réservé",
-      "available": "Disponible"
-    },
-    "filters": {
-      "title": "Filtres",
-      "search": "Rechercher",
-      "search_placeholder": "Nom de produit, référence...",
-      "boutique": "Boutique",
-      "category": "Catégorie",
-      "with_variants": "Avec variantes",
-      "min_qty": "Quantité min",
-      "max_qty": "Quantité max",
-      "type": "Type de mouvement",
-      "reason": "Raison",
-      "date_from": "Date de début",
-      "date_to": "Date de fin"
-    },
-    "table": {
-      "title": "Liste des stocks",
-      "items": "éléments",
-      "no_data_title": "Aucun stock trouvé",
-      "no_data_subtitle": "Aucun produit ne correspond aux critères de recherche",
-      "reset_filters": "Réinitialiser les filtres"
-    },
-    "actions": {
-      "in": "Entrée stock",
-      "out": "Sortie stock", 
-      "adjust": "Ajustement",
-      "history": "Historique"
-    },
-    "history": {
-      "title": "Historique des mouvements",
-      "title_for": "Historique - {product}",
-      "no_movements": "Aucun mouvement trouvé",
-      "no_movements_desc": "Aucun mouvement de stock n'a été enregistré pour ce produit",
-      "columns": {
-        "date": "Date",
-        "type": "Type",
-        "quantity": "Quantité",
-        "reference": "Référence",
-        "variant": "Variante"
-      }
-    },
-    "messages": {
-      "movement_created": "Mouvement de stock créé avec succès"
-    },
-    "movement_created_successfully": "Mouvement de stock créé avec succès",
-    "movement": "mouvement de stock"
-  },
+  "common": "{",
+  "all": "Tous",
+  "retry": "Réessayer",
+  "go_to_dashboard": "Aller au tableau de bord",
+  "error_occurred": "Une erreur s'est produite",
+  "unknown_error": "Erreur inconnue",
+  "max_retries_reached": "Nombre maximum de tentatives atteint",
+  "too_many_errors_redirecting": "\"Trop d'erreurs détectées",
+  "error_loading_data": "Erreur lors du chargement des données",
+  "guest": "Invité",
+  "noRole": "Aucun Rôle",
+  "notProvided": "Non renseignée",
+  "loading": "Chargement...",
+  "details": "Détails",
+  "stock": "{",
+  "subtitle": "Gérez les niveaux de stock de vos produits",
+  "current_stock": "Stock actuel",
+  "on_hand": "En stock",
+  "reserved": "Réservé",
+  "available": "Disponible",
+  "columns": "{",
+  "product": "Produit",
+  "variant": "Variante",
+  "category": "Catégorie",
+  "boutique": "Boutique",
+  "last_movement": "Dernier mouvement",
+  "kpi": "{",
+  "products": "Produits",
+  "filters": "{",
+  "search": "Rechercher",
+  "search_placeholder": "\"Nom de produit",
+  "with_variants": "Avec variantes",
+  "min_qty": "Quantité min",
+  "max_qty": "Quantité max",
+  "type": "Type de mouvement",
+  "reason": "Raison",
+  "date_from": "Date de début",
+  "date_to": "Date de fin",
+  "table": "{",
+  "items": "éléments",
+  "no_data_title": "Aucun stock trouvé",
+  "no_data_subtitle": "Aucun produit ne correspond aux critères de recherche",
+  "in": "Entrée stock",
+  "out": "Sortie stock",
+  "title_for": "\"Historique - {product",
+  "no_movements": "Aucun mouvement trouvé",
+  "no_movements_desc": "Aucun mouvement de stock n'a été enregistré pour ce produit",
+  "date": "Date",
+  "quantity": "Quantité",
+  "messages": "{",
+  "movement_created": "Mouvement de stock créé avec succès",
+  "movement_created_successfully": "Mouvement de stock créé avec succès",
+  "movement": "mouvement de stock",
   "action_create": "Créer",
   "action_update": "Mettre à jour",
   "action_view": "Voir",
@@ -395,11 +301,6 @@
   "action_remove": "Supprimer",
   "action_manage": "Gérer",
   "action_refresh": "Actualiser",
-
-  // ===========================================
-  // QUICK ACTIONS
-  // ===========================================
-  "quick_actions": "Actions rapides",
   "create_order": "Créer une commande",
   "order_history": "Historique des commandes",
   "view_commissions": "Commissions",
@@ -408,10 +309,6 @@
   "manage_affiliates": "Gérer les affiliés",
   "order_management": "Gestion des commandes",
   "reports": "Rapports",
-
-  // ===========================================
-  // STATISTICS & METRICS
-  // ===========================================
   "stats_sales": "Ventes",
   "stats_customers": "Clients",
   "stats_products": "Produits",
@@ -426,11 +323,7 @@
   "stats_earnings": "Gains",
   "stats_profit": "Profit",
   "stats_expense": "Dépenses",
-  "stats_updated_ago": "Mis à jour il y a {time}",
-
-  // ===========================================
-  // TABLE HEADERS & COLUMNS
-  // ===========================================
+  "stats_updated_ago": "\"Mis à jour il y a {time",
   "table_order_id": "ID Commande",
   "table_product": "Produit",
   "table_customer": "Client",
@@ -444,8 +337,6 @@
   "table_created": "Créé",
   "table_actions": "Actions",
   "table_recent_orders": "Commandes récentes",
-  
-  // Pre-orders specific
   "table_order_code": "Code",
   "table_client": "Client",
   "table_city": "Ville",
@@ -455,17 +346,11 @@
   "table_no_answer": "No Answer",
   "table_shipping": "Expédition",
   "table_date": "Date",
-  
-  // Boutiques specific
   "name_required": "Le nom est requis",
   "owner_required": "Le propriétaire est requis",
   "invalid_email_format": "Format email invalide",
   "error_loading_users": "Erreur lors du chargement des utilisateurs",
   "slug_hint": "URL-friendly version du nom (généré automatiquement)",
-
-  // ===========================================
-  // STATUS LABELS
-  // ===========================================
   "status_active": "Actif",
   "status_inactive": "Inactif",
   "status_pending": "En attente",
@@ -643,53 +528,36 @@
   "Payment Management": "Gestion des Paiements",
   "Welcome": "Bienvenue",
   "Logout": "Déconnexion",
-  "$vuetify": {
-    "badge": "Badge",
-    "loading": "Chargement",
-    "noDataText": "Pas de données disponibles",
-    "close": "Fermer",
-    "open": "Ouvert",
-    "carousel": {
-      "ariaLabel": {
-        "delimiter": "délimiteur"
-      }
-    },
-    "dataFooter": {
-      "itemsPerPageText": "Objets par page:",
-      "itemsPerPageAll": "Tout",
-      "pageText": "{0}-{1} of {2}",
-      "firstPage": "Première page",
-      "prevPage": "Page précédente",
-      "nextPage": "Page suivante",
-      "lastPage": "Dernière page"
-    },
-    "pagination": {
-      "ariaLabel": {
-        "root": "racine",
-        "previous": "précédente",
-        "first": "d'abord",
-        "last": "dernière",
-        "next": "suivante",
-        "currentPage": "page actuelle",
-        "page": "page"
-      }
-    },
-    "input": {
-      "clear": "dégager",
-      "appendAction": "ajouter une action",
-      "prependAction": "préfixer l'action",
-      "otp": "otp"
-    },
-    "fileInput": {
-      "counterSize": "Taille du compteur"
-    },
-    "rating": {
-      "ariaLabel": {
-        "item": "Objet"
-      }
-    }
-  },
-
+  "$vuetify": "{",
+  "badge": "Badge",
+  "noDataText": "Pas de données disponibles",
+  "open": "Ouvert",
+  "carousel": "{",
+  "ariaLabel": "{",
+  "delimiter": "délimiteur",
+  "dataFooter": "{",
+  "itemsPerPageText": "Objets par page:",
+  "itemsPerPageAll": "Tout",
+  "pageText": "\"{0",
+  "firstPage": "Première page",
+  "prevPage": "Page précédente",
+  "nextPage": "Page suivante",
+  "lastPage": "Dernière page",
+  "pagination": "{",
+  "root": "racine",
+  "first": "d'abord",
+  "last": "dernière",
+  "currentPage": "page actuelle",
+  "page": "page",
+  "input": "{",
+  "clear": "dégager",
+  "appendAction": "ajouter une action",
+  "prependAction": "préfixer l'action",
+  "otp": "otp",
+  "fileInput": "{",
+  "counterSize": "Taille du compteur",
+  "rating": "{",
+  "item": "Objet",
   "user_management": "Gestion des Utilisateurs",
   "manage_all_users": "Gérer tous les utilisateurs du système",
   "add_user": "Ajouter Utilisateur",
@@ -700,18 +568,14 @@
   "name": "Nom",
   "email": "Email",
   "role": "Rôle",
-  "status": "Statut",
   "kyc_status": "Statut KYC",
   "created": "Créé",
-  "actions": "Actions",
-  "full_name": "Nom Complet",
   "enter_full_name": "Entrez le nom complet",
   "enter_email": "Entrez l'adresse email",
   "password": "Mot de Passe",
   "enter_password": "Entrez le mot de passe",
   "select_role": "Sélectionnez le rôle",
   "select_status": "Sélectionnez le statut",
-  "cancel": "Annuler",
   "all_status": "Tous les Statuts",
   "active": "Actif",
   "inactive": "Inactif",
@@ -719,21 +583,18 @@
   "loading_users": "Chargement des utilisateurs",
   "no_users_found": "Aucun utilisateur trouvé",
   "try_adjusting_search": "Essayez d'ajuster vos critères de recherche",
-  "confirm_delete_user": "Êtes-vous sûr de vouloir supprimer {name}?",
-  "search_users": "Rechercher des utilisateurs...",
-  "confirm_delete": "Confirmer la Suppression",
-  "user_created_successfully": "Utilisateur {name} créé avec succès!",
-  "user_updated_successfully": "Utilisateur {name} mis à jour avec succès!",
-  "user_deleted_successfully": "Utilisateur {name} supprimé avec succès!",
-  "user_restored_successfully": "Utilisateur {name} restauré avec succès!",
-  "user_permanently_deleted": "Utilisateur {name} supprimé définitivement!",
+  "confirm_delete_user": "\"Êtes-vous sûr de vouloir supprimer {name",
+  "user_created_successfully": "\"Utilisateur {name",
+  "user_updated_successfully": "\"Utilisateur {name",
+  "user_deleted_successfully": "\"Utilisateur {name",
+  "user_restored_successfully": "\"Utilisateur {name",
+  "user_permanently_deleted": "\"Utilisateur {name",
   "failed_to_load_users": "Échec du chargement des utilisateurs",
   "failed_to_create_user": "Échec de la création de l'utilisateur",
   "failed_to_update_user": "Échec de la mise à jour de l'utilisateur",
   "failed_to_delete_user": "Échec de la suppression de l'utilisateur",
   "user_has_related_data": "Impossible de supprimer cet utilisateur car il a des données liées",
   "user_constraint_error": "Cet utilisateur ne peut pas être supprimé en raison de contraintes de données",
-
   "role_management": "Gestion des Rôles et Permissions",
   "manage_roles_permissions": "Gérer les rôles et permissions du système",
   "add_role": "Ajouter Rôle",
@@ -747,25 +608,24 @@
   "enter_permission_name": "Entrez le nom de la permission",
   "description": "Description",
   "permissions": "Permissions",
-  "users_count": "{count} utilisateur(s)",
+  "users_count": "\"{count",
   "assign_permissions": "Assigner Permissions",
   "create_role": "Créer Rôle",
   "update_role": "Mettre à Jour Rôle",
   "create_permission": "Créer Permission",
-  "confirm_delete_role": "Êtes-vous sûr de vouloir supprimer le rôle {name}?",
-  "confirm_delete_permission": "Êtes-vous sûr de vouloir supprimer la permission {name}?",
+  "confirm_delete_role": "\"Êtes-vous sûr de vouloir supprimer le rôle {name",
+  "confirm_delete_permission": "\"Êtes-vous sûr de vouloir supprimer la permission {name",
   "no_roles_found": "Aucun rôle trouvé",
   "no_permissions_found": "Aucune permission trouvée",
-  "role_created_successfully": "Rôle {name} créé avec succès!",
-  "role_updated_successfully": "Rôle {name} mis à jour avec succès!",
-  "role_deleted_successfully": "Rôle {name} supprimé avec succès!",
-  "permission_created_successfully": "Permission {name} créée avec succès!",
-  "permission_deleted_successfully": "Permission {name} supprimée avec succès!",
+  "role_created_successfully": "\"Rôle {name",
+  "role_updated_successfully": "\"Rôle {name",
+  "role_deleted_successfully": "\"Rôle {name",
+  "permission_created_successfully": "\"Permission {name",
+  "permission_deleted_successfully": "\"Permission {name",
   "failed_to_load_roles": "Échec du chargement des rôles",
   "failed_to_create_role": "Échec de la création du rôle",
   "failed_to_update_role": "Échec de la mise à jour du rôle",
   "failed_to_delete_role": "Échec de la suppression du rôle",
-
   "kyc_documents": "Documents KYC",
   "manage_kyc_documents_desc": "Gérer les documents KYC des utilisateurs et le statut de vérification",
   "upload_document": "Télécharger Document",
@@ -777,7 +637,6 @@
   "select_user": "Sélectionner Utilisateur",
   "choose_user": "Choisir un utilisateur",
   "filter_by_user": "Filtrer par Utilisateur",
-  "no_users_found": "Aucun utilisateur trouvé",
   "select_file": "Sélectionner Fichier",
   "supported_formats": "Formats supportés",
   "max_size": "Taille max",
@@ -789,11 +648,8 @@
   "rejection_reason": "Raison du Refus",
   "enter_rejection_reason": "Entrez la raison du refus",
   "download": "Télécharger",
-  "view": "Voir",
   "user": "Utilisateur",
-  "type": "Type",
   "uploaded": "Téléchargé",
-  "refresh": "Actualiser",
   "no_documents_found": "Aucun document trouvé",
   "no_documents_desc": "Aucun document KYC n'a encore été téléchargé",
   "error_loading_documents": "Erreur lors du chargement des documents",
@@ -805,35 +661,8 @@
   "failed_to_review_document": "Échec de l'examen du document",
   "failed_to_delete_document": "Échec de la suppression du document",
   "confirm_delete_document": "Êtes-vous sûr de vouloir supprimer ce document?",
-  "confirm_delete_document_desc": "Êtes-vous sûr de vouloir supprimer le document {type} pour {user}? Cette action ne peut pas être annulée.",
-
-  "nav_dashboard": "Tableau de Bord",
-  "nav_user_management": "Gestion des Utilisateurs",
-  "nav_all_users": "Tous les Utilisateurs",
-  "nav_roles_permissions": "Rôles et Permissions",
-  "nav_kyc_documents": "Documents KYC",
-  "nav_affiliate_management": "Gestion des Affiliés",
-  "nav_all_affiliates": "Tous les Affiliés",
-  "nav_affiliate_tiers": "Niveaux d'Affiliation",
-  "nav_order_management": "Gestion des Commandes",
-  "nav_all_orders": "Toutes les Commandes",
-  "nav_order_conflicts": "Conflits de Commandes",
-  "nav_product_management": "Gestion des Produits",
-  "nav_products": "Produits",
-  "nav_categories": "Catégories",
-  "nav_boutiques": "Boutiques",
-  "nav_financial_management": "Gestion Financière",
-  "nav_commissions": "Commissions",
-  "nav_withdrawals": "Retraits",
-  "nav_payments": "Paiements",
-  "nav_reports_analytics": "Rapports et Analyses",
-  "nav_sales_reports": "Rapports de Ventes",
-  "nav_affiliate_performance": "Performance des Affiliés",
-  "nav_my_orders": "Mes Commandes",
-  "nav_my_commissions": "Mes Commissions",
-  "nav_marketing_materials": "Matériel Marketing",
-
-  "login_title": "Bienvenue sur {title}! 👋🏻",
+  "confirm_delete_document_desc": "\"Êtes-vous sûr de vouloir supprimer le document {type",
+  "login_title": "\"Bienvenue sur {title",
   "login_subtitle": "Veuillez vous connecter à votre compte et commencer l'aventure",
   "demo_credentials": "Identifiants de Démonstration:",
   "admin_credentials": "Admin: admin / password",
@@ -846,9 +675,7 @@
   "login_button": "Connexion",
   "login_failed": "Échec de la connexion",
   "new_on_platform": "Nouveau sur notre plateforme?",
-  "create_account": "Créer un compte",
   "or": "ou",
-
   "profile": "Profil",
   "settings": "Paramètres",
   "pricing": "Tarification",
@@ -856,23 +683,19 @@
   "logout": "Déconnexion",
   "login": "Connexion",
   "filter_by_status": "Filtrer par statut",
-  "clear": "Effacer",
   "no_role": "Aucun Rôle",
-
   "error_generic": "Une erreur s'est produite",
   "error_validation_failed": "Échec de la validation",
   "error_conflict": "Conflit survenu",
   "error_authentication_required": "Authentification requise",
   "error_access_forbidden": "Accès interdit",
   "error_resource_not_found": "Ressource non trouvée",
-  "error_server_error": "Erreur serveur ({status})",
+  "error_server_error": "\"Erreur serveur ({status",
   "error_network": "Erreur réseau",
-
   "language": "Langue",
   "english": "Anglais",
   "french": "Français",
   "arabic": "Arabe",
-
   "affiliate_dashboard_title": "Tableau de Bord Affilié",
   "affiliate_dashboard_export_success": "Rapport de performance exporté avec succès",
   "affiliate_tickets_description": "Créez et gérez vos tickets de support",
@@ -883,11 +706,6 @@
   "pending_orders_count": "Commandes en Attente",
   "total_earnings": "Gains Totaux",
   "this_month_earnings": "Gains de ce Mois",
-  "quick_actions": "Actions Rapides",
-  "create_order": "Créer une Commande",
-  "order_history": "Historique des Commandes",
-  "view_commissions": "Commissions",
-  "view_marketing_materials": "Matériel Marketing",
   "user_info": "Informations Utilisateur",
   "user_name": "Nom",
   "user_email": "Email",
@@ -895,30 +713,11 @@
   "user_status": "Statut",
   "user_kyc_status": "Statut KYC",
   "user_created_at": "Membre Depuis",
-
-  "phone": "Téléphone",
-  "address": "Adresse",
   "enter_phone": "Entrez le numéro de téléphone",
   "enter_address": "Entrez l'adresse",
   "user_status_updated_successfully": "Statut utilisateur mis à jour avec succès",
-
-  // ===========================================
-  // ERROR MESSAGES
-  // ===========================================
-  "error_generic": "Une erreur s'est produite",
-  "error_validation_failed": "Échec de la validation",
-  "error_conflict": "Un conflit s'est produit",
-  "error_authentication_required": "Authentification requise",
-  "error_access_forbidden": "Accès interdit",
-  "error_resource_not_found": "Ressource non trouvée",
-  "error_server_error": "Erreur serveur ({status})",
-  "error_network": "Erreur réseau",
   "error_login_failed": "Échec de la connexion",
   "error_invalid_credentials": "Les identifiants fournis sont incorrects",
-
-  // ===========================================
-  // SUCCESS MESSAGES
-  // ===========================================
   "success_login": "Connexion réussie",
   "success_logout": "Déconnexion réussie",
   "success_registration": "Inscription réussie",
@@ -933,40 +732,27 @@
   "success_document_uploaded": "Document téléversé avec succès",
   "success_document_updated": "Document mis à jour avec succès",
   "success_document_deleted": "Document supprimé avec succès",
-
-  // ===========================================
-  // BACKEND API MESSAGES
-  // ===========================================
   "api_access_denied_admin": "Accès refusé. Rôle administrateur requis.",
   "api_access_denied_affiliate": "Accès refusé. Rôle affilié requis.",
-  "api_access_denied_permission": "Accès refusé. Permission \"{permission}\" requise.",
+  "api_access_denied_permission": "\"Accès refusé. Permission \\\"{permission",
   "api_welcome_admin": "Bienvenue dans le tableau de bord administrateur",
   "api_welcome_affiliate": "Bienvenue dans le tableau de bord affilié",
   "api_user_management_panel": "Panneau de gestion des utilisateurs",
   "api_order_creation_form": "Formulaire de création de commande",
   "api_access_denied_no_role": "Accès refusé. Aucun rôle valide assigné.",
-
-  // ===========================================
-  // VALIDATION MESSAGES
-  // ===========================================
   "validation_required": "Ce champ est requis",
   "validation_email": "Veuillez entrer une adresse email valide",
-  "validation_min_length": "Doit contenir au moins {min} caractères",
-  "validation_max_length": "Ne doit pas dépasser {max} caractères",
+  "validation_min_length": "\"Doit contenir au moins {min",
+  "validation_max_length": "\"Ne doit pas dépasser {max",
   "validation_password_mismatch": "Les mots de passe ne correspondent pas",
   "validation_unique": "Cette valeur est déjà prise",
-  "validation_between": "Entrez un nombre entre {min} et {max}",
+  "validation_between": "\"Entrez un nombre entre {min",
   "validation_integer": "Ce champ doit être un nombre entier",
   "validation_format_invalid": "Le format est invalide",
   "validation_alpha_only": "Ce champ ne peut contenir que des caractères alphabétiques",
   "validation_url_invalid": "L'URL est invalide",
-  "validation_exact_length": "Doit contenir exactement {length} caractères",
-  "validation_alpha_dash_only": "Ce champ ne peut contenir que des lettres, chiffres, tirets et underscores",
-
-  // ===========================================
-  // PROFILE PAGE
-  // ===========================================
-  "profile": "Profil",
+  "validation_exact_length": "\"Doit contenir exactement {length",
+  "validation_alpha_dash_only": "\"Ce champ ne peut contenir que des lettres",
   "teams": "Équipes",
   "projects": "Projets",
   "connections": "Connexions",
@@ -979,9 +765,8 @@
   "enter_profile_image_url": "Entrez l'URL de l'image de profil",
   "upload_image": "Téléverser une image",
   "change_image": "Changer l'image",
-  "upload_image_hint": "JPG, GIF ou PNG autorisés. Taille max de 5MB",
+  "upload_image_hint": "\"JPG",
   "remove": "Supprimer",
-
   "admin_boutiques_title": "Boutiques",
   "admin_boutiques_description": "Gérer les boutiques et leurs détails",
   "admin_boutiques_list": "Liste des Boutiques",
@@ -1042,12 +827,8 @@
   "admin_boutiques_filter_status_inactive": "Inactif",
   "admin_boutiques_filter_status_pending": "En Attente",
   "admin_boutiques_filter_category_all": "Toutes les Catégories",
-  "admin_boutiques_pagination_info": "Affichage de {from} à {to} sur {total} boutiques",
+  "admin_boutiques_pagination_info": "\"Affichage de {from",
   "admin_boutiques_items_per_page": "Éléments par page",
-
-  // ===========================================
-  // MODULE ADMIN CATÉGORIES
-  // ===========================================
   "admin_categories_title": "Catégories",
   "admin_categories_list": "Liste des Catégories",
   "admin_categories_create": "Créer une Catégorie",
@@ -1056,7 +837,7 @@
   "admin_categories_view": "Voir la Catégorie",
   "admin_categories_delete": "Supprimer la Catégorie",
   "admin_categories_delete_title": "Supprimer la Catégorie",
-  "admin_categories_delete_confirm": "Êtes-vous sûr de vouloir supprimer la catégorie '{name}' ? Cette action est irréversible.",
+  "admin_categories_delete_confirm": "\"Êtes-vous sûr de vouloir supprimer la catégorie '{name",
   "admin_categories_name": "Nom",
   "admin_categories_slug": "Slug",
   "admin_categories_description": "Description",
@@ -1071,16 +852,12 @@
   "admin_categories_add_new": "Ajouter une Nouvelle Catégorie",
   "admin_categories_select_image": "Sélectionner une Image",
   "admin_categories_change_image": "Changer l'Image",
-  "admin_categories_image_help": "Taille maximale : 2MB. Formats supportés : JPG, PNG, GIF",
-  "admin_categories_slug_help": "Version compatible URL du nom. Seules les lettres minuscules, chiffres et tirets sont autorisés.",
+  "admin_categories_image_help": "\"Taille maximale : 2MB. Formats supportés : JPG",
+  "admin_categories_slug_help": "\"Version compatible URL du nom. Seules les lettres minuscules",
   "admin_categories_active_help": "La catégorie est visible et peut être utilisée pour les produits",
   "admin_categories_inactive_help": "La catégorie est masquée et ne peut pas être utilisée pour les produits",
   "admin_categories_additional_info": "Informations Supplémentaires",
   "admin_categories_products_count": "Nombre de Produits",
-
-  // ===========================================
-  // MODULE ADMIN PRODUITS
-  // ===========================================
   "admin_produits_title": "Produits",
   "admin_produits_subtitle": "Gérez votre catalogue de produits",
   "admin_produits_list": "Liste des Produits",
@@ -1095,7 +872,7 @@
   "admin_produits_delete": "Supprimer le Produit",
   "admin_produits_delete_title": "Supprimer le Produit",
   "admin_produits_delete_message": "Êtes-vous sûr de vouloir supprimer ce produit ? Cette action est irréversible.",
-  "admin_produits_delete_confirm": "Êtes-vous sûr de vouloir supprimer le produit '{name}' ? Cette action est irréversible.",
+  "admin_produits_delete_confirm": "\"Êtes-vous sûr de vouloir supprimer le produit '{name",
   "admin_produits_basic_info": "Informations de Base",
   "admin_produits_pricing": "Prix et Stock",
   "admin_produits_boutique": "Boutique",
@@ -1132,7 +909,7 @@
   "admin_produits_meta_description": "Description Meta",
   "admin_produits_meta_description_placeholder": "Brève description pour les moteurs de recherche",
   "admin_produits_meta_keywords": "Mots-clés Meta",
-  "admin_produits_meta_keywords_placeholder": "mot-clé1, mot-clé2, mot-clé3",
+  "admin_produits_meta_keywords_placeholder": "\"mot-clé1",
   "admin_produits_features": "Caractéristiques du Produit",
   "admin_produits_features_help": "Listez les principales caractéristiques et avantages de votre produit",
   "admin_produits_features_list": "Liste des Caractéristiques",
@@ -1144,7 +921,7 @@
   "admin_produits_tip_description": "Rédigez des descriptions détaillées",
   "admin_produits_tip_pricing": "Fixez des prix compétitifs",
   "admin_produits_tip_images": "Ajoutez des images de haute qualité",
-  "admin_produits_create_help": "Après avoir créé le produit, vous pourrez ajouter des images, vidéos et variantes",
+  "admin_produits_create_help": "\"Après avoir créé le produit",
   "admin_produits_images": "Images",
   "admin_produits_videos": "Vidéos",
   "admin_produits_variantes": "Variantes",
@@ -1169,9 +946,8 @@
   "admin_produits_feature": "Caractéristique",
   "admin_produits_propositions": "Propositions Affiliés",
   "admin_produits_videos_help": "Ajoutez des vidéos pour présenter les fonctionnalités et démonstrations de votre produit",
-  "admin_produits_variants_help": "Créez différentes versions de votre produit (couleurs, tailles, matières, etc.)",
-  "admin_produits_features_help": "Listez les caractéristiques et avantages clés qui rendent votre produit spécial",
-  "admin_produits_features_examples": "Exemples : Matériaux de haute qualité, Livraison rapide, Garantie 1 an, Écologique, etc.",
+  "admin_produits_variants_help": "\"Créez différentes versions de votre produit (couleurs",
+  "admin_produits_features_examples": "\"Exemples : Matériaux de haute qualité",
   "admin_produits_feature_placeholder": "Entrez une caractéristique ou un avantage du produit",
   "admin_produits_features_preview": "Aperçu des Caractéristiques",
   "admin_produits_no_features_preview": "Ajoutez des caractéristiques pour voir comment elles apparaîtront aux clients",
@@ -1187,20 +963,11 @@
   "admin_produits_seo_preview_description": "Description de votre produit qui apparaîtra dans les résultats de recherche",
   "admin_produits_seo_score": "Score SEO",
   "admin_produits_meta_description_max": "La description meta ne doit pas dépasser 160 caractères",
-  "admin_produits_videos_management": "Gestion des Vidéos",
-  "admin_produits_variants_management": "Gestion des Variantes",
-  "admin_produits_features_management": "Gestion des Caractéristiques",
-  "admin_produits_no_videos": "Aucune vidéo ajoutée",
-  "admin_produits_no_variants": "Aucune variante créée",
-  "admin_produits_no_features_preview": "Ajoutez des caractéristiques pour voir l'aperçu",
   "admin_produits_images_help": "Ajoutez des images pour présenter votre produit",
   "admin_produits_image": "Image",
   "admin_produits_image_preview": "Aperçu de l'image",
   "admin_produits_upload_image": "Télécharger une image",
   "admin_produits_image_url_placeholder": "https://exemple.com/image.jpg",
-  "admin_produits_quantite_min": "Quantité Minimale",
-  "admin_produits_quantite_min_placeholder": "Saisissez la quantité minimale requise",
-  "validation_required": "Ce champ est requis",
   "admin_produits_created_at": "Créé le",
   "admin_produits_updated_at": "Modifié le",
   "admin_produits_total": "Total des Produits",
@@ -1209,45 +976,28 @@
   "admin_produits_add_new": "Ajouter un Nouveau Produit",
   "admin_produits_details": "Détails",
   "admin_produits_gallery": "Galerie",
-  "admin_produits_upload_image": "Télécharger une Image",
   "admin_produits_image_url": "URL de l'Image",
   "admin_produits_image_order": "Ordre d'Affichage",
-  "admin_produits_no_images": "Aucune image téléchargée",
-  "admin_produits_drag_sort": "Glisser pour réorganiser les images",
-
-  "admin_produits_videos": "Vidéos du Produit",
-  "admin_produits_add_video": "Ajouter une Vidéo",
-  "admin_produits_no_videos": "Aucune vidéo pour l'instant",
   "admin_produits_no_videos_desc": "Ajoutez des vidéos pour présenter votre produit",
   "admin_produits_add_first_video": "Ajouter la Première Vidéo",
   "admin_produits_edit_video": "Modifier la Vidéo",
-  "admin_produits_video_url": "URL de la Vidéo",
   "admin_produits_video_url_placeholder": "https://youtube.com/watch?v=...",
-  "admin_produits_video_title": "Titre de la Vidéo",
   "admin_produits_video_title_placeholder": "Nom de la vidéo",
   "admin_produits_video_description": "Description",
   "admin_produits_video_description_placeholder": "Description de la vidéo",
-  "admin_produits_video_order": "Ordre d'Affichage",
   "admin_produits_video_active": "Vidéo Active",
   "admin_produits_delete_video": "Supprimer la Vidéo",
   "admin_produits_delete_video_confirm": "Êtes-vous sûr de vouloir supprimer cette vidéo?",
   "admin_produits_video_updated": "Vidéo mise à jour avec succès",
   "admin_produits_video_added": "Vidéo ajoutée avec succès",
   "admin_produits_video_deleted": "Vidéo supprimée avec succès",
-
   "admin_produits_variants": "Variantes du Produit",
-  "admin_produits_add_variant": "Ajouter une Variante",
-  "admin_produits_no_variants": "Aucune variante pour l'instant",
-  "admin_produits_no_variants_desc": "Ajoutez des variantes comme couleurs, tailles, ou configurations pour ce produit",
+  "admin_produits_no_variants_desc": "\"Ajoutez des variantes comme couleurs",
   "admin_produits_add_first_variant": "Ajouter la Première Variante",
   "admin_produits_edit_variant": "Modifier la Variante",
-  "admin_produits_variant_name": "Type de Variante",
-  "admin_produits_variant_name_placeholder": "Couleur, Taille, Stockage...",
-  "admin_produits_variant_value": "Valeur de la Variante",
-  "admin_produits_variant_value_placeholder": "Rouge, Large, 256GB...",
-  "admin_produits_variant_price": "Prix de la Variante",
+  "admin_produits_variant_name_placeholder": "\"Couleur",
+  "admin_produits_variant_value_placeholder": "\"Rouge",
   "admin_produits_variant_price_placeholder": "Laisser vide pour utiliser le prix par défaut",
-  "admin_produits_variant_sku": "Code SKU",
   "admin_produits_variant_sku_placeholder": "PROD-COULEUR-TAILLE",
   "admin_produits_variant_active": "Variante Active",
   "admin_produits_default_price": "Prix par défaut",
@@ -1256,7 +1006,6 @@
   "admin_produits_variant_updated": "Variante mise à jour avec succès",
   "admin_produits_variant_added": "Variante ajoutée avec succès",
   "admin_produits_variant_deleted": "Variante supprimée avec succès",
-
   "admin_produits_ruptures": "Alertes de Stock",
   "admin_produits_add_rupture": "Ajouter une Alerte",
   "admin_produits_no_ruptures": "Aucune alerte de stock pour l'instant",
@@ -1274,8 +1023,6 @@
   "admin_produits_rupture_updated": "Alerte de stock mise à jour avec succès",
   "admin_produits_rupture_added": "Alerte de stock ajoutée avec succès",
   "admin_produits_rupture_deleted": "Alerte de stock supprimée avec succès",
-
-  "admin_produits_propositions": "Propositions du Produit",
   "admin_produits_add_proposition": "Ajouter une Proposition",
   "admin_produits_no_propositions": "Aucune proposition pour l'instant",
   "admin_produits_no_propositions_desc": "Ajoutez des propositions d'affiliation pour ce produit",
@@ -1293,7 +1040,6 @@
   "admin_produits_proposition_updated": "Proposition mise à jour avec succès",
   "admin_produits_proposition_added": "Proposition ajoutée avec succès",
   "admin_produits_proposition_deleted": "Proposition supprimée avec succès",
-
   "admin_produits_reviews": "Avis du Produit",
   "admin_produits_add_review": "Ajouter un Avis",
   "admin_produits_no_reviews": "Aucun avis pour l'instant",
@@ -1310,8 +1056,6 @@
   "admin_produits_review_updated": "Avis mis à jour avec succès",
   "admin_produits_review_added": "Avis ajouté avec succès",
   "admin_produits_review_deleted": "Avis supprimé avec succès",
-
-  "breadcrumb_home": "Accueil",
   "breadcrumb_admin": "Administration",
   "breadcrumb_create": "Créer",
   "breadcrumb_edit": "Modifier",
@@ -1331,7 +1075,7 @@
   "common_loading": "Chargement...",
   "common_no_data": "Aucune donnée disponible",
   "form_name": "Nom",
-  "common.created_at":  "Créé le",
+  "common.created_at": "Créé le",
   "common.updated_at": "Mis à jour le",
   "common.close": "fermer",
   "common.confirm": "Confirmer",
@@ -1344,34 +1088,23 @@
   "common.change": "Changer",
   "common.remove": "Supprimer",
   "common_uploading": "Téléchargement",
-
-  // ===========================================
-  // CONFIRM DIALOG MESSAGES
-  // ===========================================
   "confirm.create_title": "Créer un élément",
-  "confirm.create_text": "Voulez-vous créer ce {entity} ?",
+  "confirm.create_text": "\"Voulez-vous créer ce {entity",
   "confirm.update_title": "Sauvegarder les modifications",
-  "confirm.update_text": "Voulez-vous sauvegarder les modifications de ce {entity} ?",
-  "confirm.update_text_with_name": "Voulez-vous sauvegarder les modifications de {entity} '{name}' ?",
+  "confirm.update_text": "\"Voulez-vous sauvegarder les modifications de ce {entity",
+  "confirm.update_text_with_name": "\"Voulez-vous sauvegarder les modifications de {entity",
   "confirm.delete_title": "Supprimer l'élément",
-  "confirm.delete_text": "Voulez-vous supprimer ce {entity} ? Cette action ne peut pas être annulée.",
-  "confirm.delete_text_with_name": "Voulez-vous supprimer {entity} '{name}' ? Cette action ne peut pas être annulée.",
+  "confirm.delete_text": "\"Voulez-vous supprimer ce {entity",
+  "confirm.delete_text_with_name": "\"Voulez-vous supprimer {entity",
   "confirm.restore_title": "Restaurer l'élément",
-  "confirm.restore_text": "Voulez-vous restaurer ce {entity} ?",
-  "confirm.restore_text_with_name": "Voulez-vous restaurer {entity} '{name}' ?",
+  "confirm.restore_text": "\"Voulez-vous restaurer ce {entity",
+  "confirm.restore_text_with_name": "\"Voulez-vous restaurer {entity",
   "confirm.permanent_delete_title": "Suppression définitive",
-  "confirm.permanent_delete_text": "Voulez-vous supprimer définitivement ce {entity} ? Cette action ne peut pas être annulée.",
-  "confirm.permanent_delete_text_with_name": "Voulez-vous supprimer définitivement {entity} '{name}' ? Cette action ne peut pas être annulée.",
+  "confirm.permanent_delete_text": "\"Voulez-vous supprimer définitivement ce {entity",
+  "confirm.permanent_delete_text_with_name": "\"Voulez-vous supprimer définitivement {entity",
   "confirm.bulk_delete_title": "Suppression en masse",
-  "confirm.bulk_delete_text": "Voulez-vous supprimer {count} {entity} ? Cette action ne peut pas être annulée.",
-
-  // Entity names for confirm dialogs
-  "user": "utilisateur",
-  "role": "rôle",
+  "confirm.bulk_delete_text": "\"Voulez-vous supprimer {count",
   "permission": "permission",
-  "category": "catégorie",
-  "product": "produit",
-  "boutique": "boutique",
   "document": "document",
   "attribut": "attribut",
   "valeur": "valeur",
@@ -1381,12 +1114,6 @@
   "proposition": "proposition",
   "rupture de stock": "rupture de stock",
   "ville": "ville",
-
-  // ===========================================
-  // MISSING TRANSLATION KEYS FROM CONSOLE WARNINGS
-  // ===========================================
-
-  // Direct French text keys (used as translation keys with exact spacing)
   "Tableau de Bord": "Tableau de Bord",
   "Gestion des Utilisateurs": "Gestion des Utilisateurs",
   "Tous les Utilisateurs": "Tous les Utilisateurs",
@@ -1408,8 +1135,6 @@
   "Rapports de Ventes": "Rapports de Ventes",
   "Performance des Affiliés": "Performance des Affiliés",
   "Profil": "Profil",
-
-  // Missing common.* keys
   "common.search": "Rechercher",
   "common.all": "Tous",
   "common.active": "Actif",
@@ -1427,311 +1152,181 @@
   "common.to": "à",
   "common.of": "sur",
   "common.results": "résultats",
-
-  // ===========================================
-  // TABLE COMPONENTS
-  // ===========================================
-  "table": {
-    "display": "Affichage",
-    "activeOnly": "Actives seulement",
-    "deletedOnly": "Supprimées seulement",
-    "allActiveAndDeleted": "Toutes (actives + supprimées)",
-    "noDataAvailable": "Aucune donnée disponible",
-    "loading": "Chargement...",
-    "itemsPerPage": "Éléments par page",
-    "showing": "Affichage de",
-    "to": "à",
-    "of": "sur",
-    "results": "résultats"
-  },
-
-  // Missing data availability key
+  "display": "Affichage",
+  "activeOnly": "Actives seulement",
+  "deletedOnly": "Supprimées seulement",
+  "allActiveAndDeleted": "Toutes (actives + supprimées)",
+  "noDataAvailable": "Aucune donnée disponible",
+  "itemsPerPage": "Éléments par page",
+  "showing": "Affichage de",
+  "to": "à",
+  "of": "sur",
+  "results": "résultats",
   "Aucune donnée disponible": "Aucune donnée disponible",
-
-  // Missing $vuetify keys
   "$vuetify.dataIterator.loadingText": "Chargement des éléments...",
-
-  // ===========================================
-  // ERROR PAGES
-  // ===========================================
-  "errors": {
-    "pageNotFoundTitle": "Page Non Trouvée ⚠️",
-    "pageNotFoundDescription": "Nous n'avons pas pu trouver la page que vous recherchez.",
-    "users_loading_error": "Erreur lors du chargement des utilisateurs",
-    "commissions_loading_error": "Erreur lors du chargement des commissions",
-    "orders_load_failed": "Erreur lors du chargement des commandes",
-    "commissions_load_failed": "Erreur lors du chargement des commissions",
-    "withdrawals_load_failed": "Erreur lors du chargement des retraits",
-    "no_eligible_commissions": "Aucune commission éligible pour un retrait",
-    "withdrawal_request_failed": "Erreur lors de la demande de retrait",
-    "ticket_load_failed": "Erreur lors du chargement du ticket",
-    "message_required": "Veuillez saisir un message",
-    "message_add_failed": "Erreur lors de l'ajout du message",
-    "ticket_close_failed": "Erreur lors de la fermeture du ticket",
-    "ticket_reopen_failed": "Erreur lors de la réouverture du ticket"
-  },
-
-  // ===========================================
-  // ACCESSIBILITY
-  // ===========================================
-  "a11y": {
-    "error404Image": "Erreur 404",
-    "decorativeImage": "Image décorative"
-  },
-
-
-
-  // ===========================================
-  // NOTIFICATIONS
-  // ===========================================
-  "notifications": {
-    "noNotificationsFound": "Aucune notification trouvée !"
-  },
-
-  // ===========================================
-  // SEARCH
-  // ===========================================
-  "search": {
-    "noResultsFor": "Aucun résultat pour"
-  },
-
-  // ===========================================
-  // CHARTS
-  // ===========================================
-  "charts": {
-    "series": {
-      "revenue": "Revenus",
-      "commissions": "Commissions",
-      "sales": "Ventes",
-      "orders": "Commandes",
-      "users": "Utilisateurs",
-      "affiliates": "Affiliés",
-      "products": "Produits",
-      "profit": "Profit",
-      "expenses": "Dépenses"
-    },
-    "labels": {
-      "total": "Total",
-      "growth": "Croissance",
-      "thisMonth": "Ce Mois",
-      "lastMonth": "Mois Dernier",
-      "thisYear": "Cette Année",
-      "lastYear": "Année Dernière",
-      "details": "Détails",
-      "packageDetails": "Détails du Colis",
-      "orderDetails": "Détails de la Commande",
-      "withdrawalDetails": "Détails du retrait",
-      "returnFee": "Frais de retour"
-    }
-  },
-
-  // ===========================================
-  // DIALOGS
-  // ===========================================
-  "dialogs": {
-    "confirmAction": "Confirmer l'action",
-    "confirmMessage": "Êtes-vous sûr de vouloir continuer ?"
-  },
-
-  // ===========================================
-  // STATUS LABELS
-  // ===========================================
-  "status": {
-    "active": "Actif",
-    "inactive": "Inactif",
-    "blocked": "Bloqué",
-    "suspended": "Suspendu",
-    "terminated": "Résilié",
-    "pending": "En attente",
-    "approved": "Approuvé",
-    "rejected": "Rejeté"
-  },
-
-  // ===========================================
-  // FORM LABELS
-  // ===========================================
-  "form": {
-    "fullName": "Nom complet",
-    "email": "Email",
-    "phone": "Téléphone",
-    "address": "Adresse",
-    "description": "Description",
-    "title": "Titre",
-    "name": "Nom",
-    "status": "Statut",
-    "date": "Date",
-    "created": "Créé",
-    "modified": "Modifié"
-  },
-
-  // ===========================================
-  // ADMIN PANEL
-  // ===========================================
-  "admin": {
-    "dashboard": {
-      "title": "Tableau de Bord Admin",
-      "welcome": "Bienvenue dans l'espace administrateur",
-      "earningReports": "Rapports de Revenus",
-      "weeklyEarningsOverview": "Aperçu des Revenus Hebdomadaires",
-      "youInformed": "Vous êtes informé de cette semaine par rapport à la semaine dernière",
-      "earnings": "Revenus",
-      "profit": "Profit",
-      "expense": "Dépenses",
-      "viewMore": "Voir Plus",
-      "delete": "Supprimer",
-      "statistics": "Statistiques",
-      "updatedAgo": "Mis à jour il y a {time}",
-      "sales": "Ventes",
-      "customers": "Clients",
-      "products": "Produits",
-      "revenue": "Revenus",
-      "stats": {
-        "totalUsers": "Total Utilisateurs",
-        "totalOrders": "Total Commandes",
-        "totalRevenue": "Revenus Totaux",
-        "pendingOrders": "Commandes en Attente"
-      }
-    },
-    "debug": {
-      "ozonExpressTitle": "OzonExpress API Debug & Testing",
-      "ozonExpressDescription": "Cette page permet de tester et déboguer l'intégration OzonExpress. Utilisez-la pour vérifier que l'API fonctionne correctement.",
-      "testMode": "Mode de Test",
-      "realApiMode": "Mode API Réelle",
-      "mockTestMode": "Mode Test Mock",
-      "productionMode": "Mode Production",
-      "productionModeDesc": "Les appels API créent de vrais colis avec de vrais numéros de suivi",
-      "testModeDesc": "Les appels API utilisent des données fictives pour les tests",
-      "systemStatus": "État du Système",
-      "checkStatus": "Vérifier l'État",
-      "platformSync": "Synchronisation Plateforme OzonExpress",
-      "realParcelsAnalytics": "Analyse des Colis Réels",
-      "recentRealParcels": "Colis Réels Récents",
-      "quickActions": "Actions Rapides",
-      "advancedApiDebug": "API Debug Avancé",
-      "sendParcel": "Envoyer un Colis",
-      "trackParcel": "Suivre un Colis",
-      "deliveryNoteTest": "Test Bon de Livraison (BL)",
-      "manualEntry": "Saisie Manuelle",
-      "fromOrder": "Depuis Commande",
-      "recipient": "Destinataire",
-      "phone": "Téléphone",
-      "city": "Ville",
-      "price": "Prix",
-      "address": "Adresse",
-      "parcelNature": "Nature du colis",
-      "parcelType": "Type de colis",
-      "parcelDetails": "Détails du Colis",
-      "trackingInfo": "Informations de Suivi",
-      "result": "Résultat",
-      "trackingNumber": "Numéro de suivi",
-      "close": "Fermer",
-      "cancel": "Annuler",
-      "track": "Suivre",
-      "useLastCreated": "Utiliser Dernier Colis",
-      "createdSuccessfully": "créé avec succès",
-      "updated": "mis à jour",
-      "error": "Erreur",
-      "success": "Succès"
-    },
-    "orders": {
-      "bulkUpdateSuccess": "{count} commande(s) mise(s) à jour vers \"{status}\""
-    },
-    "cities": {
-      "editCity": "Modifier la ville",
-      "ozonExpressCities": "Villes OzonExpress",
-      "manageCitiesDesc": "Gérez les villes disponibles pour les expéditions OzonExpress",
-      "import": "Importer",
-      "newCity": "Nouvelle ville",
-      "totalCities": "Total des villes",
-      "activeCities": "Villes actives",
-      "inactiveCities": "Villes inactives",
-      "search": "Rechercher",
-      "searchPlaceholder": "Nom, ID ou référence...",
-      "status": "Statut",
-      "all": "Tous",
-      "active": "Actives",
-      "inactive": "Inactives",
-      "perPage": "Par page",
-      "clear": "Effacer",
-      "cityId": "ID Ville",
-      "name": "Nom",
-      "lastUpdate": "Dernière MAJ",
-      "cityIdPlaceholder": "Ex: 97",
-      "reference": "Référence",
-      "referencePlaceholder": "Ex: CSA",
-      "cityName": "Nom de la ville",
-      "cityNamePlaceholder": "Ex: Casablanca",
-      "activeCity": "Ville active",
-      "deliveryPrice": "Prix livraison (MAD)",
-      "returnPrice": "Prix retour (MAD)",
-      "refusedPrice": "Prix refus (MAD)",
-      "importCities": "Importer des villes",
-      "fileToImport": "Fichier à importer",
-      "importFormats": "Formats acceptés : JSON, CSV. Le fichier doit contenir les colonnes : city_id, name, ref (optionnel), prices.",
-      "cityModifiedSuccess": "Ville modifiée avec succès",
-      "cityCreatedSuccess": "Ville créée avec succès",
-      "saveError": "Erreur lors de la sauvegarde",
-      "citiesImportedSuccess": "Villes importées avec succès",
-      "importError": "Erreur lors de l'importation"
-    },
-    "commissions": {
-      "details": "Détails de la commission"
-    }
-  },
-
-  // ===========================================
-  // AFFILIATE PANEL
-  // ===========================================
-  "affiliate": {
-    "dashboard": {
-      "welcomeMessage": "Bienvenue {name} ! Suivez vos performances et vos gains.",
-      "exportTooltip": "Exporter le rapport de performance",
-      "shareDescription": "Partagez ce lien avec des clients potentiels pour gagner des commissions sur leurs achats."
-    },
-    "orders": {
-      "createdOn": "Créée le {date}",
-      "articles": "Articles",
-      "shipping": "Expédition",
-      "deliveryAddress": "Adresse de livraison",
-      "product": "Produit",
-      "variant": "Variante",
-      "quantity": "Quantité",
-      "unitPrice": "Prix unitaire",
-      "total": "Total",
-      "type": "Type",
-      "baseAmount": "Montant de base",
-      "rate": "Taux",
-      "commission": "Commission",
-      "backToOrders": "Retour aux commandes"
-    },
-    "catalogue": {
-      "errorLoadingCategories": "Erreur lors du chargement des catégories",
-      "category": "Catégorie",
-      "sortBy": "Trier par"
-    }
-  },
-
-  // Additional missing keys from console warnings
+  "pageNotFoundTitle": "Page Non Trouvée ⚠️",
+  "pageNotFoundDescription": "Nous n'avons pas pu trouver la page que vous recherchez.",
+  "users_loading_error": "Erreur lors du chargement des utilisateurs",
+  "commissions_loading_error": "Erreur lors du chargement des commissions",
+  "orders_load_failed": "Erreur lors du chargement des commandes",
+  "commissions_load_failed": "Erreur lors du chargement des commissions",
+  "withdrawals_load_failed": "Erreur lors du chargement des retraits",
+  "no_eligible_commissions": "Aucune commission éligible pour un retrait",
+  "withdrawal_request_failed": "Erreur lors de la demande de retrait",
+  "ticket_load_failed": "Erreur lors du chargement du ticket",
+  "message_required": "Veuillez saisir un message",
+  "message_add_failed": "Erreur lors de l'ajout du message",
+  "ticket_close_failed": "Erreur lors de la fermeture du ticket",
+  "ticket_reopen_failed": "Erreur lors de la réouverture du ticket",
+  "a11y": "{",
+  "error404Image": "Erreur 404",
+  "decorativeImage": "Image décorative",
+  "notifications": "{",
+  "noNotificationsFound": "Aucune notification trouvée !",
+  "noResultsFor": "Aucun résultat pour",
+  "charts": "{",
+  "series": "{",
+  "revenue": "Revenus",
+  "sales": "Ventes",
+  "orders": "Commandes",
+  "users": "Utilisateurs",
+  "affiliates": "Affiliés",
+  "profit": "Profit",
+  "expenses": "Dépenses",
+  "labels": "{",
+  "total": "Total",
+  "growth": "Croissance",
+  "thisMonth": "Ce Mois",
+  "lastMonth": "Mois Dernier",
+  "thisYear": "Cette Année",
+  "lastYear": "Année Dernière",
+  "packageDetails": "Détails du Colis",
+  "orderDetails": "Détails de la Commande",
+  "withdrawalDetails": "Détails du retrait",
+  "returnFee": "Frais de retour",
+  "dialogs": "{",
+  "confirmAction": "Confirmer l'action",
+  "confirmMessage": "Êtes-vous sûr de vouloir continuer ?",
+  "blocked": "Bloqué",
+  "terminated": "Résilié",
+  "pending": "En attente",
+  "approved": "Approuvé",
+  "rejected": "Rejeté",
+  "form": "{",
+  "fullName": "Nom complet",
+  "modified": "Modifié",
+  "admin": "{",
+  "dashboard": "{",
+  "welcome": "Bienvenue dans l'espace administrateur",
+  "earningReports": "Rapports de Revenus",
+  "weeklyEarningsOverview": "Aperçu des Revenus Hebdomadaires",
+  "youInformed": "Vous êtes informé de cette semaine par rapport à la semaine dernière",
+  "earnings": "Revenus",
+  "expense": "Dépenses",
+  "viewMore": "Voir Plus",
+  "statistics": "Statistiques",
+  "updatedAgo": "\"Mis à jour il y a {time",
+  "customers": "Clients",
+  "stats": "{",
+  "totalUsers": "Total Utilisateurs",
+  "totalOrders": "Total Commandes",
+  "totalRevenue": "Revenus Totaux",
+  "pendingOrders": "Commandes en Attente",
+  "debug": "{",
+  "ozonExpressTitle": "OzonExpress API Debug & Testing",
+  "ozonExpressDescription": "Cette page permet de tester et déboguer l'intégration OzonExpress. Utilisez-la pour vérifier que l'API fonctionne correctement.",
+  "testMode": "Mode de Test",
+  "realApiMode": "Mode API Réelle",
+  "mockTestMode": "Mode Test Mock",
+  "productionMode": "Mode Production",
+  "productionModeDesc": "Les appels API créent de vrais colis avec de vrais numéros de suivi",
+  "testModeDesc": "Les appels API utilisent des données fictives pour les tests",
+  "systemStatus": "État du Système",
+  "checkStatus": "Vérifier l'État",
+  "platformSync": "Synchronisation Plateforme OzonExpress",
+  "realParcelsAnalytics": "Analyse des Colis Réels",
+  "recentRealParcels": "Colis Réels Récents",
+  "quickActions": "Actions Rapides",
+  "advancedApiDebug": "API Debug Avancé",
+  "sendParcel": "Envoyer un Colis",
+  "trackParcel": "Suivre un Colis",
+  "deliveryNoteTest": "Test Bon de Livraison (BL)",
+  "manualEntry": "Saisie Manuelle",
+  "fromOrder": "Depuis Commande",
+  "recipient": "Destinataire",
+  "price": "Prix",
+  "parcelNature": "Nature du colis",
+  "parcelType": "Type de colis",
+  "parcelDetails": "Détails du Colis",
+  "trackingInfo": "Informations de Suivi",
+  "result": "Résultat",
+  "trackingNumber": "Numéro de suivi",
+  "useLastCreated": "Utiliser Dernier Colis",
+  "createdSuccessfully": "créé avec succès",
+  "updated": "mis à jour",
+  "error": "Erreur",
+  "success": "Succès",
+  "bulkUpdateSuccess": "\"{count",
+  "cities": "{",
+  "editCity": "Modifier la ville",
+  "ozonExpressCities": "Villes OzonExpress",
+  "manageCitiesDesc": "Gérez les villes disponibles pour les expéditions OzonExpress",
+  "import": "Importer",
+  "newCity": "Nouvelle ville",
+  "totalCities": "Total des villes",
+  "activeCities": "Villes actives",
+  "inactiveCities": "Villes inactives",
+  "searchPlaceholder": "\"Nom",
+  "perPage": "Par page",
+  "cityId": "ID Ville",
+  "lastUpdate": "Dernière MAJ",
+  "cityIdPlaceholder": "Ex: 97",
+  "referencePlaceholder": "Ex: CSA",
+  "cityName": "Nom de la ville",
+  "cityNamePlaceholder": "Ex: Casablanca",
+  "activeCity": "Ville active",
+  "deliveryPrice": "Prix livraison (MAD)",
+  "returnPrice": "Prix retour (MAD)",
+  "refusedPrice": "Prix refus (MAD)",
+  "importCities": "Importer des villes",
+  "fileToImport": "Fichier à importer",
+  "importFormats": "\"Formats acceptés : JSON",
+  "cityModifiedSuccess": "Ville modifiée avec succès",
+  "cityCreatedSuccess": "Ville créée avec succès",
+  "saveError": "Erreur lors de la sauvegarde",
+  "citiesImportedSuccess": "Villes importées avec succès",
+  "importError": "Erreur lors de l'importation",
+  "affiliate": "{",
+  "welcomeMessage": "\"Bienvenue {name",
+  "exportTooltip": "Exporter le rapport de performance",
+  "shareDescription": "Partagez ce lien avec des clients potentiels pour gagner des commissions sur leurs achats.",
+  "createdOn": "\"Créée le {date",
+  "articles": "Articles",
+  "shipping": "Expédition",
+  "deliveryAddress": "Adresse de livraison",
+  "unitPrice": "Prix unitaire",
+  "baseAmount": "Montant de base",
+  "rate": "Taux",
+  "commission": "Commission",
+  "catalogue": "{",
+  "errorLoadingCategories": "Erreur lors du chargement des catégories",
+  "sortBy": "Trier par",
   "common.back": "Retour",
   "common.edit": "Modifier",
   "common.loading": "Chargement...",
   "common.back_to_list": "Retour à la liste",
   "admin_produits_variante_nom": "Nom de la Variante",
   "admin_produits_variante_valeur": "Valeur de la Variante",
-
-  // Latest missing keys
   "Catalogue de Variantes": "Catalogue de Variantes",
-
-  // Soft delete messages
-  "messages.delete_failed": "Échec de la suppression de {entity}",
-  "messages.restore_failed": "Échec de la restauration de {entity}",
-  "messages.permanent_delete_failed": "Échec de la suppression définitive de {entity}",
-  "messages.item_deleted_successfully": "{entity} '{name}' supprimé avec succès",
-  "messages.item_restored_successfully": "{entity} '{name}' restauré avec succès",
-  "messages.item_permanently_deleted": "{entity} '{name}' supprimé définitivement",
-  "messages.entity_deleted_successfully": "{entity} supprimé avec succès",
-  "messages.entity_restored_successfully": "{entity} restauré avec succès",
-  "messages.entity_permanently_deleted": "{entity} supprimé définitivement",
+  "messages.delete_failed": "\"Échec de la suppression de {entity",
+  "messages.restore_failed": "\"Échec de la restauration de {entity",
+  "messages.permanent_delete_failed": "\"Échec de la suppression définitive de {entity",
+  "messages.item_deleted_successfully": "\"{entity",
+  "messages.item_restored_successfully": "\"{entity",
+  "messages.item_permanently_deleted": "\"{entity",
+  "messages.entity_deleted_successfully": "\"{entity",
+  "messages.entity_restored_successfully": "\"{entity",
+  "messages.entity_permanently_deleted": "\"{entity",
   "messages.user_not_deleted": "L'utilisateur n'est pas supprimé",
   "messages.user_permanently_deleted": "Utilisateur supprimé définitivement",
   "messages.user_restored_successfully": "Utilisateur restauré avec succès",
@@ -1740,34 +1335,19 @@
   "File d'Attente d'Approbation": "File d'Attente d'Approbation",
   "Pré-commandes": "Pré-commandes",
   "Expéditions": "Expéditions",
-
-  // OzonExpress and shipping keys
   "Debug OzonExpress": "Debug OzonExpress",
   "OzonExpress Paramètres": "OzonExpress Paramètres",
   "OzonExpress Villes": "OzonExpress Villes",
-
-  // Dashboard and actions keys
-  "dashboard": "Tableau de bord",
   "admin_breadcrumb": "Admin",
   "dashboard_data_refreshed": "Données du tableau de bord actualisées",
   "dashboard_refresh_failed": "Échec de l'actualisation du tableau de bord",
   "actions.edit": "Modifier",
   "actions.view": "Voir",
   "actions.delete": "Supprimer",
-
-  // User status keys
-  "blocked": "Bloqué",
   "not_required": "Non requis",
-  "pending": "En attente",
-  "approved": "Approuvé",
-  "rejected": "Rejeté",
-
-  // Withdrawals and Vuetify stepper keys
   "Retraits": "Retraits",
   "$vuetify.stepper.prev": "Précédent",
   "$vuetify.stepper.next": "Suivant",
-
-  // Support ticket system keys (missing from console warnings)
   "Support": "Support",
   "Tickets de Support": "Tickets de Support",
   "tickets.form.title": "Titre",
@@ -1779,56 +1359,30 @@
   "tickets.form.priority": "Priorité",
   "tickets.form.status": "Statut",
   "tickets.form.assignee": "Assigné à",
-
-  // Additional support ticket interface keys
-  "loading": "Chargement...",
   "loading_ticket": "Chargement du ticket...",
   "add_message": "Ajouter un Message",
   "message": "Message",
   "drag_drop_files": "Glissez-déposez les fichiers ici",
   "browse": "Parcourir",
-
-  // Stock history dialog keys
   "common.filters": "Filtres",
   "common.clear_filters": "Effacer les Filtres",
   "common.clear": "Effacer",
   "short": "Court",
   "time": "Heure",
-
-  // Loading and redirect messages
   "Loading": "Chargement",
   "Redirecting to your dashboard": "Redirection vers votre tableau de bord",
-
-  // Login form keys
   "placeholder_email_or_username": "Entrez votre email ou nom d'utilisateur",
   "placeholder_enter_email": "Entrez votre email",
   "form_password": "Mot de passe",
   "placeholder_enter_password": "Entrez votre mot de passe",
-
-  // Referral management
   "Gestion du Parrainage": "Gestion du Parrainage",
   "Tableau de Bord Parrainage": "Tableau de Bord Parrainage",
   "Utilisateurs Parrainés": "Utilisateurs Parrainés",
   "Récompenses Manuelles": "Récompenses Manuelles",
   "Gestion des Parrains": "Gestion des Parrains",
-
-  // Stock management
   "Gestion des Stocks": "Gestion des Stocks",
   "Gestion Stock": "Gestion Stock",
-
-  // Settings
   "Paramètres": "Paramètres",
-
-
-  // ===========================================
-  // TICKETS DE SUPPORT
-  // ===========================================
-
-  // Navigation
-  "nav_support": "Support",
-  "nav_support_tickets": "Tickets de Support",
-
-  // Titres de pages
   "support_tickets": "Tickets de Support",
   "support_tickets_description": "Gérer les tickets de support client et les communications",
   "create_ticket": "Créer un Ticket",
@@ -1836,8 +1390,6 @@
   "create_ticket_description": "Créer un nouveau ticket de support pour un utilisateur",
   "create_ticket_admin_description": "Créer un ticket au nom d'un utilisateur ou pour un suivi interne",
   "ticket_details": "Détails du Ticket",
-
-  // Propriétés des tickets
   "ticket_ref": "Réf",
   "ticket_subject": "Sujet",
   "ticket_category": "Catégorie",
@@ -1846,34 +1398,25 @@
   "ticket_requester": "Demandeur",
   "ticket_assignee": "Assigné à",
   "subject": "Sujet",
-  "category": "Catégorie",
   "priority": "Priorité",
-  "status": "Statut",
   "requester": "Demandeur",
   "assignee": "Assigné à",
   "last_activity": "Dernière Activité",
   "first_response": "Première Réponse",
   "resolved": "Résolu",
-  "created": "Créé",
   "people": "Personnes",
   "related_items": "Éléments Liés",
   "ticket_information": "Informations du Ticket",
-
-  // Statuts des tickets
   "ticket_status_open": "Ouvert",
   "ticket_status_pending": "En Attente",
   "ticket_status_waiting_user": "En Attente Utilisateur",
   "ticket_status_waiting_third_party": "En Attente Tiers",
   "ticket_status_resolved": "Résolu",
   "ticket_status_closed": "Fermé",
-
-  // Priorités des tickets
   "ticket_priority_low": "Faible",
   "ticket_priority_normal": "Normale",
   "ticket_priority_high": "Élevée",
   "ticket_priority_urgent": "Urgente",
-
-  // Catégories des tickets
   "ticket_category_general": "Général",
   "ticket_category_orders": "Commandes",
   "ticket_category_payments": "Paiements",
@@ -1881,9 +1424,6 @@
   "ticket_category_kyc": "KYC",
   "ticket_category_technical": "Technique",
   "ticket_category_other": "Autre",
-
-  // Messages
-  "messages": "Messages",
   "message_type": "Type de Message",
   "message_body": "Corps du Message",
   "message_type_public": "Public",
@@ -1891,22 +1431,18 @@
   "message_body_placeholder": "Tapez votre message ici...",
   "send_message": "Envoyer le Message",
   "attachments": "Pièces Jointes",
-  "attachment_limits": "Maximum {max} fichiers, {size} chacun",
+  "attachment_limits": "\"Maximum {max",
   "keyboard_shortcut_hint": "Appuyez sur Ctrl+Entrée pour envoyer",
   "internal": "Interne",
   "public": "Public",
   "no_messages": "Aucun Message",
   "no_messages_description": "Ce ticket n'a pas encore de messages.",
-
-  // Statistiques
   "open_tickets": "Ouverts",
   "resolved_tickets": "Résolus",
   "closed_tickets": "Fermés",
   "unassigned_tickets": "Non Assignés",
   "high_priority_tickets": "Priorité Élevée",
   "total_tickets": "Total",
-
-  // Actions
   "assign": "Assigner",
   "assign_ticket": "Assigner le Ticket",
   "change_status": "Changer le Statut",
@@ -1915,34 +1451,24 @@
   "mark_closed": "Marquer comme Fermé",
   "unassigned": "Non Assigné",
   "select_assignee": "Sélectionner un Assigné",
-  "select_status": "Sélectionner un Statut",
   "select_requester": "Sélectionner un Demandeur",
-
-  // Recherche et filtres
   "search_tickets": "Rechercher des tickets",
-  "search_placeholder": "Rechercher par sujet ou contenu de message...",
-  "filters": "Filtres",
   "clear_filters": "Effacer les Filtres",
   "sort_last_activity": "Dernière Activité",
   "sort_created_date": "Date de Création",
   "sort_subject": "Sujet",
   "sort_priority": "Priorité",
   "sort_status": "Statut",
-
-  // Actions en lot
-  "selected_count": "{count} sélectionné(s)",
+  "selected_count": "\"{count",
   "bulk_assign_tickets": "Assigner les Tickets en Lot",
   "bulk_change_status": "Changer le Statut en Lot",
   "confirm_bulk_assign_title": "Assigner les Tickets",
-  "confirm_bulk_assign_text": "Êtes-vous sûr de vouloir assigner {count} tickets ?",
+  "confirm_bulk_assign_text": "\"Êtes-vous sûr de vouloir assigner {count",
   "confirm_bulk_status_title": "Changer le Statut",
-  "confirm_bulk_status_text": "Êtes-vous sûr de vouloir changer le statut de {count} tickets ?",
-
-  // Formulaire
+  "confirm_bulk_status_text": "\"Êtes-vous sûr de vouloir changer le statut de {count",
   "subject_placeholder": "Entrez le sujet du ticket...",
   "first_message": "Premier Message",
   "add_first_message": "Ajouter un Premier Message",
-  "actions": "Actions",
   "help": "Aide",
   "ticket_type": "Type de Ticket",
   "ticket_type_on_behalf": "Au Nom de l'Utilisateur",
@@ -1953,51 +1479,33 @@
   "create_ticket_help_2": "Ajoutez optionnellement un premier message pour commencer la conversation.",
   "create_ticket_help_3": "Vous pourrez ajouter des éléments liés et des pièces jointes plus tard.",
   "create_ticket_admin_help_1": "Choisissez le type de ticket : au nom d'un utilisateur ou suivi interne.",
-  "create_ticket_admin_help_2": "Pour les tickets 'Au Nom', sélectionnez l'utilisateur réel qui a besoin d'aide.",
-  "create_ticket_admin_help_3": "Pour les tickets 'Internes', vous serez défini comme demandeur.",
-
-  // Temps
+  "create_ticket_admin_help_2": "\"Pour les tickets 'Au Nom'",
+  "create_ticket_admin_help_3": "\"Pour les tickets 'Internes'",
   "just_now": "À l'instant",
-  "hours_ago": "Il y a {count} heure | Il y a {count} heures",
-  "days_ago": "Il y a {count} jour | Il y a {count} jours",
-  "messages_count": "{count} message | {count} messages",
-  "created_by": "Créé par",
-
-  // États vides
+  "hours_ago": "\"Il y a {count",
+  "days_ago": "\"Il y a {count",
+  "messages_count": "\"{count",
   "no_tickets_found": "Aucun Ticket Trouvé",
   "no_tickets_description": "Aucun ticket ne correspond à vos filtres actuels.",
   "create_first_ticket": "Créer le Premier Ticket",
   "ticket_not_found": "Ticket Non Trouvé",
   "ticket_not_found_description": "Le ticket que vous recherchez n'existe pas ou a été supprimé.",
   "back_to_tickets": "Retour aux Tickets",
-  "no_users_found": "Aucun utilisateur trouvé",
   "type_to_search": "Tapez pour rechercher des utilisateurs",
-
-  // ===========================================
-  // PRODUCT RATING MODULE
-  // ===========================================
   "products.rating.tab": "Notation",
   "products.rating.value": "Note (0–5)",
   "products.rating.last_update": "Dernière mise à jour",
   "products.rating.updated_by": "Mis à jour par",
   "products.list.column.rating": "Note",
   "products.rating.help": "Note statique définie par l'administrateur",
-
-  // ===========================================
-  // STOCK MANAGEMENT MODULE
-  // ===========================================
   "stock.title": "Gestion des Stocks",
   "stock.subtitle": "Gérer les niveaux de stock et les mouvements",
   "stock.no_results": "Aucun stock trouvé",
   "stock.try_adjusting_filters": "Essayez d'ajuster vos filtres de recherche",
-
-  // KPI Cards
   "stock.kpi.products": "Produits",
   "stock.kpi.on_hand": "En Stock",
   "stock.kpi.reserved": "Réservé",
   "stock.kpi.available": "Disponible",
-
-  // Table Columns
   "stock.columns.product": "Produit",
   "stock.columns.variant": "Variante",
   "stock.columns.category": "Catégorie",
@@ -2006,17 +1514,14 @@
   "stock.columns.reserved": "Réservé",
   "stock.columns.available": "Disponible",
   "stock.columns.last_movement": "Dernier Mouvement",
-
   "stock.table.title": "Inventaire des Stocks",
   "stock.table.items": "articles",
   "stock.table.no_data_title": "Aucun stock trouvé",
   "stock.table.no_data_subtitle": "Aucun produit ne correspond à vos critères de recherche",
   "stock.table.reset_filters": "Réinitialiser les filtres",
-
-  // Filters
   "stock.filters.title": "Filtres",
   "stock.filters.search": "Rechercher un produit",
-  "stock.filters.search_placeholder": "Nom du produit, SKU, référence...",
+  "stock.filters.search_placeholder": "\"Nom du produit",
   "stock.filters.boutique": "Boutique",
   "stock.filters.category": "Catégorie",
   "stock.filters.with_variants": "Avec variantes",
@@ -2027,36 +1532,26 @@
   "stock.filters.date_from": "Date de début",
   "stock.filters.date_to": "Date de fin",
   "stock.filters.warehouse": "Entrepôt",
-
-  // Actions
   "stock.actions.in": "Entrée stock",
   "stock.actions.out": "Sortie stock",
   "stock.actions.adjust": "Ajustement",
   "stock.actions.history": "Historique",
   "stock.actions.create_movement": "Créer le mouvement",
-
-  // Stock Status
   "stock.on_hand": "En stock",
   "stock.reserved": "Réservé",
   "stock.available": "Disponible",
   "stock.current_stock": "Stock actuel",
-
-  // Movement Dialog
   "stock.dialog.movement.title": "Mouvement de Stock",
   "stock.dialog.movement.confirm_title": "Confirmer le mouvement",
-  "stock.dialog.movement.confirm_text": "Êtes-vous sûr de vouloir créer un mouvement de {type} de {quantity} unités pour {product} ?",
-
-  // Form Fields
+  "stock.dialog.movement.confirm_text": "\"Êtes-vous sûr de vouloir créer un mouvement de {type",
   "stock.fields.type": "Type de mouvement",
   "stock.fields.quantity": "Quantité",
   "stock.fields.reason": "Raison",
   "stock.fields.reference": "Référence",
   "stock.fields.note": "Note",
   "stock.fields.note_placeholder": "Commentaire optionnel sur ce mouvement...",
-
-  // History
   "stock.history.title": "Historique des Mouvements",
-  "stock.history.title_for": "Historique - {product}",
+  "stock.history.title_for": "\"Historique - {product",
   "stock.history.no_movements": "Aucun mouvement trouvé",
   "stock.history.no_movements_desc": "Aucun mouvement de stock n'a été enregistré pour ce produit",
   "stock.history.columns.date": "Date",
@@ -2064,20 +1559,14 @@
   "stock.history.columns.quantity": "Quantité",
   "stock.history.columns.reference": "Référence",
   "stock.history.columns.variant": "Variante",
-
-  // Messages
   "stock.movement": "mouvement de stock",
   "stock.messages.movement_created": "Mouvement de stock créé avec succès",
   "stock.errors.movement_failed": "Échec de la création du mouvement de stock",
   "stock.errors.missing_product": "Produit manquant. Veuillez sélectionner un produit.",
-
-  "stock.validation.insufficient_stock": "Stock insuffisant. Disponible: {available}",
-
+  "stock.validation.insufficient_stock": "\"Stock insuffisant. Disponible: {available",
   "validation.required": "Ce champ est requis",
-  "validation.min_value": "La valeur doit être au moins {min}",
-
+  "validation.min_value": "\"La valeur doit être au moins {min",
   "nav_stock_management": "Gestion des Stocks",
-
   "reservations.title": "Réservations de Stock",
   "reservations.subtitle": "Gérer les réservations de stock",
   "reservations.create": "Créer une Réservation",
@@ -2085,7 +1574,6 @@
   "reservations.use": "Utiliser la Réservation",
   "reservations.cleanup": "Nettoyer les Expirées",
   "reservations.stats": "Statistiques des Réservations",
-
   "reservations.columns.product": "Produit",
   "reservations.columns.variant": "Variante",
   "reservations.columns.warehouse": "Entrepôt",
@@ -2095,12 +1583,10 @@
   "reservations.columns.expires_at": "Expire le",
   "reservations.columns.status": "Statut",
   "reservations.columns.created_at": "Créé le",
-
   "reservations.status.active": "Active",
   "reservations.status.utilisee": "Utilisée",
   "reservations.status.expiree": "Expirée",
   "reservations.status.annulee": "Annulée",
-
   "reservations.form.variant": "Variante du Produit",
   "reservations.form.warehouse": "Entrepôt",
   "reservations.form.quantity": "Quantité à Réserver",
@@ -2108,26 +1594,19 @@
   "reservations.form.offer": "Offre (optionnel)",
   "reservations.form.expires_at": "Date d'Expiration",
   "reservations.form.note": "Note",
-
   "reservations.messages.created": "Réservation créée avec succès",
   "reservations.messages.released": "Réservation annulée avec succès",
   "reservations.messages.used": "Réservation utilisée avec succès",
   "reservations.messages.cleanup_completed": "Nettoyage des réservations expirées terminé",
-
   "reservations.filters.search": "Rechercher...",
   "reservations.filters.status": "Statut",
   "reservations.filters.warehouse": "Entrepôt",
   "reservations.filters.affiliate": "Affilié",
-
   "reservations.no_data": "Aucune réservation trouvée",
   "reservations.no_data_subtitle": "Aucune réservation ne correspond à vos critères",
-
-  // ===========================================
-  // AFFILIATE CATALOGUE
-  // ===========================================
   "catalogue.title": "Catalogue produits",
   "catalogue.search": "Rechercher un produit",
-  "catalogue.search_placeholder": "Nom du produit, description...",
+  "catalogue.search_placeholder": "\"Nom du produit",
   "catalogue.category": "Catégorie",
   "catalogue.all_categories": "Toutes les catégories",
   "catalogue.min_profit": "Profit minimum",
@@ -2145,17 +1624,13 @@
   "catalogue.loading": "Chargement des produits...",
   "catalogue.error_loading": "Erreur lors du chargement du catalogue",
   "catalogue.items_per_page": "Produits par page",
-  "catalogue.showing_results": "Affichage de {from} à {to} sur {total} produits",
-
-  // Product card
-  "catalogue.card.stock_badge": "{count} en stock",
+  "catalogue.showing_results": "\"Affichage de {from",
+  "catalogue.card.stock_badge": "\"{count",
   "catalogue.card.out_of_stock": "Rupture de stock",
   "catalogue.card.low_stock": "Stock faible",
-  "catalogue.card.profit_label": "+{amount} MAD",
-  "catalogue.card.rating": "Note: {rating}/5",
+  "catalogue.card.profit_label": "\"+{amount",
+  "catalogue.card.rating": "\"Note: {rating",
   "catalogue.card.no_rating": "Pas encore noté",
-
-  // Product detail drawer
   "catalogue.drawer.title": "Détails du produit",
   "catalogue.kpis.stock": "Stock",
   "catalogue.kpis.buy": "Achat",
@@ -2176,15 +1651,13 @@
   "catalogue.colors": "Couleurs disponibles",
   "catalogue.detail.quantity": "Quantité",
   "catalogue.select.color": "Sélectionnez une couleur",
-  "catalogue.select.size": "Sélectionnez une taille", 
+  "catalogue.select.size": "Sélectionnez une taille",
   "catalogue.qty.max_zero": "Stock épuisé pour cette variante",
   "catalogue.table.quantity": "Quantité",
   "catalogue.cart.added_success": "Produit ajouté au panier avec succès",
-  "catalogue.cart.items_count": "{count} article(s)",
+  "catalogue.cart.items_count": "\"{count",
   "drawer.table.size": "Taille",
   "drawer.table.qty": "Quantité disponible",
-
-  // Product stock management
   "product.tabs.stock": "Stock",
   "product.stock.total": "Stock total",
   "product.stock.distribute": "Répartir sur variantes",
@@ -2206,19 +1679,12 @@
   "product.stock.matrix.qty": "Quantité",
   "product.stock.matrix.reserved": "Réservé",
   "product.stock.matrix.available": "Disponible",
-  "product.stock.distribute": "Répartir sur variantes",
   "product.stock.warehouse": "Entrepôt",
   "product.stock.save_success": "Stock mis à jour avec succès",
   "product.stock.auto_default_warehouse": "Création d'un entrepôt par défaut",
   "product.stock.error_exceeded": "Impossible de sauvegarder : La somme des variantes dépasse le stock total",
-  "product.stock.error_exceeded_detail": "La somme des variantes ({allocated}) dépasse le stock total ({total})",
+  "product.stock.error_exceeded_detail": "\"La somme des variantes ({allocated",
   "product.stock.validation_blocked": "Sauvegarde bloquée : Réduisez les quantités des variantes ou augmentez le stock total",
-  "catalogue.qty.max_zero": "Rupture pour cette combinaison",
-  "catalogue.select.size": "Choisissez une taille",
-  "catalogue.select.color": "Choisissez une couleur",
-  "catalogue.table.quantity": "Quantité",
-  "catalogue.table.color": "Couleur",
-  "catalogue.table.size": "Taille",
   "catalogue.detail.description": "Description",
   "catalogue.detail.specifications": "Caractéristiques",
   "catalogue.detail.variants": "Variantes",
@@ -2229,17 +1695,12 @@
   "catalogue.detail.add_to_cart_success": "Produit ajouté au panier",
   "catalogue.detail.add_to_cart_error": "Erreur lors de l'ajout au panier",
   "catalogue.detail.select_variant": "Sélectionner une variante",
-  "catalogue.detail.quantity": "Quantité",
-  "catalogue.detail.max_quantity": "Maximum {max}",
+  "catalogue.detail.max_quantity": "\"Maximum {max",
   "catalogue.detail.insufficient_stock": "Stock insuffisant",
-
-  // Cart
   "catalogue.cart.summary": "Résumé du panier",
-  "catalogue.cart.items_count": "{count} article(s)",
-  "catalogue.cart.total": "Total: {amount} MAD",
+  "catalogue.cart.total": "\"Total: {amount",
   "catalogue.cart.empty": "Votre panier est vide",
   "catalogue.cart.view_cart": "Voir le panier",
-  "catalogue.cart.added_success": "Produit ajouté au panier avec succès",
   "catalogue.cart.removed_success": "Produit retiré du panier",
   "catalogue.cart.error": "Erreur lors de l'opération sur le panier",
   "catalogue.cart.updated": "Panier mis à jour",
@@ -2249,8 +1710,6 @@
   "catalogue.cart.validation_error": "Données invalides",
   "catalogue.added_to_cart": "Ajouté au panier",
   "error.route_not_found": "Route non trouvée",
-
-  // Filters
   "catalogue.filters.apply": "Appliquer les filtres",
   "catalogue.filters.reset": "Réinitialiser",
   "catalogue.filters.price_range": "Fourchette de prix",
@@ -2267,10 +1726,6 @@
   "catalogue.filters.sort_profit_desc": "Profit décroissant",
   "catalogue.filters.sort_name_asc": "Nom A-Z",
   "catalogue.filters.sort_name_desc": "Nom Z-A",
-
-  // ===========================================
-  // DASHBOARD ANALYTICS
-  // ===========================================
   "dashboard_analytics": "Analyses du Tableau de Bord",
   "performance_analytics": "Analyses de Performance",
   "my_signups_over_time": "Mes Inscriptions dans le Temps",
@@ -2282,12 +1737,8 @@
   "top_affiliates_by_commissions": "Top Affiliés par Commissions",
   "recent_payout_requests": "Demandes de Paiement Récentes",
   "my_recent_leads": "Mes Prospects Récents",
-  "current_points": "Points Actuels",
   "available_points": "Points Disponibles",
-  "total_commissions": "Commissions Totales",
   "monthly_earnings": "Gains Mensuels",
-  "verified_signups": "Inscriptions Vérifiées",
-  "conversion_rate": "Taux de Conversion",
   "total_orders": "Commandes Totales",
   "click_rate": "Taux de Clic",
   "click_through_rate": "Taux de Clic",
@@ -2306,11 +1757,6 @@
   "pending_payouts": "Paiements en Attente",
   "requests": "demandes",
   "orders_by_status": "Commandes par Statut",
-  "available_points": "Points Disponibles",
-
-  // ===========================================
-  // REFERRAL SYSTEM
-  // ===========================================
   "referral_dashboard": "Tableau de Bord Parrainage",
   "referral_dashboard_subtitle": "Gérez et suivez les parrainages d'affiliés",
   "referral_total_clicks": "Clics Totaux",
@@ -2324,52 +1770,18 @@
   "referred_users_subtitle": "Gérez tous les utilisateurs parrainés par les affiliés",
   "dispensations_management": "Gestion des Récompenses",
   "dispensations_subtitle": "Gérez les récompenses manuelles pour les parrains",
-  "create_dispensation": "Créer une Récompense",
-  "my_referrals": "Mes Parrainages",
-  "referrals_subtitle": "Suivez vos parrainages et gagnez des récompenses",
-  "your_referral_link": "Votre Lien de Parrainage",
-  "referral_link_instructions": "Partagez ce lien avec vos contacts. Ils ont 30 jours pour s'inscrire après avoir cliqué.",
-  "link_copied_successfully": "Lien copié avec succès !",
-  "referral_clicks": "Clics",
-  "signups": "Inscriptions",
-  "verified_signups": "Inscriptions Vérifiées",
-  "conversion_rate": "Taux de Conversion",
-  "total_points": "Points Totaux",
-  "recent_activity": "Activité Récente",
-  "no_activity_yet": "Aucune activité pour le moment",
-  "view_referred_users": "Voir les Utilisateurs Parrainés",
-  "view_rewards_history": "Voir l'Historique des Récompenses",
-  "share_referral_link": "Partager le Lien",
-  "how_it_works": "Comment ça marche",
-  "share_your_link": "Partagez votre lien",
-  "share_link_description": "Envoyez votre lien de parrainage à vos contacts",
-  "friend_signs_up": "Votre contact s'inscrit",
-  "signup_description": "Il s'inscrit dans les 30 jours et vérifie son email",
-  "earn_rewards": "Gagnez des récompenses",
-  "rewards_description": "Recevez des points attribués manuellement par l'admin",
   "referrer": "Parrain",
-  "signup_date": "Date d'Inscription",
-  "verification_status": "Statut de Vérification",
-  "source": "Source",
-  "verified": "Vérifié",
-  "pending_verification": "En Attente de Vérification",
   "web": "Web",
   "mobile": "Mobile",
-  "search_users": "Rechercher des utilisateurs",
-  "search_by_name_email": "Rechercher par nom ou email",
   "no_referred_users": "Aucun utilisateur parrainé",
   "no_referred_users_description": "Aucun utilisateur parrainé trouvé avec ces filtères",
   "points": "Points",
   "comment": "Commentaire",
-  "reference": "Référence",
-  "created_by": "Créé par",
-  "date": "Date",
   "search_comment_reference": "Rechercher dans commentaires/références",
   "min_points": "Points Min",
   "max_points": "Points Max",
   "no_dispensations": "Aucune récompense",
   "no_dispensations_description": "Aucune récompense manuelle créée pour le moment",
-  "affiliate": "Affilié",
   "affiliate_required": "L'affilié est requis",
   "points_required": "Les points sont requis",
   "points_must_be_positive": "Les points doivent être positifs",
@@ -2380,7 +1792,6 @@
   "campaign_code_or_reference": "Code de campagne ou référence",
   "no_referrers_yet": "Aucun parrain pour le moment",
   "no_referrers_description": "Aucun affilié n'a encore généré de parrainages",
-  "quick_actions": "Actions Rapides",
   "system_info": "Informations Système",
   "attribution_window": "Fenêtre d'Attribution",
   "days": "jours",
@@ -2392,16 +1803,10 @@
   "manage_dispensations": "Gérer les Récompenses",
   "total_referrals": "Parrainages Totaux",
   "verified_referrals": "Parrainages Vérifiés",
-  "referral_link_share_title": "Rejoignez-nous !",
-  "referral_link_share_text": "Inscrivez-vous via mon lien de parrainage",
-  "my_referred_users": "Mes Utilisateurs Parrainés",
-  "my_referred_users_subtitle": "Consultez tous les utilisateurs que vous avez parrainés",
-  "back_to_dashboard": "Retour au Tableau de Bord",
   "no_referred_users_yet": "Aucun utilisateur parrainé",
   "no_referred_users_yet_description": "Vous n'avez pas encore parrainé d'utilisateurs. Partagez votre lien !",
   "my_rewards_history": "Mon Historique de Récompenses",
   "rewards_history_subtitle": "Consultez toutes les récompenses que vous avez reçues",
-  "total_points_earned": "Total des Points Gagnés",
   "rewards_history": "Historique des Récompenses",
   "no_rewards_yet": "Aucune récompense",
   "no_rewards_yet_description": "Vous n'avez pas encore reçu de récompenses. Continuez à parrainer !",
@@ -2411,9 +1816,6 @@
   "earn_tip_1": "Partagez votre lien de parrainage avec plus de contacts",
   "earn_tip_2": "Encouragez vos contacts à vérifier leur email après inscription",
   "earn_tip_3": "Participez aux campagnes spéciales de parrainage",
-  "unverified": "Non Vérifié",
-
-  // Insert new translation keys at the end of the file before the closing brace
   "bank_type": "Type de banque",
   "select_bank": "Sélectionner une banque",
   "rib": "RIB",
@@ -2424,26 +1826,16 @@
   "all_roles": "All Roles",
   "filter_by_role": "Filter by role",
   "email_verified": "Email vérifié",
-  "yes": "Oui",
   "no": "Non",
-  "close": "Fermer",
-  "edit": "Modifier",
-  "error_user_has_related_data": "L'utilisateur {name} a des données associées qui empêchent sa suppression.",
-  "error_user_constraint_violation": "Violation de contrainte pour l'utilisateur {name}.",
-  "banks": {
-      "attijariwafa": "Attijariwafa",
-      "banque_populaire": "Banque Populaire"
-  },
-
-  // ===========================================
-  // ADMIN PANEL - GENERAL
-  // ===========================================
+  "error_user_has_related_data": "\"L'utilisateur {name",
+  "error_user_constraint_violation": "\"Violation de contrainte pour l'utilisateur {name",
+  "banks": "{",
+  "attijariwafa": "Attijariwafa",
+  "banque_populaire": "Banque Populaire",
   "admin_dashboard_title": "Tableau de bord administrateur",
   "admin_simple_dashboard_title": "Tableau de bord administrateur simple",
   "admin_panel": "Panneau d'administration",
-
-  // Admin Dashboard Specific Translations
-  "admin_dashboard_welcome": "Bienvenue, {name} ! Voici ce qui se passe sur votre plateforme.",
+  "admin_dashboard_welcome": "\"Bienvenue",
   "admin_dashboard_analytics_subtitle": "Tableau de bord d'intelligence d'affaires complet",
   "admin_dashboard_auto_refresh_tooltip": "Actualisation automatique toutes les 5 minutes",
   "admin_dashboard_refresh": "Actualiser",
@@ -2472,26 +1864,18 @@
   "admin_dashboard_table_affiliate": "Affilié",
   "admin_dashboard_table_amount": "Montant",
   "admin_dashboard_table_requested": "Demandé",
-
-  // Admin Users Management
   "admin_users_all_roles": "Tous les rôles",
   "admin_users_filter_by_role": "Filtrer par rôle",
-
-  // Admin KYC Documents Management
   "admin_kyc_unexpected_users_format": "Format de données utilisateurs inattendu",
   "admin_kyc_download_failed": "Échec du téléchargement du document",
   "admin_kyc_type_cni": "CNI",
   "admin_kyc_type_passport": "Passeport",
   "admin_kyc_type_rib": "RIB",
   "admin_kyc_type_contract": "Contrat",
-
-  // Admin Affiliates Management
   "admin_affiliates_bank_not_provided": "Non renseigné",
   "admin_affiliates_email_verified": "Vérifié",
   "admin_affiliates_email_not_verified": "Non vérifié",
   "admin_affiliates_resend_verification_tooltip": "Renvoyer l'email de vérification",
-
-  // Affiliate Dashboard
   "affiliate_dashboard_my_title": "Mon Tableau de Bord",
   "affiliate_dashboard_share_link": "Partager le Lien",
   "affiliate_dashboard_auto_refresh_tooltip": "Actualisation automatique toutes les 5 minutes",
@@ -2520,21 +1904,17 @@
   "affiliate_dashboard_referral_link_label": "Lien de Parrainage",
   "affiliate_dashboard_close": "Fermer",
   "affiliate_dashboard_copy_link": "Copier le Lien",
-
-  // Affiliate Catalogue
   "affiliate_catalogue_added_to_cart": "Ajouté au panier",
-  "affiliate_catalogue_cart_summary": "{count} article{plural} • {total} MAD",
+  "affiliate_catalogue_cart_summary": "\"{count",
   "affiliate_catalogue_advanced_filters": "Filtres avancés",
   "affiliate_catalogue_clear_filters": "Effacer",
   "affiliate_catalogue_commission_min": "Commission min.",
   "affiliate_catalogue_products_count": "produits",
-
-  // Affiliate Tickets
   "affiliate_tickets_error_loading": "Erreur lors du chargement des tickets",
   "affiliate_tickets_created_success": "Ticket créé avec succès",
   "affiliate_tickets_error_creating": "Erreur lors de la création du ticket",
   "affiliate_tickets_search_label": "Rechercher...",
-  "affiliate_tickets_search_placeholder": "Sujet, référence...",
+  "affiliate_tickets_search_placeholder": "\"Sujet",
   "affiliate_tickets_status_label": "Statut",
   "affiliate_tickets_priority_label": "Priorité",
   "affiliate_tickets_category_label": "Catégorie",
@@ -2546,24 +1926,20 @@
   "affiliate_tickets_message_required": "Message *",
   "affiliate_tickets_message_placeholder": "Décrivez votre problème en détail...",
   "affiliate_tickets_attachments_optional": "Pièces jointes (optionnel)",
-  "affiliate_tickets_file_formats": "Formats acceptés: Images, PDF, DOC, DOCX, TXT (max 10MB par fichier)",
+  "affiliate_tickets_file_formats": "\"Formats acceptés: Images",
   "affiliate_tickets_cancel": "Annuler",
   "affiliate_tickets_create_button": "Créer le ticket",
-
-  // Admin Pre-Orders (Critical strings only)
   "admin_preorders_title": "Pré-commandes",
   "admin_preorders_description": "Gestion des commandes en attente d'expédition",
   "admin_preorders_refresh": "Actualiser",
   "admin_preorders_search_label": "Rechercher...",
-  "admin_preorders_search_placeholder": "Client, téléphone, affilié...",
+  "admin_preorders_search_placeholder": "\"Client",
   "admin_preorders_status_label": "Statut",
   "admin_preorders_date_start": "Date début",
   "admin_preorders_date_end": "Date fin",
   "admin_preorders_per_page": "Par page",
   "admin_preorders_no_data_title": "Aucune pré-commande",
   "admin_preorders_no_data_description": "Aucune commande en attente d'expédition trouvée",
-
-  // Admin OzonExpress Credentials
   "admin_ozon_settings_saved_success": "Paramètres sauvegardés avec succès",
   "admin_ozon_settings_save_error": "Erreur lors de la sauvegarde",
   "admin_ozon_connection_success": "Connexion réussie !",
@@ -2579,10 +1955,6 @@
   "admin_ozon_help_customer_id": "Votre identifiant client fourni par OzonExpress.",
   "admin_ozon_help_api_key": "Votre clé API secrète fournie par OzonExpress. Cette clé est stockée de manière sécurisée et chiffrée.",
   "admin_ozon_help_note": "Ces informations sont nécessaires pour créer et suivre les colis via l'API OzonExpress.",
-
-  // ===========================================
-  // ADMIN PANEL - PRODUCTS
-  // ===========================================
   "admin_products_title": "Gestion des produits",
   "admin_products_titre": "Titre",
   "admin_products_boutique": "Boutique",
@@ -2600,12 +1972,6 @@
   "admin_products_variants": "Variantes",
   "admin_products_rating": "Note",
   "admin_products_status": "Statut",
-
-  // ===========================================
-  // ADMIN PANEL - ORDERS
-  // ===========================================
-  // ADMIN PANEL - ORDERS
-  // ===========================================
   "admin_orders_title": "Gestion des commandes",
   "admin_orders_all": "Toutes les commandes",
   "admin_orders_pending": "Commandes en attente",
@@ -2622,10 +1988,6 @@
   "admin_orders_status": "Statut",
   "admin_orders_total_ttc": "Total TTC",
   "admin_orders_created_at": "Date de création",
-
-  // ===========================================
-  // ADMIN PANEL - USERS
-  // ===========================================
   "admin_users_title": "Gestion des utilisateurs",
   "admin_users_create": "Créer un utilisateur",
   "admin_users_edit": "Modifier l'utilisateur",
@@ -2637,10 +1999,6 @@
   "admin_users_unblock": "Débloquer",
   "admin_users_kyc_approve": "Approuver KYC",
   "admin_users_kyc_reject": "Rejeter KYC",
-
-  // ===========================================
-  // ADMIN PANEL - AFFILIATES
-  // ===========================================
   "admin_affiliates_title": "Gestion des affiliés",
   "admin_affiliates_all": "Tous les affiliés",
   "admin_affiliates_pending": "Affiliés en attente",
@@ -2650,10 +2008,6 @@
   "admin_affiliates_performance": "Performance des affiliés",
   "admin_affiliates_approve": "Approuver",
   "admin_affiliates_reject": "Rejeter",
-
-  // ===========================================
-  // ADMIN PANEL - COMMISSIONS
-  // ===========================================
   "admin_commissions_title": "Gestion des commissions",
   "admin_commissions_pending": "Commissions en attente",
   "admin_commissions_paid": "Commissions payées",
@@ -2663,9 +2017,9 @@
   "admin_commissions_pay": "Payer commission",
   "admin_commissions_amount": "Montant commission",
   "admin_commissions_confirm_approval": "Confirmer l'approbation",
-  "admin_commissions_approve_confirmation": "Approuver cette commission de {amount} {currency} ?",
+  "admin_commissions_approve_confirmation": "\"Approuver cette commission de {amount",
   "admin_commissions_mark_as_paid": "Marquer comme payée",
-  "admin_commissions_payment_confirmation": "Confirmer le paiement de cette commission de {amount} {currency} ?",
+  "admin_commissions_payment_confirmation": "\"Confirmer le paiement de cette commission de {amount",
   "admin_commissions_invalid_id": "ID de commission invalide",
   "admin_commissions_loading": "Chargement de la commission...",
   "admin_commissions_not_found": "Commission non trouvée",
@@ -2691,10 +2045,6 @@
   "admin_commissions_new_amount": "Nouveau montant",
   "admin_commissions_adjust_reason": "Raison de l'ajustement",
   "admin_commissions_adjust_placeholder": "Expliquez pourquoi cette commission est ajustée...",
-
-  // ===========================================
-  // ADMIN PANEL - WITHDRAWALS
-  // ===========================================
   "admin_withdrawals_title": "Gestion des retraits",
   "admin_withdrawals_pending": "Retraits en attente",
   "admin_withdrawals_approved": "Retraits approuvés",
@@ -2733,12 +2083,6 @@
   "admin_withdrawals_notes_placeholder": "Ajouter des notes sur ce retrait...",
   "admin_withdrawals_create_withdrawal": "Créer le retrait",
   "admin_withdrawals_step_confirmation_subtitle": "Vérifier et créer",
-  "admin_withdrawals_method": "Méthode de retrait",
-  "admin_withdrawals_bank_transfer": "Virement bancaire",
-  "admin_withdrawals_notes_optional": "Notes (optionnel)",
-  "admin_withdrawals_notes_placeholder": "Ajouter des notes pour ce retrait...",
-  "admin_withdrawals_commission_selection": "Sélection des commissions",
-  "admin_withdrawals_create_withdrawal": "Créer le retrait",
   "admin_withdrawals_approve_withdrawal": "Approuver le retrait",
   "admin_withdrawals_reject_withdrawal": "Rejeter le retrait",
   "admin_withdrawals_mark_in_payment_short": "Marquer en cours",
@@ -2767,8 +2111,8 @@
   "table_column_actions": "Actions",
   "status_canceled": "Annulé",
   "payment_method_bank_transfer": "Virement bancaire",
-  "search_withdrawals_placeholder": "Rechercher par nom, email ou référence...",
-  "search_withdrawals_hint": "Recherche dans le nom, email de l'affilié ou référence de paiement",
+  "search_withdrawals_placeholder": "\"Rechercher par nom",
+  "search_withdrawals_hint": "\"Recherche dans le nom",
   "filter_date_from": "Date début",
   "filter_date_to": "Date fin",
   "filters_active": "filtre(s) actif(s)",
@@ -2790,34 +2134,9 @@
   "no_withdrawals_match_filters": "Aucun retrait ne correspond aux filtres appliqués",
   "no_withdrawals_created": "Aucun retrait n'a été créé",
   "create_first_withdrawal": "Créer le premier retrait",
-
-  // ===========================================
-  // ADMIN PANEL - CATEGORIES
-  // ===========================================
-  "admin_categories_title": "Gestion des catégories",
-  "admin_categories_create": "Créer une catégorie",
-  "admin_categories_edit": "Modifier la catégorie",
-  "admin_categories_delete": "Supprimer la catégorie",
-  "admin_categories_name": "Nom de la catégorie",
-  "admin_categories_description": "Description",
   "admin_categories_parent": "Catégorie parent",
   "admin_categories_children": "Sous-catégories",
-
-  // ===========================================
-  // ADMIN PANEL - BOUTIQUES
-  // ===========================================
-  "admin_boutiques_title": "Gestion des boutiques",
-  "admin_boutiques_create": "Créer une boutique",
-  "admin_boutiques_edit": "Modifier la boutique",
-  "admin_boutiques_delete": "Supprimer la boutique",
-  "admin_boutiques_name": "Nom de la boutique",
-  "admin_boutiques_description": "Description",
-  "admin_boutiques_website": "Site web",
   "admin_boutiques_contact": "Contact",
-
-  // ===========================================
-  // ADMIN PANEL - SUPPORT
-  // ===========================================
   "admin_support_title": "Gestion du support",
   "admin_support_tickets": "Tickets de support",
   "admin_support_create_ticket": "Créer un ticket",
@@ -2828,10 +2147,6 @@
   "admin_support_priority": "Priorité",
   "admin_support_status": "Statut",
   "admin_support_category": "Catégorie",
-
-  // ===========================================
-  // ADMIN PANEL - REPORTS
-  // ===========================================
   "admin_reports_title": "Rapports et analyses",
   "admin_reports_sales": "Rapports de ventes",
   "admin_reports_affiliates": "Performance des affiliés",
@@ -2840,10 +2155,6 @@
   "admin_reports_export": "Exporter le rapport",
   "admin_reports_period": "Période",
   "admin_reports_filter": "Filtrer",
-
-  // ===========================================
-  // ADMIN PANEL - STOCK
-  // ===========================================
   "admin_stock_title": "Gestion du stock",
   "admin_stock_movements": "Mouvements de stock",
   "admin_stock_adjust": "Ajuster le stock",
@@ -2851,30 +2162,18 @@
   "admin_stock_out": "Rupture de stock",
   "admin_stock_quantity": "Quantité",
   "admin_stock_movement_type": "Type de mouvement",
-
-  // ===========================================
-  // ADMIN PANEL - INTEGRATIONS
-  // ===========================================
   "admin_integrations_title": "Intégrations",
   "admin_integrations_ozonexpress": "OzonExpress",
   "admin_integrations_credentials": "Identifiants",
   "admin_integrations_cities": "Villes",
   "admin_integrations_settings": "Paramètres",
   "admin_integrations_test_connection": "Tester la connexion",
-
-  // ===========================================
-  // ADMIN PANEL - ROLES & PERMISSIONS
-  // ===========================================
   "admin_roles_title": "Rôles et permissions",
   "admin_roles_create": "Créer un rôle",
   "admin_roles_edit": "Modifier le rôle",
   "admin_roles_delete": "Supprimer le rôle",
   "admin_roles_permissions": "Permissions",
   "admin_roles_assign": "Assigner un rôle",
-
-  // ===========================================
-  // ADMIN PANEL - KYC
-  // ===========================================
   "admin_kyc_title": "Documents KYC",
   "admin_kyc_pending": "En attente de vérification",
   "admin_kyc_approved": "Approuvés",
@@ -2882,20 +2181,11 @@
   "admin_kyc_view_document": "Voir le document",
   "admin_kyc_approve": "Approuver",
   "admin_kyc_reject": "Rejeter",
-
-  // ===========================================
-  // ADMIN PANEL - PAYMENTS
-  // ===========================================
   "admin_payments_title": "Gestion des paiements",
   "admin_payments_pending": "Paiements en attente",
   "admin_payments_completed": "Paiements complétés",
   "admin_payments_failed": "Paiements échoués",
   "admin_payments_refunded": "Paiements remboursés",
-
-  // ===========================================
-  // TABLE & LIST ACTIONS
-  // ===========================================
-  "table_actions": "Actions",
   "table_view": "Voir",
   "table_edit": "Modifier",
   "table_delete": "Supprimer",
@@ -2903,10 +2193,6 @@
   "table_export": "Exporter",
   "table_print": "Imprimer",
   "table_details": "Détails",
-
-  // ===========================================
-  // FORM ACTIONS
-  // ===========================================
   "form_save": "Enregistrer",
   "form_cancel": "Annuler",
   "form_submit": "Soumettre",
@@ -2914,131 +2200,65 @@
   "form_create": "Créer",
   "form_update": "Mettre à jour",
   "form_delete": "Supprimer",
-
-  // ===========================================
-  // FILTERS & SEARCH
-  // ===========================================
   "filter_all": "Tous",
   "filter_active": "Actifs",
   "filter_inactive": "Inactifs",
   "filter_pending": "En attente",
   "filter_approved": "Approuvés",
   "filter_rejected": "Rejetés",
-  "filter_search": "Rechercher",
   "filter_clear": "Effacer les filtres",
   "filter_apply": "Appliquer",
   "filter_reset": "Réinitialiser",
-  "filter_date_from": "Date de début",
-  "filter_date_to": "Date de fin",
-
-  // ===========================================
-  // PAGINATION
-  // ===========================================
   "pagination_previous": "Précédent",
   "pagination_next": "Suivant",
   "pagination_first": "Premier",
   "pagination_last": "Dernier",
-  "pagination_showing": "Affichage de {start} à {end} sur {total}",
+  "pagination_showing": "\"Affichage de {start",
   "pagination_per_page": "Par page",
-
-  // ===========================================
-  // CONFIRMATION DIALOGS
-  // ===========================================
   "confirm_delete_title": "Confirmer la suppression",
-  "confirm_delete_message": "Êtes-vous sûr de vouloir supprimer {item} ?",
   "confirm_action": "Confirmer l'action",
   "confirm_approve": "Approuver",
   "confirm_reject": "Rejeter",
   "confirm_yes": "Oui",
   "confirm_no": "Non",
-
-  // ===========================================
-  // SUCCESS MESSAGES
-  // ===========================================
-  "success_created": "{item} créé avec succès",
-  "success_updated": "{item} mis à jour avec succès",
-  "success_deleted": "{item} supprimé avec succès",
-  "success_approved": "{item} approuvé avec succès",
-  "success_rejected": "{item} rejeté avec succès",
+  "success_created": "\"{item",
+  "success_updated": "\"{item",
+  "success_deleted": "\"{item",
+  "success_approved": "\"{item",
+  "success_rejected": "\"{item",
   "success_status_changed": "Statut modifié avec succès",
-
-  // ===========================================
-  // ERROR MESSAGES
-  // ===========================================
-  "error_failed_to_load": "Échec du chargement de {item}",
-  "error_failed_to_create": "Échec de la création de {item}",
-  "error_failed_to_update": "Échec de la mise à jour de {item}",
-  "error_failed_to_delete": "Échec de la suppression de {item}",
-  "error_network": "Erreur réseau",
+  "error_failed_to_load": "\"Échec du chargement de {item",
+  "error_failed_to_create": "\"Échec de la création de {item",
+  "error_failed_to_update": "\"Échec de la mise à jour de {item",
+  "error_failed_to_delete": "\"Échec de la suppression de {item",
   "error_server": "Erreur serveur",
   "error_validation": "Erreur de validation",
   "error_access_denied": "Accès refusé",
-
-  // ===========================================
-  // LOADING & EMPTY STATES
-  // ===========================================
-  "loading": "Chargement...",
   "loading_data": "Chargement des données...",
   "no_data": "Aucune donnée disponible",
   "no_results": "Aucun résultat trouvé",
   "empty_list": "La liste est vide",
-
-  // ===========================================
-  // CHART PERIODS
-  // ===========================================
-  "period_day": "Jour",
-  "period_week": "Semaine",
-  "period_month": "Mois",
-  "period_year": "Année",
   "period_custom": "Personnalisé",
-
-  // ===========================================
-  // CHART TYPES
-  // ===========================================
   "chart_basic": "Graphiques de base",
   "chart_advanced": "Graphiques avancés",
   "chart_switch_to_basic": "Passer aux graphiques de base",
   "chart_switch_to_advanced": "Passer aux graphiques avancés",
-
-  // ===========================================
-  // RECORD STATUS
-  // ===========================================
-  "record_status": "Statut d'enregistrement",
   "record_active": "Actif",
   "record_deleted": "Supprimé",
   "record_archived": "Archivé",
-
-  // ===========================================
-  // SOFT DELETE
-  // ===========================================
   "soft_delete_show_all": "Afficher tous",
   "soft_delete_show_active": "Afficher actifs",
   "soft_delete_show_deleted": "Afficher supprimés",
   "soft_delete_restore": "Restaurer",
   "soft_delete_force_delete": "Supprimer définitivement",
-
-  // ===========================================
-  // HARDCODED STRINGS FROM ADMIN FILES
-  // ===========================================
-  "create_new_user": "Créer un nouvel utilisateur",
-  "user_updated_successfully": "Utilisateur mis à jour avec succès",
-  "failed_to_update_user": "Échec de la mise à jour de l'utilisateur",
-  "user_status_updated_successfully": "Statut de l'utilisateur mis à jour avec succès",
-  "user_deleted_successfully": "Utilisateur supprimé avec succès",
-  "user_created_successfully": "Utilisateur créé avec succès",
-  "failed_to_create_user": "Échec de la création de l'utilisateur",
-  "failed_to_load_users": "Échec du chargement des utilisateurs",
   "failed_to_toggle_user_status": "Échec du changement de statut de l'utilisateur",
-
-  // Withdrawals specific
   "details_and_management": "Détails et gestion du retrait",
   "withdrawal_management": "Gestion et actions",
   "withdrawal_information": "Informations du retrait",
-  "affiliate_information": "Informations de l'affilié",
   "linked_commissions": "Commissions liées",
   "no_linked_commissions": "Aucune commission liée à ce retrait",
-  "detach_selected": "Détacher ({count})",
-  "confirm_detach_commissions": "Êtes-vous sûr de vouloir détacher {count} commission(s) de ce retrait ?",
+  "detach_selected": "\"Détacher ({count",
+  "confirm_detach_commissions": "\"Êtes-vous sûr de vouloir détacher {count",
   "detach": "Détacher",
   "export_withdrawal": "Exporter",
   "view_commission": "Voir la commission",
@@ -3046,67 +2266,54 @@
   "order_id_short": "Commande",
   "product_title": "Produit",
   "amount": "Montant",
-  "status": "Statut",
-  "date": "Date",
-  "phone": "Téléphone",
-  "commissions_count": "{count} commission(s)",
-
-  // Dashboard periods
+  "commissions_count": "\"{count",
   "day": "Jour",
   "week": "Semaine",
   "month": "Mois",
   "year": "Année",
-
-  // Generic messages
   "invalid_withdrawal_id": "ID de retrait invalide",
   "error_loading_withdrawal": "Erreur lors du chargement du retrait",
   "action_successful": "Action effectuée avec succès",
-  "error_updating_data": "Erreur lors de la mise à jour des données",
   "withdrawal_not_found": "Retrait non trouvé",
   "back_to_list": "Retour à la liste",
-
   "switch_to_basic_charts": "Passer aux graphiques de base",
   "switch_to_advanced_charts": "Passer aux graphiques avancés",
   "advanced_charts": "Graphiques Avancés",
   "basic_charts": "Graphiques de Base",
-
   "commission_adjust_title": "Ajuster la commission",
-  "commission_adjust_confirm": "Voulez-vous ajuster cette commission de {amount} {currency} ?",
+  "commission_adjust_confirm": "\"Voulez-vous ajuster cette commission de {amount",
   "commission_adjusted_success": "Commission ajustée avec succès",
   "commission_adjust_error": "Erreur lors de l'ajustement de la commission",
   "commission_bulk_reject_title": "Rejeter les commissions sélectionnées",
-  "commission_bulk_reject_confirm": "Êtes-vous sûr de vouloir rejeter {count} commission(s) ?",
+  "commission_bulk_reject_confirm": "\"Êtes-vous sûr de vouloir rejeter {count",
   "commission_bulk_reject_reason": "Rejetées en masse par l'administrateur",
   "commission_status_calculated": "Calculées",
-  "commission_status_eligible": "Éligibles", 
+  "commission_status_eligible": "Éligibles",
   "commission_status_approved": "Approuvées",
   "commission_status_paid": "Payées",
   "commission_status_rejected": "Rejetées",
   "commission_status_adjusted": "Ajustées",
   "commission_status_canceled": "Annulées",
-  "filter_search_placeholder": "Nom, email de l'affilié...",
+  "filter_search_placeholder": "\"Nom",
   "commission_eligible_only": "Éligibles uniquement",
-  "commission_selected_count": "{count} commission(s) sélectionnée(s)",
+  "commission_selected_count": "\"{count",
   "commission_rate_fixed": "Fixe",
   "action_mark_as_paid": "Marquer comme payée",
-  "commission_confirm_payment": "Confirmer le paiement de cette commission de {amount} {currency} ?",
+  "commission_confirm_payment": "\"Confirmer le paiement de cette commission de {amount",
   "action_confirm_payment": "Confirmer le paiement",
   "action_approve_all": "Approuver tout",
   "action_reject_all": "Rejeter tout",
   "not_available": "N/A",
-
   "table_column_user": "Utilisateur",
   "table_column_phone": "Téléphone",
   "table_column_bank": "Banque",
   "table_column_email_verified": "Email Vérifié",
-  "table_column_approval_status": "Statut Approbation", 
+  "table_column_approval_status": "Statut Approbation",
   "table_column_created_at": "Inscrit le",
   "affiliate_status_pending_approval": "En attente d'approbation",
   "affiliate_status_approved": "Approuvé",
   "affiliate_status_refused": "Refusé",
   "affiliate_status_pending_approval_short": "En attente",
-  
-  // Affiliate Detail Page
   "tier_change_from_admin": "Changement de tier depuis l'interface admin",
   "tier_updated_successfully": "Tier modifié avec succès",
   "tier_change_error": "Erreur lors du changement de tier",
@@ -3122,33 +2329,22 @@
   "change_tier": "Changer Tier",
   "block": "Bloquer",
   "unblock": "Débloquer",
-  "profile": "Profil",
   "performance": "Performance",
-  "orders": "Commandes",
-  "commissions": "Commissions",
   "personal_information": "Informations Personnelles",
   "not_provided": "Non renseigné",
-  "user_status": "Statut utilisateur",
-  "kyc_status": "Statut KYC",
   "registration_date": "Date d'inscription",
   "affiliate_profile": "Profil Affilié",
   "tier": "Tier",
   "not_defined": "Non défini",
   "affiliate_status": "Statut affilié",
-  "points": "Points",
-  "rib": "RIB",
   "internal_notes": "Notes internes",
   "quick_stats": "Statistiques Rapides",
-  "total_orders": "Total Commandes",
-  "total_commissions": "Total Commissions",
   "pending_commissions": "Commissions en cours",
   "affiliate_performance": "Performance de l'Affilié",
   "this_month": "ce mois",
   "total_paid": "Total Payé",
-  "pending": "en attente",
   "loading_performance": "Chargement des performances...",
   "recent_orders": "Commandes Récentes",
-  "order": "Commande",
   "no_orders": "Aucune commande",
   "affiliate_no_orders_yet": "Cet affilié n'a pas encore passé de commande",
   "recent_commissions": "Commissions Récentes",
@@ -3157,11 +2353,9 @@
   "affiliate_not_found": "Affilié introuvable",
   "affiliate_not_found_description": "L'affilié demandé n'existe pas ou a été supprimé",
   "new_tier": "Nouveau tier",
-  "confirm": "Confirmer",
   "block_affiliate": "Bloquer l'Affilié",
   "block_reason": "Raison du blocage",
   "block_reason_placeholder": "Expliquez pourquoi vous bloquez cet affilié...",
-  
   "email_not_verified": "Email non vérifié",
   "affiliate_approved_success": "Demande d'affiliation approuvée avec succès",
   "error_during_approval": "Erreur lors de l'approbation",
@@ -3170,55 +2364,46 @@
   "verification_email_sent_success": "Email de vérification envoyé avec succès",
   "error_sending_email": "Erreur lors de l'envoi de l'email",
   "last_7_days": "7 derniers jours",
-  "search_placeholder_name_email_phone": "Nom, email, téléphone...",
+  "search_placeholder_name_email_phone": "\"Nom",
   "items_per_page": "Par page",
   "approve_request": "Approuver la demande",
   "refuse_request": "Refuser la demande",
   "no_users_match_criteria": "Aucun utilisateur ne correspond aux critères de recherche",
   "approve_affiliation_request": "Approuver la demande d'affiliation",
-  "approve_affiliate_confirm": "Approuver {name} comme affilié ?",
+  "approve_affiliate_confirm": "\"Approuver {name",
   "user_account_created_automatically": "Un compte utilisateur sera créé automatiquement.",
   "reason_optional": "Raison (optionnel)",
   "approval_reason_placeholder": "Raison de l'approbation...",
-  "refuse_affiliation_request": "Refuser la demande d'affiliation", 
-  "refuse_affiliate_confirm": "Refuser la demande d'affiliation de {name} ?",
+  "refuse_affiliation_request": "Refuser la demande d'affiliation",
+  "refuse_affiliate_confirm": "\"Refuser la demande d'affiliation de {name",
   "action_requires_justification": "Cette action nécessite une justification.",
   "refusal_reason_required": "Raison du refus *",
   "refusal_reason_placeholder": "Expliquez pourquoi vous refusez cette demande...",
   "action_refuse": "Refuser",
   "resend_verification_email": "Renvoyer l'email de vérification",
-  "resend_verification_confirm": "Renvoyer l'email de vérification à {email} ?",
+  "resend_verification_confirm": "\"Renvoyer l'email de vérification à {email",
   "action_resend": "Renvoyer",
-
   "failed_to_load_permissions": "Échec du chargement des permissions",
   "roles_and_permissions": "Rôles et Permissions",
   "manage_system_roles_permissions": "Gérer les rôles et permissions du système",
   "loading_roles": "Chargement des rôles...",
   "create_first_role": "Créez votre premier rôle pour commencer",
-
   "manage_payment_processing": "Gérer le traitement des paiements et les règlements",
   "coming_soon": "Bientôt disponible",
-
   "sales_reports": "Rapports de ventes",
   "view_detailed_sales_analytics": "Afficher des analyses et rapports de ventes détaillés",
-
-  "affiliate_performance": "Performance des affiliés",
   "view_affiliate_performance_analytics": "Afficher les analyses et rapports de performance des affiliés",
-
   "order_conflicts": "Conflits de commandes",
   "manage_order_conflicts_fraud_detection": "Gérer les conflits de commandes et la détection de fraude",
-
   "affiliate_tiers": "Niveaux d'affiliés",
   "manage_affiliate_tier_levels_benefits": "Gérer les niveaux d'affiliés et les avantages",
-
   "simple_admin_dashboard": "Tableau de bord admin simple",
-  "welcome_user": "Bienvenue, {name} !",
+  "welcome_user": "\"Bienvenue",
   "minimal_dashboard_test_message": "Il s'agit d'un tableau de bord minimal pour tester les erreurs.",
-
   "variants": "Variantes",
   "attributes": "Attributs",
   "variant_attributes": "Attributs de variantes",
-  "manage_variant_attributes_desc": "Gérer les attributs de variantes comme Taille, Couleur, Matériau",
+  "manage_variant_attributes_desc": "\"Gérer les attributs de variantes comme Taille",
   "add_attribute": "Ajouter un attribut",
   "search_attributes": "Rechercher des attributs...",
   "no_attributes_found": "Aucun attribut trouvé",
@@ -3227,9 +2412,8 @@
   "create_variant_attribute": "Créer un attribut de variante",
   "edit_variant_attribute": "Modifier l'attribut de variante",
   "code": "Code",
-  "code_placeholder": "ex: taille, couleur",
-  "name_placeholder": "ex: Taille, Couleur",
-
+  "code_placeholder": "\"ex: taille",
+  "name_placeholder": "\"ex: Taille",
   "admin_variants_title": "Gestion des variantes",
   "admin_variants_attributes": "Attributs",
   "admin_variants_values": "Valeurs",
@@ -3240,27 +2424,20 @@
   "admin_variants_delete_value": "Supprimer la valeur",
   "admin_variants_no_values": "Aucune valeur définie",
   "admin_variants_create_value": "Créer une valeur",
-
   "shipped_orders": "Commandes expédiées",
   "shipped_orders_desc": "Gestion des commandes envoyées vers OzonExpress",
-  "refresh_tracking_bulk": "Actualiser Suivi ({count})",
-  "delivery_note_bulk": "Bon de Livraison ({count})",
+  "refresh_tracking_bulk": "\"Actualiser Suivi ({count",
+  "delivery_note_bulk": "\"Bon de Livraison ({count",
   "tracking": "Suivi",
-  "updated": "Mis à jour",
   "received": "Reçu",
   "in_transit": "En transit",
   "at_facility": "Au centre",
   "ready_for_delivery": "Prêt pour livraison",
   "out_for_delivery": "En cours de livraison",
   "delivery_attempted": "Tentative de livraison",
-  "returned": "Retourné",
   "unknown": "Inconnu",
-
-  "search_client_phone_tracking": "Client, téléphone, tracking...",
-  "date_from": "Date début",
-  "date_to": "Date fin",
+  "search_client_phone_tracking": "\"Client",
   "per_page": "Par page",
-
   "ozonexpress_settings": "Paramètres OzonExpress",
   "ozonexpress_settings_desc": "Configurez vos identifiants OzonExpress pour l'intégration des expéditions",
   "api_credentials": "Identifiants API",
@@ -3270,14 +2447,11 @@
   "api_key_masked": "API Key (masquée)",
   "api_key_placeholder": "Votre clé API OzonExpress",
   "api_base_url": "URL de base de l'API",
-
   "revenue_report": "Rapport de Revenus",
   "earning": "Gains",
-  "expense": "Dépenses",
   "last_month": "Mois Dernier",
   "budget": "Budget",
   "increase_budget": "Augmenter le Budget",
-
   "no_values_found": "Aucune valeur trouvée",
   "create_first_value_attribute": "Créez votre première valeur pour cet attribut",
   "display_order": "Ordre",
@@ -3285,14 +2459,12 @@
   "edit_value": "Modifier la Valeur",
   "label": "Libellé",
   "update": "Mettre à jour",
-
   "pdf_standard": "PDF Standard",
   "labels_a4": "Étiquettes A4",
   "labels_100x100": "Étiquettes 100x100",
   "no_delivery_note": "Aucun bon de livraison",
   "no_shipped_orders": "Aucune commande expédiée",
   "no_orders_sent_ozonexpress": "Aucune commande envoyée vers OzonExpress trouvée",
-
   "confirmation": "Confirmation",
   "verify_before_creating_withdrawal": "Vérifiez les informations avant de créer le retrait",
   "method": "Méthode",
@@ -3303,26 +2475,18 @@
   "target_amount": "Montant cible",
   "selected_commissions": "Commissions sélectionnées",
   "notes": "Notes",
-
   "administrative_adjustment": "Ajustement administratif",
   "approve_all": "Approuver tout",
-
   "approve_selected_commissions": "Approuver les commissions sélectionnées",
-  "confirm_approve_commissions": "Êtes-vous sûr de vouloir approuver {count} commission(s) ?",
-
+  "confirm_approve_commissions": "\"Êtes-vous sûr de vouloir approuver {count",
   "copywriting_marketing_content": "Copywriting (Contenu Marketing)",
-
   "loading_order": "Chargement de la commande...",
   "shipment": "Expédition",
   "carrier": "Transporteur",
   "local": "Local",
-  "recipient": "Destinataire",
-  "price": "Prix",
-
   "modify_local_shipment_status": "Modifier le statut de cette expédition locale.",
   "note_delivered_status_commission": "Le passage au statut \"Livré\" créera automatiquement la commission.",
   "delivered": "Livré",
-
   "modify_shipping_status": "Modifier le Statut d'Expédition",
   "shipped": "Expédiée",
   "delivered_livree": "Livrée",
@@ -3330,49 +2494,44 @@
   "cancelled": "Annulée",
   "note_optional": "Note (optionnelle)",
   "add_status_change_note": "Ajouter une note pour ce changement de statut...",
-
   "document_cni": "CNI",
   "document_passport": "Passeport",
   "document_rib": "RIB",
   "document_contract": "Contrat",
-
-  "points_dispensation_for_user": "Distribution de points pour {name}",
-
+  "points_dispensation_for_user": "\"Distribution de points pour {name",
   "affiliate_orders_title": "Mes Commandes",
   "affiliate_orders_description": "Consultez l'historique de vos commandes et leur statut",
-  "affiliate_orders_search_placeholder": "Référence, client, téléphone...",
+  "affiliate_orders_search_placeholder": "\"Référence",
   "affiliate_orders_status_pending": "En attente",
   "affiliate_orders_status_confirmed": "Confirmée",
   "affiliate_orders_status_sent": "Envoyée",
   "affiliate_orders_status_expedited": "Expédiée",
   "affiliate_orders_status_delivered": "Livrée",
-  "affiliate_orders_status_canceled": "Annulée", 
+  "affiliate_orders_status_canceled": "Annulée",
   "affiliate_orders_status_returned": "Retournée",
   "affiliate_orders_status_delivery_failed": "Échec livraison",
   "affiliate_orders_status_paid": "Payée",
   "affiliate_orders_no_orders_found": "Aucune commande trouvée",
   "affiliate_orders_no_orders_description": "Aucune commande ne correspond aux critères de recherche.",
-
   "affiliate_payments_title": "Mes Paiements",
   "affiliate_payments_base_amount": "Montant de base",
   "affiliate_payments_rate": "Taux",
   "affiliate_payments_method": "Méthode",
   "affiliate_payments_commissions": "Commissions",
   "affiliate_payments_confirm_withdrawal": "Confirmer la demande de retrait",
-  "affiliate_payments_confirm_withdrawal_text": "Voulez-vous vraiment demander un retrait de {amount} pour {count} commission(s) éligible(s) ?",
+  "affiliate_payments_confirm_withdrawal_text": "\"Voulez-vous vraiment demander un retrait de {amount",
   "affiliate_payments_withdrawal_success": "Demande de retrait créée avec succès",
   "affiliate_payments_description": "Consultez vos commissions et gérez vos demandes de retrait",
   "affiliate_payments_request_withdrawal": "Demander un retrait",
-  "affiliate_payments_commission_count": "{count} commission(s)",
+  "affiliate_payments_commission_count": "\"{count",
   "affiliate_payments_no_commissions_found": "Aucune commission trouvée",
   "affiliate_payments_no_commissions_yet": "Vous n'avez pas encore de commissions.",
   "affiliate_payments_eligible_amount": "Montant éligible",
-  "affiliate_payments_eligible_commissions_text": "{count} commission(s) éligible(s) seront incluses dans cette demande.",
+  "affiliate_payments_eligible_commissions_text": "\"{count",
   "affiliate_payments_notes_optional": "Notes (optionnel)",
   "affiliate_payments_notes_placeholder": "Ajoutez des notes pour cette demande de retrait...",
   "affiliate_payments_cancel": "Annuler",
   "affiliate_payments_confirm_request": "Confirmer la demande",
-
   "affiliate_tickets_title": "Support",
   "affiliate_tickets_subject": "Sujet",
   "affiliate_tickets_priority": "Priorité",
@@ -3393,19 +2552,15 @@
   "affiliate_tickets_category_kyc": "KYC",
   "affiliate_tickets_category_technical": "Technique",
   "affiliate_tickets_category_other": "Autre",
-
-  "affiliate_tickets_detail_title": "Ticket #{id}",
+  "affiliate_tickets_detail_title": "\"Ticket #{id",
   "affiliate_tickets_loading": "Chargement du ticket...",
-  "affiliate_tickets_created_on": "Créé le {date}",
+  "affiliate_tickets_created_on": "\"Créé le {date",
   "affiliate_tickets_conversation": "Conversation",
   "affiliate_tickets_you": "Vous",
   "affiliate_tickets_support": "Support",
   "affiliate_tickets_attachments": "Pièces jointes",
   "affiliate_tickets_add_reply": "Ajouter une réponse",
   "affiliate_tickets_your_message": "Votre message",
-  "affiliate_tickets_message_placeholder": "Tapez votre réponse...",
-  "affiliate_tickets_attachments_optional": "Pièces jointes (optionnel)",
-  "affiliate_tickets_file_formats": "Formats acceptés: Images, PDF, DOC, DOCX, TXT (max 10MB par fichier)",
   "affiliate_tickets_closed_notice": "Ce ticket est fermé. Vous pouvez le rouvrir pour continuer la conversation.",
   "affiliate_tickets_back_to_tickets": "Retour aux tickets",
   "affiliate_tickets_message_success": "Message ajouté avec succès",
@@ -3415,28 +2570,25 @@
   "affiliate_tickets_reopen_title": "Rouvrir le ticket",
   "affiliate_tickets_reopen_text": "Voulez-vous vraiment rouvrir ce ticket ?",
   "affiliate_tickets_reopen_success": "Ticket rouvert avec succès",
-
   "admin_preorders_status_all": "Tous",
   "admin_preorders_status_pending": "En attente",
   "admin_preorders_status_confirmed": "Confirmée",
   "admin_preorders_status_unreachable": "Injoignable",
   "admin_preorders_status_refused": "Refusée",
   "admin_preorders_status_cancelled": "Annulée",
-  
-  "admin_preorders_selected_count": "{count} commande(s) sélectionnée(s)",
+  "admin_preorders_selected_count": "\"{count",
   "admin_preorders_bulk_send_ozon": "Envoyer OzonExpress",
   "admin_preorders_bulk_change_status": "Changer statut",
   "admin_preorders_bulk_select_status": "Sélectionner un statut",
-  "admin_preorders_bulk_confirmed": "Confirmée", 
+  "admin_preorders_bulk_confirmed": "Confirmée",
   "admin_preorders_bulk_unreachable": "Injoignable",
   "admin_preorders_bulk_refused": "Refusée",
   "admin_preorders_bulk_cancelled": "Annulée",
   "admin_preorders_bulk_change_title": "Changer le statut",
-  "admin_preorders_bulk_change_text": "Êtes-vous sûr de vouloir changer le statut de {count} commande(s) ?",
+  "admin_preorders_bulk_change_text": "\"Êtes-vous sûr de vouloir changer le statut de {count",
   "admin_preorders_bulk_confirm": "Confirmer",
   "admin_preorders_bulk_cancel": "Annuler",
   "admin_preorders_bulk_status_error": "Erreur lors du changement de statut",
-  
   "admin_preorders_client_na": "N/A",
   "admin_preorders_phone_na": "N/A",
   "admin_preorders_city_na": "N/A",
@@ -3444,24 +2596,21 @@
   "admin_preorders_email_na": "N/A",
   "admin_preorders_shipped": "Expédié",
   "admin_preorders_not_shipped": "Non expédié",
-  "admin_preorders_tracking_tooltip": "Tracking: {tracking}",
-  
+  "admin_preorders_tracking_tooltip": "\"Tracking: {tracking",
   "admin_preorders_action_confirm": "Confirmer",
   "admin_preorders_action_unreachable": "Injoignable (+1)",
-  "admin_preorders_action_refuse": "Refuser", 
+  "admin_preorders_action_refuse": "Refuser",
   "admin_preorders_action_cancel": "Annuler",
   "admin_preorders_action_send_ozon": "Envoyer OzonExpress",
   "admin_preorders_action_local_shipping": "Expédition Locale",
-  
   "admin_preorders_ozon_single_text": "Êtes-vous sûr de vouloir envoyer cette commande vers OzonExpress ?",
-  "admin_preorders_ozon_bulk_text": "Êtes-vous sûr de vouloir envoyer {count} commande(s) vers OzonExpress ?",
-  "admin_preorders_ozon_success_single": "Commande envoyée vers OzonExpress en mode {mode}",
-  "admin_preorders_ozon_success_bulk": "{count} commande(s) envoyée(s) vers OzonExpress en mode {mode}",
-  "admin_preorders_ozon_error_bulk": "{success}/{total} commandes envoyées avec succès. {errors} erreur(s).",
+  "admin_preorders_ozon_bulk_text": "\"Êtes-vous sûr de vouloir envoyer {count",
+  "admin_preorders_ozon_success_single": "\"Commande envoyée vers OzonExpress en mode {mode",
+  "admin_preorders_ozon_success_bulk": "\"{count",
+  "admin_preorders_ozon_error_bulk": "\"{success",
   "admin_preorders_ozon_error": "Erreur lors de l'envoi vers OzonExpress",
   "admin_preorders_ozon_mode_pickup": "Ramassage",
   "admin_preorders_ozon_mode_stock": "Stock",
-  
   "admin_preorders_local_shipping_title": "Déplacer vers Expédition Locale",
   "admin_preorders_local_shipping_description": "Cette commande sera déplacée vers l'expédition locale/manuelle. Vous pourrez gérer les statuts manuellement depuis la vue Expédition.",
   "admin_preorders_local_shipping_note_label": "Note (optionnelle)",
@@ -3470,7 +2619,6 @@
   "admin_preorders_local_shipping_confirm": "Déplacer",
   "admin_preorders_local_shipping_success": "Commande déplacée vers l'expédition locale avec succès",
   "admin_preorders_local_shipping_error": "Erreur lors du déplacement vers l'expédition locale",
-
   "admin_shipping_error_tracking": "Erreur lors de la récupération du tracking",
   "admin_shipping_tracking_updated": "Suivi actualisé avec succès",
   "admin_shipping_error_tracking_refresh": "Erreur lors de l'actualisation du tracking",
@@ -3478,16 +2626,16 @@
   "admin_shipping_error_tracking_bulk": "Erreur lors de la mise à jour du suivi",
   "admin_shipping_select_orders": "Veuillez sélectionner au moins une commande",
   "admin_shipping_refresh_tracking_title": "Actualiser le suivi",
-  "admin_shipping_refresh_tracking_text": "Voulez-vous actualiser le suivi de {count} commande(s) ?",
+  "admin_shipping_refresh_tracking_text": "\"Voulez-vous actualiser le suivi de {count",
   "admin_shipping_refresh_tracking_confirm": "Actualiser",
-  "admin_shipping_resend_ozon_success": "Commande renvoyée vers OzonExpress en mode {mode}",
+  "admin_shipping_resend_ozon_success": "\"Commande renvoyée vers OzonExpress en mode {mode",
   "admin_shipping_mode_pickup": "Ramassage",
   "admin_shipping_mode_stock": "Stock",
   "admin_shipping_error_resend_ozon": "Erreur lors du renvoi vers OzonExpress",
-  "admin_shipping_status_updated": "Statut mis à jour vers: {status}",
+  "admin_shipping_status_updated": "\"Statut mis à jour vers: {status",
   "admin_shipping_commission_created": " (Commission créée automatiquement)",
   "admin_shipping_error_status_update": "Erreur lors de la mise à jour du statut",
-  "admin_shipping_delivery_note_created": "Bon de livraison créé avec succès: {ref}",
+  "admin_shipping_delivery_note_created": "\"Bon de livraison créé avec succès: {ref",
   "admin_shipping_status_pending": "En attente",
   "admin_shipping_status_received": "Reçu",
   "admin_shipping_status_in_transit": "En transit",
@@ -3518,15 +2666,15 @@
   "admin_shipping_note_placeholder": "Ajouter une note sur le changement de statut...",
   "admin_shipping_cancel": "Annuler",
   "admin_shipping_update": "Mettre à jour",
-  "admin_shipping_tracking_refresh_confirm": "Voulez-vous actualiser le suivi de {count} commande(s) ?",
-  "admin_shipping_ozonexpress_resend": "Commande renvoyée vers OzonExpress en mode {mode}",
+  "admin_shipping_tracking_refresh_confirm": "\"Voulez-vous actualiser le suivi de {count",
+  "admin_shipping_ozonexpress_resend": "\"Commande renvoyée vers OzonExpress en mode {mode",
   "admin_shipping_error_ozonexpress_resend": "Erreur lors du renvoi vers OzonExpress",
   "admin_shipping_title": "Commandes Expédiées",
   "admin_shipping_description": "Gérer les commandes expédiées et leur suivi",
-  "admin_shipping_button_refresh_bulk": "Actualiser le suivi ({count})",
-  "admin_shipping_button_delivery_note_bulk": "Bon de livraison ({count})",
+  "admin_shipping_button_refresh_bulk": "\"Actualiser le suivi ({count",
+  "admin_shipping_button_delivery_note_bulk": "\"Bon de livraison ({count",
   "admin_shipping_button_refresh": "Actualiser",
-  "admin_shipping_search_placeholder": "Rechercher par client, téléphone, tracking...",
+  "admin_shipping_search_placeholder": "\"Rechercher par client",
   "admin_shipping_client_na": "N/A",
   "admin_debug_city_placeholder": "Sélectionnez une ville",
   "admin_debug_order_id_placeholder": "Entrez l'ID de la commande...",
@@ -3565,7 +2713,7 @@
   "admin_commission_header_amount": "Montant",
   "admin_commission_header_status": "Statut",
   "admin_commission_header_date": "Date",
-  "admin_commission_selected_count": "{count} commission(s) sélectionnée(s)",
+  "admin_commission_selected_count": "\"{count",
   "admin_commission_total": "Total",
   "admin_commission_load_error": "Erreur lors du chargement des commissions",
   "affiliate_signup_unexpected_error": "Une erreur inattendue est survenue.",
