@@ -152,9 +152,32 @@ class AffiliateDashboardController extends Controller
      */
     private function parseFilters(Request $request): array
     {
+        $dateStart = $request->get('date_start');
+        $dateEnd = $request->get('date_end');
+        // Support front-end dateRange JSON param: {"start":"YYYY-MM-DD","end":"YYYY-MM-DD"}
+        if (!$dateStart && !$dateEnd && $request->has('dateRange')) {
+            try {
+                $range = $request->get('dateRange');
+                if (is_string($range)) {
+                    $decoded = json_decode($range, true);
+                } else {
+                    $decoded = $range; // already array from frontend maybe
+                }
+                if (is_array($decoded)) {
+                    $dateStart = $decoded['start'] ?? null;
+                    $dateEnd = $decoded['end'] ?? null;
+                }
+            } catch (\Throwable $e) {
+                // Ignore malformed dateRange
+            }
+        }
+
+        $dateStart = $dateStart ?: Carbon::now()->startOfMonth()->toDateString();
+        $dateEnd = $dateEnd ?: Carbon::now()->toDateString();
+
         return [
-            'date_start' => $request->get('date_start', Carbon::now()->startOfMonth()->toDateString()),
-            'date_end' => $request->get('date_end', Carbon::now()->toDateString()),
+            'date_start' => $dateStart,
+            'date_end' => $dateEnd,
             'status' => $request->get('status'),
             'page' => (int) $request->get('page', 1),
             'per_page' => min((int) $request->get('per_page', 15), 100),
@@ -722,13 +745,14 @@ class AffiliateDashboardController extends Controller
     private function getMyOrders(User $user, array $filters): array
     {
         $orders = Commande::where('user_id', $user->id)
-            ->with(['client:id,nom_complet', 'commandeArticles.produit:id,titre'])
+            // Use primary 'articles' relationship (alias 'commandeArticles' may not be loaded in some cached contexts)
+            ->with(['client:id,nom_complet', 'articles.produit:id,titre'])
             ->orderBy('created_at', 'desc')
             ->limit($filters['per_page'])
             ->get()
             ->map(function ($order) {
                 $commission = CommissionAffilie::where('commande_id', $order->id)->first();
-                $productTitle = $order->commandeArticles->first()?->produit?->titre ?? 'Unknown Product';
+                $productTitle = $order->articles->first()?->produit?->titre ?? 'Unknown Product';
 
                 return [
                     'id' => $order->id,

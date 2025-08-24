@@ -19,6 +19,7 @@ declare global {
   const autoResetRef: typeof import('@vueuse/core')['autoResetRef']
   const avatarText: typeof import('./resources/ts/@core/utils/formatters')['avatarText']
   const betweenValidator: typeof import('./resources/ts/@core/utils/validators')['betweenValidator']
+  const calculateGrowthRate: typeof import('./resources/ts/utils/chartDataTransformers')['calculateGrowthRate']
   const computed: typeof import('vue')['computed']
   const computedAsync: typeof import('@vueuse/core')['computedAsync']
   const computedEager: typeof import('@vueuse/core')['computedEager']
@@ -54,8 +55,10 @@ declare global {
   const effectScope: typeof import('vue')['effectScope']
   const emailValidator: typeof import('./resources/ts/@core/utils/validators')['emailValidator']
   const extendRef: typeof import('@vueuse/core')['extendRef']
+  const formatCurrency: typeof import('./resources/ts/utils/chartDataTransformers')['formatCurrency']
   const formatDate: typeof import('./resources/ts/@core/utils/formatters')['formatDate']
   const formatDateToMonthShort: typeof import('./resources/ts/@core/utils/formatters')['formatDateToMonthShort']
+  const formatPercentage: typeof import('./resources/ts/utils/chartDataTransformers')['formatPercentage']
   const getActivePinia: typeof import('pinia')['getActivePinia']
   const getAvatarUrl: typeof import('./resources/ts/utils/imageUtils')['getAvatarUrl']
   const getCurrentInstance: typeof import('vue')['getCurrentInstance']
@@ -155,6 +158,19 @@ declare global {
   const toRef: typeof import('vue')['toRef']
   const toRefs: typeof import('vue')['toRefs']
   const toValue: typeof import('vue')['toValue']
+  const transformCommissionsToGrowth: typeof import('./resources/ts/utils/chartDataTransformers')['transformCommissionsToGrowth']
+  const transformOrdersToSession: typeof import('./resources/ts/utils/chartDataTransformers')['transformOrdersToSession']
+  const transformProductsToRadial: typeof import('./resources/ts/utils/chartDataTransformers')['transformProductsToRadial']
+  const transformRevenueToEarning: typeof import('./resources/ts/utils/chartDataTransformers')['transformRevenueToEarning']
+  const transformSignupsToCarousel: typeof import('./resources/ts/utils/chartDataTransformers')['transformSignupsToCarousel']
+  const transformSignupsToSession: typeof import('./resources/ts/utils/chartDataTransformers')['transformSignupsToSession']
+  const transformToAdvancedStats: typeof import('./resources/ts/utils/chartDataTransformers')['transformToAdvancedStats']
+  const transformToEarningReports: typeof import('./resources/ts/utils/chartDataTransformers')['transformToEarningReports']
+  const transformToMixedChart: typeof import('./resources/ts/utils/chartDataTransformers')['transformToMixedChart']
+  const transformToProfitLine: typeof import('./resources/ts/utils/chartDataTransformers')['transformToProfitLine']
+  const transformToSalesArea: typeof import('./resources/ts/utils/chartDataTransformers')['transformToSalesArea']
+  const transformToSalesOverview: typeof import('./resources/ts/utils/chartDataTransformers')['transformToSalesOverview']
+  const transformTopAffiliatesToGrowth: typeof import('./resources/ts/utils/chartDataTransformers')['transformTopAffiliatesToGrowth']
   const triggerRef: typeof import('vue')['triggerRef']
   const tryOnBeforeMount: typeof import('@vueuse/core')['tryOnBeforeMount']
   const tryOnBeforeUnmount: typeof import('@vueuse/core')['tryOnBeforeUnmount']
@@ -168,6 +184,8 @@ declare global {
   const useAbility: typeof import('./src/plugins/casl/composables/useAbility')['useAbility']
   const useAbs: typeof import('@vueuse/math')['useAbs']
   const useActiveElement: typeof import('@vueuse/core')['useActiveElement']
+  const useAdminAdvancedCharts: typeof import('./resources/ts/composables/useAdvancedCharts')['useAdminAdvancedCharts']
+  const useAffiliateAdvancedCharts: typeof import('./resources/ts/composables/useAdvancedCharts')['useAffiliateAdvancedCharts']
   const useAffiliateCartUi: typeof import('./resources/ts/composables/useAffiliateCartUi')['useAffiliateCartUi']
   const useAnimate: typeof import('@vueuse/core')['useAnimate']
   const useApi: typeof import('./resources/ts/composables/useApi')['useApi']
@@ -198,6 +216,9 @@ declare global {
   const useCached: typeof import('@vueuse/core')['useCached']
   const useCategorySoftDelete: typeof import('./resources/ts/composables/useSoftDelete')['useCategorySoftDelete']
   const useCeil: typeof import('@vueuse/math')['useCeil']
+  const useChartAnimations: typeof import('./resources/ts/composables/useAdvancedCharts')['useChartAnimations']
+  const useChartResponsive: typeof import('./resources/ts/composables/useAdvancedCharts')['useChartResponsive']
+  const useChartTheme: typeof import('./resources/ts/composables/useAdvancedCharts')['useChartTheme']
   const useClamp: typeof import('@vueuse/math')['useClamp']
   const useClipboard: typeof import('@vueuse/core')['useClipboard']
   const useClipboardItems: typeof import('@vueuse/core')['useClipboardItems']
@@ -412,6 +433,7 @@ declare module 'vue' {
     readonly autoResetRef: UnwrapRef<typeof import('@vueuse/core')['autoResetRef']>
     readonly avatarText: UnwrapRef<typeof import('./resources/ts/@core/utils/formatters')['avatarText']>
     readonly betweenValidator: UnwrapRef<typeof import('./resources/ts/@core/utils/validators')['betweenValidator']>
+    readonly calculateGrowthRate: UnwrapRef<typeof import('./resources/ts/utils/chartDataTransformers')['calculateGrowthRate']>
     readonly computed: UnwrapRef<typeof import('vue')['computed']>
     readonly computedAsync: UnwrapRef<typeof import('@vueuse/core')['computedAsync']>
     readonly computedEager: UnwrapRef<typeof import('@vueuse/core')['computedEager']>
@@ -446,8 +468,10 @@ declare module 'vue' {
     readonly effectScope: UnwrapRef<typeof import('vue')['effectScope']>
     readonly emailValidator: UnwrapRef<typeof import('./resources/ts/@core/utils/validators')['emailValidator']>
     readonly extendRef: UnwrapRef<typeof import('@vueuse/core')['extendRef']>
+    readonly formatCurrency: UnwrapRef<typeof import('./resources/ts/utils/chartDataTransformers')['formatCurrency']>
     readonly formatDate: UnwrapRef<typeof import('./resources/ts/@core/utils/formatters')['formatDate']>
     readonly formatDateToMonthShort: UnwrapRef<typeof import('./resources/ts/@core/utils/formatters')['formatDateToMonthShort']>
+    readonly formatPercentage: UnwrapRef<typeof import('./resources/ts/utils/chartDataTransformers')['formatPercentage']>
     readonly getActivePinia: UnwrapRef<typeof import('pinia')['getActivePinia']>
     readonly getAvatarUrl: UnwrapRef<typeof import('./resources/ts/utils/imageUtils')['getAvatarUrl']>
     readonly getCurrentInstance: UnwrapRef<typeof import('vue')['getCurrentInstance']>
@@ -545,6 +569,19 @@ declare module 'vue' {
     readonly toRef: UnwrapRef<typeof import('vue')['toRef']>
     readonly toRefs: UnwrapRef<typeof import('vue')['toRefs']>
     readonly toValue: UnwrapRef<typeof import('vue')['toValue']>
+    readonly transformCommissionsToGrowth: UnwrapRef<typeof import('./resources/ts/utils/chartDataTransformers')['transformCommissionsToGrowth']>
+    readonly transformOrdersToSession: UnwrapRef<typeof import('./resources/ts/utils/chartDataTransformers')['transformOrdersToSession']>
+    readonly transformProductsToRadial: UnwrapRef<typeof import('./resources/ts/utils/chartDataTransformers')['transformProductsToRadial']>
+    readonly transformRevenueToEarning: UnwrapRef<typeof import('./resources/ts/utils/chartDataTransformers')['transformRevenueToEarning']>
+    readonly transformSignupsToCarousel: UnwrapRef<typeof import('./resources/ts/utils/chartDataTransformers')['transformSignupsToCarousel']>
+    readonly transformSignupsToSession: UnwrapRef<typeof import('./resources/ts/utils/chartDataTransformers')['transformSignupsToSession']>
+    readonly transformToAdvancedStats: UnwrapRef<typeof import('./resources/ts/utils/chartDataTransformers')['transformToAdvancedStats']>
+    readonly transformToEarningReports: UnwrapRef<typeof import('./resources/ts/utils/chartDataTransformers')['transformToEarningReports']>
+    readonly transformToMixedChart: UnwrapRef<typeof import('./resources/ts/utils/chartDataTransformers')['transformToMixedChart']>
+    readonly transformToProfitLine: UnwrapRef<typeof import('./resources/ts/utils/chartDataTransformers')['transformToProfitLine']>
+    readonly transformToSalesArea: UnwrapRef<typeof import('./resources/ts/utils/chartDataTransformers')['transformToSalesArea']>
+    readonly transformToSalesOverview: UnwrapRef<typeof import('./resources/ts/utils/chartDataTransformers')['transformToSalesOverview']>
+    readonly transformTopAffiliatesToGrowth: UnwrapRef<typeof import('./resources/ts/utils/chartDataTransformers')['transformTopAffiliatesToGrowth']>
     readonly triggerRef: UnwrapRef<typeof import('vue')['triggerRef']>
     readonly tryOnBeforeMount: UnwrapRef<typeof import('@vueuse/core')['tryOnBeforeMount']>
     readonly tryOnBeforeUnmount: UnwrapRef<typeof import('@vueuse/core')['tryOnBeforeUnmount']>
@@ -557,6 +594,8 @@ declare module 'vue' {
     readonly urlValidator: UnwrapRef<typeof import('./resources/ts/@core/utils/validators')['urlValidator']>
     readonly useAbs: UnwrapRef<typeof import('@vueuse/math')['useAbs']>
     readonly useActiveElement: UnwrapRef<typeof import('@vueuse/core')['useActiveElement']>
+    readonly useAdminAdvancedCharts: UnwrapRef<typeof import('./resources/ts/composables/useAdvancedCharts')['useAdminAdvancedCharts']>
+    readonly useAffiliateAdvancedCharts: UnwrapRef<typeof import('./resources/ts/composables/useAdvancedCharts')['useAffiliateAdvancedCharts']>
     readonly useAffiliateCartUi: UnwrapRef<typeof import('./resources/ts/composables/useAffiliateCartUi')['useAffiliateCartUi']>
     readonly useAnimate: UnwrapRef<typeof import('@vueuse/core')['useAnimate']>
     readonly useApi: UnwrapRef<typeof import('./resources/ts/composables/useApi')['useApi']>
@@ -587,6 +626,9 @@ declare module 'vue' {
     readonly useCached: UnwrapRef<typeof import('@vueuse/core')['useCached']>
     readonly useCategorySoftDelete: UnwrapRef<typeof import('./resources/ts/composables/useSoftDelete')['useCategorySoftDelete']>
     readonly useCeil: UnwrapRef<typeof import('@vueuse/math')['useCeil']>
+    readonly useChartAnimations: UnwrapRef<typeof import('./resources/ts/composables/useAdvancedCharts')['useChartAnimations']>
+    readonly useChartResponsive: UnwrapRef<typeof import('./resources/ts/composables/useAdvancedCharts')['useChartResponsive']>
+    readonly useChartTheme: UnwrapRef<typeof import('./resources/ts/composables/useAdvancedCharts')['useChartTheme']>
     readonly useClamp: UnwrapRef<typeof import('@vueuse/math')['useClamp']>
     readonly useClipboard: UnwrapRef<typeof import('@vueuse/core')['useClipboard']>
     readonly useClipboardItems: UnwrapRef<typeof import('@vueuse/core')['useClipboardItems']>

@@ -123,9 +123,30 @@ class AdminDashboardController extends Controller
      */
     private function parseFilters(Request $request): array
     {
+        $dateStart = $request->get('date_start');
+        $dateEnd = $request->get('date_end');
+        if (!$dateStart && !$dateEnd && $request->has('dateRange')) {
+            try {
+                $range = $request->get('dateRange');
+                if (is_string($range)) {
+                    $decoded = json_decode($range, true);
+                } else {
+                    $decoded = $range;
+                }
+                if (is_array($decoded)) {
+                    $dateStart = $decoded['start'] ?? null;
+                    $dateEnd = $decoded['end'] ?? null;
+                }
+            } catch (\Throwable $e) {
+                // ignore malformed
+            }
+        }
+        $dateStart = $dateStart ?: Carbon::now()->startOfMonth()->toDateString();
+        $dateEnd = $dateEnd ?: Carbon::now()->toDateString();
+
         return [
-            'date_start' => $request->get('date_start', Carbon::now()->startOfMonth()->toDateString()),
-            'date_end' => $request->get('date_end', Carbon::now()->toDateString()),
+            'date_start' => $dateStart,
+            'date_end' => $dateEnd,
             'affiliate_id' => $request->get('affiliate_id'),
             'status' => $request->get('status'),
             'country' => $request->get('country'),
