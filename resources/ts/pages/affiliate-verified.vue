@@ -154,7 +154,7 @@ const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
               size="large"
               :to="{ name: 'login' }"
             >
-              Retour à la connexion
+              {{ t('actions.backToLogin') }}
             </VBtn>
             
             <VBtn

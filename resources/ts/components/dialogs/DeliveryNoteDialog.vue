@@ -158,7 +158,7 @@
           @click="updateModelValue(false)"
           :disabled="loading"
         >
-          {{ step === 3 ? 'Fermer' : 'Annuler' }}
+          {{ step === 3 ? t('actions.close') : t('actions.cancel') }}
         </VBtn>
 
         <VBtn

@@ -351,8 +351,8 @@ const getStatusText = (status: string) => {
     'delivery_attempted': 'Tentative de livraison',
     'delivered': 'Livré',
     'livree': 'Livrée',
-    'returned': 'Retourné',
-    'retournee': 'Retournée',
+    'returned': t('order.status.returned'),
+    'retournee': t('order.status.returned_feminine'),
     'refused': 'Refusé',
     'refusee': 'Refusée',
     'cancelled': 'Annulé',
@@ -626,7 +626,7 @@ onMounted(() => {
               @click="viewShippingOrder(item)"
             />
             <VTooltip activator="prev" location="top">
-              Voir les détails
+              {{ t('actions.viewDetails') }}
             </VTooltip>
 
             <!-- If no tracking number, show resend button -->
@@ -654,7 +654,7 @@ onMounted(() => {
                 @click="viewTracking(item)"
               />
               <VTooltip activator="prev" location="top">
-                Voir le suivi
+                {{ t('actions.viewTracking') }}
               </VTooltip>
 
               <VBtn
@@ -801,7 +801,7 @@ onMounted(() => {
               { title: t('shipped'), value: 'expediee' },
               { title: t('delivered_livree'), value: 'livree' },
               { title: t('refused'), value: 'refusee' },
-              { title: t('returned'), value: 'retournee' },
+              { title: t('order.status.returned_feminine'), value: 'retournee' },
               { title: t('cancelled'), value: 'annulee' }
             ]"
             variant="outlined"

@@ -220,7 +220,7 @@ const getStatusText = (status: string) => {
     case 'delivered':
       return 'Livré'
     case 'returned':
-      return 'Retourné'
+      return t('order.status.returned')
     default:
       return status
   }
@@ -278,7 +278,7 @@ const getTrackingStatusColor = (status: string) => {
   if (statusLower.includes('nouveau') || statusLower.includes('créé')) return 'info'
   if (statusLower.includes('en cours') || statusLower.includes('transit')) return 'warning'
   if (statusLower.includes('livré')) return 'success'
-  if (statusLower.includes('retourné') || statusLower.includes('refusé')) return 'error'
+  if (statusLower.includes(t('order.status.returned').toLowerCase()) || statusLower.includes('refusé')) return 'error'
 
   return 'secondary'
 }
@@ -587,7 +587,7 @@ onMounted(() => {
           <VRow>
             <VCol cols="12" md="8">
               <VCard>
-                <VCardTitle>Détails du Colis</VCardTitle>
+                <VCardTitle>{{ t('labels.packageDetails') }}</VCardTitle>
                 <VCardText>
                   <VRow>
                     <VCol cols="12" md="6">
@@ -637,7 +637,7 @@ onMounted(() => {
                       <div class="text-body-1">{{ formatCurrency(shippingOrder.shipping_parcel.delivered_price) }}</div>
                     </VCol>
                     <VCol cols="4">
-                      <div class="text-body-2 text-medium-emphasis mb-1">Prix retour</div>
+                      <div class="text-body-2 text-medium-emphasis mb-1">{{ t('labels.returnFee') }}</div>
                       <div class="text-body-1">{{ formatCurrency(shippingOrder.shipping_parcel.returned_price || 0) }}</div>
                     </VCol>
                     <VCol cols="4">
@@ -684,7 +684,7 @@ onMounted(() => {
                     block
                     @click="router.push({ name: 'admin-orders-pre-id', params: { id: shippingOrder.id } })"
                   >
-                    Voir Commande
+                    {{ t('actions.viewOrder') }}
                   </VBtn>
                 </VCardText>
               </VCard>
@@ -1010,7 +1010,7 @@ onMounted(() => {
         variant="elevated"
         @click="goBack"
       >
-        Retour à la liste
+        {{ t('actions.backToList') }}
       </VBtn>
     </div>
   </div>
@@ -1024,7 +1024,7 @@ onMounted(() => {
     <VCard>
       <VCardTitle class="text-h6">
         <VIcon start icon="tabler-edit" color="warning" />
-        Modifier le Statut d'Expédition
+        {{ t('labels.modifyShippingStatus') }}
       </VCardTitle>
 
       <VCardText>
@@ -1041,7 +1041,7 @@ onMounted(() => {
             { title: 'Expédiée', value: 'expediee' },
             { title: 'Livrée', value: 'livree' },
             { title: 'Refusée', value: 'refusee' },
-            { title: 'Retournée', value: 'retournee' },
+            { title: t('order.status.returned_feminine'), value: 'retournee' },
             { title: 'Annulée', value: 'annulee' }
           ]"
           variant="outlined"

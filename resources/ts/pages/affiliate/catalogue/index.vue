@@ -299,7 +299,7 @@ onMounted(async () => {
               <div class="d-flex align-center gap-2">
                 <VIcon icon="tabler-shopping-cart" size="20" />
                 <span class="cart-button-text">
-                  {{ cartStore.count > 0 ? 'Voir Panier' : 'Panier' }}
+                  {{ cartStore.count > 0 ? t('actions.viewCart') : t('cart.title') }}
                 </span>
               </div>
             </VBadge>

@@ -98,11 +98,11 @@ const fetchUsers = async (search?: string) => {
       console.log('✅ [Create Withdrawal] Users loaded:', users.value.length)
     } else {
       console.error('❌ [Create Withdrawal] API returned error:', response)
-      showError(response?.message || 'Erreur lors du chargement des utilisateurs')
+      showError(response?.message || t('errors.users_loading_error'))
     }
   } catch (error) {
     console.error('🚫 [Create Withdrawal] Error fetching users:', error)
-    showError('Erreur lors du chargement des utilisateurs')
+    showError(t('errors.users_loading_error'))
   } finally {
     loadingUsers.value = false
   }
@@ -212,7 +212,7 @@ watch(() => form.value.user_id, async (uid) => {
     console.log('✅ [Create Withdrawal] Loaded eligible commissions:', eligibleCommissions.value.length)
   } catch (error) {
     console.error('❌ [Create Withdrawal] Error loading commissions:', error)
-    showError('Erreur lors du chargement des commissions')
+    showError(t('errors.commissions_loading_error'))
   } finally {
     loadingCommissions.value = false
   }
@@ -270,7 +270,7 @@ fetchUsers()
         <VForm ref="formRef" @submit.prevent="handleSubmit">
           <!-- Step 1: User Selection -->
           <div v-if="currentStep === 1">
-            <h3 class="text-h6 mb-6">Sélection de l'affilié</h3>
+            <h3 class="text-h6 mb-6">{{ t('admin_withdrawals_select_affiliate_title') }}</h3>
 
             <VRow>
               <VCol cols="12">
@@ -280,8 +280,8 @@ fetchUsers()
                   :loading="loadingUsers"
                   item-title="nom_complet"
                   item-value="id"
-                  label="Sélectionner un affilié *"
-                  placeholder="Rechercher un affilié..."
+                  :label="t('admin_withdrawals_select_affiliate_label')"
+                  :placeholder="t('admin_withdrawals_search_affiliate_placeholder')"
                   clearable
                   :error="hasError('user_id')"
                   :error-messages="getError('user_id')"
@@ -399,7 +399,7 @@ fetchUsers()
                     variant="tonal"
                     @click="prevStep"
                   >
-                    Précédent
+                    {{ t('actions.previous') }}
                   </VBtn>
                 </div>
                 
@@ -408,7 +408,7 @@ fetchUsers()
                     variant="tonal"
                     @click="cancel"
                   >
-                    Annuler
+                    {{ t('actions.cancel') }}
                   </VBtn>
                   
                   <VBtn

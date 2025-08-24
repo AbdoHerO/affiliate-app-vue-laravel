@@ -309,7 +309,7 @@ onMounted(() => {
                 </div>
                 <VDivider class="my-3" />
                 <div class="d-flex justify-space-between">
-                  <span class="text-h6">Total articles:</span>
+                  <span class="text-h6">{{ t('labels.totalArticles') }}:</span>
                   <span class="text-h6">{{ cartStore.totalQty }}</span>
                 </div>
               </VCardText>
@@ -407,7 +407,7 @@ onMounted(() => {
               variant="outlined"
               @click="handleBackToCart"
             >
-              Retour au panier
+              {{ t('actions.backToCart') }}
             </VBtn>
             <VSpacer />
             <VBtn

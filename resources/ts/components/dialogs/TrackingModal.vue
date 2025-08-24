@@ -118,7 +118,7 @@
                         </div>
                         
                         <div v-if="parcelInfo?.returned_price" class="d-flex justify-space-between">
-                          <span class="text-body-2 text-medium-emphasis">Frais de retour:</span>
+                          <span class="text-body-2 text-medium-emphasis">{{ t('labels.returnFee') }}:</span>
                           <span class="text-body-2">{{ formatCurrency(parcelInfo.returned_price) }}</span>
                         </div>
                         
@@ -202,7 +202,7 @@
           variant="text"
           @click="updateModelValue(false)"
         >
-          Fermer
+          {{ t('actions.close') }}
         </VBtn>
       </VCardActions>
     </VCard>

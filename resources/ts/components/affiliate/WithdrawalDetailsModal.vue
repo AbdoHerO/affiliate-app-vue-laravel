@@ -80,7 +80,7 @@ const getMethodText = (method: string) => {
     <VCard v-if="withdrawal">
       <VCardTitle class="d-flex align-center justify-space-between">
         <div>
-          <h3 class="text-h5">Détails du retrait</h3>
+          <h3 class="text-h5">{{ t('labels.withdrawalDetails') }}</h3>
           <p class="text-body-2 text-medium-emphasis mb-0">
             Référence: #{{ withdrawal.id.slice(-8) }}
           </p>
@@ -233,7 +233,7 @@ const getMethodText = (method: string) => {
           variant="outlined"
           @click="dialogModel = false"
         >
-          Fermer
+          {{ t('actions.close') }}
         </VBtn>
       </VCardActions>
     </VCard>

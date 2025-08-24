@@ -233,7 +233,7 @@ onMounted(() => {
                 prepend-icon="tabler-arrow-left"
                 class="text-primary"
               >
-                Retour à la connexion
+                {{ t('actions.backToLogin') }}
               </VBtn>
             </div>
 
@@ -281,7 +281,7 @@ onMounted(() => {
                 color="primary"
                 :to="{ name: 'login' }"
               >
-                Retour à la connexion
+                {{ t('actions.backToLogin') }}
               </VBtn>
             </div>
           </div>

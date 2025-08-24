@@ -278,7 +278,7 @@ const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
                           size="small"
                           @click="showAccountTypeMenu = false"
                         >
-                          Fermer
+                          {{ t('actions.close') }}
                         </VBtn>
                       </div>
                     </VCardText>

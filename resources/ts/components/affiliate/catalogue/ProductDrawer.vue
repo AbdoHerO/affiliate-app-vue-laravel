@@ -671,7 +671,7 @@ const formatCopywriting = (text: string): string => {
                       prepend-icon="tabler-eye"
                       @click="openVideo(video.url)"
                     >
-                      Voir
+                      {{ t('actions.view') }}
                     </VBtn>
                     <VBtn
                       size="small"

@@ -155,7 +155,7 @@
                 :disabled="!testMode.useReal"
               >
                 <VIcon start icon="tabler-cloud-download" />
-                Voir Colis Plateforme
+                {{ t('actions.viewPlatformPackage') }}
               </VBtn>
             </div>
 
@@ -357,7 +357,7 @@
                     variant="text"
                     @click="showMetaDialog(item)"
                   >
-                    Voir Détails
+                    {{ t('actions.viewDetails') }}
                   </VBtn>
                 </template>
               </VDataTable>
@@ -889,7 +889,7 @@
         </VCardText>
         <VCardActions>
           <VSpacer />
-          <VBtn @click="metaDialog.show = false">Fermer</VBtn>
+          <VBtn @click="metaDialog.show = false">{{ t('actions.close') }}</VBtn>
         </VCardActions>
       </VCard>
     </VDialog>
@@ -1030,7 +1030,7 @@ const parcelHeaders = [
   { title: 'Prix', key: 'price' },
   { title: 'Statut', key: 'status' },
   { title: 'Créé le', key: 'created_at' },
-  { title: 'Détails', key: 'meta', sortable: false }
+  { title: t('labels.details'), key: 'meta', sortable: false }
 ]
 
 const platformParcelHeaders = [
@@ -1479,7 +1479,7 @@ const getStatusLabel = (status: string) => {
     'in_transit': 'En Transit',
     'out_for_delivery': 'En Cours de Livraison',
     'delivered': 'Livré',
-    'returned': 'Retourné',
+    'returned': t('order.status.returned'),
     'refused': 'Refusé',
     'cancelled': 'Annulé',
     'shipped': 'Expédié',
@@ -1487,8 +1487,8 @@ const getStatusLabel = (status: string) => {
     'ready_for_delivery': 'Prêt pour Livraison',
     'delivery_attempted': 'Tentative de Livraison',
     'delivery_failed': 'Échec de Livraison',
-    'return_in_progress': 'Retour en Cours',
-    'return_delivered': 'Retour Livré',
+    'return_in_progress': t('order.status.returnInProgress'),
+    'return_delivered': t('order.status.returnDelivered'),
     'unknown': 'Statut Inconnu'
   }
   return statusLabels[status?.toLowerCase()] || status || 'Inconnu'

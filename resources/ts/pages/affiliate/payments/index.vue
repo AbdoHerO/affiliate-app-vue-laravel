@@ -201,7 +201,7 @@ const viewWithdrawalDetails = async (withdrawalId: string) => {
     // Open the modal
     showWithdrawalModal.value = true
   } catch (err: any) {
-    showError(err.message || 'Erreur lors du chargement des détails du retrait')
+    showError(err.message || t('errors.withdrawal_details_load'))
   }
 }
 
