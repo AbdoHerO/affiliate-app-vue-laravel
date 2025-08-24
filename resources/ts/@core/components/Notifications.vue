@@ -2,6 +2,8 @@
 import { PerfectScrollbar } from 'vue3-perfect-scrollbar'
 import type { Notification } from '@layouts/types'
 
+const { t } = useI18n()
+
 interface Props {
   notifications: Notification[]
   badgeProps?: object
@@ -186,7 +188,7 @@ const toggleReadUnread = (isSeen: boolean, Id: number) => {
               class="text-center text-medium-emphasis"
               style="block-size: 56px;"
             >
-              <VListItemTitle>No Notification Found!</VListItemTitle>
+              <VListItemTitle>{{ t('notifications.noNotificationsFound') }}</VListItemTitle>
             </VListItem>
           </VList>
         </PerfectScrollbar>

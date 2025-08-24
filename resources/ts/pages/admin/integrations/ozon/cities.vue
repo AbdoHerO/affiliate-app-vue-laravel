@@ -4,12 +4,14 @@ import { useOzonCitiesStore, type ShippingCity } from '@/stores/admin/ozonCities
 import { useNotifications } from '@/composables/useNotifications'
 import { useDebounceFn } from '@vueuse/core'
 import SoftDeleteActions from '@/components/common/SoftDeleteActions.vue'
+import { useI18n } from 'vue-i18n'
 
 // Store
 const ozonCitiesStore = useOzonCitiesStore()
 
 // Composables
 const { showSuccess, showError, snackbar } = useNotifications()
+const { t } = useI18n()
 
 // UI State
 const showCreateDialog = ref(false)
@@ -366,11 +368,11 @@ const formatPrice = (price: number | null | undefined) => {
           <VCol cols="12" md="3">
             <VSelect
               v-model="deleteFilter"
-              label="Affichage"
+              :label="t('table.display')"
               :items="[
-                { title: 'Actives seulement', value: 'active' },
-                { title: 'Supprimées seulement', value: 'deleted' },
-                { title: 'Toutes (actives + supprimées)', value: 'all' },
+                { title: t('table.activeOnly'), value: 'active' },
+                { title: t('table.deletedOnly'), value: 'deleted' },
+                { title: t('table.allActiveAndDeleted'), value: 'all' },
               ]"
               variant="outlined"
               density="compact"
@@ -546,14 +548,14 @@ const formatPrice = (price: number | null | undefined) => {
             variant="outlined"
             @click="showCreateDialog = false"
           >
-            Annuler
+            {{ t('actions.cancel') }}
           </VBtn>
           <VBtn
             color="primary"
             :loading="ozonCitiesStore.loading"
             @click="saveCity"
           >
-            Créer
+            {{ t('actions.create') }}
           </VBtn>
         </VCardActions>
       </VCard>
@@ -566,7 +568,7 @@ const formatPrice = (price: number | null | undefined) => {
       persistent
     >
       <VCard>
-        <VCardTitle>Modifier la ville</VCardTitle>
+        <VCardTitle>{{ t('admin.cities.editCity') }}</VCardTitle>
         
         <VCardText>
           <VForm @submit.prevent="saveCity">
@@ -643,14 +645,14 @@ const formatPrice = (price: number | null | undefined) => {
             variant="outlined"
             @click="showEditDialog = false"
           >
-            Annuler
+            {{ t('actions.cancel') }}
           </VBtn>
           <VBtn
             color="primary"
             :loading="ozonCitiesStore.loading"
             @click="saveCity"
           >
-            Modifier
+            {{ t('actions.edit') }}
           </VBtn>
         </VCardActions>
       </VCard>
@@ -689,7 +691,7 @@ const formatPrice = (price: number | null | undefined) => {
             variant="outlined"
             @click="showImportDialog = false"
           >
-            Annuler
+            {{ t('actions.cancel') }}
           </VBtn>
           <VBtn
             color="primary"

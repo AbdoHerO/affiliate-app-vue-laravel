@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useAffiliatesStore } from '@/stores/admin/affiliates'
 import { useConfirmAction } from '@/composables/useConfirmAction'
 import { useNotifications } from '@/composables/useNotifications'
+import { useI18n } from 'vue-i18n'
 
 definePage({
   meta: {
@@ -18,6 +19,7 @@ const router = useRouter()
 const affiliatesStore = useAffiliatesStore()
 const { confirm } = useConfirmAction()
 const { showSuccess, showError } = useNotifications()
+const { t } = useI18n()
 
 // Local state
 const activeTab = ref('profile')
@@ -94,15 +96,15 @@ const getStatusColor = (status: string) => {
 const getStatusText = (status: string) => {
   switch (status) {
     case 'actif':
-      return 'Actif'
+      return t('status.active')
     case 'inactif':
-      return 'Inactif'
+      return t('status.inactive')
     case 'bloque':
-      return 'Bloqué'
+      return t('status.blocked')
     case 'suspendu':
-      return 'Suspendu'
+      return t('status.suspended')
     case 'resilie':
-      return 'Résilié'
+      return t('status.terminated')
     default:
       return status
   }
@@ -257,7 +259,7 @@ onMounted(async () => {
             @click="router.push({ name: 'admin-affiliate-edit', params: { id: affiliate.id } })"
           >
             <VIcon start icon="tabler-edit" />
-            Modifier
+            {{ t('actions.edit') }}
           </VBtn>
         </div>
       </div>
@@ -297,15 +299,15 @@ onMounted(async () => {
                   <VRow>
                     <VCol cols="12" md="6">
                       <div class="mb-4">
-                        <div class="text-body-2 text-medium-emphasis mb-1">Nom complet</div>
+                        <div class="text-body-2 text-medium-emphasis mb-1">{{ t('form.fullName') }}</div>
                         <div class="text-h6">{{ affiliate.nom_complet }}</div>
                       </div>
                       <div class="mb-4">
-                        <div class="text-body-2 text-medium-emphasis mb-1">Email</div>
+                        <div class="text-body-2 text-medium-emphasis mb-1">{{ t('form.email') }}</div>
                         <div class="text-body-1">{{ affiliate.email }}</div>
                       </div>
                       <div class="mb-4">
-                        <div class="text-body-2 text-medium-emphasis mb-1">Téléphone</div>
+                        <div class="text-body-2 text-medium-emphasis mb-1">{{ t('form.phone') }}</div>
                         <div class="text-body-1">{{ affiliate.telephone || 'Non renseigné' }}</div>
                       </div>
                     </VCol>
@@ -332,8 +334,8 @@ onMounted(async () => {
                   <VDivider class="my-4" />
 
                   <div class="mb-4">
-                    <div class="text-body-2 text-medium-emphasis mb-1">Adresse</div>
-                    <div class="text-body-1">{{ affiliate.adresse || 'Non renseignée' }}</div>
+                    <div class="text-body-2 text-medium-emphasis mb-1">{{ t('form.address') }}</div>
+                    <div class="text-body-1">{{ affiliate.adresse || t('common.notProvided') }}</div>
                   </div>
                 </VCardText>
               </VCard>
@@ -536,7 +538,7 @@ onMounted(async () => {
         variant="elevated"
         @click="goBack"
       >
-        Retour à la liste
+        {{ t('actions.backToList') }}
       </VBtn>
     </div>
 
@@ -562,7 +564,7 @@ onMounted(async () => {
             variant="text"
             @click="showTierDialog = false"
           >
-            Annuler
+            {{ t('actions.cancel') }}
           </VBtn>
           <VBtn
             color="primary"
@@ -599,7 +601,7 @@ onMounted(async () => {
             variant="text"
             @click="showBlockDialog = false"
           >
-            Annuler
+            {{ t('actions.cancel') }}
           </VBtn>
           <VBtn
             color="error"

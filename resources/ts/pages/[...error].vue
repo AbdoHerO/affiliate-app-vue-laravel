@@ -4,6 +4,7 @@ import misc404 from '@images/pages/404.png'
 import miscMaskDark from '@images/pages/misc-mask-dark.png'
 import miscMaskLight from '@images/pages/misc-mask-light.png'
 
+const { t } = useI18n()
 const authThemeMask = useGenerateImageVariant(miscMaskLight, miscMaskDark)
 
 definePage({
@@ -19,22 +20,22 @@ definePage({
   <div class="misc-wrapper">
     <ErrorHeader
       status-code="404"
-      title="Page Not Found ⚠️"
-      description="We couldn't find the page you are looking for."
+      :title="t('errors.pageNotFoundTitle')"
+      :description="t('errors.pageNotFoundDescription')"
     />
 
     <VBtn
       to="/"
       class="mb-11"
     >
-      Back to Home
+      {{ t('actions.backToHome') }}
     </VBtn>
 
     <!-- 👉 Image -->
     <div class="misc-avatar w-100 text-center">
       <VImg
         :src="misc404"
-        alt="error 404"
+        :alt="t('a11y.error404Image')"
         :max-height="$vuetify.display.smAndDown ? 350 : 500"
         class="mx-auto"
       />
@@ -43,7 +44,7 @@ definePage({
     <img
       class="misc-footer-img d-none d-md-block"
       :src="authThemeMask"
-      alt="misc-footer-img"
+      :alt="t('a11y.decorativeImage')"
       height="320"
     >
   </div>

@@ -3,7 +3,7 @@
     <VCard>
       <VCardTitle class="d-flex align-center gap-2">
         <VIcon icon="tabler-bug" />
-        OzonExpress API Debug & Testing
+        {{ t('admin.debug.ozonExpressTitle') }}
       </VCardTitle>
       
       <VCardText>
@@ -12,13 +12,12 @@
           variant="tonal"
           class="mb-4"
         >
-          Cette page permet de tester et déboguer l'intégration OzonExpress.
-          Utilisez-la pour vérifier que l'API fonctionne correctement.
+          {{ t('admin.debug.ozonExpressDescription') }}
         </VAlert>
 
         <!-- Mode Toggle -->
         <VCard class="mb-4" variant="outlined">
-          <VCardTitle>Mode de Test</VCardTitle>
+          <VCardTitle>{{ t('admin.debug.testMode') }}</VCardTitle>
           <VCardText>
             <div class="d-flex align-center gap-4">
               <VSwitch
@@ -34,7 +33,7 @@
                       :color="testMode.useReal ? 'success' : 'warning'"
                     />
                     <span class="font-weight-medium">
-                      {{ testMode.useReal ? 'Mode API Réelle' : 'Mode Test Mock' }}
+                      {{ testMode.useReal ? t('admin.debug.realApiMode') : t('admin.debug.mockTestMode') }}
                     </span>
                   </div>
                 </template>
@@ -59,10 +58,10 @@
                 <VIcon :icon="testMode.useReal ? 'tabler-check' : 'tabler-alert-triangle'" />
               </template>
               <span v-if="testMode.useReal">
-                🚀 <strong>Mode Production:</strong> Les appels API créent de vrais colis avec de vrais numéros de suivi
+                🚀 <strong>{{ t('admin.debug.productionMode') }}:</strong> {{ t('admin.debug.productionModeDesc') }}
               </span>
               <span v-else>
-                🧪 <strong>Mode Test:</strong> Les appels API utilisent des données fictives pour les tests
+                🧪 <strong>{{ t('admin.debug.testMode') }}:</strong> {{ t('admin.debug.testModeDesc') }}
               </span>
             </VAlert>
           </VCardText>
@@ -70,14 +69,14 @@
 
         <!-- System Status -->
         <VCard class="mb-4" variant="outlined">
-          <VCardTitle>État du Système</VCardTitle>
+          <VCardTitle>{{ t('admin.debug.systemStatus') }}</VCardTitle>
           <VCardText>
             <VBtn
               color="primary"
               @click="loadSystemStatus"
               :loading="loading.systemStatus"
             >
-              Vérifier l'État
+              {{ t('admin.debug.checkStatus') }}
             </VBtn>
             
             <div v-if="systemStatus" class="mt-4">
@@ -948,6 +947,7 @@ import { ref, onMounted } from 'vue'
 import { useOzonDebugStore } from '@/stores/admin/ozonDebug'
 import { useShippingStore } from '@/stores/admin/shipping'
 import { useNotifications } from '@/composables/useNotifications'
+import { useI18n } from 'vue-i18n'
 
 definePage({
   meta: {
@@ -961,6 +961,7 @@ definePage({
 const ozonDebugStore = useOzonDebugStore()
 const shippingStore = useShippingStore()
 const { showSuccess, showError } = useNotifications()
+const { t } = useI18n()
 
 // State
 const loading = ref({

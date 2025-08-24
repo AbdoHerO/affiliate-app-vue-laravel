@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+const { t } = useI18n()
 const vm = getCurrentInstance()
 
 const buyNowUrl = ref(vm?.appContext.config.globalProperties.buyNowUrl || 'https://1.envato.market/vuexy_admin')
@@ -17,7 +18,7 @@ watch(buyNowUrl, val => {
     :href="buyNowUrl"
     target="_blank"
   >
-    Buy Now
+    {{ t('actions.buyNow') }}
     <span class="button-inner" />
   </a>
 </template>

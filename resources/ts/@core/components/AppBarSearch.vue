@@ -16,6 +16,8 @@ interface Props {
 const props = defineProps<Props>()
 const emit = defineEmits<Emit>()
 
+const { t } = useI18n()
+
 // 👉 Hotkey
 // eslint-disable-next-line camelcase
 const { ctrl_k, meta_k } = useMagicKeys({
@@ -183,7 +185,7 @@ watch(
                     icon="tabler-file-alert"
                   />
                   <div class="d-flex align-center flex-wrap justify-center gap-2 text-h5 mt-3">
-                    <span>No Result For </span>
+                    <span>{{ t('search.noResultsFor') }} </span>
                     <span>"{{ searchQueryLocal }}"</span>
                   </div>
 

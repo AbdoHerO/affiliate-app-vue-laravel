@@ -125,7 +125,7 @@ onMounted(() => {
       <VCol cols="12">
         <VCard>
           <VCardTitle class="d-flex align-center justify-space-between">
-            <span>{{ t('admin_boutiques_create_title') || 'Créer une boutique' }}</span>
+            <span>{{ t('admin_boutiques_create_title') }}</span>
             <VBtn
               variant="outlined"
               size="small"
@@ -187,11 +187,11 @@ onMounted(() => {
                   <VSelect
                     v-model="form.statut"
                     :items="[
-                      { value: 'actif', title: t('admin_boutiques_filter_status_active') || 'Actif' },
-                      { value: 'suspendu', title: t('admin_boutiques_filter_status_inactive') || 'Suspendu' },
-                      { value: 'desactive', title: t('admin_boutiques_filter_status_pending') || 'Désactivé' },
+                      { value: 'actif', title: t('admin_boutiques_filter_status_active') },
+                      { value: 'suspendu', title: t('admin_boutiques_filter_status_inactive') },
+                      { value: 'desactive', title: t('admin_boutiques_filter_status_pending') },
                     ]"
-                    :label="t('admin_boutiques_status') || 'Statut'"
+                    :label="t('admin_boutiques_status')"
                     :error-messages="errors.statut"
                     variant="outlined"
                     required
@@ -242,7 +242,7 @@ onMounted(() => {
                     variant="outlined"
                     @click="goBack"
                   >
-                    {{ t('common.cancel') || 'Annuler' }}
+                    {{ t('common.cancel') }}
                   </VBtn>
                   <VBtn
                     type="button"
@@ -250,7 +250,7 @@ onMounted(() => {
                     :loading="isLoading"
                     @click="handleSubmit"
                   >
-                    {{ t('common.save') || 'Créer' }}
+                    {{ t('common.save') }}
                   </VBtn>
                 </VCol>
               </VRow>

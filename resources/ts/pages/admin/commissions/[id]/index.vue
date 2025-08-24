@@ -199,7 +199,7 @@ onMounted(async () => {
         prepend-icon="tabler-arrow-left"
         @click="goBack"
       >
-        Retour à la liste
+        {{ t('actions.backToList') }}
       </VBtn>
     </div>
 
@@ -231,7 +231,7 @@ onMounted(async () => {
             prepend-icon="tabler-arrow-left"
             @click="goBack"
           >
-            Retour
+            {{ t('actions.back') }}
           </VBtn>
 
           <VBtn
@@ -283,7 +283,7 @@ onMounted(async () => {
           <VCard>
             <VCardTitle>
               <VIcon icon="tabler-percentage" class="me-2" />
-              Détails de la commission
+              {{ t('admin.commissions.details') }}
             </VCardTitle>
             <VCardText>
               <VList>
@@ -434,7 +434,7 @@ onMounted(async () => {
         La commission demandée n'existe pas ou a été supprimée.
       </p>
       <VBtn color="primary" @click="goBack">
-        Retour aux commissions
+        {{ t('actions.backToCommissions') }}
       </VBtn>
     </div>
 
@@ -466,7 +466,7 @@ onMounted(async () => {
             variant="text"
             @click="showRejectDialog = false"
           >
-            Annuler
+            {{ t('actions.cancel') }}
           </VBtn>
           <VBtn
             color="error"
@@ -519,7 +519,7 @@ onMounted(async () => {
             variant="text"
             @click="showAdjustDialog = false"
           >
-            Annuler
+            {{ t('actions.cancel') }}
           </VBtn>
           <VBtn
             color="warning"
@@ -527,7 +527,7 @@ onMounted(async () => {
             :disabled="!adjustNote.trim()"
             @click="handleAdjust"
           >
-            Ajuster
+            {{ t('actions.adjust') }}
           </VBtn>
         </VCardActions>
       </VCard>

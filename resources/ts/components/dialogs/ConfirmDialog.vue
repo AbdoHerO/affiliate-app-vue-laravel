@@ -1,4 +1,9 @@
 <script setup lang="ts">
+import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
+
 interface Props {
   modelValue: boolean
   title?: string
@@ -27,6 +32,12 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits<Emit>()
+
+// Computed properties for translated text with fallbacks
+const displayTitle = computed(() => props.title || t('dialogs.confirmAction'))
+const displayText = computed(() => props.text || t('dialogs.confirmMessage'))
+const displayConfirmText = computed(() => props.confirmText || t('actions.confirm'))
+const displayCancelText = computed(() => props.cancelText || t('actions.cancel'))
 
 const updateModelValue = (val: boolean) => {
   emit('update:modelValue', val)
@@ -67,12 +78,12 @@ const onCancel = () => {
 
         <!-- Title -->
         <h5 class="text-h5 mb-4">
-          {{ props.title }}
+          {{ displayTitle }}
         </h5>
 
         <!-- Text -->
         <p class="text-body-1 mb-6">
-          {{ props.text }}
+          {{ displayText }}
         </p>
       </VCardText>
 
@@ -84,7 +95,7 @@ const onCancel = () => {
           :loading="props.loading"
           @click="onConfirm"
         >
-          {{ props.confirmText }}
+          {{ displayConfirmText }}
         </VBtn>
 
         <VBtn
@@ -93,7 +104,7 @@ const onCancel = () => {
           :disabled="props.loading"
           @click="onCancel"
         >
-          {{ props.cancelText }}
+          {{ displayCancelText }}
         </VBtn>
       </VCardActions>
     </VCard>

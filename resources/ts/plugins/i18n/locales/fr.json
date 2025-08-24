@@ -10,6 +10,7 @@
   "nav_affiliate_management": "Gestion des affiliés",
   "nav_all_affiliates": "Tous les affiliés",
   "nav_affiliate_tiers": "Niveaux d'affiliés",
+  "nav_affiliate_approval_queue": "File d'Attente d'Approbation",
   "nav_order_management": "Gestion des commandes",
   "nav_all_orders": "Toutes les commandes",
   "nav_order_conflicts": "Conflits de commandes",
@@ -213,7 +214,15 @@
     "restore": "Restaurer",
     "force_delete": "Supprimer définitivement",
     "confirm_delete": "Confirmer la suppression",
-    "confirm_delete_message": "Êtes-vous sûr de vouloir supprimer cet élément ? Cette action est irréversible."
+    "confirm_delete_message": "Êtes-vous sûr de vouloir supprimer cet élément ? Cette action est irréversible.",
+    "backToHome": "Retour à l'Accueil",
+    "buyNow": "Acheter Maintenant",
+    "confirm": "Confirmer",
+    "cancel": "Annuler",
+    "create": "Créer",
+    "back": "Retour",
+    "backToList": "Retour à la liste",
+    "backToCommissions": "Retour aux commissions"
   },
 
   // ===========================================
@@ -250,7 +259,11 @@
     "unknown_error": "Erreur inconnue",
     "max_retries_reached": "Nombre maximum de tentatives atteint",
     "too_many_errors_redirecting": "Trop d'erreurs détectées, redirection en cours...",
-    "error_loading_data": "Erreur lors du chargement des données"
+    "error_loading_data": "Erreur lors du chargement des données",
+    "guest": "Invité",
+    "noRole": "Aucun Rôle",
+    "notProvided": "Non renseignée",
+    "loading": "Chargement..."
   },
 
   // ===========================================
@@ -1057,7 +1070,7 @@
   "admin_produits_features": "Caractéristiques du Produit",
   "admin_produits_features_help": "Listez les principales caractéristiques et avantages de votre produit",
   "admin_produits_features_list": "Liste des Caractéristiques",
-  "admin_produits_features_placeholder": "• Matériaux de haute qualité\n• Livraison rapide\n• Garantie 1 an",
+  "admin_produits_features_placeholder": "• Matériaux de haute qualité\\n• Livraison rapide\\n• Garantie 1 an",
   "admin_produits_preview": "Aperçu du Produit",
   "admin_produits_preview_empty": "Remplissez les détails du produit pour voir un aperçu",
   "admin_produits_tips": "Conseils et Directives",
@@ -1349,11 +1362,161 @@
   "common.of": "sur",
   "common.results": "résultats",
 
+  // ===========================================
+  // TABLE COMPONENTS
+  // ===========================================
+  "table": {
+    "display": "Affichage",
+    "activeOnly": "Actives seulement",
+    "deletedOnly": "Supprimées seulement",
+    "allActiveAndDeleted": "Toutes (actives + supprimées)",
+    "noDataAvailable": "Aucune donnée disponible",
+    "loading": "Chargement...",
+    "itemsPerPage": "Éléments par page",
+    "showing": "Affichage de",
+    "to": "à",
+    "of": "sur",
+    "results": "résultats"
+  },
+
   // Missing data availability key
   "Aucune donnée disponible": "Aucune donnée disponible",
 
   // Missing $vuetify keys
   "$vuetify.dataIterator.loadingText": "Chargement des éléments...",
+
+  // ===========================================
+  // ERROR PAGES
+  // ===========================================
+  "errors": {
+    "pageNotFoundTitle": "Page Non Trouvée ⚠️",
+    "pageNotFoundDescription": "Nous n'avons pas pu trouver la page que vous recherchez."
+  },
+
+  // ===========================================
+  // ACCESSIBILITY
+  // ===========================================
+  "a11y": {
+    "error404Image": "Erreur 404",
+    "decorativeImage": "Image décorative"
+  },
+
+
+
+  // ===========================================
+  // NOTIFICATIONS
+  // ===========================================
+  "notifications": {
+    "noNotificationsFound": "Aucune notification trouvée !"
+  },
+
+  // ===========================================
+  // SEARCH
+  // ===========================================
+  "search": {
+    "noResultsFor": "Aucun résultat pour"
+  },
+
+  // ===========================================
+  // CHARTS
+  // ===========================================
+  "charts": {
+    "series": {
+      "revenue": "Revenus",
+      "commissions": "Commissions",
+      "sales": "Ventes",
+      "orders": "Commandes",
+      "users": "Utilisateurs",
+      "affiliates": "Affiliés",
+      "products": "Produits",
+      "profit": "Profit",
+      "expenses": "Dépenses"
+    },
+    "labels": {
+      "total": "Total",
+      "growth": "Croissance",
+      "thisMonth": "Ce Mois",
+      "lastMonth": "Mois Dernier",
+      "thisYear": "Cette Année",
+      "lastYear": "Année Dernière"
+    }
+  },
+
+  // ===========================================
+  // DIALOGS
+  // ===========================================
+  "dialogs": {
+    "confirmAction": "Confirmer l'action",
+    "confirmMessage": "Êtes-vous sûr de vouloir continuer ?"
+  },
+
+  // ===========================================
+  // STATUS LABELS
+  // ===========================================
+  "status": {
+    "active": "Actif",
+    "inactive": "Inactif",
+    "blocked": "Bloqué",
+    "suspended": "Suspendu",
+    "terminated": "Résilié",
+    "pending": "En attente",
+    "approved": "Approuvé",
+    "rejected": "Rejeté"
+  },
+
+  // ===========================================
+  // FORM LABELS
+  // ===========================================
+  "form": {
+    "fullName": "Nom complet",
+    "email": "Email",
+    "phone": "Téléphone",
+    "address": "Adresse",
+    "description": "Description",
+    "title": "Titre",
+    "name": "Nom",
+    "status": "Statut",
+    "date": "Date",
+    "created": "Créé",
+    "modified": "Modifié"
+  },
+
+  // ===========================================
+  // ADMIN PANEL
+  // ===========================================
+  "admin": {
+    "dashboard": {
+      "title": "Tableau de Bord Admin",
+      "welcome": "Bienvenue dans l'espace administrateur",
+      "stats": {
+        "totalUsers": "Total Utilisateurs",
+        "totalOrders": "Total Commandes",
+        "totalRevenue": "Revenus Totaux",
+        "pendingOrders": "Commandes en Attente"
+      }
+    },
+    "debug": {
+      "ozonExpressTitle": "OzonExpress API Debug & Testing",
+      "ozonExpressDescription": "Cette page permet de tester et déboguer l'intégration OzonExpress. Utilisez-la pour vérifier que l'API fonctionne correctement.",
+      "testMode": "Mode de Test",
+      "realApiMode": "Mode API Réelle",
+      "mockTestMode": "Mode Test Mock",
+      "productionMode": "Mode Production",
+      "productionModeDesc": "Les appels API créent de vrais colis avec de vrais numéros de suivi",
+      "testModeDesc": "Les appels API utilisent des données fictives pour les tests",
+      "systemStatus": "État du Système",
+      "checkStatus": "Vérifier l'État"
+    },
+    "orders": {
+      "bulkUpdateSuccess": "{count} commande(s) mise(s) à jour vers \"{status}\""
+    },
+    "cities": {
+      "editCity": "Modifier la ville"
+    },
+    "commissions": {
+      "details": "Détails de la commission"
+    }
+  },
 
   // Additional missing keys from console warnings
   "common.back": "Retour",
@@ -2052,5 +2215,6 @@
   "earn_tip_1": "Partagez votre lien de parrainage avec plus de contacts",
   "earn_tip_2": "Encouragez vos contacts à vérifier leur email après inscription",
   "earn_tip_3": "Participez aux campagnes spéciales de parrainage",
-  "unverified": "Non Vérifié"
+  "unverified": "Non Vérifié",
+  
 }

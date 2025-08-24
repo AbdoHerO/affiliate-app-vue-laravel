@@ -66,9 +66,9 @@ const handleLogout = async () => {
             </template>
 
             <VListItemTitle class="font-weight-semibold">
-              {{ user?.value?.nom_complet || 'Guest' }}
+              {{ user?.value?.nom_complet || t('common.guest') }}
             </VListItemTitle>
-            <VListItemSubtitle>{{ user?.value?.roles?.join(', ') || 'No Role' }}</VListItemSubtitle>
+            <VListItemSubtitle>{{ user?.value?.roles?.join(', ') || t('common.noRole') }}</VListItemSubtitle>
           </VListItem>
 
           <VDivider class="my-2" />

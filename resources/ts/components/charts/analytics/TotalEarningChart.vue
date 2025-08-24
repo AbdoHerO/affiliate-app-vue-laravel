@@ -3,8 +3,10 @@ import { useTheme } from 'vuetify'
 import { computed } from 'vue'
 import type { TimeSeriesData } from '@/types/dashboard'
 import { useSafeApexChart } from '@/composables/useSafeApexChart'
+import { useI18n } from 'vue-i18n'
 
 const vuetifyTheme = useTheme()
+const { t } = useI18n()
 
 interface Props {
   data: {
@@ -31,11 +33,11 @@ const { shouldRender, containerRef, containerStyle } = useSafeApexChart(
 
 const series = computed(() => [
   {
-    name: 'Revenue',
+    name: t('charts.series.revenue'),
     data: Array.isArray(props.data?.revenue) ? props.data.revenue.filter(v => typeof v === 'number' && isFinite(v)) : [0],
   },
   {
-    name: 'Commissions',
+    name: t('charts.series.commissions'),
     data: Array.isArray(props.data?.commissions)
       ? props.data.commissions.filter(v => typeof v === 'number' && isFinite(v)).map(val => -val)
       : [0], // Negative for stacked effect

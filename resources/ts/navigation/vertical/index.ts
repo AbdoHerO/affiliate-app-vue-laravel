@@ -33,7 +33,7 @@ const adminNavigation = [
     icon: { icon: 'tabler-user-star' },
     children: [
       {
-        title: 'File d\'Attente d\'Approbation',
+        title: 'nav_affiliate_approval_queue',
         to: '/admin/affiliates',
         icon: { icon: 'tabler-user-check' },
       },

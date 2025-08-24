@@ -6,6 +6,7 @@ import { useQuickConfirm } from '@/composables/useConfirmAction'
 import { useNotifications } from '@/composables/useNotifications'
 import ConfirmActionDialog from '@/components/common/ConfirmActionDialog.vue'
 import OzonExpressConfirmDialog from '@/components/dialogs/OzonExpressConfirmDialog.vue'
+import { useI18n } from 'vue-i18n'
 
 definePage({
   meta: {
@@ -16,6 +17,7 @@ definePage({
 
 const router = useRouter()
 const preordersStore = usePreordersStore()
+const { t } = useI18n()
 const {
   confirm,
   isDialogVisible: isConfirmDialogVisible,
@@ -255,7 +257,7 @@ const bulkChangeStatus = async (status: string) => {
   try {
     const result = await preordersStore.bulkChangeStatus(selectedOrders.value, status)
     const statusText = getStatusText(status)
-    showSuccess(result.message || `${selectedOrders.value.length} commande(s) mise(s) à jour vers "${statusText}"`)
+    showSuccess(result.message || t('admin.orders.bulkUpdateSuccess', { count: selectedOrders.value.length, status: statusText }))
     selectedOrders.value = []
     selectAll.value = false
     bulkStatusValue.value = '' // Reset dropdown after success
