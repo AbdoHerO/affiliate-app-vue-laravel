@@ -259,7 +259,7 @@ watch(autoRefresh, setupAutoRefresh)
     <div class="d-flex align-center justify-space-between mb-6">
       <div>
         <h1 class="text-h4 font-weight-bold mb-1">
-          My Dashboard
+          {{ t('affiliate_dashboard_my_title') }}
         </h1>
         <p class="text-body-1 text-medium-emphasis">
           {{ t('affiliate.dashboard.welcomeMessage', { name: user?.nom_complet }) }}
@@ -274,11 +274,11 @@ watch(autoRefresh, setupAutoRefresh)
           prepend-icon="tabler-share"
           @click="shareReferralLink"
         >
-          Share Link
+          {{ t('affiliate_dashboard_share_link') }}
         </VBtn>
 
         <!-- Auto Refresh Toggle -->
-        <VTooltip text="Auto refresh every 5 minutes">
+        <VTooltip :text="t('affiliate_dashboard_auto_refresh_tooltip')">
           <template #activator="{ props }">
             <VBtn
               v-bind="props"
@@ -300,7 +300,7 @@ watch(autoRefresh, setupAutoRefresh)
           @click="refreshData"
         >
           <VIcon start icon="tabler-refresh" />
-          Refresh
+          {{ t('affiliate_dashboard_refresh') }}
         </VBtn>
       </div>
     </div>
@@ -328,7 +328,7 @@ watch(autoRefresh, setupAutoRefresh)
         <div class="d-flex align-center justify-space-between">
           <div>
             <h6 class="text-h6 mb-2">
-              Your Referral Link
+              {{ t('affiliate_dashboard_your_referral_link') }}
             </h6>
             <p class="text-body-2 mb-0 font-family-monospace">
               {{ dashboardStore.referralLink.link }}
@@ -341,7 +341,7 @@ watch(autoRefresh, setupAutoRefresh)
               @click="copyReferralLink"
             >
               <VIcon start icon="tabler-copy" />
-              Copy
+              {{ t('affiliate_dashboard_copy') }}
             </VBtn>
             <VBtn
               variant="elevated"
@@ -349,7 +349,7 @@ watch(autoRefresh, setupAutoRefresh)
               @click="shareReferralLink"
             >
               <VIcon start icon="tabler-share" />
-              Share
+              {{ t('affiliate_dashboard_share') }}
             </VBtn>
           </div>
         </div>
@@ -398,7 +398,7 @@ watch(autoRefresh, setupAutoRefresh)
             <!-- Action Buttons Group -->
             <div class="d-flex align-center gap-2">
               <!-- Refresh Button -->
-              <VTooltip text="Refresh data">
+              <VTooltip :text="t('affiliate_dashboard_refresh_data_tooltip')">
                 <template #activator="{ props: tooltipProps }">
                   <VBtn
                     v-bind="tooltipProps"
@@ -425,7 +425,7 @@ watch(autoRefresh, setupAutoRefresh)
               </VTooltip>
 
               <!-- Chart Style Toggle -->
-              <VTooltip :text="useAdvancedCharts ? 'Switch to basic charts' : 'Switch to advanced charts'">
+              <VTooltip :text="useAdvancedCharts ? t('affiliate_dashboard_switch_to_basic') : t('affiliate_dashboard_switch_to_advanced')">
                 <template #activator="{ props: tooltipProps }">
                   <VBtn
                     v-bind="tooltipProps"
@@ -440,7 +440,7 @@ watch(autoRefresh, setupAutoRefresh)
                       activator="parent"
                       location="bottom"
                     >
-                      {{ useAdvancedCharts ? 'Advanced Charts' : 'Basic Charts' }}
+                      {{ useAdvancedCharts ? t('affiliate_dashboard_advanced_charts') : t('affiliate_dashboard_basic_charts') }}
                     </VTooltip>
                   </VBtn>
                 </template>
@@ -460,19 +460,19 @@ watch(autoRefresh, setupAutoRefresh)
               >
                 <VBtn value="day" size="small">
                   <VIcon icon="tabler-calendar-day" class="me-1" size="16" />
-                  Day
+                  {{ t('affiliate_dashboard_period_day') }}
                 </VBtn>
                 <VBtn value="week" size="small">
                   <VIcon icon="tabler-calendar-week" class="me-1" size="16" />
-                  Week
+                  {{ t('affiliate_dashboard_period_week') }}
                 </VBtn>
                 <VBtn value="month" size="small">
                   <VIcon icon="tabler-calendar-month" class="me-1" size="16" />
-                  Month
+                  {{ t('affiliate_dashboard_period_month') }}
                 </VBtn>
                 <VBtn value="year" size="small">
                   <VIcon icon="tabler-calendar-year" class="me-1" size="16" />
-                  Year
+                  {{ t('affiliate_dashboard_period_year') }}
                 </VBtn>
               </VBtnToggle>
 
@@ -480,10 +480,10 @@ watch(autoRefresh, setupAutoRefresh)
               <VSelect
                 v-model="selectedPeriod"
                 :items="[
-                  { title: 'Day', value: 'day', prepend: 'tabler-calendar-day' },
-                  { title: 'Week', value: 'week', prepend: 'tabler-calendar-week' },
-                  { title: 'Month', value: 'month', prepend: 'tabler-calendar-month' },
-                  { title: 'Year', value: 'year', prepend: 'tabler-calendar-year' }
+                  { title: t('affiliate_dashboard_period_day'), value: 'day', prepend: 'tabler-calendar-day' },
+                  { title: t('affiliate_dashboard_period_week'), value: 'week', prepend: 'tabler-calendar-week' },
+                  { title: t('affiliate_dashboard_period_month'), value: 'month', prepend: 'tabler-calendar-month' },
+                  { title: t('affiliate_dashboard_period_year'), value: 'year', prepend: 'tabler-calendar-year' }
                 ]"
                 variant="outlined"
                 density="compact"
@@ -595,7 +595,7 @@ watch(autoRefresh, setupAutoRefresh)
       <VCol cols="12" md="6">
         <VCard>
           <VCardTitle class="d-flex align-center justify-space-between">
-            <span>My Recent Leads</span>
+            <span>{{ t('affiliate_dashboard_my_recent_leads') }}</span>
             <VBtn
               variant="text"
               size="small"
@@ -608,10 +608,10 @@ watch(autoRefresh, setupAutoRefresh)
             <VDataTable
               :items="dashboardStore.myLeads"
               :headers="[
-                { title: 'Name', key: 'name' },
-                { title: 'Email', key: 'email' },
-                { title: 'Status', key: 'status' },
-                { title: 'Signup Date', key: 'signupDate' },
+                { title: t('affiliate_dashboard_table_name'), key: 'name' },
+                { title: t('affiliate_dashboard_table_email'), key: 'email' },
+                { title: t('affiliate_dashboard_table_status'), key: 'status' },
+                { title: t('affiliate_dashboard_table_signup_date'), key: 'signupDate' },
               ]"
               :loading="dashboardStore.loading.tables"
               density="compact"
@@ -637,7 +637,7 @@ watch(autoRefresh, setupAutoRefresh)
       <VCol cols="12" md="6">
         <VCard>
           <VCardTitle class="d-flex align-center justify-space-between">
-            <span>My Recent Orders</span>
+            <span>{{ t('affiliate_dashboard_my_recent_orders') }}</span>
             <VBtn
               variant="text"
               size="small"
@@ -650,10 +650,10 @@ watch(autoRefresh, setupAutoRefresh)
             <VDataTable
               :items="dashboardStore.myOrders"
               :headers="[
-                { title: 'Product', key: 'productTitle' },
-                { title: 'Amount', key: 'amount' },
-                { title: 'Commission', key: 'commission' },
-                { title: 'Status', key: 'status' },
+                { title: t('affiliate_dashboard_table_product'), key: 'productTitle' },
+                { title: t('affiliate_dashboard_table_amount'), key: 'amount' },
+                { title: t('affiliate_dashboard_table_commission'), key: 'commission' },
+                { title: t('affiliate_dashboard_table_status'), key: 'status' },
               ]"
               :loading="dashboardStore.loading.tables"
               density="compact"
@@ -690,7 +690,7 @@ watch(autoRefresh, setupAutoRefresh)
         <VCardText>
           <VTextField
             :model-value="dashboardStore.referralLink?.link"
-            label="Referral Link"
+            :label="t('affiliate_dashboard_referral_link_label')"
             readonly
             variant="outlined"
             append-inner-icon="tabler-copy"
@@ -708,13 +708,13 @@ watch(autoRefresh, setupAutoRefresh)
             variant="text"
             @click="showReferralLinkDialog = false"
           >
-            Close
+            {{ t('affiliate_dashboard_close') }}
           </VBtn>
           <VBtn
             color="primary"
             @click="copyReferralLink"
           >
-            Copy Link
+            {{ t('affiliate_dashboard_copy_link') }}
           </VBtn>
         </VCardActions>
       </VCard>

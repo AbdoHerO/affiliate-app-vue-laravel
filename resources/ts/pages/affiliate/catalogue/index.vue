@@ -179,7 +179,7 @@ const handleAddToCart = async (data: { produit_id: string; variante_id?: string;
     // Also refresh catalogue cart summary
     await catalogueStore.fetchCartSummary()
 
-    showSuccess('Ajouté au panier')
+    showSuccess(t('affiliate_catalogue_added_to_cart'))
 
     console.log('✅ [Catalogue] Item added, cart count:', cartStore.count)
 
@@ -278,7 +278,11 @@ onMounted(async () => {
             class="cart-summary-chip mb-2"
           >
             <VIcon icon="tabler-check-circle" start size="16" />
-            {{ cartStore.count }} article{{ cartStore.count > 1 ? 's' : '' }} • {{ cartStore.subtotal.toFixed(2) }} MAD
+            {{ t('affiliate_catalogue_cart_summary', {
+              count: cartStore.count,
+              plural: cartStore.count > 1 ? 's' : '',
+              total: cartStore.subtotal.toFixed(2)
+            }) }}
           </VChip>
           
           <!-- Main Cart Button -->
@@ -334,7 +338,7 @@ onMounted(async () => {
           <div class="d-flex align-center justify-space-between mb-3">
             <div class="d-flex align-center gap-2">
               <VIcon icon="tabler-adjustments-horizontal" size="20" />
-              <span class="text-subtitle-1 font-weight-medium">Filtres avancés</span>
+              <span class="text-subtitle-1 font-weight-medium">{{ t('affiliate_catalogue_advanced_filters') }}</span>
               <VBadge
                 v-if="hasActiveFilters"
                 :content="activeFiltersCount"
@@ -350,7 +354,7 @@ onMounted(async () => {
               prepend-icon="tabler-refresh"
               @click="clearFilters"
             >
-              Réinitialiser
+              {{ t('affiliate_catalogue_clear_filters') }}
             </VBtn>
           </div>
 
@@ -379,7 +383,7 @@ onMounted(async () => {
               <VSelect
                 v-model="minProfit"
                 :items="profitOptions"
-                label="Commission min."
+                :label="t('affiliate_catalogue_commission_min')"
                 item-title="text"
                 item-value="value"
                 variant="outlined"
@@ -411,7 +415,7 @@ onMounted(async () => {
             <VCol cols="12" md="2" sm="4" class="text-center">
               <div class="results-info">
                 <div class="text-h6 text-primary font-weight-bold">{{ pagination.total || 0 }}</div>
-                <div class="text-caption text-medium-emphasis">produits</div>
+                <div class="text-caption text-medium-emphasis">{{ t('affiliate_catalogue_products_count') }}</div>
               </div>
             </VCol>
           </VRow>

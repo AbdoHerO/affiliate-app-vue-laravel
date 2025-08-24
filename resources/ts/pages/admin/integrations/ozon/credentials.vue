@@ -42,14 +42,14 @@ const saveSettings = async () => {
     const success = await ozonSettingsStore.updateSettings(form.value)
 
     if (success) {
-      showSuccess('Paramètres sauvegardés avec succès')
+      showSuccess(t('admin_ozon_settings_saved_success'))
       formErrors.value = {}
     } else {
-      showError(ozonSettingsStore.error || 'Erreur lors de la sauvegarde')
+      showError(ozonSettingsStore.error || t('admin_ozon_settings_save_error'))
     }
   } catch (error) {
     console.error('Error saving settings:', error)
-    showError('Erreur lors de la sauvegarde')
+    showError(t('admin_ozon_settings_save_error'))
   }
 }
 
@@ -58,9 +58,9 @@ const testConnection = async () => {
   const success = await ozonSettingsStore.testConnection()
 
   if (success) {
-    showSuccess('Connexion réussie !')
+    showSuccess(t('admin_ozon_connection_success'))
   } else {
-    showError(ozonSettingsStore.error || 'Échec de la connexion')
+    showError(ozonSettingsStore.error || t('admin_ozon_connection_failed'))
   }
 }
 

@@ -109,7 +109,7 @@ const fetchTickets = async (page = 1) => {
   try {
     await ticketsStore.fetchTickets(page)
   } catch (err) {
-    showError('Erreur lors du chargement des tickets')
+    showError(t('affiliate_tickets_error_loading'))
   }
 }
 
@@ -158,11 +158,11 @@ const handleFileUpload = (event: Event) => {
 const createTicket = async () => {
   try {
     await ticketsStore.createTicket(createForm.value)
-    showSuccess('Ticket créé avec succès')
+    showSuccess(t('affiliate_tickets_created_success'))
     showCreateDialog.value = false
     fetchTickets()
   } catch (err: any) {
-    showError(err.message || 'Erreur lors de la création du ticket')
+    showError(err.message || t('affiliate_tickets_error_creating'))
   }
 }
 
@@ -220,8 +220,8 @@ onMounted(() => {
           <VCol cols="12" sm="6" md="4" lg="3">
             <VTextField
               v-model="searchQuery"
-              label="Rechercher..."
-              placeholder="Sujet, référence..."
+              :label="t('affiliate_tickets_search_label')"
+              :placeholder="t('affiliate_tickets_search_placeholder')"
               prepend-inner-icon="tabler-search"
               clearable
               @keyup.enter="applyFilters"
@@ -231,7 +231,7 @@ onMounted(() => {
             <VSelect
               v-model="selectedStatus"
               :items="statusOptions"
-              label="Statut"
+              :label="t('affiliate_tickets_status_label')"
               multiple
               chips
               clearable
@@ -243,7 +243,7 @@ onMounted(() => {
             <VSelect
               v-model="selectedPriority"
               :items="priorityOptions"
-              label="Priorité"
+              :label="t('affiliate_tickets_priority_label')"
               multiple
               chips
               clearable
@@ -255,7 +255,7 @@ onMounted(() => {
             <VSelect
               v-model="selectedCategory"
               :items="categoryOptions"
-              label="Catégorie"
+              :label="t('affiliate_tickets_category_label')"
               multiple
               chips
               clearable
@@ -266,7 +266,7 @@ onMounted(() => {
           <VCol cols="12" sm="6" md="4" lg="2">
             <VTextField
               v-model="dateFrom"
-              label="Date début"
+              :label="t('affiliate_tickets_date_start')"
               type="date"
             />
           </VCol>
@@ -409,8 +409,8 @@ onMounted(() => {
               <VCol cols="12">
                 <VTextField
                   v-model="createForm.subject"
-                  label="Sujet *"
-                  placeholder="Décrivez brièvement votre problème..."
+                  :label="t('affiliate_tickets_subject_required')"
+                  :placeholder="t('affiliate_tickets_subject_placeholder')"
                   required
                 />
               </VCol>
@@ -418,7 +418,7 @@ onMounted(() => {
                 <VSelect
                   v-model="createForm.category"
                   :items="categoryOptions"
-                  label="Catégorie *"
+                  :label="t('affiliate_tickets_category_required')"
                   item-title="title"
                   item-value="value"
                   required
@@ -428,7 +428,7 @@ onMounted(() => {
                 <VSelect
                   v-model="createForm.priority"
                   :items="priorityOptions"
-                  label="Priorité *"
+                  :label="t('affiliate_tickets_priority_required')"
                   item-title="title"
                   item-value="value"
                   required
@@ -437,8 +437,8 @@ onMounted(() => {
               <VCol cols="12">
                 <VTextarea
                   v-model="createForm.message"
-                  label="Message *"
-                  placeholder="Décrivez votre problème en détail..."
+                  :label="t('affiliate_tickets_message_required')"
+                  :placeholder="t('affiliate_tickets_message_placeholder')"
                   rows="5"
                   counter="5000"
                   maxlength="5000"
@@ -447,14 +447,14 @@ onMounted(() => {
               </VCol>
               <VCol cols="12">
                 <VFileInput
-                  label="Pièces jointes (optionnel)"
+                  :label="t('affiliate_tickets_attachments_optional')"
                   multiple
                   accept="image/*,.pdf,.doc,.docx,.txt"
                   prepend-icon="tabler-paperclip"
                   @change="handleFileUpload"
                 />
                 <p class="text-caption text-medium-emphasis mt-1">
-                  Formats acceptés: Images, PDF, DOC, DOCX, TXT (max 10MB par fichier)
+                  {{ t('affiliate_tickets_file_formats') }}
                 </p>
               </VCol>
             </VRow>
@@ -466,14 +466,14 @@ onMounted(() => {
             variant="outlined"
             @click="showCreateDialog = false"
           >
-            Annuler
+            {{ t('affiliate_tickets_cancel') }}
           </VBtn>
           <VBtn
             color="primary"
             :loading="loading.create"
             @click="createTicket"
           >
-            Créer le ticket
+            {{ t('affiliate_tickets_create_button') }}
           </VBtn>
         </VCardActions>
       </VCard>

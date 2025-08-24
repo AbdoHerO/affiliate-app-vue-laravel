@@ -383,10 +383,10 @@ onMounted(() => {
     <div class="d-flex justify-space-between align-center mb-6">
       <div>
         <h1 class="text-h4 font-weight-bold mb-1">
-          Pré-commandes
+          {{ t('admin_preorders_title') }}
         </h1>
         <p class="text-body-1 mb-0">
-          Gestion des commandes en attente d'expédition
+          {{ t('admin_preorders_description') }}
         </p>
       </div>
       <VBtn
@@ -395,7 +395,7 @@ onMounted(() => {
         @click="resetFilters"
       >
         <VIcon start icon="tabler-refresh" />
-        Actualiser
+        {{ t('admin_preorders_refresh') }}
       </VBtn>
     </div>
 
@@ -406,8 +406,8 @@ onMounted(() => {
           <VCol cols="12" md="3">
             <VTextField
               v-model="searchQuery"
-              label="Rechercher..."
-              placeholder="Client, téléphone, affilié..."
+              :label="t('admin_preorders_search_label')"
+              :placeholder="t('admin_preorders_search_placeholder')"
               prepend-inner-icon="tabler-search"
               clearable
               @input="handleSearch"
@@ -416,7 +416,7 @@ onMounted(() => {
           <VCol cols="12" md="2">
             <VSelect
               v-model="selectedStatus"
-              label="Statut"
+              :label="t('admin_preorders_status_label')"
               :items="statusOptions"
               clearable
               @update:model-value="handleSearch"
@@ -425,7 +425,7 @@ onMounted(() => {
           <VCol cols="12" md="2">
             <VTextField
               v-model="dateFrom"
-              label="Date début"
+              :label="t('admin_preorders_date_start')"
               type="date"
               @change="handleSearch"
             />
@@ -433,7 +433,7 @@ onMounted(() => {
           <VCol cols="12" md="2">
             <VTextField
               v-model="dateTo"
-              label="Date fin"
+              :label="t('admin_preorders_date_end')"
               type="date"
               @change="handleSearch"
             />
@@ -441,7 +441,7 @@ onMounted(() => {
           <VCol cols="12" md="2">
             <VSelect
               v-model="itemsPerPage"
-              label="Par page"
+              :label="t('admin_preorders_per_page')"
               :items="[10, 15, 25, 50]"
               @update:model-value="handleSearch"
             />
@@ -744,9 +744,9 @@ onMounted(() => {
               class="mb-4"
               color="disabled"
             />
-            <h3 class="text-h6 mb-2">Aucune pré-commande</h3>
+            <h3 class="text-h6 mb-2">{{ t('admin_preorders_no_data_title') }}</h3>
             <p class="text-body-2 text-medium-emphasis">
-              Aucune commande en attente d'expédition trouvée
+              {{ t('admin_preorders_no_data_description') }}
             </p>
           </div>
         </template>
