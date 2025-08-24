@@ -150,7 +150,7 @@ const viewTracking = async (order: any) => {
     }
     showTrackingModal.value = true
   } catch (error: any) {
-    trackingError.value = error.message || 'Erreur lors de la récupération du tracking'
+    trackingError.value = error.message || t('admin_shipping_error_tracking')
     showError(trackingError.value)
   } finally {
     trackingLoading.value = false
@@ -179,12 +179,12 @@ const refreshTrackingModal = async () => {
       parcel_info: parcelInfo,
       parcel: updatedOrder?.shipping_parcel // Include updated parcel data
     }
-    showSuccess('Suivi actualisé avec succès')
+    showSuccess(t('admin_shipping_tracking_updated'))
 
     // Refresh the orders list to get updated status
     await fetchShippingOrders()
   } catch (error: any) {
-    trackingError.value = error.message || 'Erreur lors de l\'actualisation du tracking'
+    trackingError.value = error.message || t('admin_shipping_error_tracking_refresh')
     showError(trackingError.value)
   } finally {
     trackingLoading.value = false
@@ -198,12 +198,12 @@ const refreshTracking = async (order: any) => {
   try {
     const result = await shippingStore.refreshTracking(trackingNumber)
     if (result.success) {
-      showSuccess('Suivi mis à jour avec succès')
+      showSuccess(t('admin_shipping_tracking_updated'))
     } else {
-      showError(result.message || 'Erreur lors de la mise à jour du suivi')
+      showError(result.message || t('admin_shipping_error_tracking_update'))
     }
   } catch (error: any) {
-    showError(error.message || 'Erreur lors de la mise à jour du suivi')
+    showError(error.message || t('admin_shipping_error_tracking_update'))
   } finally {
     refreshingTracking.value = refreshingTracking.value.filter(tn => tn !== trackingNumber)
   }
@@ -211,15 +211,15 @@ const refreshTracking = async (order: any) => {
 
 const refreshTrackingBulk = async () => {
   if (selectedOrders.value.length === 0) {
-    showError('Veuillez sélectionner au moins une commande')
+    showError(t('admin_shipping_error_select_order'))
     return
   }
 
   const confirmed = await confirm({
-    title: 'Actualiser le suivi',
-    text: `Voulez-vous actualiser le suivi de ${selectedOrders.value.length} commande(s) ?`,
-    confirmText: 'Actualiser',
-    cancelText: 'Annuler'
+    title: t('admin_shipping_tracking_refresh'),
+    text: t('admin_shipping_tracking_refresh_confirm', { count: selectedOrders.value.length }),
+    confirmText: t('admin_shipping_button_refresh'),
+    cancelText: t('admin_shipping_button_cancel')
   })
 
   if (!confirmed) return
@@ -233,10 +233,10 @@ const refreshTrackingBulk = async () => {
       .filter(Boolean) as string[]
 
     const result = await shippingStore.refreshTrackingBulk(trackingNumbers)
-    showSuccess(result.message || 'Suivi mis à jour avec succès')
+    showSuccess(result.message || t('admin_shipping_tracking_updated'))
     selectedOrders.value = []
   } catch (error: any) {
-    showError(error.message || 'Erreur lors de la mise à jour du suivi')
+    showError(error.message || t('admin_shipping_error_tracking_update'))
   }
 }
 
@@ -251,11 +251,12 @@ const handleOzonConfirm = async (mode: 'ramassage' | 'stock') => {
   ozonDialogLoading.value = true
   try {
     await shippingStore.resendToOzon(currentOrderForResend.value.id, mode)
-    showSuccess(`Commande renvoyée vers OzonExpress en mode ${mode === 'ramassage' ? 'Ramassage' : 'Stock'}`)
+    const modeText = mode === 'ramassage' ? t('admin_shipping_mode_ramassage') : t('admin_shipping_mode_stock')
+    showSuccess(t('admin_shipping_ozonexpress_resend', { mode: modeText }))
     // Refresh the list to show updated data
     await fetchShippingOrders()
   } catch (error: any) {
-    showError(error.message || 'Erreur lors du renvoi vers OzonExpress')
+    showError(error.message || t('admin_shipping_error_ozonexpress_resend'))
   } finally {
     ozonDialogLoading.value = false
   }
@@ -338,28 +339,39 @@ const getStatusColor = (status: string) => {
   }
 }
 
-const getStatusText = (status: string) => {
+const getShippingStatusLabel = (status: any) => {
   const statusLabels: Record<string, string> = {
-    'pending': 'En attente',
-    'received': 'Reçu',
-    'in_transit': 'En transit',
-    'shipped': 'Expédié',
-    'expediee': 'Expédiée',
-    'at_facility': 'Au centre',
-    'ready_for_delivery': 'Prêt pour livraison',
-    'out_for_delivery': 'En cours de livraison',
-    'delivery_attempted': 'Tentative de livraison',
-    'delivered': 'Livré',
-    'livree': 'Livrée',
+    'pending': t('admin_shipping_status_pending'),
+    'en_attente': t('admin_shipping_status_pending'),
+    'in_progress': t('admin_shipping_status_in_progress'),
+    'en_cours': t('admin_shipping_status_in_progress'),
+    'confirmed': t('admin_shipping_status_confirmed'),
+    'confirmee': t('admin_shipping_status_confirmed_fem'),
+    'picked_up': t('admin_shipping_status_picked_up'),
+    'collectee': t('admin_shipping_status_picked_up_fem'),
+    'shipped': t('admin_shipping_status_shipped'),
+    'in_transit': t('admin_shipping_status_in_transit'),
+    'at_facility': t('admin_shipping_status_at_facility'),
+
+    'expediee': t('admin_shipping_status_expedited'),
+    'ready_for_delivery': t('admin_shipping_status_ready_delivery'),
+    'out_for_delivery': t('admin_shipping_status_out_delivery'),
+    'delivery_attempted': t('admin_shipping_status_delivery_attempted'),
+    'delivered': t('admin_shipping_status_delivered'),
+    'livree': t('admin_shipping_status_delivered_fem'),
     'returned': t('order.status.returned'),
     'retournee': t('order.status.returned_feminine'),
-    'refused': 'Refusé',
-    'refusee': 'Refusée',
-    'cancelled': 'Annulé',
-    'annulee': 'Annulée',
-    'unknown': 'Inconnu',
+    'refused': t('admin_shipping_status_refused'),
+    'refusee': t('admin_shipping_status_refused_fem'),
+    'cancelled': t('admin_shipping_status_cancelled'),
+    'annulee': t('admin_shipping_status_cancelled_fem'),
+    'unknown': t('admin_shipping_status_unknown'),
   }
-  return statusLabels[status?.toLowerCase()] || status || 'Inconnu'
+  return statusLabels[status?.toLowerCase()] || status || t('admin_shipping_status_unknown')
+}
+
+const getStatusText = (status: string) => {
+  return getShippingStatusLabel(status)
 }
 
 const formatCurrency = (amount: number) => {
@@ -381,11 +393,11 @@ const formatDate = (date: string) => {
 
 // Client Final helpers
 const getClientFinalName = (item: any) => {
-  return item.client_final_data?.nom_complet || item.client?.nom_complet || 'N/A'
+  return item.client_final_data?.nom_complet || item.client?.nom_complet || t('admin_shipping_client_na')
 }
 
 const getClientFinalPhone = (item: any) => {
-  return item.client_final_data?.telephone || item.client?.telephone || 'N/A'
+  return item.client_final_data?.telephone || item.client?.telephone || t('admin_shipping_client_na')
 }
 
 const getClientFinalCity = (item: any) => {
@@ -431,10 +443,10 @@ onMounted(() => {
     <div class="d-flex justify-space-between align-center mb-6">
       <div>
         <h1 class="text-h4 font-weight-bold mb-1">
-          {{ t('shipped_orders') }}
+          {{ t('admin_shipping_title') }}
         </h1>
         <p class="text-body-1 mb-0">
-          {{ t('shipped_orders_desc') }}
+          {{ t('admin_shipping_description') }}
         </p>
       </div>
       <div class="d-flex gap-2">
@@ -445,7 +457,7 @@ onMounted(() => {
           @click="refreshTrackingBulk"
         >
           <VIcon start icon="tabler-refresh" />
-          {{ t('refresh_tracking_bulk', { count: selectedOrders.length }) }}
+          {{ t('admin_shipping_button_refresh_bulk', { count: selectedOrders.length }) }}
         </VBtn>
         <VBtn
           color="secondary"
@@ -454,7 +466,7 @@ onMounted(() => {
           @click="createDeliveryNote"
         >
           <VIcon start icon="tabler-file-plus" />
-          {{ t('delivery_note_bulk', { count: selectedOrders.length }) }}
+          {{ t('admin_shipping_button_delivery_note_bulk', { count: selectedOrders.length }) }}
         </VBtn>
         <VBtn
           color="primary"
@@ -462,7 +474,7 @@ onMounted(() => {
           @click="resetFilters"
         >
           <VIcon start icon="tabler-refresh" />
-          {{ t('refresh') }}
+          {{ t('admin_shipping_button_refresh') }}
         </VBtn>
       </div>
     </div>
@@ -475,7 +487,7 @@ onMounted(() => {
             <VTextField
               v-model="searchQuery"
               :label="t('search')"
-              :placeholder="t('search_client_phone_tracking')"
+              :placeholder="t('admin_shipping_search_placeholder')"
               prepend-inner-icon="tabler-search"
               clearable
               @input="handleSearch"
@@ -639,7 +651,7 @@ onMounted(() => {
                 @click="resendToOzonExpress(item)"
               />
               <VTooltip activator="prev" location="top">
-                Renvoyer vers OzonExpress
+                {{ t('admin_shipping_tooltip_resend_ozon') }}
               </VTooltip>
             </template>
 
@@ -666,7 +678,7 @@ onMounted(() => {
                 @click="refreshTracking(item)"
               />
               <VTooltip activator="prev" location="top">
-                Actualiser le suivi
+                {{ t('admin_shipping_tooltip_refresh_tracking') }}
               </VTooltip>
             </template>
 
@@ -680,7 +692,7 @@ onMounted(() => {
                 @click="openStatusUpdateDialog(item)"
               />
               <VTooltip activator="prev" location="top">
-                Modifier le statut
+                {{ t('admin_shipping_tooltip_modify_status') }}
               </VTooltip>
             </template>
 
@@ -756,8 +768,8 @@ onMounted(() => {
     <OzonExpressConfirmDialog
       v-model="showOzonDialog"
       :loading="ozonDialogLoading"
-      title="Renvoyer vers OzonExpress"
-      text="Êtes-vous sûr de vouloir renvoyer cette commande vers OzonExpress ?"
+      :title="t('admin_shipping_resend_ozon_title')"
+      :text="t('admin_shipping_resend_ozon_text')"
       default-mode="ramassage"
       @confirm="handleOzonConfirm"
       @cancel="handleOzonCancel"
@@ -784,25 +796,25 @@ onMounted(() => {
       <VCard>
         <VCardTitle class="text-h6">
           <VIcon start icon="tabler-edit" color="warning" />
-          {{ t('modify_shipping_status') }}
+          {{ t('admin_shipping_modify_status_title') }}
         </VCardTitle>
 
         <VCardText>
           <p class="mb-4">
-            {{ t('modify_local_shipment_status') }}
-            <strong>{{ t('note') }}:</strong> {{ t('note_delivered_status_commission') }}
+            {{ t('admin_shipping_modify_status_description') }}
+            <strong>{{ t('admin_shipping_modify_status_note') }}:</strong> {{ t('admin_shipping_modify_status_note_commission') }}
           </p>
 
           <VSelect
             v-model="newStatus"
-            :label="t('new_status')"
+            :label="t('admin_shipping_new_status')"
             :items="[
-              { title: t('pending'), value: 'pending' },
-              { title: t('shipped'), value: 'expediee' },
-              { title: t('delivered_livree'), value: 'livree' },
-              { title: t('refused'), value: 'refusee' },
+              { title: t('admin_shipping_status_pending'), value: 'pending' },
+              { title: t('admin_shipping_status_shipped'), value: 'expediee' },
+              { title: t('admin_shipping_status_delivered_fem'), value: 'livree' },
+              { title: t('admin_shipping_status_refused_fem'), value: 'refusee' },
               { title: t('order.status.returned_feminine'), value: 'retournee' },
-              { title: t('cancelled'), value: 'annulee' }
+              { title: t('admin_shipping_status_cancelled_fem'), value: 'annulee' }
             ]"
             variant="outlined"
             class="mb-4"
@@ -810,8 +822,8 @@ onMounted(() => {
 
           <VTextarea
             v-model="statusNote"
-            :label="t('note_optional')"
-            :placeholder="t('add_status_change_note')"
+            :label="t('admin_shipping_note_optional')"
+            :placeholder="t('admin_shipping_note_placeholder')"
             rows="3"
             variant="outlined"
           />
@@ -824,7 +836,7 @@ onMounted(() => {
             @click="cancelStatusUpdate"
             :disabled="statusUpdateLoading"
           >
-            Annuler
+            {{ t('admin_shipping_cancel') }}
           </VBtn>
           <VBtn
             color="warning"
@@ -834,7 +846,7 @@ onMounted(() => {
             @click="updateShippingStatus"
           >
             <VIcon start icon="tabler-check" />
-            Mettre à jour
+            {{ t('admin_shipping_update') }}
           </VBtn>
         </VCardActions>
       </VCard>

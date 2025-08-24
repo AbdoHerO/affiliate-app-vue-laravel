@@ -331,10 +331,10 @@ onMounted(() => {
     <div class="d-flex justify-space-between align-center mb-6">
       <div>
         <h1 class="text-h4 font-weight-bold mb-1">
-          Mes Paiements
+          {{ t('affiliate_payments_title') }}
         </h1>
         <p class="text-body-1 text-medium-emphasis">
-          Consultez vos commissions et gérez vos demandes de retrait
+          {{ t('affiliate_payments_description') }}
         </p>
       </div>
       <VBtn
@@ -345,7 +345,7 @@ onMounted(() => {
         :loading="loading.payout"
         @click="openPayoutDialog"
       >
-        Demander un retrait
+        {{ t('affiliate_payments_request_withdrawal') }}
       </VBtn>
     </div>
 
@@ -369,7 +369,7 @@ onMounted(() => {
                   {{ formatCurrency(summary.total) }}
                 </h3>
                 <p class="text-caption text-medium-emphasis">
-                  {{ summary.count }} commission(s)
+                  {{ t('affiliate_payments_commission_count', { count: summary.count }) }}
                 </p>
               </div>
               <VChip
@@ -467,9 +467,9 @@ onMounted(() => {
                   size="64"
                   class="text-disabled mb-4"
                 />
-                <h3 class="text-h6 mb-2">Aucune commission trouvée</h3>
+                <h3 class="text-h6 mb-2">{{ t('affiliate_payments_no_commissions_found') }}</h3>
                 <p class="text-body-2 text-medium-emphasis">
-                  Vous n'avez pas encore de commissions.
+                  {{ t('affiliate_payments_no_commissions_yet') }}
                 </p>
               </div>
             </template>
@@ -531,7 +531,7 @@ onMounted(() => {
             <!-- Commission Count Column -->
             <template #item.commission_count="{ item }">
               <span class="text-body-2">
-                {{ item.commission_count }} commission(s)
+                {{ t('affiliate_payments_commission_count', { count: item.commission_count }) }}
               </span>
             </template>
 
@@ -598,21 +598,21 @@ onMounted(() => {
       max-width="500"
     >
       <VCard>
-        <VCardTitle>Demander un retrait</VCardTitle>
+        <VCardTitle>{{ t('affiliate_payments_request_withdrawal') }}</VCardTitle>
         <VCardText>
           <div class="mb-4">
             <p class="text-body-1 mb-2">
-              <strong>Montant éligible:</strong> {{ formatCurrency(eligibleCommissionsTotal) }}
+              <strong>{{ t('affiliate_payments_eligible_amount') }}:</strong> {{ formatCurrency(eligibleCommissionsTotal) }}
             </p>
             <p class="text-body-2 text-medium-emphasis">
-              {{ eligibleCommissionsCount }} commission(s) éligible(s) seront incluses dans cette demande.
+              {{ t('affiliate_payments_eligible_commissions_text', { count: eligibleCommissionsCount }) }}
             </p>
           </div>
           
           <VTextarea
             v-model="payoutNotes"
-            label="Notes (optionnel)"
-            placeholder="Ajoutez des notes pour cette demande de retrait..."
+            :label="t('affiliate_payments_notes_optional')"
+            :placeholder="t('affiliate_payments_notes_placeholder')"
             rows="3"
             counter="1000"
             maxlength="1000"
@@ -624,14 +624,14 @@ onMounted(() => {
             variant="outlined"
             @click="showPayoutDialog = false"
           >
-            Annuler
+            {{ t('affiliate_payments_cancel') }}
           </VBtn>
           <VBtn
             color="primary"
             :loading="loading.payout"
             @click="requestPayout"
           >
-            Confirmer la demande
+            {{ t('affiliate_payments_confirm_request') }}
           </VBtn>
         </VCardActions>
       </VCard>

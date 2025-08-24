@@ -82,12 +82,12 @@ const headers = [
 
 // Status options
 const statusOptions = [
-  { title: 'Tous', value: '' },
-  { title: 'En attente', value: 'en_attente' },
-  { title: 'Confirmée', value: 'confirmee' },
-  { title: 'Injoignable', value: 'injoignable' },
-  { title: 'Refusée', value: 'refusee' },
-  { title: 'Annulée', value: 'annulee' },
+  { title: t('admin_preorders_status_all'), value: '' },
+  { title: t('admin_preorders_status_pending'), value: 'en_attente' },
+  { title: t('admin_preorders_status_confirmed'), value: 'confirmee' },
+  { title: t('admin_preorders_status_unreachable'), value: 'injoignable' },
+  { title: t('admin_preorders_status_refused'), value: 'refusee' },
+  { title: t('admin_preorders_status_cancelled'), value: 'annulee' },
 ]
 
 // Methods
@@ -157,15 +157,15 @@ const getStatusColor = (status: string) => {
 const getStatusText = (status: string) => {
   switch (status) {
     case 'en_attente':
-      return 'En attente'
+      return t('admin_preorders_status_pending')
     case 'confirmee':
-      return 'Confirmée'
+      return t('admin_preorders_status_confirmed')
     case 'injoignable':
-      return 'Injoignable'
+      return t('admin_preorders_status_unreachable')
     case 'refusee':
-      return 'Refusée'
+      return t('admin_preorders_status_refused')
     case 'annulee':
-      return 'Annulée'
+      return t('admin_preorders_status_cancelled')
     default:
       return status
   }
@@ -190,11 +190,11 @@ const formatDate = (date: string) => {
 
 // Client Final helpers
 const getClientFinalName = (item: any) => {
-  return item.client_final_data?.nom_complet || item.client?.nom_complet || 'N/A'
+  return item.client_final_data?.nom_complet || item.client?.nom_complet || t('admin_preorders_client_na')
 }
 
 const getClientFinalPhone = (item: any) => {
-  return item.client_final_data?.telephone || item.client?.telephone || 'N/A'
+  return item.client_final_data?.telephone || item.client?.telephone || t('admin_preorders_phone_na')
 }
 
 const getClientFinalCity = (item: any) => {
@@ -241,10 +241,10 @@ const bulkChangeStatus = async (status: string) => {
   if (selectedOrders.value.length === 0) return
 
   const confirmed = await confirm({
-    title: 'Changer le statut',
-    text: `Êtes-vous sûr de vouloir changer le statut de ${selectedOrders.value.length} commande(s) ?`,
-    confirmText: 'Confirmer',
-    cancelText: 'Annuler'
+    title: t('admin_preorders_bulk_change_title'),
+    text: t('admin_preorders_bulk_change_text', { count: selectedOrders.value.length }),
+    confirmText: t('admin_preorders_bulk_confirm'),
+    cancelText: t('admin_preorders_bulk_cancel')
   })
 
   if (!confirmed) {
@@ -262,7 +262,7 @@ const bulkChangeStatus = async (status: string) => {
     selectAll.value = false
     bulkStatusValue.value = '' // Reset dropdown after success
   } catch (error: any) {
-    showError(error.message || 'Erreur lors du changement de statut')
+    showError(error.message || t('admin_preorders_bulk_status_error'))
     bulkStatusValue.value = '' // Reset dropdown on error
     console.error('Bulk status change error:', error)
   } finally {
@@ -321,12 +321,13 @@ const handleOzonConfirm = async (mode: 'ramassage' | 'stock') => {
       if (result.summary) {
         const { total, success, errors } = result.summary
         if (errors > 0) {
-          showError(`${success}/${total} commandes envoyées avec succès. ${errors} erreur(s).`)
+          showError(t('admin_preorders_ozon_error_bulk', { success, total, errors }))
         } else {
-          showSuccess(`${success} commande(s) envoyée(s) vers OzonExpress en mode ${mode === 'ramassage' ? 'Ramassage' : 'Stock'}.`)
+          const mode = mode === 'ramassage' ? t('admin_preorders_ozon_mode_pickup') : t('admin_preorders_ozon_mode_stock')
+          showSuccess(t('admin_preorders_ozon_success_bulk', { count: success, mode }))
         }
       } else {
-        showSuccess(result.message || 'Commandes envoyées vers OzonExpress')
+        showSuccess(result.message || t('admin_preorders_bulk_send_ozon'))
       }
 
       selectedOrders.value = []
@@ -335,10 +336,11 @@ const handleOzonConfirm = async (mode: 'ramassage' | 'stock') => {
     } else {
       // Single action
       const result = await preordersStore.sendToShipping(currentOrderId.value, mode)
-      showSuccess(`Commande envoyée vers OzonExpress en mode ${mode === 'ramassage' ? 'Ramassage' : 'Stock'}`)
+      const modeText = mode === 'ramassage' ? t('admin_preorders_ozon_mode_pickup') : t('admin_preorders_ozon_mode_stock')
+      showSuccess(t('admin_preorders_ozon_success_single', { mode: modeText }))
     }
   } catch (error: any) {
-    showError(error.message || 'Erreur lors de l\'envoi vers OzonExpress')
+    showError(error.message || t('admin_preorders_ozon_error'))
     console.error('OzonExpress shipping error:', error)
   } finally {
     ozonDialogLoading.value = false
@@ -354,13 +356,13 @@ const handleLocalShippingConfirm = async () => {
 
   try {
     const result = await preordersStore.moveToShippingLocal(currentOrderId.value, localShippingNote.value || undefined)
-    showSuccess('Commande déplacée vers l\'expédition locale avec succès')
+    showSuccess(t('admin_preorders_local_shipping_success'))
     showLocalShippingDialog.value = false
 
     // Navigate to shipping orders detail page
     router.push({ name: 'admin-orders-shipping-id', params: { id: currentOrderId.value } })
   } catch (error: any) {
-    showError(error.message || 'Erreur lors du déplacement vers l\'expédition locale')
+    showError(error.message || t('admin_preorders_local_shipping_error'))
   } finally {
     localShippingLoading.value = false
   }
@@ -466,7 +468,7 @@ onMounted(() => {
         <div class="d-flex align-center gap-4">
           <VIcon icon="tabler-check" color="primary" />
           <span class="text-body-1 font-weight-medium">
-            {{ selectedOrders.length }} commande(s) sélectionnée(s)
+            {{ t('admin_preorders_selected_count', { count: selectedOrders.length }) }}
           </span>
 
           <VSpacer />
@@ -478,18 +480,18 @@ onMounted(() => {
             @click="bulkSendToShipping"
           >
             <VIcon start icon="tabler-truck" />
-            Envoyer OzonExpress
+            {{ t('admin_preorders_bulk_send_ozon') }}
           </VBtn>
 
           <VSelect
             v-model="bulkStatusValue"
-            label="Changer statut"
-            placeholder="Sélectionner un statut"
+            :label="t('admin_preorders_bulk_change_status')"
+            :placeholder="t('admin_preorders_bulk_select_status')"
             :items="[
-              { title: 'Confirmée', value: 'confirmee' },
-              { title: 'Injoignable', value: 'injoignable' },
-              { title: 'Refusée', value: 'refusee' },
-              { title: 'Annulée', value: 'annulee' }
+              { title: t('admin_preorders_bulk_confirmed'), value: 'confirmee' },
+              { title: t('admin_preorders_bulk_unreachable'), value: 'injoignable' },
+              { title: t('admin_preorders_bulk_refused'), value: 'refusee' },
+              { title: t('admin_preorders_bulk_cancelled'), value: 'annulee' }
             ]"
             style="min-width: 180px"
             :loading="bulkActionLoading"
@@ -562,7 +564,7 @@ onMounted(() => {
               color="secondary"
               variant="tonal"
             >
-              {{ item.adresse?.ville || 'N/A' }}
+              {{ item.adresse?.ville || t('admin_preorders_city_na') }}
             </VChip>
           </div>
         </template>
@@ -570,10 +572,10 @@ onMounted(() => {
         <template #item.affilie="{ item }">
           <div>
             <div class="font-weight-medium">
-              {{ item.affiliate?.nom_complet || 'N/A' }}
+              {{ item.affiliate?.nom_complet || t('admin_preorders_affiliate_na') }}
             </div>
             <div class="text-caption text-medium-emphasis">
-              {{ item.affiliate?.email || 'N/A' }}
+              {{ item.affiliate?.email || t('admin_preorders_email_na') }}
             </div>
           </div>
         </template>
@@ -625,12 +627,12 @@ onMounted(() => {
           <div v-if="item.shipping_parcel" class="d-flex align-center gap-1">
             <VIcon icon="tabler-truck" color="success" size="16" />
             <VTooltip activator="parent" location="top">
-              Tracking: {{ item.shipping_parcel.tracking_number }}
+              {{ t('admin_preorders_tracking_tooltip', { tracking: item.shipping_parcel.tracking_number }) }}
             </VTooltip>
-            <span class="text-caption text-success">Expédié</span>
+            <span class="text-caption text-success">{{ t('admin_preorders_shipped') }}</span>
           </div>
           <div v-else class="text-caption text-medium-emphasis">
-            Non expédié
+            {{ t('admin_preorders_not_shipped') }}
           </div>
         </template>
 
@@ -673,7 +675,7 @@ onMounted(() => {
                 >
                   <VListItemTitle>
                     <VIcon start icon="tabler-check" color="success" />
-                    Confirmer
+                    {{ t('admin_preorders_action_confirm') }}
                   </VListItemTitle>
                 </VListItem>
 
@@ -683,7 +685,7 @@ onMounted(() => {
                 >
                   <VListItemTitle>
                     <VIcon start icon="tabler-phone-off" color="warning" />
-                    Injoignable (+1)
+                    {{ t('admin_preorders_action_unreachable') }}
                   </VListItemTitle>
                 </VListItem>
 
@@ -694,7 +696,7 @@ onMounted(() => {
                 >
                   <VListItemTitle>
                     <VIcon start icon="tabler-x" color="error" />
-                    Refuser
+                    {{ t('admin_preorders_action_refuse') }}
                   </VListItemTitle>
                 </VListItem>
 
@@ -705,7 +707,7 @@ onMounted(() => {
                 >
                   <VListItemTitle>
                     <VIcon start icon="tabler-ban" color="error" />
-                    Annuler
+                    {{ t('admin_preorders_action_cancel') }}
                   </VListItemTitle>
                 </VListItem>
 
@@ -717,7 +719,7 @@ onMounted(() => {
                 >
                   <VListItemTitle>
                     <VIcon start icon="tabler-truck" color="info" />
-                    Envoyer OzonExpress
+                    {{ t('admin_preorders_action_send_ozon') }}
                   </VListItemTitle>
                 </VListItem>
 
@@ -727,7 +729,7 @@ onMounted(() => {
                 >
                   <VListItemTitle>
                     <VIcon start icon="tabler-package" color="warning" />
-                    Expédition Locale
+                    {{ t('admin_preorders_action_local_shipping') }}
                   </VListItemTitle>
                 </VListItem>
               </VList>
@@ -758,8 +760,8 @@ onMounted(() => {
       v-model="showOzonDialog"
       :loading="ozonDialogLoading"
       :text="ozonDialogType === 'bulk'
-        ? `Êtes-vous sûr de vouloir envoyer ${selectedOrders.length} commande(s) vers OzonExpress ?`
-        : 'Êtes-vous sûr de vouloir envoyer cette commande vers OzonExpress ?'"
+        ? t('admin_preorders_ozon_bulk_text', { count: selectedOrders.length })
+        : t('admin_preorders_ozon_single_text')"
       @confirm="handleOzonConfirm"
       @cancel="handleOzonCancel"
     />
@@ -773,19 +775,18 @@ onMounted(() => {
       <VCard>
         <VCardTitle class="text-h6">
           <VIcon start icon="tabler-package" color="warning" />
-          Déplacer vers Expédition Locale
+          {{ t('admin_preorders_local_shipping_title') }}
         </VCardTitle>
 
         <VCardText>
           <p class="mb-4">
-            Cette commande sera déplacée vers l'expédition locale/manuelle.
-            Vous pourrez gérer les statuts manuellement depuis la vue Expédition.
+            {{ t('admin_preorders_local_shipping_description') }}
           </p>
 
           <VTextarea
             v-model="localShippingNote"
-            label="Note (optionnelle)"
-            placeholder="Ajouter une note pour cette expédition locale..."
+            :label="t('admin_preorders_local_shipping_note_label')"
+            :placeholder="t('admin_preorders_local_shipping_note_placeholder')"
             rows="3"
             variant="outlined"
           />
@@ -798,7 +799,7 @@ onMounted(() => {
             @click="handleLocalShippingCancel"
             :disabled="localShippingLoading"
           >
-            Annuler
+            {{ t('admin_preorders_local_shipping_cancel') }}
           </VBtn>
           <VBtn
             color="warning"
@@ -807,7 +808,7 @@ onMounted(() => {
             @click="handleLocalShippingConfirm"
           >
             <VIcon start icon="tabler-package" />
-            Déplacer
+            {{ t('admin_preorders_local_shipping_confirm') }}
           </VBtn>
         </VCardActions>
       </VCard>
