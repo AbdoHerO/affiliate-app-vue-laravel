@@ -378,7 +378,7 @@ onMounted(async () => {
               size="16"
               class="me-2"
             />
-            {{ item.bank_type || 'Non renseigné' }}
+            {{ item.bank_type || t('admin_affiliates_bank_not_provided') }}
           </div>
         </template>
 
@@ -394,7 +394,7 @@ onMounted(async () => {
               :color="item.email_verified_at ? 'success' : 'warning'"
               variant="tonal"
             >
-              {{ item.email_verified_at ? 'Vérifié' : 'Non vérifié' }}
+              {{ item.email_verified_at ? t('admin_affiliates_email_verified') : t('admin_affiliates_email_not_verified') }}
             </VChip>
           </VBadge>
         </template>
@@ -431,7 +431,7 @@ onMounted(async () => {
             <!-- Resend Verification -->
             <VTooltip
               v-if="!item.email_verified_at"
-              text="Renvoyer l'email de vérification"
+              :text="t('admin_affiliates_resend_verification_tooltip')"
             >
               <template #activator="{ props }">
                 <VBtn

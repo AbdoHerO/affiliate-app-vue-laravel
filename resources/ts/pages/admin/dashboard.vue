@@ -195,10 +195,10 @@ const exportDashboard = () => {
     document.body.removeChild(link)
     URL.revokeObjectURL(url)
 
-    showSuccess('Dashboard exported successfully')
+    showSuccess(t('admin_dashboard_export_success'))
   } catch (error) {
     console.error('Error exporting dashboard:', error)
-    showError('Error exporting dashboard')
+    showError(t('admin_dashboard_export_error'))
   }
 }
 
@@ -239,16 +239,16 @@ watch(autoRefresh, setupAutoRefresh)
     <div class="d-flex align-center justify-space-between mb-6">
       <div>
         <h1 class="text-h4 font-weight-bold mb-1">
-          Admin Dashboard
+          {{ t('admin_dashboard_title') }}
         </h1>
         <p class="text-body-1 text-medium-emphasis">
-          Welcome back, {{ user?.nom_complet }}! Here's what's happening with your platform.
+          {{ t('admin_dashboard_welcome', { name: user?.nom_complet }) }}
         </p>
       </div>
 
       <div class="d-flex align-center gap-3">
         <!-- Auto Refresh Toggle -->
-        <VTooltip text="Auto refresh every 5 minutes">
+        <VTooltip :text="t('admin_dashboard_auto_refresh_tooltip')">
           <template #activator="{ props }">
             <VBtn
               v-bind="props"
@@ -270,7 +270,7 @@ watch(autoRefresh, setupAutoRefresh)
           @click="refreshData"
         >
           <VIcon start icon="tabler-refresh" />
-          Refresh
+          {{ t('admin_dashboard_refresh') }}
         </VBtn>
 
         <!-- Date Range Picker -->
@@ -289,7 +289,7 @@ watch(autoRefresh, setupAutoRefresh)
             <VCardText>
               <VTextField
                 v-model="dateRange[0]"
-                label="Start Date"
+                :label="t('admin_dashboard_start_date')"
                 type="date"
                 variant="outlined"
                 density="compact"
@@ -297,7 +297,7 @@ watch(autoRefresh, setupAutoRefresh)
               />
               <VTextField
                 v-model="dateRange[1]"
-                label="End Date"
+                :label="t('admin_dashboard_end_date')"
                 type="date"
                 variant="outlined"
                 density="compact"
@@ -308,7 +308,7 @@ watch(autoRefresh, setupAutoRefresh)
                 block
                 @click="updateDateRange"
               >
-                Apply
+                {{ t('admin_dashboard_apply') }}
               </VBtn>
             </VCardText>
           </VCard>
@@ -362,7 +362,7 @@ watch(autoRefresh, setupAutoRefresh)
               {{ t('dashboard_analytics') }}
             </h2>
             <p class="text-body-2 text-disabled mb-0">
-              Comprehensive business intelligence dashboard
+              {{ t('admin_dashboard_analytics_subtitle') }}
             </p>
           </div>
 
@@ -370,7 +370,7 @@ watch(autoRefresh, setupAutoRefresh)
             <!-- Action Buttons Group -->
             <div class="d-flex align-center gap-2">
               <!-- Refresh Button -->
-              <VTooltip text="Refresh data">
+              <VTooltip :text="t('admin_dashboard_refresh_data_tooltip')">
                 <template #activator="{ props: tooltipProps }">
                   <VBtn
                     v-bind="tooltipProps"
@@ -384,7 +384,7 @@ watch(autoRefresh, setupAutoRefresh)
               </VTooltip>
 
               <!-- Export Button -->
-              <VTooltip text="Export dashboard">
+              <VTooltip :text="t('admin_dashboard_export_tooltip')">
                 <template #activator="{ props: tooltipProps }">
                   <VBtn
                     v-bind="tooltipProps"
@@ -397,7 +397,7 @@ watch(autoRefresh, setupAutoRefresh)
               </VTooltip>
 
               <!-- Chart Style Toggle -->
-              <VTooltip :text="useAdvancedCharts ? 'Switch to basic charts' : 'Switch to advanced charts'">
+              <VTooltip :text="useAdvancedCharts ? t('admin_dashboard_switch_to_basic') : t('admin_dashboard_switch_to_advanced')">
                 <template #activator="{ props: tooltipProps }">
                   <VBtn
                     v-bind="tooltipProps"
@@ -412,7 +412,7 @@ watch(autoRefresh, setupAutoRefresh)
                       activator="parent"
                       location="bottom"
                     >
-                      {{ useAdvancedCharts ? 'Advanced Charts' : 'Basic Charts' }}
+                      {{ useAdvancedCharts ? t('admin_dashboard_advanced_charts') : t('admin_dashboard_basic_charts') }}
                     </VTooltip>
                   </VBtn>
                 </template>
@@ -432,19 +432,19 @@ watch(autoRefresh, setupAutoRefresh)
               >
                 <VBtn value="day" size="small">
                   <VIcon icon="tabler-calendar-day" class="me-1" size="16" />
-                  Day
+                  {{ t('admin_dashboard_period_day') }}
                 </VBtn>
                 <VBtn value="week" size="small">
                   <VIcon icon="tabler-calendar-week" class="me-1" size="16" />
-                  Week
+                  {{ t('admin_dashboard_period_week') }}
                 </VBtn>
                 <VBtn value="month" size="small">
                   <VIcon icon="tabler-calendar-month" class="me-1" size="16" />
-                  Month
+                  {{ t('admin_dashboard_period_month') }}
                 </VBtn>
                 <VBtn value="year" size="small">
                   <VIcon icon="tabler-calendar-year" class="me-1" size="16" />
-                  Year
+                  {{ t('admin_dashboard_period_year') }}
                 </VBtn>
               </VBtnToggle>
 
@@ -452,10 +452,10 @@ watch(autoRefresh, setupAutoRefresh)
               <VSelect
                 v-model="selectedPeriod"
                 :items="[
-                  { title: 'Day', value: 'day', prepend: 'tabler-calendar-day' },
-                  { title: 'Week', value: 'week', prepend: 'tabler-calendar-week' },
-                  { title: 'Month', value: 'month', prepend: 'tabler-calendar-month' },
-                  { title: 'Year', value: 'year', prepend: 'tabler-calendar-year' }
+                  { title: t('admin_dashboard_period_day'), value: 'day', prepend: 'tabler-calendar-day' },
+                  { title: t('admin_dashboard_period_week'), value: 'week', prepend: 'tabler-calendar-week' },
+                  { title: t('admin_dashboard_period_month'), value: 'month', prepend: 'tabler-calendar-month' },
+                  { title: t('admin_dashboard_period_year'), value: 'year', prepend: 'tabler-calendar-year' }
                 ]"
                 variant="outlined"
                 density="compact"
@@ -588,7 +588,7 @@ watch(autoRefresh, setupAutoRefresh)
       <VCol cols="12" md="6">
         <VCard>
           <VCardTitle class="d-flex align-center justify-space-between">
-            <span>Recent Affiliates</span>
+            <span>{{ t('admin_dashboard_recent_affiliates') }}</span>
             <VBtn
               variant="text"
               size="small"
@@ -601,11 +601,11 @@ watch(autoRefresh, setupAutoRefresh)
             <VDataTable
               :items="dashboardStore.recentAffiliates"
               :headers="[
-                { title: 'Name', key: 'name' },
-                { title: 'Email', key: 'email' },
-                { title: 'Joined', key: 'joinedAt' },
-                { title: 'Status', key: 'status' },
-                { title: 'Commissions', key: 'totalCommissions' },
+                { title: t('admin_dashboard_table_name'), key: 'name' },
+                { title: t('admin_dashboard_table_email'), key: 'email' },
+                { title: t('admin_dashboard_table_joined'), key: 'joinedAt' },
+                { title: t('admin_dashboard_table_status'), key: 'status' },
+                { title: t('admin_dashboard_table_commissions'), key: 'totalCommissions' },
               ]"
               :loading="dashboardStore.loading.tables"
               density="compact"
@@ -634,7 +634,7 @@ watch(autoRefresh, setupAutoRefresh)
       <VCol cols="12" md="6">
         <VCard>
           <VCardTitle class="d-flex align-center justify-space-between">
-            <span>Recent Payout Requests</span>
+            <span>{{ t('admin_dashboard_recent_payouts') }}</span>
             <VBtn
               variant="text"
               size="small"
@@ -647,10 +647,10 @@ watch(autoRefresh, setupAutoRefresh)
             <VDataTable
               :items="dashboardStore.recentPayouts"
               :headers="[
-                { title: 'Affiliate', key: 'affiliateName' },
-                { title: 'Amount', key: 'amount' },
-                { title: 'Status', key: 'status' },
-                { title: 'Requested', key: 'requestedAt' },
+                { title: t('admin_dashboard_table_affiliate'), key: 'affiliateName' },
+                { title: t('admin_dashboard_table_amount'), key: 'amount' },
+                { title: t('admin_dashboard_table_status'), key: 'status' },
+                { title: t('admin_dashboard_table_requested'), key: 'requestedAt' },
               ]"
               :loading="dashboardStore.loading.tables"
               density="compact"

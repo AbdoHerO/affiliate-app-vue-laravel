@@ -173,7 +173,7 @@ const fetchUsers = async () => {
     } else {
       console.error('❌ Unexpected users data format:', responseData)
       console.error('❌ Expected: { users: [...] } or { data: [...] } or [...]')
-      showError('Unexpected users data format')
+      showError(t('admin_kyc_unexpected_users_format'))
       return
     }
 
@@ -422,11 +422,11 @@ const downloadDocument = async (doc: KycDocument) => {
     } else {
       const errorText = await response.text()
       console.error('❌ Download failed:', response.status, errorText)
-      showError('Failed to download document')
+      showError(t('admin_kyc_download_failed'))
     }
   } catch (err) {
     console.error('❌ Download error:', err)
-    showError('Failed to download document')
+    showError(t('admin_kyc_download_failed'))
   }
 }
 
@@ -524,10 +524,10 @@ const getStatusColor = (status: string) => {
 
 const getTypeLabel = (type: string) => {
   switch (type) {
-    case 'cni': return 'CNI'
-    case 'passport': return 'Passeport'
-    case 'rib': return 'RIB'
-    case 'contrat': return 'Contrat'
+    case 'cni': return t('admin_kyc_type_cni')
+    case 'passport': return t('admin_kyc_type_passport')
+    case 'rib': return t('admin_kyc_type_rib')
+    case 'contrat': return t('admin_kyc_type_contract')
     default: return type
   }
 }

@@ -2442,6 +2442,55 @@
   "admin_simple_dashboard_title": "Tableau de bord administrateur simple",
   "admin_panel": "Panneau d'administration",
 
+  // Admin Dashboard Specific Translations
+  "admin_dashboard_welcome": "Bienvenue, {name} ! Voici ce qui se passe sur votre plateforme.",
+  "admin_dashboard_analytics_subtitle": "Tableau de bord d'intelligence d'affaires complet",
+  "admin_dashboard_auto_refresh_tooltip": "Actualisation automatique toutes les 5 minutes",
+  "admin_dashboard_refresh": "Actualiser",
+  "admin_dashboard_refresh_data_tooltip": "Actualiser les données",
+  "admin_dashboard_export_tooltip": "Exporter le tableau de bord",
+  "admin_dashboard_export_success": "Tableau de bord exporté avec succès",
+  "admin_dashboard_export_error": "Erreur lors de l'exportation du tableau de bord",
+  "admin_dashboard_start_date": "Date de début",
+  "admin_dashboard_end_date": "Date de fin",
+  "admin_dashboard_apply": "Appliquer",
+  "admin_dashboard_switch_to_basic": "Passer aux graphiques de base",
+  "admin_dashboard_switch_to_advanced": "Passer aux graphiques avancés",
+  "admin_dashboard_advanced_charts": "Graphiques Avancés",
+  "admin_dashboard_basic_charts": "Graphiques de Base",
+  "admin_dashboard_period_day": "Jour",
+  "admin_dashboard_period_week": "Semaine",
+  "admin_dashboard_period_month": "Mois",
+  "admin_dashboard_period_year": "Année",
+  "admin_dashboard_recent_affiliates": "Affiliés Récents",
+  "admin_dashboard_recent_payouts": "Demandes de Paiement Récentes",
+  "admin_dashboard_table_name": "Nom",
+  "admin_dashboard_table_email": "Email",
+  "admin_dashboard_table_joined": "Inscrit",
+  "admin_dashboard_table_status": "Statut",
+  "admin_dashboard_table_commissions": "Commissions",
+  "admin_dashboard_table_affiliate": "Affilié",
+  "admin_dashboard_table_amount": "Montant",
+  "admin_dashboard_table_requested": "Demandé",
+
+  // Admin Users Management
+  "admin_users_all_roles": "Tous les rôles",
+  "admin_users_filter_by_role": "Filtrer par rôle",
+
+  // Admin KYC Documents Management
+  "admin_kyc_unexpected_users_format": "Format de données utilisateurs inattendu",
+  "admin_kyc_download_failed": "Échec du téléchargement du document",
+  "admin_kyc_type_cni": "CNI",
+  "admin_kyc_type_passport": "Passeport",
+  "admin_kyc_type_rib": "RIB",
+  "admin_kyc_type_contract": "Contrat",
+
+  // Admin Affiliates Management
+  "admin_affiliates_bank_not_provided": "Non renseigné",
+  "admin_affiliates_email_verified": "Vérifié",
+  "admin_affiliates_email_not_verified": "Non vérifié",
+  "admin_affiliates_resend_verification_tooltip": "Renvoyer l'email de vérification",
+
   // ===========================================
   // ADMIN PANEL - PRODUCTS
   // ===========================================

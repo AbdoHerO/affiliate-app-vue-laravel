@@ -479,8 +479,8 @@ watch(
           <VCol cols="12" md="2">
             <VSelect
               v-model="filters.role"
-              :items="[{ title: 'All Roles', value: '' }, ...roles]"
-              placeholder="Filter by role"
+              :items="[{ title: t('admin_users_all_roles'), value: '' }, ...roles]"
+              :placeholder="t('admin_users_filter_by_role')"
             />
           </VCol>
           <VCol cols="12" md="2">
