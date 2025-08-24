@@ -196,7 +196,7 @@ const clearFieldError = (field: string) => {
               :disabled="!form.customer_id || !form.api_key"
             >
               <VIcon icon="tabler-device-floppy" start />
-              Sauvegarder
+              {{ t('admin_ozon_save_button') }}
             </VBtn>
 
             <!-- <VBtn
@@ -207,7 +207,7 @@ const clearFieldError = (field: string) => {
               @click="testConnection"
             >
               <VIcon icon="tabler-plug-connected" start />
-              Tester la connexion
+              {{ t('admin_ozon_test_connection') }}
             </VBtn> -->
           </div>
         </VForm>
@@ -218,7 +218,7 @@ const clearFieldError = (field: string) => {
     <VCard class="mt-6">
       <VCardTitle class="d-flex align-center">
         <VIcon icon="tabler-info-circle" class="me-3" />
-        Statut de la configuration
+        {{ t('admin_ozon_config_status_title') }}
       </VCardTitle>
       
       <VCardText>
@@ -231,13 +231,13 @@ const clearFieldError = (field: string) => {
               :icon="ozonSettingsStore.isConfigured ? 'tabler-check' : 'tabler-alert-triangle'"
               start
             />
-            {{ ozonSettingsStore.isConfigured ? 'Configuré' : 'Non configuré' }}
+            {{ ozonSettingsStore.isConfigured ? t('admin_ozon_configured') : t('admin_ozon_not_configured') }}
           </VChip>
           
           <span class="text-body-2 text-medium-emphasis">
-            {{ ozonSettingsStore.isConfigured 
-              ? 'Les identifiants OzonExpress sont configurés et prêts à être utilisés.' 
-              : 'Veuillez configurer vos identifiants OzonExpress pour activer l\'intégration.' 
+            {{ ozonSettingsStore.isConfigured
+              ? t('admin_ozon_config_ready_desc')
+              : t('admin_ozon_config_needed_desc')
             }}
           </span>
         </div>
@@ -248,19 +248,19 @@ const clearFieldError = (field: string) => {
     <VCard class="mt-6">
       <VCardTitle class="d-flex align-center">
         <VIcon icon="tabler-help" class="me-3" />
-        Aide
+        {{ t('admin_ozon_help_title') }}
       </VCardTitle>
       
       <VCardText>
         <div class="text-body-2">
           <p class="mb-3">
-            <strong>Customer ID :</strong> Votre identifiant client fourni par OzonExpress.
+            <strong>Customer ID :</strong> {{ t('admin_ozon_help_customer_id') }}
           </p>
           <p class="mb-3">
-            <strong>API Key :</strong> Votre clé API secrète fournie par OzonExpress. Cette clé est stockée de manière sécurisée et chiffrée.
+            <strong>API Key :</strong> {{ t('admin_ozon_help_api_key') }}
           </p>
           <p class="mb-0">
-            <strong>Note :</strong> Ces informations sont nécessaires pour créer et suivre les colis via l'API OzonExpress.
+            <strong>Note :</strong> {{ t('admin_ozon_help_note') }}
           </p>
         </div>
       </VCardText>
