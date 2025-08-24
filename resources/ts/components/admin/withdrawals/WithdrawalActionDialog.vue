@@ -213,8 +213,8 @@ const handleSubmit = async () => {
           <div v-if="action === 'approve'">
             <VTextarea
               v-model="note"
-              label="Note (optionnelle)"
-              placeholder="Ajouter une note..."
+              :label="t('admin_withdrawals_note_optional')"
+              :placeholder="t('admin_withdrawals_note_placeholder')"
               rows="3"
               auto-grow
             />
@@ -224,8 +224,8 @@ const handleSubmit = async () => {
           <div v-else-if="action === 'reject'">
             <VTextarea
               v-model="reason"
-              label="Raison du rejet *"
-              placeholder="Expliquer la raison du rejet..."
+              :label="t('admin_withdrawals_reject_reason')"
+              :placeholder="t('admin_withdrawals_reject_placeholder')"
               rows="3"
               auto-grow
               :rules="[v => !!v || 'La raison est requise']"
@@ -255,7 +255,7 @@ const handleSubmit = async () => {
               <VCol cols="12" md="6">
                 <VTextField
                   v-model="paidAt"
-                  label="Date de paiement"
+                  :label="t('admin_withdrawals_payment_date')"
                   type="datetime-local"
                 />
               </VCol>

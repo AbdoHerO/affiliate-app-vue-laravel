@@ -953,7 +953,7 @@ onMounted(() => {
                   <VTextField
                     v-model="deliveryNoteRef"
                     label="Référence du bon de livraison"
-                    placeholder="Créer un nouveau bon ou saisir une référence existante"
+                    :placeholder="t('admin_shipping_delivery_note_placeholder')"
                     variant="outlined"
                   />
                 </div>
@@ -1051,7 +1051,7 @@ onMounted(() => {
         <VTextarea
           v-model="statusNote"
           label="Note (optionnelle)"
-          placeholder="Ajouter une note pour ce changement de statut..."
+          :placeholder="t('admin_shipping_status_note_placeholder')"
           rows="3"
           variant="outlined"
         />

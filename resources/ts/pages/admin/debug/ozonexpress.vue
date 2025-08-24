@@ -591,7 +591,7 @@
                             item-title="name"
                             item-value="city_id"
                             :label="t('admin.debug.city')"
-                            placeholder="Sélectionnez une ville"
+                            :placeholder="t('admin_debug_city_placeholder')"
                             required
                             :loading="shippingStore.loading"
                           />
@@ -654,7 +654,7 @@
                           <VTextField
                             v-model="selectedOrderId"
                             label="ID de la commande"
-                            placeholder="Entrez l'ID de la commande..."
+                            :placeholder="t('admin_debug_order_id_placeholder')"
                             required
                           />
                         </VCol>
@@ -723,7 +723,7 @@
                       <VTextField
                         v-model="enhancedTrackingNumber"
                         :label="t('admin.debug.trackingNumber')"
-                        placeholder="Entrez le numéro de suivi..."
+                        :placeholder="t('admin_debug_tracking_placeholder')"
                         required
                       />
                     </VCol>
@@ -902,7 +902,7 @@
           <VTextField
             v-model="trackingNumber"
             :label="t('admin.debug.trackingNumber')"
-            placeholder="Ex: OZ83PYCK141995"
+            :placeholder="t('admin_debug_tracking_example')"
             variant="outlined"
             :loading="loading.trackTest"
           />

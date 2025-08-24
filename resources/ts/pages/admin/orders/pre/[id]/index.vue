@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { usePreordersStore } from '@/stores/admin/preorders'
 import { useQuickConfirm } from '@/composables/useConfirmAction'
 import { useNotifications } from '@/composables/useNotifications'
@@ -16,6 +17,7 @@ definePage({
 
 const route = useRoute()
 const router = useRouter()
+const { t } = useI18n()
 const preordersStore = usePreordersStore()
 const {
   confirm,
@@ -58,10 +60,10 @@ const statusOptions = [
 ]
 
 const confirmationOptions = [
-  { title: 'Non contacté', value: 'non_contacte' },
-  { title: 'À confirmer', value: 'a_confirmer' },
-  { title: 'Confirmé', value: 'confirme' },
-  { title: 'Injoignable', value: 'injoignable' },
+  { title: t('admin_preorder_status_not_contacted'), value: 'non_contacte' },
+  { title: t('admin_preorder_status_to_confirm'), value: 'a_confirmer' },
+  { title: t('admin_preorder_status_confirmed'), value: 'confirme' },
+  { title: t('admin_preorder_status_unreachable'), value: 'injoignable' },
 ]
 
 // Methods
@@ -121,18 +123,18 @@ const confirmOrder = async () => {
   if (!preorder.value) return
 
   const confirmed = await confirm({
-    title: 'Confirmer la commande',
-    text: 'Êtes-vous sûr de vouloir confirmer cette commande ?',
-    confirmText: 'Confirmer',
+    title: t('admin_preorder_confirm_title'),
+    text: t('admin_preorder_confirm_text'),
+    confirmText: t('admin_preorder_confirm_button'),
     color: 'success',
   })
 
   if (confirmed) {
     try {
       await preordersStore.changeStatus(preorder.value.id, 'confirmee')
-      showSuccess('Commande confirmée avec succès')
+      showSuccess(t('admin_preorder_confirm_success'))
     } catch (error: any) {
-      showError(error.message || 'Erreur lors de la confirmation')
+      showError(error.message || t('admin_preorder_confirm_error'))
     }
   }
 }
@@ -203,13 +205,13 @@ const getConfirmationColor = (status: string) => {
 const getConfirmationText = (status: string) => {
   switch (status) {
     case 'non_contacte':
-      return 'Non contacté'
+      return t('admin_preorder_status_not_contacted')
     case 'a_confirmer':
-      return 'À confirmer'
+      return t('admin_preorder_status_to_confirm')
     case 'confirme':
-      return 'Confirmé'
+      return t('admin_preorder_status_confirmed')
     case 'injoignable':
-      return 'Injoignable'
+      return t('admin_preorder_status_unreachable')
     default:
       return status
   }

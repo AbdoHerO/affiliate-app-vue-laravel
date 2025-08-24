@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { ref, computed, watch, nextTick } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useWithdrawalsStore } from '@/stores/admin/withdrawals'
 import { useNotifications } from '@/composables/useNotifications'
+
+const { t } = useI18n()
 
 interface Commission {
   id: string
@@ -135,10 +138,10 @@ const fetchCommissions = async () => {
     if (result.success && result.data) {
       commissions.value = result.data.data || []
     } else {
-      showError(result.message || 'Erreur lors du chargement des commissions')
+      showError(result.message || t('admin_commission_load_error'))
     }
   } catch (error) {
-    showError('Erreur lors du chargement des commissions')
+    showError(t('admin_commission_load_error'))
   } finally {
     loading.value = false
   }
@@ -210,11 +213,11 @@ watch(() => props.userId, fetchCommissions, { immediate: true })
           class="mb-4"
         >
           <VRadio
-            label="Sélection manuelle"
+            :label="t('admin_commission_manual_selection')"
             value="manual"
           />
           <VRadio
-            label="Sélection automatique par montant"
+            :label="t('admin_commission_auto_selection')"
             value="auto"
           />
         </VRadioGroup>
@@ -226,7 +229,7 @@ watch(() => props.userId, fetchCommissions, { immediate: true })
       <VCol cols="12" md="6">
         <VTextField
           v-model.number="localTargetAmount"
-          label="Montant cible"
+          :label="t('admin_commission_target_amount')"
           type="number"
           min="0"
           step="0.01"
@@ -240,7 +243,7 @@ watch(() => props.userId, fetchCommissions, { immediate: true })
           variant="tonal"
           @click="autoSelectByAmount"
         >
-          Sélectionner automatiquement
+          {{ t('admin_commission_auto_select_button') }}
         </VBtn>
       </VCol>
     </VRow>
@@ -252,7 +255,7 @@ watch(() => props.userId, fetchCommissions, { immediate: true })
         <VCol cols="12" md="6">
           <VTextField
             v-model="search"
-            label="Rechercher..."
+            :label="t('admin_commission_search_placeholder')"
             prepend-inner-icon="tabler-search"
             clearable
           />
@@ -263,7 +266,7 @@ watch(() => props.userId, fetchCommissions, { immediate: true })
             size="small"
             @click="toggleAll"
           >
-            {{ isAllSelected ? 'Tout désélectionner' : 'Tout sélectionner' }}
+            {{ isAllSelected ? t('admin_commission_deselect_all') : t('admin_commission_select_all') }}
           </VBtn>
           <VBtn
             variant="tonal"
@@ -271,7 +274,7 @@ watch(() => props.userId, fetchCommissions, { immediate: true })
             size="small"
             @click="clearSelection"
           >
-            Effacer
+            {{ t('admin_commission_clear') }}
           </VBtn>
         </VCol>
       </VRow>
@@ -281,12 +284,12 @@ watch(() => props.userId, fetchCommissions, { immediate: true })
         <VCardText>
           <div v-if="loading" class="text-center py-4">
             <VProgressCircular indeterminate />
-            <p class="mt-2">Chargement des commissions...</p>
+            <p class="mt-2">{{ t('admin_commission_loading') }}</p>
           </div>
 
           <div v-else-if="filteredCommissions.length === 0" class="text-center py-4">
             <VIcon icon="tabler-inbox" size="48" class="mb-2" />
-            <p>Aucune commission éligible trouvée</p>
+            <p>{{ t('admin_commission_no_eligible') }}</p>
           </div>
 
           <div v-else>
@@ -299,11 +302,11 @@ watch(() => props.userId, fetchCommissions, { immediate: true })
                   @update:model-value="toggleAll"
                 />
               </VCol>
-              <VCol cols="3">Commission</VCol>
-              <VCol cols="3">Commande</VCol>
-              <VCol cols="2">Montant</VCol>
-              <VCol cols="2">Statut</VCol>
-              <VCol cols="1">Date</VCol>
+              <VCol cols="3">{{ t('admin_commission_header_commission') }}</VCol>
+              <VCol cols="3">{{ t('admin_commission_header_order') }}</VCol>
+              <VCol cols="2">{{ t('admin_commission_header_amount') }}</VCol>
+              <VCol cols="2">{{ t('admin_commission_header_status') }}</VCol>
+              <VCol cols="1">{{ t('admin_commission_header_date') }}</VCol>
             </VRow>
 
             <VDivider class="mb-2" />
@@ -359,10 +362,10 @@ watch(() => props.userId, fetchCommissions, { immediate: true })
       <VCardText>
         <VRow>
           <VCol cols="12" md="6">
-            <div class="text-h6">{{ localSelectedCommissions.length }} commission(s) sélectionnée(s)</div>
+            <div class="text-h6">{{ t('admin_commission_selected_count', { count: localSelectedCommissions.length }) }}</div>
           </VCol>
           <VCol cols="12" md="6" class="text-md-end">
-            <div class="text-h6">Total: {{ Number(totalSelectedAmount).toFixed(2) }} MAD</div>
+            <div class="text-h6">{{ t('admin_commission_total') }}: {{ Number(totalSelectedAmount).toFixed(2) }} MAD</div>
           </VCol>
         </VRow>
       </VCardText>
