@@ -145,6 +145,20 @@
   "go_to_login": "Aller à la Connexion",
   "signup_failed": "Échec de l'inscription",
 
+  "my_referred_users": "Mes Utilisateurs Parrainés",
+  "my_referred_users_subtitle": "Gérez et suivez vos utilisateurs parrainés",
+  "view_referred_users": "Voir les Utilisateurs Parrainés",
+  "view_rewards_history": "Voir l'Historique des Récompenses",
+  "share_referral_link": "Partager le Lien de Parrainage",
+  "quick_actions": "Actions Rapides",
+  "back_to_dashboard": "Retour au Tableau de Bord",
+  "search_users": "Rechercher des utilisateurs",
+  "verification_status": "Statut de Vérification",
+  "verified": "Vérifié",
+  "unverified": "Non vérifié",
+  "start_date": "Date de début",
+  "end_date": "Date de fin",
+
   "admin_produits_drag_sort": "Glissez pour réorganiser les images",
 
   "common_basic_info": "Informations de base",

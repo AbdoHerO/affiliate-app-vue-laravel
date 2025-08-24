@@ -136,7 +136,7 @@ const fetchReferralInfo = async (code: string) => {
 
 const trackReferralClick = async (code: string) => {
   try {
-    await axios.post('/public/referral-click', {
+    await axios.post('/public/referrals/track-click', {
       referral_code: code,
       source: 'web',
     })

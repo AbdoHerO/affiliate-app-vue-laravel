@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import axios from 'axios'
+import axios from '@/plugins/axios'
 
 interface SignupData {
   nom_complet: string

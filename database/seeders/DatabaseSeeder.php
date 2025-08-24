@@ -78,12 +78,13 @@ class DatabaseSeeder extends Seeder
         ]);
 
         // 9. REFERRAL SYSTEM: Referral codes, clicks, attributions, and dispensations
-        $this->command->info('🔗 Step 9: Referral System');
-        $this->call([
-            ReferralSystemSeeder::class,
-            CODReferralSeeder::class,  // Specific data for your test users
-            PointsSystemSeeder::class,  // New points dispensation system
-        ]);
+        // COMMENTED OUT FOR CLEAN TESTING - Uncomment when you want test data
+        // $this->command->info('🔗 Step 9: Referral System');
+        // $this->call([
+        //     ReferralSystemSeeder::class,
+        //     CODReferralSeeder::class,  // Specific data for your test users
+        //     PointsSystemSeeder::class,  // New points dispensation system
+        // ]);
 
         $this->command->info('');
         $this->command->info('✅ Complete database seeding finished!');

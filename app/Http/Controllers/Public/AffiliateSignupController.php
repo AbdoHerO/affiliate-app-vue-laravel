@@ -8,6 +8,7 @@ use App\Models\Affilie;
 use App\Models\AffiliateEmailVerification;
 use App\Models\ReferralCode;
 use App\Models\ReferralAttribution;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
@@ -221,6 +222,14 @@ class AffiliateSignupController extends Controller
             $affilie->update([
                 'email_verified_at' => now(),
             ]);
+
+            // Update referral attribution to verified if exists
+            ReferralAttribution::where('device_fingerprint', 'affiliate_' . $affilie->id)
+                ->where('verified', false)
+                ->update([
+                    'verified' => true,
+                    'verified_at' => now(),
+                ]);
 
             // Delete verification token
             $verification->delete();
