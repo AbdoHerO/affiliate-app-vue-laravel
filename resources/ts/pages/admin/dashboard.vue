@@ -1,6 +1,11 @@
 <script setup lang="ts">
+import { onMounted, ref, computed, watch } from 'vue'
 import { useAuth } from '@/composables/useAuth'
-import { useRouter } from 'vue-router'
+import { useAdminDashboardStore } from '@/stores/dashboard/adminDashboard'
+import { useNotifications } from '@/composables/useNotifications'
+import StatisticsCard from '@/components/dashboard/StatisticsCard.vue'
+import DashboardChart from '@/components/charts/DashboardChart.vue'
+import Breadcrumbs from '@/components/common/Breadcrumbs.vue'
 
 definePage({
   meta: {
@@ -9,193 +14,436 @@ definePage({
   },
 })
 
-const { user, logout, hasPermission } = useAuth()
-const router = useRouter()
+const { user } = useAuth()
+const dashboardStore = useAdminDashboardStore()
+const { showSuccess, showError } = useNotifications()
 
-// Mock statistics for now
-const stats = ref({
-  totalAffiliates: 150,
-  totalOrders: 1250,
-  totalRevenue: 45000,
-  pendingOrders: 12,
+// Local state
+const selectedPeriod = ref('month')
+const refreshInterval = ref<NodeJS.Timeout | null>(null)
+const autoRefresh = ref(true)
+
+// Date range picker
+const dateRange = ref([
+  new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+  new Date().toISOString().split('T')[0],
+])
+
+// Breadcrumbs
+const breadcrumbs = [
+  { title: 'Admin', disabled: false, href: '/admin' },
+  { title: 'Dashboard', disabled: true, href: '/admin/dashboard' },
+]
+
+// Computed properties
+const kpiCards = computed(() => {
+  if (!dashboardStore.stats) return []
+
+  const { overview, revenue, commissions, payouts } = dashboardStore.stats
+
+  return [
+    {
+      title: 'Total Affiliates',
+      value: overview.totalAffiliates,
+      icon: 'tabler-users',
+      color: 'primary',
+      trend: {
+        value: dashboardStore.signupsGrowth,
+        label: 'vs last month',
+      },
+    },
+    {
+      title: 'Total Revenue',
+      value: overview.totalRevenue,
+      prefix: '$',
+      icon: 'tabler-currency-dollar',
+      color: 'success',
+      trend: {
+        value: revenue.growth,
+        label: 'vs last month',
+      },
+    },
+    {
+      title: 'Total Commissions',
+      value: overview.totalCommissions,
+      prefix: '$',
+      icon: 'tabler-chart-line',
+      color: 'info',
+      trend: {
+        value: commissions.growth,
+        label: 'vs last month',
+      },
+    },
+    {
+      title: 'Pending Payouts',
+      value: payouts.pending.amount,
+      prefix: '$',
+      subtitle: `${payouts.pending.count} requests`,
+      icon: 'tabler-clock',
+      color: 'warning',
+    },
+    {
+      title: 'Verified Signups',
+      value: overview.verifiedSignups,
+      subtitle: `${overview.verificationRate.toFixed(1)}% rate`,
+      icon: 'tabler-user-check',
+      color: 'success',
+    },
+    {
+      title: 'Total Orders',
+      value: overview.totalOrders,
+      icon: 'tabler-shopping-cart',
+      color: 'secondary',
+    },
+  ]
 })
 
-const handleLogout = async () => {
-  await logout()
-}
+const chartConfigs = computed(() => [
+  {
+    title: 'Signups Over Time',
+    type: 'line' as const,
+    data: dashboardStore.signupsChartData,
+    cols: { cols: 12, md: 6 },
+  },
+  {
+    title: 'Revenue & Commissions',
+    type: 'area' as const,
+    data: dashboardStore.revenueChartData,
+    cols: { cols: 12, md: 6 },
+  },
+  {
+    title: 'Top Affiliates by Commissions',
+    type: 'bar' as const,
+    data: dashboardStore.topAffiliatesChart,
+    cols: { cols: 12, md: 6 },
+  },
+  {
+    title: 'Orders by Status',
+    type: 'doughnut' as const,
+    data: dashboardStore.ordersByStatusChart,
+    cols: { cols: 12, md: 6 },
+  },
+])
 
-// Navigation helpers
-const navigateTo = (routeName: string) => {
+// Methods
+const refreshData = async () => {
   try {
-    router.push({ name: routeName })
+    await dashboardStore.refreshAll()
+    if (autoRefresh.value) {
+      showSuccess('Dashboard data refreshed')
+    }
   } catch (error) {
-    console.error('Navigation error:', error)
+    showError('Failed to refresh dashboard data')
   }
 }
+
+const updateDateRange = () => {
+  dashboardStore.updateFilters({
+    dateRange: {
+      start: dateRange.value[0],
+      end: dateRange.value[1],
+    },
+  })
+  refreshData()
+}
+
+const changePeriod = (period: string) => {
+  selectedPeriod.value = period
+  dashboardStore.fetchChartData(period)
+}
+
+const setupAutoRefresh = () => {
+  if (refreshInterval.value) {
+    clearInterval(refreshInterval.value)
+  }
+
+  if (autoRefresh.value) {
+    refreshInterval.value = setInterval(() => {
+      refreshData()
+    }, 5 * 60 * 1000) // Refresh every 5 minutes
+  }
+}
+
+// Lifecycle
+onMounted(async () => {
+  await refreshData()
+  setupAutoRefresh()
+})
+
+onBeforeUnmount(() => {
+  if (refreshInterval.value) {
+    clearInterval(refreshInterval.value)
+  }
+})
+
+// Watchers
+watch(autoRefresh, setupAutoRefresh)
 </script>
 
 <template>
-  <div>
+  <div class="admin-dashboard">
+    <!-- Breadcrumbs -->
+    <Breadcrumbs :items="breadcrumbs" />
+
     <!-- Header -->
-    <VCard class="mb-6">
-      <VCardText>
-        <div class="d-flex justify-space-between align-center">
-          <div>
-            <h2 class="text-h4 mb-2">{{ $t('title_admin_dashboard') }}</h2>
-            <p class="text-body-1 mb-0">{{ $t('welcome_admin', { name: user?.nom_complet }) }}</p>
-          </div>
-          <VBtn
-            color="error"
-            variant="outlined"
-            prepend-icon="tabler-logout"
-            @click="handleLogout"
-          >
-            {{ $t('action_logout') }}
-          </VBtn>
-        </div>
-      </VCardText>
-    </VCard>
+    <div class="d-flex align-center justify-space-between mb-6">
+      <div>
+        <h1 class="text-h4 font-weight-bold mb-1">
+          Admin Dashboard
+        </h1>
+        <p class="text-body-1 text-medium-emphasis">
+          Welcome back, {{ user?.nom_complet }}! Here's what's happening with your platform.
+        </p>
+      </div>
 
-    <!-- Stats Cards -->
+      <div class="d-flex align-center gap-3">
+        <!-- Auto Refresh Toggle -->
+        <VTooltip text="Auto refresh every 5 minutes">
+          <template #activator="{ props }">
+            <VBtn
+              v-bind="props"
+              :color="autoRefresh ? 'success' : 'default'"
+              :variant="autoRefresh ? 'tonal' : 'outlined'"
+              icon
+              @click="autoRefresh = !autoRefresh"
+            >
+              <VIcon :icon="autoRefresh ? 'tabler-refresh' : 'tabler-refresh-off'" />
+            </VBtn>
+          </template>
+        </VTooltip>
+
+        <!-- Refresh Button -->
+        <VBtn
+          color="primary"
+          variant="outlined"
+          :loading="dashboardStore.isLoading"
+          @click="refreshData"
+        >
+          <VIcon start icon="tabler-refresh" />
+          Refresh
+        </VBtn>
+
+        <!-- Date Range Picker -->
+        <VMenu>
+          <template #activator="{ props }">
+            <VBtn
+              v-bind="props"
+              variant="outlined"
+              prepend-icon="tabler-calendar"
+            >
+              {{ dateRange[0] }} - {{ dateRange[1] }}
+            </VBtn>
+          </template>
+
+          <VCard min-width="300">
+            <VCardText>
+              <VTextField
+                v-model="dateRange[0]"
+                label="Start Date"
+                type="date"
+                variant="outlined"
+                density="compact"
+                class="mb-3"
+              />
+              <VTextField
+                v-model="dateRange[1]"
+                label="End Date"
+                type="date"
+                variant="outlined"
+                density="compact"
+                class="mb-3"
+              />
+              <VBtn
+                color="primary"
+                block
+                @click="updateDateRange"
+              >
+                Apply
+              </VBtn>
+            </VCardText>
+          </VCard>
+        </VMenu>
+      </div>
+    </div>
+
+    <!-- Error Alert -->
+    <VAlert
+      v-if="dashboardStore.error"
+      type="error"
+      variant="tonal"
+      class="mb-6"
+      closable
+      @click:close="dashboardStore.error = null"
+    >
+      {{ dashboardStore.error }}
+    </VAlert>
+
+    <!-- KPI Cards -->
     <VRow class="mb-6">
-      <VCol cols="12" sm="6" md="3">
+      <VCol
+        v-for="(card, index) in kpiCards"
+        :key="index"
+        cols="12"
+        sm="6"
+        lg="4"
+        xl="2"
+      >
+        <StatisticsCard
+          :title="card.title"
+          :value="card.value"
+          :subtitle="card.subtitle"
+          :icon="card.icon"
+          :color="card.color"
+          :trend="card.trend"
+          :prefix="card.prefix"
+          :loading="dashboardStore.loading.stats"
+          :error="dashboardStore.error"
+          size="medium"
+        />
+      </VCol>
+    </VRow>
+
+    <!-- Charts Section -->
+    <VRow class="mb-6">
+      <VCol cols="12">
+        <div class="d-flex align-center justify-space-between mb-4">
+          <h2 class="text-h5 font-weight-bold">
+            Analytics & Trends
+          </h2>
+
+          <!-- Period Selector -->
+          <VBtnToggle
+            v-model="selectedPeriod"
+            color="primary"
+            variant="outlined"
+            divided
+            @update:model-value="changePeriod"
+          >
+            <VBtn value="day" size="small">
+              Day
+            </VBtn>
+            <VBtn value="week" size="small">
+              Week
+            </VBtn>
+            <VBtn value="month" size="small">
+              Month
+            </VBtn>
+            <VBtn value="year" size="small">
+              Year
+            </VBtn>
+          </VBtnToggle>
+        </div>
+      </VCol>
+
+      <VCol
+        v-for="(chart, index) in chartConfigs"
+        :key="index"
+        v-bind="chart.cols"
+      >
+        <DashboardChart
+          :type="chart.type"
+          :data="chart.data"
+          :title="chart.title"
+          :loading="dashboardStore.loading.charts"
+          :error="dashboardStore.error"
+          height="350"
+        />
+      </VCol>
+    </VRow>
+
+    <!-- Recent Data Tables -->
+    <VRow>
+      <VCol cols="12" md="6">
         <VCard>
+          <VCardTitle class="d-flex align-center justify-space-between">
+            <span>Recent Affiliates</span>
+            <VBtn
+              variant="text"
+              size="small"
+              @click="dashboardStore.fetchTableData('recent_affiliates')"
+            >
+              <VIcon icon="tabler-refresh" />
+            </VBtn>
+          </VCardTitle>
           <VCardText>
-            <div class="d-flex align-center">
-              <VAvatar color="primary" variant="tonal" class="me-4">
-                <VIcon icon="tabler-users" />
-              </VAvatar>
-              <div>
-                <h6 class="text-h6">{{ stats.totalAffiliates }}</h6>
-                <p class="text-body-2 mb-0">{{ $t('stats_total_affiliates') }}</p>
-              </div>
-            </div>
+            <VDataTable
+              :items="dashboardStore.recentAffiliates"
+              :headers="[
+                { title: 'Name', key: 'name' },
+                { title: 'Email', key: 'email' },
+                { title: 'Joined', key: 'joinedAt' },
+                { title: 'Status', key: 'status' },
+                { title: 'Commissions', key: 'totalCommissions' },
+              ]"
+              :loading="dashboardStore.loading.tables"
+              density="compact"
+              hide-default-footer
+            >
+              <template #item.joinedAt="{ item }">
+                {{ new Date(item.joinedAt).toLocaleDateString() }}
+              </template>
+              <template #item.totalCommissions="{ item }">
+                ${{ item.totalCommissions.toLocaleString() }}
+              </template>
+              <template #item.status="{ item }">
+                <VChip
+                  :color="item.status === 'actif' ? 'success' : 'warning'"
+                  size="small"
+                  variant="tonal"
+                >
+                  {{ item.status }}
+                </VChip>
+              </template>
+            </VDataTable>
           </VCardText>
         </VCard>
       </VCol>
 
-      <VCol cols="12" sm="6" md="3">
+      <VCol cols="12" md="6">
         <VCard>
+          <VCardTitle class="d-flex align-center justify-space-between">
+            <span>Recent Payout Requests</span>
+            <VBtn
+              variant="text"
+              size="small"
+              @click="dashboardStore.fetchTableData('recent_payouts')"
+            >
+              <VIcon icon="tabler-refresh" />
+            </VBtn>
+          </VCardTitle>
           <VCardText>
-            <div class="d-flex align-center">
-              <VAvatar color="success" variant="tonal" class="me-4">
-                <VIcon icon="tabler-shopping-cart" />
-              </VAvatar>
-              <div>
-                <h6 class="text-h6">{{ stats.totalOrders }}</h6>
-                <p class="text-body-2 mb-0">{{ $t('stats_total_orders') }}</p>
-              </div>
-            </div>
-          </VCardText>
-        </VCard>
-      </VCol>
-
-      <VCol cols="12" sm="6" md="3">
-        <VCard>
-          <VCardText>
-            <div class="d-flex align-center">
-              <VAvatar color="warning" variant="tonal" class="me-4">
-                <VIcon icon="tabler-currency-dollar" />
-              </VAvatar>
-              <div>
-                <h6 class="text-h6">${{ stats.totalRevenue.toLocaleString() }}</h6>
-                <p class="text-body-2 mb-0">{{ $t('stats_revenue') }}</p>
-              </div>
-            </div>
-          </VCardText>
-        </VCard>
-      </VCol>
-
-      <VCol cols="12" sm="6" md="3">
-        <VCard>
-          <VCardText>
-            <div class="d-flex align-center">
-              <VAvatar color="error" variant="tonal" class="me-4">
-                <VIcon icon="tabler-clock" />
-              </VAvatar>
-              <div>
-                <h6 class="text-h6">{{ stats.pendingOrders }}</h6>
-                <p class="text-body-2 mb-0">{{ $t('stats_pending_orders') }}</p>
-              </div>
-            </div>
+            <VDataTable
+              :items="dashboardStore.recentPayouts"
+              :headers="[
+                { title: 'Affiliate', key: 'affiliateName' },
+                { title: 'Amount', key: 'amount' },
+                { title: 'Status', key: 'status' },
+                { title: 'Requested', key: 'requestedAt' },
+              ]"
+              :loading="dashboardStore.loading.tables"
+              density="compact"
+              hide-default-footer
+            >
+              <template #item.amount="{ item }">
+                ${{ item.amount.toLocaleString() }}
+              </template>
+              <template #item.requestedAt="{ item }">
+                {{ new Date(item.requestedAt).toLocaleDateString() }}
+              </template>
+              <template #item.status="{ item }">
+                <VChip
+                  :color="item.status === 'pending' ? 'warning' : item.status === 'paid' ? 'success' : 'error'"
+                  size="small"
+                  variant="tonal"
+                >
+                  {{ item.status }}
+                </VChip>
+              </template>
+            </VDataTable>
           </VCardText>
         </VCard>
       </VCol>
     </VRow>
-
-    <!-- Quick Actions -->
-    <VCard class="mb-6">
-      <VCardText>
-        <h5 class="text-h5 mb-4">{{ $t('quick_actions') }}</h5>
-        <VRow>
-          <VCol cols="12" sm="6" md="3">
-            <VBtn
-              block
-              color="primary"
-              variant="elevated"
-              :disabled="!hasPermission('manage users')"
-              @click="navigateTo('admin-users')"
-            >
-              <VIcon start icon="tabler-users" />
-              {{ $t('manage_users') }}
-            </VBtn>
-          </VCol>
-          <VCol cols="12" sm="6" md="3">
-            <VBtn
-              block
-              color="success"
-              variant="elevated"
-              :disabled="!hasPermission('manage affiliates')"
-              @click="navigateTo('admin-affiliates')"
-            >
-              <VIcon start icon="tabler-user-star" />
-              {{ $t('manage_affiliates') }}
-            </VBtn>
-          </VCol>
-          <VCol cols="12" sm="6" md="3">
-            <VBtn
-              block
-              color="warning"
-              variant="elevated"
-              :disabled="!hasPermission('manage orders')"
-              @click="navigateTo('admin-orders-pre')"
-            >
-              <VIcon start icon="tabler-shopping-cart" />
-              {{ $t('order_management') }}
-            </VBtn>
-          </VCol>
-          <VCol cols="12" sm="6" md="3">
-            <VBtn
-              block
-              color="info"
-              variant="elevated"
-              :disabled="!hasPermission('view reports')"
-              @click="navigateTo('admin-reports-sales')"
-            >
-              <VIcon start icon="tabler-chart-bar" />
-              {{ $t('reports') }}
-            </VBtn>
-          </VCol>
-        </VRow>
-      </VCardText>
-    </VCard>
-
-    <!-- User Info -->
-    <VCard>
-      <VCardText>
-        <h5 class="text-h5 mb-4">{{ $t('user_info') }}</h5>
-        <VRow>
-          <VCol cols="12">
-            <div class="text-body-1">
-              <strong>{{ $t('user_name') }}:</strong> {{ user?.nom_complet }}<br>
-              <strong>{{ $t('user_email') }}:</strong> {{ user?.email }}<br>
-              <strong>{{ $t('user_role') }}:</strong> {{ user?.roles?.join(', ') }}<br>
-              <strong>{{ $t('user_permissions') }}:</strong> {{ user?.permissions?.join(', ') }}
-            </div>
-          </VCol>
-        </VRow>
-      </VCardText>
-    </VCard>
   </div>
 </template>
 

@@ -79,9 +79,16 @@ class DatabaseSeeder extends Seeder
             TicketSeeder::class,
         ]);
 
-        // 9. REFERRAL SYSTEM: Referral codes, clicks, attributions, and dispensations
+        // 9. DASHBOARD DATA: Comprehensive data for dashboard analytics
+        // TEMPORARILY COMMENTED OUT - Date issues need fixing
+        // $this->command->info('📊 Step 9: Dashboard Analytics Data');
+        // $this->call([
+        //     DashboardDataSeeder::class,
+        // ]);
+
+        // 10. REFERRAL SYSTEM: Referral codes, clicks, attributions, and dispensations
         // COMMENTED OUT FOR CLEAN TESTING - Uncomment when you want test data
-        // $this->command->info('🔗 Step 9: Referral System');
+        // $this->command->info('🔗 Step 10: Referral System');
         // $this->call([
         //     ReferralSystemSeeder::class,
         //     CODReferralSeeder::class,  // Specific data for your test users

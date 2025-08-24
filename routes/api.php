@@ -45,6 +45,8 @@ use App\Http\Controllers\Admin\ReservationStockController;
 use App\Http\Controllers\Admin\TicketMessagesController;
 use App\Http\Controllers\Public\ProduitController as PublicProduitController;
 use App\Http\Controllers\Public\AffiliateSignupController;
+use App\Http\Controllers\Api\AdminDashboardController;
+use App\Http\Controllers\Api\AffiliateDashboardController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -104,9 +106,14 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     // Admin only routes
     Route::middleware(['role:admin'])->prefix('admin')->group(function () {
-        // Dashboard & Statistics
-        Route::get('dashboard/stats', [DashboardStatsController::class, 'getDashboardStats']);
-        Route::get('dashboard/charts', [DashboardStatsController::class, 'getChartData']);
+        // Dashboard & Statistics (New comprehensive dashboard)
+        Route::get('dashboard/stats', [AdminDashboardController::class, 'getStats']);
+        Route::get('dashboard/charts', [AdminDashboardController::class, 'getChartData']);
+        Route::get('dashboard/tables', [AdminDashboardController::class, 'getTableData']);
+
+        // Legacy dashboard routes (keep for backward compatibility)
+        Route::get('dashboard/legacy/stats', [DashboardStatsController::class, 'getDashboardStats']);
+        Route::get('dashboard/legacy/charts', [DashboardStatsController::class, 'getChartData']);
 
         // User Management
         Route::get('users', [UserManagementController::class, 'index']);
@@ -496,6 +503,13 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     // Affiliate only routes (with session support for cart)
     Route::middleware(['auth:sanctum', 'role:affiliate'])->prefix('affiliate')->group(function () {
+        // Dashboard & Statistics (New comprehensive dashboard)
+        Route::get('dashboard/stats', [AffiliateDashboardController::class, 'getStats']);
+        Route::get('dashboard/charts', [AffiliateDashboardController::class, 'getChartData']);
+        Route::get('dashboard/tables', [AffiliateDashboardController::class, 'getTableData']);
+        Route::get('dashboard/referral-link', [AffiliateDashboardController::class, 'getReferralLink']);
+
+        // Legacy dashboard route (keep for backward compatibility)
         Route::get('dashboard', function () {
             return response()->json(['message' => 'Affiliate Dashboard']);
         });
