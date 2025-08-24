@@ -125,25 +125,59 @@ class AffiliateApplicationsController extends Controller
             }
 
             DB::transaction(function () use ($affilie) {
-                // Create user account
-                $user = User::create([
-                    'nom_complet' => $affilie->nom_complet,
-                    'email' => $affilie->email,
-                    'telephone' => $affilie->telephone,
-                    'adresse' => $affilie->adresse,
-                    'mot_de_passe_hash' => $affilie->mot_de_passe_hash, // Use the same password
-                    'statut' => 'actif',
-                    'email_verifie' => true,
-                    'kyc_statut' => 'non_requis',
-                    'rib' => $affilie->rib,
-                    'bank_type' => $affilie->bank_type,
-                    'approval_status' => 'approved',
-                ]);
+                // Check if user already exists (from referral signup)
+                $user = null;
+                if ($affilie->user_id) {
+                    $user = User::find($affilie->user_id);
+                }
 
-                // Assign affiliate role
-                $affiliateRole = Role::where('name', 'affiliate')->first();
-                if ($affiliateRole) {
-                    $user->assignRole($affiliateRole);
+                // If no existing user, create one
+                if (!$user) {
+                    $user = User::create([
+                        'nom_complet' => $affilie->nom_complet,
+                        'email' => $affilie->email,
+                        'telephone' => $affilie->telephone,
+                        'adresse' => $affilie->adresse,
+                        'mot_de_passe_hash' => $affilie->mot_de_passe_hash,
+                        'statut' => 'actif',
+                        'email_verifie' => true,
+                        'kyc_statut' => 'non_requis',
+                        'rib' => $affilie->rib,
+                        'bank_type' => $affilie->bank_type,
+                        'approval_status' => 'approved',
+                    ]);
+
+                    // Link the user to the affiliate
+                    $affilie->update(['user_id' => $user->id]);
+                } else {
+                    // Update existing user with approval status
+                    $user->update([
+                        'approval_status' => 'approved',
+                        'email_verifie' => true,
+                        'rib' => $affilie->rib,
+                        'bank_type' => $affilie->bank_type,
+                    ]);
+                }
+
+                // Assign affiliate role if not already assigned
+                if (!$user->hasRole('affiliate')) {
+                    $affiliateRole = Role::where('name', 'affiliate')->first();
+                    if ($affiliateRole) {
+                        $user->assignRole($affiliateRole);
+                    }
+                }
+
+                // Create affiliate profile if it doesn't exist
+                if (!$user->profilAffilie) {
+                    $defaultTier = \App\Models\GammeAffilie::where('code', 'BASIC')->first();
+
+                    \App\Models\ProfilAffilie::create([
+                        'utilisateur_id' => $user->id,
+                        'gamme_id' => $defaultTier?->id,
+                        'points' => 0,
+                        'statut' => 'actif',
+                        'notes_interne' => 'Approuvé le ' . now()->format('Y-m-d H:i'),
+                    ]);
                 }
 
                 // Update affiliate status
