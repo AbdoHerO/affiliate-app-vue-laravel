@@ -219,13 +219,52 @@
     "buyNow": "Acheter Maintenant",
     "confirm": "Confirmer",
     "cancel": "Annuler",
+    "previous": "Précédent",
+    "next": "Suivant",
+    "cancel": "Annuler",
     "create": "Créer",
     "back": "Retour",
     "backToList": "Retour à la liste",
     "backToCommissions": "Retour aux commissions",
     "confirm_payment": "Confirmer le paiement",
     "next": "Suivant",
-    "action": "Action"
+    "action": "Action",
+    "close": "Fermer",
+    "backToLogin": "Retour à la connexion",
+    "backToOrders": "Retour aux commandes",
+    "viewCart": "Voir Panier",
+    "viewOrder": "Voir Commande",
+    "viewDetails": "Voir les détails",
+    "viewTracking": "Voir le suivi",
+    "viewShipment": "Voir Expédition",
+    "viewPlatformPackage": "Voir Colis Plateforme",
+    "backToCart": "Retour au panier"
+  },
+
+  // ===========================================
+  // CART
+  // ===========================================
+  "cart": {
+    "title": "Panier"
+  },
+
+  // ===========================================
+  // ORDER STATUS
+  // ===========================================
+  "order": {
+    "status": {
+      "returned": "Retourné",
+      "returned_feminine": "Retournée",
+      "returnInProgress": "Retour en Cours",
+      "returnDelivered": "Retour Livré"
+    }
+  },
+
+  // ===========================================
+  // ERRORS
+  // ===========================================
+  "errors": {
+    "withdrawal_details_load": "Erreur lors du chargement des détails du retrait"
   },
 
   // ===========================================
@@ -1417,6 +1456,8 @@
   "errors": {
     "pageNotFoundTitle": "Page Non Trouvée ⚠️",
     "pageNotFoundDescription": "Nous n'avons pas pu trouver la page que vous recherchez.",
+    "users_loading_error": "Erreur lors du chargement des utilisateurs",
+    "commissions_loading_error": "Erreur lors du chargement des commissions",
     "orders_load_failed": "Erreur lors du chargement des commandes",
     "commissions_load_failed": "Erreur lors du chargement des commissions",
     "withdrawals_load_failed": "Erreur lors du chargement des retraits",
@@ -1474,7 +1515,12 @@
       "thisMonth": "Ce Mois",
       "lastMonth": "Mois Dernier",
       "thisYear": "Cette Année",
-      "lastYear": "Année Dernière"
+      "lastYear": "Année Dernière",
+      "details": "Détails",
+      "packageDetails": "Détails du Colis",
+      "orderDetails": "Détails de la Commande",
+      "withdrawalDetails": "Détails du retrait",
+      "returnFee": "Frais de retour"
     }
   },
 
@@ -2506,6 +2552,15 @@
   "admin_withdrawals_step_select_commissions": "Sélection des commissions",
   "admin_withdrawals_step_select_commissions_subtitle": "Choisir les commissions",
   "admin_withdrawals_step_confirmation": "Confirmation",
+  "admin_withdrawals_select_affiliate_title": "Sélection de l'affilié",
+  "admin_withdrawals_select_affiliate_label": "Sélectionner un affilié *",
+  "admin_withdrawals_search_affiliate_placeholder": "Rechercher un affilié...",
+  "admin_withdrawals_commission_selection": "Sélection des commissions",
+  "admin_withdrawals_bank_transfer": "Virement bancaire",
+  "admin_withdrawals_method": "Méthode de paiement",
+  "admin_withdrawals_notes_optional": "Notes (optionnel)",
+  "admin_withdrawals_notes_placeholder": "Ajouter des notes sur ce retrait...",
+  "admin_withdrawals_create_withdrawal": "Créer le retrait",
   "admin_withdrawals_step_confirmation_subtitle": "Vérifier et créer",
   "admin_withdrawals_method": "Méthode de retrait",
   "admin_withdrawals_bank_transfer": "Virement bancaire",
