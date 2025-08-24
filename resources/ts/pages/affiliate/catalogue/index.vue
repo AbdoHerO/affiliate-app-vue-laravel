@@ -219,7 +219,7 @@ const loadCategories = async () => {
     }
   } catch (err) {
     console.error('Error loading categories:', err)
-    showError('Erreur lors du chargement des catégories')
+    showError(t('affiliate.catalogue.errorLoadingCategories'))
   } finally {
     categoriesLoading.value = false
   }
@@ -363,7 +363,7 @@ onMounted(async () => {
                   { value: '', title: t('catalogue.all_categories') },
                   ...categories.map(cat => ({ value: cat.id, title: cat.nom }))
                 ]"
-                label="Catégorie"
+                :label="t('affiliate.catalogue.category')"
                 item-title="title"
                 item-value="value"
                 variant="outlined"
@@ -395,7 +395,7 @@ onMounted(async () => {
               <VSelect
                 :model-value="sortBy + ':' + sortDirection"
                 :items="sortOptions"
-                label="Trier par"
+                :label="t('affiliate.catalogue.sortBy')"
                 item-title="text"
                 item-value="value"
                 variant="outlined"

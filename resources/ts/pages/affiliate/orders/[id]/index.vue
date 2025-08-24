@@ -108,7 +108,7 @@ onMounted(() => {
               {{ ordersStore.getStatusLabel(currentOrder.statut) }}
             </VChip>
             <span class="text-body-2 text-medium-emphasis">
-              Créée le {{ formatDate(currentOrder.created_at) }}
+              {{ t('affiliate.orders.createdOn', { date: formatDate(currentOrder.created_at) }) }}
             </span>
           </div>
         </div>
@@ -117,15 +117,15 @@ onMounted(() => {
           prepend-icon="tabler-arrow-left"
           @click="goBack"
         >
-          Retour
+          {{ t('actions.back') }}
         </VBtn>
       </div>
 
       <!-- Tabs -->
       <VTabs v-model="activeTab" class="mb-6">
-        <VTab value="details">Détails</VTab>
-        <VTab value="articles">Articles</VTab>
-        <VTab value="shipping">Expédition</VTab>
+        <VTab value="details">{{ t('common.details') }}</VTab>
+        <VTab value="articles">{{ t('affiliate.orders.articles') }}</VTab>
+        <VTab value="shipping">{{ t('affiliate.orders.shipping') }}</VTab>
         <VTab value="commissions">Commissions</VTab>
       </VTabs>
 
@@ -144,7 +144,7 @@ onMounted(() => {
                       <VListItemSubtitle>#{{ currentOrder.id }}</VListItemSubtitle>
                     </VListItem>
                     <VListItem>
-                      <VListItemTitle>Statut</VListItemTitle>
+                      <VListItemTitle>{{ t('form.status') }}</VListItemTitle>
                       <VListItemSubtitle>
                         <VChip
                           :color="ordersStore.getStatusColor(currentOrder.statut)"
@@ -195,7 +195,7 @@ onMounted(() => {
                       </VListItemSubtitle>
                     </VListItem>
                     <VListItem v-if="currentOrder.adresse">
-                      <VListItemTitle>Adresse de livraison</VListItemTitle>
+                      <VListItemTitle>{{ t('affiliate.orders.deliveryAddress') }}</VListItemTitle>
                       <VListItemSubtitle>
                         {{ currentOrder.adresse.adresse }}<br>
                         {{ currentOrder.adresse.ville }}
@@ -222,11 +222,11 @@ onMounted(() => {
             <VCardTitle>Articles commandés</VCardTitle>
             <VDataTable
               :headers="[
-                { title: 'Produit', key: 'produit.titre' },
-                { title: 'Variante', key: 'variante.nom' },
-                { title: 'Quantité', key: 'quantite' },
-                { title: 'Prix unitaire', key: 'prix_unitaire' },
-                { title: 'Total', key: 'total' },
+                { title: t('affiliate.orders.product'), key: 'produit.titre' },
+                { title: t('affiliate.orders.variant'), key: 'variante.nom' },
+                { title: t('affiliate.orders.quantity'), key: 'quantite' },
+                { title: t('affiliate.orders.unitPrice'), key: 'prix_unitaire' },
+                { title: t('affiliate.orders.total'), key: 'total' },
               ]"
               :items="currentOrder.articles || []"
               hide-default-footer
@@ -289,11 +289,11 @@ onMounted(() => {
               <div v-if="currentOrder.commissions?.length">
                 <VDataTable
                   :headers="[
-                    { title: 'Type', key: 'type' },
-                    { title: 'Montant de base', key: 'base_amount' },
-                    { title: 'Taux', key: 'rate' },
-                    { title: 'Commission', key: 'amount' },
-                    { title: 'Statut', key: 'status' },
+                    { title: t('affiliate.orders.type'), key: 'type' },
+                    { title: t('affiliate.orders.baseAmount'), key: 'base_amount' },
+                    { title: t('affiliate.orders.rate'), key: 'rate' },
+                    { title: t('affiliate.orders.commission'), key: 'amount' },
+                    { title: t('form.status'), key: 'status' },
                   ]"
                   :items="currentOrder.commissions"
                   hide-default-footer
@@ -345,7 +345,7 @@ onMounted(() => {
         color="primary"
         @click="goBack"
       >
-        Retour aux commandes
+        {{ t('affiliate.orders.backToOrders') }}
       </VBtn>
     </div>
   </div>

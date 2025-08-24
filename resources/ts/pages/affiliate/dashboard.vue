@@ -262,7 +262,7 @@ watch(autoRefresh, setupAutoRefresh)
           My Dashboard
         </h1>
         <p class="text-body-1 text-medium-emphasis">
-          Welcome back, {{ user?.nom_complet }}! Track your performance and earnings.
+          {{ t('affiliate.dashboard.welcomeMessage', { name: user?.nom_complet }) }}
         </p>
       </div>
 
@@ -412,7 +412,7 @@ watch(autoRefresh, setupAutoRefresh)
               </VTooltip>
 
               <!-- Export Button -->
-              <VTooltip text="Export performance report">
+              <VTooltip :text="t('affiliate.dashboard.exportTooltip')">
                 <template #activator="{ props: tooltipProps }">
                   <VBtn
                     v-bind="tooltipProps"
@@ -698,7 +698,7 @@ watch(autoRefresh, setupAutoRefresh)
           />
           <div class="mt-4">
             <p class="text-body-2 text-medium-emphasis">
-              Share this link with potential customers to earn commissions on their purchases.
+              {{ t('affiliate.dashboard.shareDescription') }}
             </p>
           </div>
         </VCardText>

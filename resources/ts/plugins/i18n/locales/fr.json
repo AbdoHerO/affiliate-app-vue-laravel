@@ -305,7 +305,8 @@
     "guest": "Invité",
     "noRole": "Aucun Rôle",
     "notProvided": "Non renseignée",
-    "loading": "Chargement..."
+    "loading": "Chargement...",
+    "details": "Détails"
   },
 
   // ===========================================
@@ -1675,6 +1676,38 @@
     },
     "commissions": {
       "details": "Détails de la commission"
+    }
+  },
+
+  // ===========================================
+  // AFFILIATE PANEL
+  // ===========================================
+  "affiliate": {
+    "dashboard": {
+      "welcomeMessage": "Bienvenue {name} ! Suivez vos performances et vos gains.",
+      "exportTooltip": "Exporter le rapport de performance",
+      "shareDescription": "Partagez ce lien avec des clients potentiels pour gagner des commissions sur leurs achats."
+    },
+    "orders": {
+      "createdOn": "Créée le {date}",
+      "articles": "Articles",
+      "shipping": "Expédition",
+      "deliveryAddress": "Adresse de livraison",
+      "product": "Produit",
+      "variant": "Variante",
+      "quantity": "Quantité",
+      "unitPrice": "Prix unitaire",
+      "total": "Total",
+      "type": "Type",
+      "baseAmount": "Montant de base",
+      "rate": "Taux",
+      "commission": "Commission",
+      "backToOrders": "Retour aux commandes"
+    },
+    "catalogue": {
+      "errorLoadingCategories": "Erreur lors du chargement des catégories",
+      "category": "Catégorie",
+      "sortBy": "Trier par"
     }
   },
 
