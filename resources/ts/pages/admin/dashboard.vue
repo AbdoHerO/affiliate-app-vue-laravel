@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref, computed, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useAuth } from '@/composables/useAuth'
 import { useAdminDashboardStore } from '@/stores/dashboard/adminDashboard'
 import { useNotifications } from '@/composables/useNotifications'
@@ -14,6 +15,7 @@ definePage({
   },
 })
 
+const { t } = useI18n()
 const { user } = useAuth()
 const dashboardStore = useAdminDashboardStore()
 const { showSuccess, showError } = useNotifications()
@@ -30,10 +32,10 @@ const dateRange = ref([
 ])
 
 // Breadcrumbs
-const breadcrumbs = [
+const breadcrumbs = computed(() => [
   { title: 'Admin', disabled: false, href: '/admin' },
-  { title: 'Dashboard', disabled: true, href: '/admin/dashboard' },
-]
+  { title: t('dashboard'), disabled: true, href: '/admin/dashboard' },
+])
 
 // Computed properties
 const kpiCards = computed(() => {
@@ -43,54 +45,54 @@ const kpiCards = computed(() => {
 
   return [
     {
-      title: 'Total Affiliates',
+      title: t('total_affiliates'),
       value: overview.totalAffiliates,
       icon: 'tabler-users',
       color: 'primary',
       trend: {
         value: dashboardStore.signupsGrowth,
-        label: 'vs last month',
+        label: t('vs_last_month'),
       },
     },
     {
-      title: 'Total Revenue',
+      title: t('total_revenue'),
       value: overview.totalRevenue,
       prefix: '$',
       icon: 'tabler-currency-dollar',
       color: 'success',
       trend: {
         value: revenue.growth,
-        label: 'vs last month',
+        label: t('vs_last_month'),
       },
     },
     {
-      title: 'Total Commissions',
+      title: t('total_commissions'),
       value: overview.totalCommissions,
       prefix: '$',
       icon: 'tabler-chart-line',
       color: 'info',
       trend: {
         value: commissions.growth,
-        label: 'vs last month',
+        label: t('vs_last_month'),
       },
     },
     {
-      title: 'Pending Payouts',
+      title: t('pending_payouts'),
       value: payouts.pending.amount,
       prefix: '$',
-      subtitle: `${payouts.pending.count} requests`,
+      subtitle: `${payouts.pending.count} ${t('requests')}`,
       icon: 'tabler-clock',
       color: 'warning',
     },
     {
-      title: 'Verified Signups',
+      title: t('verified_signups'),
       value: overview.verifiedSignups,
-      subtitle: `${overview.verificationRate.toFixed(1)}% rate`,
+      subtitle: `${overview.verificationRate.toFixed(1)}% ${t('conversion_rate')}`,
       icon: 'tabler-user-check',
       color: 'success',
     },
     {
-      title: 'Total Orders',
+      title: t('total_orders'),
       value: overview.totalOrders,
       icon: 'tabler-shopping-cart',
       color: 'secondary',
@@ -100,25 +102,25 @@ const kpiCards = computed(() => {
 
 const chartConfigs = computed(() => [
   {
-    title: 'Signups Over Time',
+    title: t('signups_over_time'),
     type: 'line' as const,
     data: dashboardStore.signupsChartData,
     cols: { cols: 12, md: 6 },
   },
   {
-    title: 'Revenue & Commissions',
+    title: t('revenue_commissions'),
     type: 'area' as const,
     data: dashboardStore.revenueChartData,
     cols: { cols: 12, md: 6 },
   },
   {
-    title: 'Top Affiliates by Commissions',
+    title: t('top_affiliates_by_commissions'),
     type: 'bar' as const,
     data: dashboardStore.topAffiliatesChart,
     cols: { cols: 12, md: 6 },
   },
   {
-    title: 'Orders by Status',
+    title: t('orders_by_status'),
     type: 'doughnut' as const,
     data: dashboardStore.ordersByStatusChart,
     cols: { cols: 12, md: 6 },
@@ -308,7 +310,7 @@ watch(autoRefresh, setupAutoRefresh)
       <VCol cols="12">
         <div class="d-flex align-center justify-space-between mb-4">
           <h2 class="text-h5 font-weight-bold">
-            Analytics & Trends
+            {{ t('dashboard_analytics') }}
           </h2>
 
           <!-- Period Selector -->

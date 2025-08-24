@@ -1895,6 +1895,47 @@
   "catalogue.filters.sort_name_desc": "Nom Z-A",
 
   // ===========================================
+  // DASHBOARD ANALYTICS
+  // ===========================================
+  "dashboard_analytics": "Analyses du Tableau de Bord",
+  "performance_analytics": "Analyses de Performance",
+  "my_signups_over_time": "Mes Inscriptions dans le Temps",
+  "my_commission_over_time": "Mes Commissions dans le Temps",
+  "top_performing_products": "Produits les Plus Performants",
+  "referral_performance": "Performance de Parrainage",
+  "signups_over_time": "Inscriptions dans le Temps",
+  "revenue_commissions": "Revenus et Commissions",
+  "top_affiliates_by_commissions": "Top Affiliés par Commissions",
+  "recent_payout_requests": "Demandes de Paiement Récentes",
+  "my_recent_leads": "Mes Prospects Récents",
+  "current_points": "Points Actuels",
+  "available_points": "Points Disponibles",
+  "total_commissions": "Commissions Totales",
+  "this_month": "Ce Mois",
+  "monthly_earnings": "Gains Mensuels",
+  "verified_signups": "Inscriptions Vérifiées",
+  "conversion_rate": "Taux de Conversion",
+  "total_orders": "Commandes Totales",
+  "click_rate": "Taux de Clic",
+  "click_through_rate": "Taux de Clic",
+  "vs_last_month": "vs mois dernier",
+  "empty_data": "Aucune donnée disponible",
+  "no_data_available": "Aucune donnée disponible",
+  "loading_analytics": "Chargement des analyses...",
+  "refresh_data": "Actualiser les données",
+  "auto_refresh": "Actualisation automatique",
+  "period_day": "Jour",
+  "period_week": "Semaine",
+  "period_month": "Mois",
+  "period_year": "Année",
+  "total_affiliates": "Total Affiliés",
+  "total_revenue": "Revenus Totaux",
+  "pending_payouts": "Paiements en Attente",
+  "requests": "demandes",
+  "orders_by_status": "Commandes par Statut",
+  "available_points": "Points Disponibles",
+
+  // ===========================================
   // REFERRAL SYSTEM
   // ===========================================
   "referral_dashboard": "Tableau de Bord Parrainage",

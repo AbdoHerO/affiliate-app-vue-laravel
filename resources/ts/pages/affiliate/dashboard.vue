@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref, computed, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useAuth } from '@/composables/useAuth'
 import { useAffiliateDashboardStore } from '@/stores/dashboard/affiliateDashboard'
 import { useNotifications } from '@/composables/useNotifications'
@@ -14,6 +15,7 @@ definePage({
   },
 })
 
+const { t } = useI18n()
 const { user } = useAuth()
 const dashboardStore = useAffiliateDashboardStore()
 const { showSuccess, showError } = useNotifications()
@@ -31,10 +33,10 @@ const dateRange = ref([
 ])
 
 // Breadcrumbs
-const breadcrumbs = [
+const breadcrumbs = computed(() => [
   { title: 'Affiliate', disabled: false, href: '/affiliate' },
-  { title: 'Dashboard', disabled: true, href: '/affiliate/dashboard' },
-]
+  { title: t('dashboard'), disabled: true, href: '/affiliate/dashboard' },
+])
 
 // Computed properties
 const kpiCards = computed(() => {
@@ -44,79 +46,79 @@ const kpiCards = computed(() => {
 
   return [
     {
-      title: 'Current Points',
+      title: t('current_points'),
       value: overview.currentPoints,
       icon: 'tabler-star',
       color: 'warning',
-      subtitle: 'Available points',
+      subtitle: t('available_points'),
     },
     {
-      title: 'Total Commissions',
+      title: t('total_commissions'),
       value: overview.totalCommissions,
       prefix: '$',
       icon: 'tabler-currency-dollar',
       color: 'success',
       trend: {
         value: commissions.growth,
-        label: 'vs last month',
+        label: t('vs_last_month'),
       },
     },
     {
-      title: 'This Month',
+      title: t('this_month'),
       value: overview.totalCommissionsMTD,
       prefix: '$',
       icon: 'tabler-calendar',
       color: 'info',
-      subtitle: 'Monthly earnings',
+      subtitle: t('monthly_earnings'),
     },
     {
-      title: 'Verified Signups',
+      title: t('verified_signups'),
       value: overview.verifiedSignups,
       icon: 'tabler-user-check',
       color: 'primary',
-      subtitle: `${overview.conversionRate.toFixed(1)}% conversion`,
+      subtitle: `${overview.conversionRate.toFixed(1)}% ${t('conversion_rate')}`,
     },
     {
-      title: 'Total Orders',
+      title: t('total_orders'),
       value: overview.totalOrders,
       icon: 'tabler-shopping-cart',
       color: 'secondary',
       trend: {
         value: orders.growth,
-        label: 'vs last month',
+        label: t('vs_last_month'),
       },
     },
     {
-      title: 'Click Rate',
+      title: t('click_rate'),
       value: `${overview.clickThroughRate.toFixed(1)}%`,
       icon: 'tabler-click',
       color: 'purple',
-      subtitle: 'Click-through rate',
+      subtitle: t('click_through_rate'),
     },
   ]
 })
 
 const chartConfigs = computed(() => [
   {
-    title: 'My Signups Over Time',
+    title: t('my_signups_over_time'),
     type: 'line' as const,
     data: dashboardStore.signupsChartData,
     cols: { cols: 12, md: 6 },
   },
   {
-    title: 'My Commissions Over Time',
+    title: t('my_commission_over_time'),
     type: 'area' as const,
     data: dashboardStore.commissionsChartData,
     cols: { cols: 12, md: 6 },
   },
   {
-    title: 'Top Performing Products',
+    title: t('top_performing_products'),
     type: 'bar' as const,
     data: dashboardStore.topProductsChart,
     cols: { cols: 12, md: 6 },
   },
   {
-    title: 'Referral Performance',
+    title: t('referral_performance'),
     type: 'doughnut' as const,
     data: dashboardStore.referralPerformanceChart,
     cols: { cols: 12, md: 6 },
