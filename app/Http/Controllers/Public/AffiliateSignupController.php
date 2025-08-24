@@ -229,13 +229,23 @@ class AffiliateSignupController extends Controller
                 'email_verified_at' => now(),
             ]);
 
-            // Update referral attribution to verified if exists
-            ReferralAttribution::where('device_fingerprint', 'affiliate_' . $affilie->id)
-                ->where('verified', false)
-                ->update([
-                    'verified' => true,
-                    'verified_at' => now(),
-                ]);
+            // Update referral attribution to verified if exists and award verification points
+            if ($affilie->user_id) {
+                $attributions = ReferralAttribution::where('new_user_id', $affilie->user_id)
+                    ->where('verified', false)
+                    ->get();
+
+                foreach ($attributions as $attribution) {
+                    $attribution->update([
+                        'verified' => true,
+                        'verified_at' => now(),
+                    ]);
+
+                    // Award verification points
+                    $autoPointsService = new \App\Services\AutoPointsDispensationService();
+                    $autoPointsService->awardVerificationPoints($attribution);
+                }
+            }
 
             // Delete verification token
             $verification->delete();
@@ -261,31 +271,41 @@ class AffiliateSignupController extends Controller
                 return null; // Silently fail if referral code is invalid
             }
 
-            // Create a dummy user record for affiliate signup tracking
-            // Since new_user_id cannot be null, we'll create a special user record
-            $dummyUser = \App\Models\User::create([
-                'nom_complet' => $newAffiliate->nom_complet . ' (Affiliate)',
-                'email' => 'affiliate_' . $newAffiliate->id . '@internal.system',
+            // Create a proper user record for affiliate signup tracking
+            // This user will represent the new affiliate in the system
+            $affiliateUser = \App\Models\User::create([
+                'nom_complet' => $newAffiliate->nom_complet,
+                'email' => $newAffiliate->email,
                 'telephone' => $newAffiliate->telephone,
-                'mot_de_passe_hash' => Hash::make('dummy_password_' . time()),
+                'mot_de_passe_hash' => $newAffiliate->mot_de_passe_hash,
                 'adresse' => $newAffiliate->adresse,
                 'statut' => 'actif',
                 'email_verifie' => false,
                 'kyc_statut' => 'non_requis',
-                'approval_status' => 'approved', // Use valid enum value
+                'approval_status' => 'pending_approval',
             ]);
+
+            // Assign affiliate role
+            $affiliateUser->assignRole('affiliate');
 
             // Create attribution record for affiliate signup
             $attribution = ReferralAttribution::create([
                 'referral_code' => $referralCode,
                 'referrer_affiliate_id' => $referralCodeRecord->affiliate_id,
-                'new_user_id' => $dummyUser->id, // Use dummy user ID
-                'ip_hash' => hash('sha256', $request->ip()),
+                'new_user_id' => $affiliateUser->id,
+                'ip_hash' => hash('sha256', $request->ip() . config('app.key')),
                 'source' => 'affiliate_signup',
-                'device_fingerprint' => 'affiliate_' . $newAffiliate->id, // Track the new affiliate
+                'device_fingerprint' => [
+                    'user_agent' => $request->userAgent(),
+                    'affiliate_id' => $newAffiliate->id,
+                    'signup_type' => 'affiliate'
+                ],
                 'verified' => false, // Will be verified when email is verified
                 'attributed_at' => now(),
             ]);
+
+            // Store the user ID in the affiliate record for future reference
+            $newAffiliate->update(['user_id' => $affiliateUser->id]);
 
             return $attribution;
         } catch (\Exception $e) {

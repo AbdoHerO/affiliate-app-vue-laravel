@@ -35,25 +35,26 @@ class ReferralController extends Controller
             'end_date' => 'nullable|date|after_or_equal:start_date',
         ]);
 
-        $startDate = $request->start_date ? Carbon::parse($request->start_date) : now()->subDays(30);
-        $endDate = $request->end_date ? Carbon::parse($request->end_date) : now();
+        $startDate = $request->start_date ? Carbon::parse($request->start_date)->startOfDay() : now()->subDays(30)->startOfDay();
+        $endDate = $request->end_date ? Carbon::parse($request->end_date)->endOfDay() : now()->endOfDay();
 
         // Total clicks (unique by IP per day)
-        $totalClicks = ReferralClick::withinDateRange($startDate, $endDate)
+        $totalClicks = ReferralClick::whereBetween('clicked_at', [$startDate, $endDate])
             ->selectRaw('COUNT(DISTINCT CONCAT(ip_hash, DATE(clicked_at))) as unique_clicks')
             ->value('unique_clicks') ?? 0;
 
         // Attribution statistics
-        $attributions = ReferralAttribution::withinDateRange($startDate, $endDate);
-        $totalSignups = $attributions->count();
-        $verifiedSignups = $attributions->where('verified', true)->count();
+        $totalSignups = ReferralAttribution::whereBetween('attributed_at', [$startDate, $endDate])->count();
+        $verifiedSignups = ReferralAttribution::whereBetween('attributed_at', [$startDate, $endDate])
+            ->where('verified', true)
+            ->count();
 
-        // Points awarded
-        $totalPointsAwarded = ReferralDispensation::withinDateRange($startDate, $endDate)
+        // Points awarded (from dispensations in date range)
+        $totalPointsAwarded = ReferralDispensation::whereBetween('created_at', [$startDate, $endDate])
             ->sum('points') ?? 0;
 
-        // Active referrers (affiliates with at least one attribution)
-        $activeReferrers = ReferralAttribution::withinDateRange($startDate, $endDate)
+        // Active referrers (affiliates with at least one attribution in date range)
+        $activeReferrers = ReferralAttribution::whereBetween('attributed_at', [$startDate, $endDate])
             ->distinct('referrer_affiliate_id')
             ->count('referrer_affiliate_id');
 

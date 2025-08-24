@@ -14,6 +14,7 @@ interface SignupData {
   rib: string
   bank_type: string
   notes?: string
+  referral_code?: string
   accept_terms: boolean
 }
 

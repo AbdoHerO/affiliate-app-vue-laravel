@@ -6,12 +6,14 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Affilie extends Model
 {
     use HasUuids, SoftDeletes;
 
     protected $fillable = [
+        'user_id',
         'nom_complet',
         'email',
         'telephone',
@@ -39,6 +41,14 @@ class Affilie extends Model
     public function emailVerifications(): HasMany
     {
         return $this->hasMany(AffiliateEmailVerification::class);
+    }
+
+    /**
+     * Get the user associated with this affiliate.
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     public function scopeEmailVerified($query)

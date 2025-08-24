@@ -157,25 +157,28 @@ class ReferralService
      */
     public function getAffiliateStats(ProfilAffilie $affiliate, ?Carbon $startDate = null, ?Carbon $endDate = null): array
     {
-        $startDate = $startDate ?? now()->subDays(30);
-        $endDate = $endDate ?? now();
+        $startDate = $startDate ? $startDate->startOfDay() : now()->subDays(30)->startOfDay();
+        $endDate = $endDate ? $endDate->endOfDay() : now()->endOfDay();
 
         $referralCode = $this->getOrCreateReferralCode($affiliate);
 
-        // Get click count (unique by IP per day)
+        // Get click count (unique by IP per day) for this affiliate's referral code
         $clicksCount = ReferralClick::where('referral_code', $referralCode->code)
-            ->withinDateRange($startDate, $endDate)
+            ->whereBetween('clicked_at', [$startDate, $endDate])
             ->selectRaw('COUNT(DISTINCT CONCAT(ip_hash, DATE(clicked_at))) as unique_clicks')
             ->value('unique_clicks') ?? 0;
 
-        // Get attribution counts
-        $attributions = ReferralAttribution::where('referrer_affiliate_id', $affiliate->id)
-            ->withinDateRange($startDate, $endDate);
+        // Get attribution counts for this affiliate
+        $totalSignups = ReferralAttribution::where('referrer_affiliate_id', $affiliate->id)
+            ->whereBetween('attributed_at', [$startDate, $endDate])
+            ->count();
 
-        $totalSignups = $attributions->count();
-        $verifiedSignups = $attributions->where('verified', true)->count();
+        $verifiedSignups = ReferralAttribution::where('referrer_affiliate_id', $affiliate->id)
+            ->whereBetween('attributed_at', [$startDate, $endDate])
+            ->where('verified', true)
+            ->count();
 
-        // Get total points from dispensations
+        // Get total points from dispensations (all time for this affiliate)
         $totalPoints = ReferralDispensation::where('referrer_affiliate_id', $affiliate->id)
             ->sum('points') ?? 0;
 
