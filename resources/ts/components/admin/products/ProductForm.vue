@@ -2330,7 +2330,7 @@ onMounted(async () => {
                     </tbody>
                     <tfoot>
                       <tr :class="stockExceeded ? 'bg-red-lighten-4' : 'bg-grey-lighten-4'">
-                        <td colspan="2" class="font-weight-bold">Total</td>
+                        <td colspan="2" class="font-weight-bold">{{ t('admin_total') }}</td>
                         <td :class="stockExceeded ? 'font-weight-bold text-red' : 'font-weight-bold'">
                           {{ totalVariantStock }}
                           <VIcon v-if="stockExceeded" icon="tabler-alert-circle" size="small" color="red" class="ml-1" />

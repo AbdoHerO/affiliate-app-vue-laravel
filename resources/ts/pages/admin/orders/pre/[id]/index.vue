@@ -577,7 +577,7 @@ onMounted(() => {
                         variant="outlined"
                       />
                       <div v-else class="mb-4">
-                        <div class="text-body-2 text-medium-emphasis mb-1">Statut</div>
+                        <div class="text-body-2 text-medium-emphasis mb-1">{{ t('admin_status') }}</div>
                         <VChip
                           :color="getStatusColor(preorder?.statut || '')"
                           variant="tonal"

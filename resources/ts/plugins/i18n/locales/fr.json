@@ -3591,5 +3591,20 @@
   "admin_shipping_address_copied": "Adresse copiée dans le presse-papiers",
   "admin_shipping_address_copy_failed": "Échec de la copie de l'adresse",
   "admin_catalogue_load_product_error": "Erreur lors du chargement du produit",
-  "admin_catalogue_load_categories_error": "Erreur lors du chargement des catégories"
+  "admin_catalogue_load_categories_error": "Erreur lors du chargement des catégories",
+  "affiliate_order_error_title": "Erreur",
+  "admin_total": "Total",
+  "admin_status": "Statut",
+  "admin_delivery_note_error_title": "Erreur",
+  "affiliate_signup_address_placeholder": "Votre adresse complète",
+  "affiliate_signup_bank_placeholder": "Sélectionner votre banque",
+  "affiliate_signup_experience_placeholder": "Parlez-nous de votre expérience en marketing...",
+  "admin_withdrawals_payment_reference_optional": "Référence de paiement (optionnelle)",
+  "admin_withdrawals_payment_reference": "Référence de paiement",
+  "admin_shipping_delivery_note_reference": "Référence du bon de livraison",
+  "form_phone": "Téléphone",
+  "form_phone_required": "Téléphone *",
+  "form_address_complete": "Adresse complète",
+  "form_address_complete_required": "Adresse complète *",
+  "affiliate_custom_price_optional": "Prix de vente personnalisé (optionnel)"
 }

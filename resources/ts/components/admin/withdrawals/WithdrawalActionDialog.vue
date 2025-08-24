@@ -237,7 +237,7 @@ const handleSubmit = async () => {
           <div v-else-if="action === 'mark_in_payment'">
             <VTextField
               v-model="paymentRef"
-              label="Référence de paiement (optionnelle)"
+              :label="t('admin_withdrawals_payment_reference_optional')"
               placeholder="REF-12345"
             />
           </div>
@@ -248,7 +248,7 @@ const handleSubmit = async () => {
               <VCol cols="12" md="6">
                 <VTextField
                   v-model="paymentRef"
-                  label="Référence de paiement"
+                  :label="t('admin_withdrawals_payment_reference')"
                   placeholder="REF-12345"
                 />
               </VCol>

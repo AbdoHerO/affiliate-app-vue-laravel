@@ -379,7 +379,7 @@ onMounted(() => {
                 <AppTextField
                   v-model="form.adresse"
                   label="Adresse *"
-                  placeholder="Votre adresse complète"
+                  :placeholder="t('affiliate_signup_address_placeholder')"
                   :error-messages="getError('adresse')"
                 />
               </VCol>
@@ -417,7 +417,7 @@ onMounted(() => {
                 <AppSelect
                   v-model="form.bank_type"
                   label="Type de banque *"
-                  placeholder="Sélectionner votre banque"
+                  :placeholder="t('affiliate_signup_bank_placeholder')"
                   :items="bankTypes"
                   :error-messages="getError('bank_type')"
                 />
@@ -441,7 +441,7 @@ onMounted(() => {
                 <AppTextarea
                   v-model="form.notes"
                   label="Notes (optionnel)"
-                  placeholder="Parlez-nous de votre expérience en marketing..."
+                  :placeholder="t('affiliate_signup_experience_placeholder')"
                   rows="3"
                   :error-messages="getError('notes')"
                 />

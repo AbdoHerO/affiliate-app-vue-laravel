@@ -270,7 +270,7 @@
                   <VCard variant="tonal" color="primary">
                     <VCardText class="text-center">
                       <div class="text-h4">{{ parcelsAnalytics.total_count }}</div>
-                      <div class="text-body-2">Total</div>
+                      <div class="text-body-2">{{ t('admin_total') }}</div>
                     </VCardText>
                   </VCard>
                 </VCol>
@@ -759,7 +759,7 @@
                     <VCardText>
                       <VRow>
                         <VCol cols="12" md="6">
-                          <div class="text-caption text-medium-emphasis">Statut</div>
+                          <div class="text-caption text-medium-emphasis">{{ t('admin_status') }}</div>
                           <VChip
                             size="small"
                             :color="getStatusColor(trackResult.data.parcel?.status)"

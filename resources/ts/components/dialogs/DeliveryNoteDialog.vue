@@ -130,7 +130,7 @@
             variant="tonal"
             class="mb-4"
           >
-            <VAlertTitle>Erreur</VAlertTitle>
+            <VAlertTitle>{{ t('admin_delivery_note_error_title') }}</VAlertTitle>
             <p class="mb-0">{{ error }}</p>
           </VAlert>
         </div>
@@ -189,6 +189,9 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 interface Props {
   modelValue: boolean

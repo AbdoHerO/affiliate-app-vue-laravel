@@ -339,7 +339,7 @@ onMounted(() => {
         size="64"
         class="text-error mb-4"
       />
-      <h3 class="text-h6 mb-2">Erreur</h3>
+      <h3 class="text-h6 mb-2">{{ t('affiliate_order_error_title') }}</h3>
       <p class="text-body-2 text-medium-emphasis mb-4">{{ error }}</p>
       <VBtn
         color="primary"

@@ -675,7 +675,7 @@ onMounted(() => {
                     <VChip color="info" variant="tonal">{{ shippingOrder.boutique?.nom || '-' }}</VChip>
                   </div>
                   <div class="mb-4">
-                    <div class="text-body-2 text-medium-emphasis mb-1">Total</div>
+                    <div class="text-body-2 text-medium-emphasis mb-1">{{ t('admin_total') }}</div>
                     <div class="text-h6">{{ formatCurrency(shippingOrder.total_ttc || 0) }}</div>
                   </div>
                   <VBtn
