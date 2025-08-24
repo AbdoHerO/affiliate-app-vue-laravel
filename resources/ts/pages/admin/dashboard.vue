@@ -367,80 +367,112 @@ watch(autoRefresh, setupAutoRefresh)
           </div>
 
           <div class="d-flex align-center gap-3 flex-wrap">
-            <!-- Refresh Button -->
-            <VTooltip text="Refresh data">
-              <template #activator="{ props: tooltipProps }">
-                <VBtn
-                  v-bind="tooltipProps"
-                  icon="tabler-refresh"
-                  variant="outlined"
-                  size="small"
-                  :loading="dashboardStore.loading.stats"
-                  @click="refreshData"
-                />
-              </template>
-            </VTooltip>
+            <!-- Action Buttons Group -->
+            <div class="d-flex align-center gap-2">
+              <!-- Refresh Button -->
+              <VTooltip text="Refresh data">
+                <template #activator="{ props: tooltipProps }">
+                  <VBtn
+                    v-bind="tooltipProps"
+                    icon="tabler-refresh"
+                    variant="outlined"
+                    size="small"
+                    :loading="dashboardStore.loading.stats"
+                    @click="refreshData"
+                  />
+                </template>
+              </VTooltip>
 
-            <!-- Export Button -->
-            <VTooltip text="Export dashboard">
-              <template #activator="{ props: tooltipProps }">
-                <VBtn
-                  v-bind="tooltipProps"
-                  icon="tabler-download"
-                  variant="outlined"
-                  size="small"
-                  @click="exportDashboard"
-                />
-              </template>
-            </VTooltip>
+              <!-- Export Button -->
+              <VTooltip text="Export dashboard">
+                <template #activator="{ props: tooltipProps }">
+                  <VBtn
+                    v-bind="tooltipProps"
+                    icon="tabler-download"
+                    variant="outlined"
+                    size="small"
+                    @click="exportDashboard"
+                  />
+                </template>
+              </VTooltip>
 
-            <!-- Chart Style Toggle -->
-            <VTooltip :text="useAdvancedCharts ? 'Switch to basic charts' : 'Switch to advanced charts'">
-              <template #activator="{ props: tooltipProps }">
-                <VBtn
-                  v-bind="tooltipProps"
-                  :icon="useAdvancedCharts ? 'tabler-chart-dots-3' : 'tabler-chart-line'"
-                  :color="useAdvancedCharts ? 'primary' : 'default'"
-                  variant="outlined"
-                  size="small"
-                  @click="useAdvancedCharts = !useAdvancedCharts"
-                >
-                  <VIcon :icon="useAdvancedCharts ? 'tabler-chart-dots-3' : 'tabler-chart-line'" />
-                  <VTooltip
-                    activator="parent"
-                    location="bottom"
+              <!-- Chart Style Toggle -->
+              <VTooltip :text="useAdvancedCharts ? 'Switch to basic charts' : 'Switch to advanced charts'">
+                <template #activator="{ props: tooltipProps }">
+                  <VBtn
+                    v-bind="tooltipProps"
+                    :icon="useAdvancedCharts ? 'tabler-chart-dots-3' : 'tabler-chart-line'"
+                    :color="useAdvancedCharts ? 'primary' : 'default'"
+                    variant="outlined"
+                    size="small"
+                    @click="useAdvancedCharts = !useAdvancedCharts"
                   >
-                    {{ useAdvancedCharts ? 'Advanced Charts' : 'Basic Charts' }}
-                  </VTooltip>
-                </VBtn>
-              </template>
-            </VTooltip>
+                    <VIcon :icon="useAdvancedCharts ? 'tabler-chart-dots-3' : 'tabler-chart-line'" />
+                    <VTooltip
+                      activator="parent"
+                      location="bottom"
+                    >
+                      {{ useAdvancedCharts ? 'Advanced Charts' : 'Basic Charts' }}
+                    </VTooltip>
+                  </VBtn>
+                </template>
+              </VTooltip>
+            </div>
 
-            <!-- Period Selector -->
-            <VBtnToggle
-              v-model="selectedPeriod"
-              color="primary"
-              variant="outlined"
-              divided
-              @update:model-value="changePeriod"
-            >
-              <VBtn value="day" size="small">
-                <VIcon icon="tabler-calendar-day" class="me-1" size="16" />
-                Day
-              </VBtn>
-              <VBtn value="week" size="small">
-                <VIcon icon="tabler-calendar-week" class="me-1" size="16" />
-                Week
-              </VBtn>
-              <VBtn value="month" size="small">
-                <VIcon icon="tabler-calendar-month" class="me-1" size="16" />
-                Month
-              </VBtn>
-              <VBtn value="year" size="small">
-                <VIcon icon="tabler-calendar-year" class="me-1" size="16" />
-                Year
-              </VBtn>
-            </VBtnToggle>
+            <!-- Period Selector - Responsive -->
+            <div class="period-selector-wrapper">
+              <!-- Desktop/Tablet View (768px and up) -->
+              <VBtnToggle
+                v-model="selectedPeriod"
+                color="primary"
+                variant="outlined"
+                divided
+                class="d-none d-md-flex"
+                @update:model-value="changePeriod"
+              >
+                <VBtn value="day" size="small">
+                  <VIcon icon="tabler-calendar-day" class="me-1" size="16" />
+                  Day
+                </VBtn>
+                <VBtn value="week" size="small">
+                  <VIcon icon="tabler-calendar-week" class="me-1" size="16" />
+                  Week
+                </VBtn>
+                <VBtn value="month" size="small">
+                  <VIcon icon="tabler-calendar-month" class="me-1" size="16" />
+                  Month
+                </VBtn>
+                <VBtn value="year" size="small">
+                  <VIcon icon="tabler-calendar-year" class="me-1" size="16" />
+                  Year
+                </VBtn>
+              </VBtnToggle>
+
+              <!-- Mobile/Tablet View (below 768px) -->
+              <VSelect
+                v-model="selectedPeriod"
+                :items="[
+                  { title: 'Day', value: 'day', prepend: 'tabler-calendar-day' },
+                  { title: 'Week', value: 'week', prepend: 'tabler-calendar-week' },
+                  { title: 'Month', value: 'month', prepend: 'tabler-calendar-month' },
+                  { title: 'Year', value: 'year', prepend: 'tabler-calendar-year' }
+                ]"
+                variant="outlined"
+                density="compact"
+                class="d-flex d-md-none period-select-mobile"
+                style="min-width: 120px; max-width: 140px;"
+                hide-details
+                @update:model-value="changePeriod"
+              >
+                <template #prepend-inner>
+                  <VIcon size="16" class="me-1">
+                    {{ selectedPeriod === 'day' ? 'tabler-calendar-day' : 
+                        selectedPeriod === 'week' ? 'tabler-calendar-week' :
+                        selectedPeriod === 'month' ? 'tabler-calendar-month' : 'tabler-calendar-year' }}
+                  </VIcon>
+                </template>
+              </VSelect>
+            </div>
           </div>
         </div>
       </VCol>
@@ -647,3 +679,53 @@ watch(autoRefresh, setupAutoRefresh)
   </div>
 </template>
 
+<style lang="scss" scoped>
+.dashboard-header-actions {
+  .period-selector-wrapper {
+    .period-select-mobile {
+      .v-input__control {
+        min-height: 32px;
+      }
+      
+      .v-field {
+        font-size: 0.875rem;
+      }
+      
+      .v-field__input {
+        padding: 0 8px;
+      }
+    }
+  }
+}
+
+// Admin-specific responsive adjustments
+@media (max-width: 768px) {
+  .dashboard-header-actions {
+    .d-flex {
+      gap: 0.5rem !important;
+      flex-wrap: wrap;
+    }
+    
+    .period-selector-wrapper {
+      flex: 1;
+      min-width: 120px;
+      max-width: 140px;
+    }
+    
+    // Ensure the select is properly displayed
+    .period-select-mobile {
+      display: flex !important;
+    }
+  }
+}
+
+// Fine-tune for smaller screens
+@media (max-width: 600px) {
+  .dashboard-header-actions {
+    .period-selector-wrapper {
+      min-width: 100px;
+      max-width: 120px;
+    }
+  }
+}
+</style>

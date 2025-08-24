@@ -2,6 +2,7 @@
 import { useTheme } from 'vuetify'
 import { computed } from 'vue'
 import type { TimeSeriesData } from '@/types/dashboard'
+import { useSafeApexChart } from '@/composables/useSafeApexChart'
 
 const vuetifyTheme = useTheme()
 
@@ -21,14 +22,23 @@ const props = withDefaults(defineProps<Props>(), {
   loading: false,
 })
 
+// Use safe chart composable
+const { shouldRender, containerRef, containerStyle } = useSafeApexChart(
+  computed(() => props.loading),
+  computed(() => props.data),
+  { minWidth: 200, minHeight: 400 }
+)
+
 const series = computed(() => [
   {
     name: 'Revenue',
-    data: props.data.revenue,
+    data: Array.isArray(props.data?.revenue) ? props.data.revenue.filter(v => typeof v === 'number' && isFinite(v)) : [0],
   },
   {
     name: 'Commissions',
-    data: props.data.commissions.map(val => -val), // Negative for stacked effect
+    data: Array.isArray(props.data?.commissions)
+      ? props.data.commissions.filter(v => typeof v === 'number' && isFinite(v)).map(val => -val)
+      : [0], // Negative for stacked effect
   },
 ])
 
@@ -165,7 +175,11 @@ const moreList = [
 </script>
 
 <template>
-  <div class="advanced-chart-container">
+  <div
+    ref="containerRef"
+    class="advanced-chart-container"
+    :style="containerStyle"
+  >
     <VCard class="total-earning-chart">
     <VCardItem class="pb-0">
       <VCardTitle>Total Earning</VCardTitle>
@@ -195,13 +209,13 @@ const moreList = [
 
     <VCardText>
       <VueApexCharts
-        v-if="!loading"
+        v-if="shouldRender"
         :options="chartOptions"
         :series="series"
         height="191"
         class="my-2"
       />
-      
+
       <!-- Loading State -->
       <div
         v-else

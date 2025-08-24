@@ -1,0 +1,82 @@
+/* ApexCharts Critical Fixes - Prevent NaN Width/Height Errors */
+
+/* Container dimension enforcement */
+.advanced-chart-container {
+  min-width: 200px !important;
+  min-height: 150px !important;
+  position: relative !important;
+  width: 100% !important;
+  overflow: hidden !important;
+}
+
+/* ApexCharts canvas fixes */
+.apexcharts-canvas {
+  width: 100% !important;
+  min-width: 200px !important;
+  min-height: 150px !important;
+}
+
+/* SVG element fixes */
+.apexcharts-svg {
+  width: 100% !important;
+  min-width: 200px !important;
+  min-height: 150px !important;
+}
+
+/* Prevent zero dimensions */
+.apexcharts-inner {
+  min-width: 200px !important;
+  min-height: 150px !important;
+}
+
+/* Chart loading state */
+.chart-loading {
+  min-width: 200px !important;
+  min-height: 150px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* Responsive chart containers */
+@media (max-width: 1200px) {
+  .advanced-chart-container {
+    min-height: 300px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .advanced-chart-container {
+    min-height: 250px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .advanced-chart-container {
+    min-height: 200px !important;
+  }
+}
+
+/* Specific chart type fixes */
+.sales-area-chart,
+.mixed-chart,
+.total-earning-chart,
+.revenue-growth-chart,
+.session-analytics-donut {
+  .apexcharts-canvas {
+    min-width: 200px !important;
+    min-height: 150px !important;
+  }
+}
+
+/* Force minimum dimensions for all chart cards */
+.v-card:has(.apexcharts-canvas) {
+  min-width: 200px !important;
+}
+
+/* Prevent layout shifts during chart loading */
+.apexcharts-loading {
+  min-width: 200px !important;
+  min-height: 150px !important;
+  background: rgba(var(--v-theme-surface), 0.1) !important;
+}

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useTheme } from 'vuetify'
 import { computed } from 'vue'
+import { useSafeApexChart } from '@/composables/useSafeApexChart'
 
 const vuetifyTheme = useTheme()
 
@@ -18,21 +19,23 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   loading: false,
-  data: {
-    color: 'success'
-  }
 })
 
 const currentTheme = vuetifyTheme.current.value.colors
 
-// Validation & safe fallbacks
-const isValidData = computed(() => !props.loading && Array.isArray(props.data?.chartData) && props.data.chartData.length > 0)
-const safeChartData = computed<number[]>(() => Array.isArray(props.data?.chartData) ? props.data.chartData.filter(v => typeof v === 'number' && isFinite(v)) : [])
+// Use safe chart composable
+const { shouldRender, containerRef, containerStyle } = useSafeApexChart(
+  computed(() => props.loading),
+  computed(() => props.data),
+  { minWidth: 200, minHeight: 68 }
+)
 
 const series = computed(() => [
   {
     name: 'Sales',
-    data: safeChartData.value.length ? safeChartData.value : [0],
+    data: Array.isArray(props.data?.chartData) && props.data.chartData.length > 0
+      ? props.data.chartData.filter(v => typeof v === 'number' && isFinite(v))
+      : [0],
   },
 ])
 
@@ -107,7 +110,11 @@ const chartOptions = computed(() => ({
 </script>
 
 <template>
-  <div class="advanced-chart-container">
+  <div
+    ref="containerRef"
+    class="advanced-chart-container"
+    :style="containerStyle"
+  >
     <VCard class="sales-area-chart">
       <VCardItem class="pb-3">
         <VCardTitle>
@@ -119,7 +126,7 @@ const chartOptions = computed(() => ({
       </VCardItem>
 
       <VueApexCharts
-        v-if="isValidData"
+        v-if="shouldRender"
         :options="chartOptions"
         :series="series"
         :height="68"
@@ -127,7 +134,7 @@ const chartOptions = computed(() => ({
 
       <!-- Loading State -->
       <div
-  v-else
+        v-else
         class="d-flex align-center justify-center chart-loading"
         style="height: 68px;"
       >
@@ -143,7 +150,7 @@ const chartOptions = computed(() => ({
           <h4 class="text-h4 text-center">
             {{ data.value }}
           </h4>
-          <span 
+          <span
             class="text-sm"
             :class="data.growth.startsWith('+') ? 'text-success' : 'text-error'"
           >

@@ -333,6 +333,7 @@ declare global {
   const useRound: typeof import('@vueuse/math')['useRound']
   const useRoute: typeof import('vue-router/auto')['useRoute']
   const useRouter: typeof import('vue-router/auto')['useRouter']
+  const useSafeApexChart: typeof import('./resources/ts/composables/useSafeApexChart')['useSafeApexChart']
   const useSafeNavigation: typeof import('./resources/ts/composables/useSafeNavigation')['useSafeNavigation']
   const useScreenOrientation: typeof import('@vueuse/core')['useScreenOrientation']
   const useScreenSafeArea: typeof import('@vueuse/core')['useScreenSafeArea']
@@ -743,6 +744,7 @@ declare module 'vue' {
     readonly useRound: UnwrapRef<typeof import('@vueuse/math')['useRound']>
     readonly useRoute: UnwrapRef<typeof import('vue-router/auto')['useRoute']>
     readonly useRouter: UnwrapRef<typeof import('vue-router/auto')['useRouter']>
+    readonly useSafeApexChart: UnwrapRef<typeof import('./resources/ts/composables/useSafeApexChart')['useSafeApexChart']>
     readonly useSafeNavigation: UnwrapRef<typeof import('./resources/ts/composables/useSafeNavigation')['useSafeNavigation']>
     readonly useScreenOrientation: UnwrapRef<typeof import('@vueuse/core')['useScreenOrientation']>
     readonly useScreenSafeArea: UnwrapRef<typeof import('@vueuse/core')['useScreenSafeArea']>

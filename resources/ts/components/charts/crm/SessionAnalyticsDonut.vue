@@ -2,6 +2,7 @@
 import { useTheme } from 'vuetify'
 import { hexToRgb } from '@layouts/utils'
 import { computed } from 'vue'
+import { useSafeApexChart } from '@/composables/useSafeApexChart'
 
 const vuetifyTheme = useTheme()
 
@@ -19,7 +20,18 @@ const props = withDefaults(defineProps<Props>(), {
   loading: false,
 })
 
-const series = computed(() => [props.data.verified, props.data.pending])
+// Use safe chart composable
+const { shouldRender, containerRef, containerStyle } = useSafeApexChart(
+  computed(() => props.loading),
+  computed(() => props.data),
+  { minWidth: 200, minHeight: 200 }
+)
+
+const series = computed(() => {
+  const verified = typeof props.data?.verified === 'number' && isFinite(props.data.verified) ? props.data.verified : 0
+  const pending = typeof props.data?.pending === 'number' && isFinite(props.data.pending) ? props.data.pending : 0
+  return [verified, pending]
+})
 
 const chartOptions = computed(() => {
   const currentTheme = vuetifyTheme.current.value.colors
@@ -117,7 +129,11 @@ const sessionStats = computed(() => [
 </script>
 
 <template>
-  <div class="advanced-chart-container">
+  <div
+    ref="containerRef"
+    class="advanced-chart-container"
+    :style="containerStyle"
+  >
     <VCard class="session-analytics-donut">
     <VCardItem class="pb-3">
       <VCardTitle>
@@ -130,14 +146,14 @@ const sessionStats = computed(() => [
 
     <VCardText>
       <VueApexCharts
-        v-if="!loading"
+        v-if="shouldRender"
         :options="chartOptions"
         :series="series"
         type="donut"
         :height="200"
         class="mb-4"
       />
-      
+
       <!-- Loading State -->
       <div
         v-else

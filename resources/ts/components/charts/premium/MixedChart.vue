@@ -2,6 +2,7 @@
 import { useTheme } from 'vuetify'
 import { hexToRgb } from '@layouts/utils'
 import { computed } from 'vue'
+import { useSafeApexChart } from '@/composables/useSafeApexChart'
 
 const vuetifyTheme = useTheme()
 
@@ -24,9 +25,13 @@ const props = withDefaults(defineProps<Props>(), {
   loading: false,
 })
 
-const isValidData = computed(() => {
-  return !props.loading && Array.isArray(props.data?.barData) && Array.isArray(props.data?.lineData)
-})
+// Use safe chart composable
+const { shouldRender, containerRef, containerStyle } = useSafeApexChart(
+  computed(() => props.loading),
+  computed(() => props.data),
+  { minWidth: 200, minHeight: 300 }
+)
+
 const safeBar = computed<number[]>(() => Array.isArray(props.data?.barData) ? props.data.barData.filter(v => typeof v === 'number' && isFinite(v)) : [])
 const safeLine = computed<number[]>(() => Array.isArray(props.data?.lineData) ? props.data.lineData.filter(v => typeof v === 'number' && isFinite(v)) : [])
 const series = computed(() => [
@@ -195,7 +200,11 @@ const chartOptions = computed(() => {
 </script>
 
 <template>
-  <div class="advanced-chart-container">
+  <div
+    ref="containerRef"
+    class="advanced-chart-container"
+    :style="containerStyle"
+  >
     <VCard class="mixed-chart">
       <VCardItem class="pb-3">
         <VCardTitle>{{ data.title }}</VCardTitle>
@@ -204,7 +213,7 @@ const chartOptions = computed(() => {
 
       <VCardText>
         <VueApexCharts
-          v-if="isValidData"
+          v-if="shouldRender"
           :options="chartOptions"
           :series="series"
           height="300"
