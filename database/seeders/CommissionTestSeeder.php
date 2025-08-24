@@ -83,7 +83,7 @@ class CommissionTestSeeder extends Seeder
                 [
                     'utilisateur_id' => $affiliate->id,
                     'statut' => 'actif',
-                    'points' => 0,
+                    'points' => 0, // Start with 0 points for clean testing
                 ]
             );
 

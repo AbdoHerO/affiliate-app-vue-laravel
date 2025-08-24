@@ -84,6 +84,22 @@ class RolePermissionSeeder extends Seeder
         // Assign affiliate role to the user
         $affiliateUser->assignRole('affiliate');
 
+        // Create affiliate profile for the test user
+        $defaultGamme = \App\Models\GammeAffilie::firstOrCreate([
+            'code' => 'STANDARD',
+        ], [
+            'libelle' => 'Standard',
+            'actif' => true,
+        ]);
+
+        \App\Models\ProfilAffilie::firstOrCreate([
+            'utilisateur_id' => $affiliateUser->id,
+        ], [
+            'gamme_id' => $defaultGamme->id,
+            'statut' => 'actif',
+            'points' => 0,
+        ]);
+
         $this->command->info('Roles, permissions, and users created successfully!');
         $this->command->info('Admin user: admin@cod.test / password');
         $this->command->info('Affiliate user: affiliate@cod.test / password');

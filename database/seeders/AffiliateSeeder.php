@@ -85,7 +85,7 @@ class AffiliateSeeder extends Seeder
                 'utilisateur_id' => $user->id,
             ], [
                 'gamme_id' => $gamme->id,
-                'points' => rand(0, 1000),
+                'points' => 0, // Start with 0 points for clean testing
                 'statut' => $data['profile_statut'],
                 'rib' => rand(0, 1) ? 'RIB' . str_pad(rand(1, 999999), 6, '0', STR_PAD_LEFT) : null,
             ]);

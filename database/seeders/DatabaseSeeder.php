@@ -59,17 +59,19 @@ class DatabaseSeeder extends Seeder
         ]);
 
         // 6. COMMISSIONS: Commission calculations
-        $this->command->info('💰 Step 6: Commissions');
-        $this->call([
-            CommissionTestSeeder::class,
-        ]);
+        // COMMENTED OUT FOR CLEAN TESTING - These create points/referral data
+        // $this->command->info('💰 Step 6: Commissions');
+        // $this->call([
+        //     CommissionTestSeeder::class,
+        // ]);
 
         // 7. PAYMENTS & WITHDRAWALS: Complete payment system
-        $this->command->info('🏦 Step 7: Payments & Withdrawals');
-        $this->call([
-            ComprehensiveWithdrawalSeeder::class,  // Comprehensive withdrawal data
-            FinalWithdrawalSeeder::class,          // Final 2 withdrawals to reach 10 total
-        ]);
+        // COMMENTED OUT FOR CLEAN TESTING - These create points/referral data
+        // $this->command->info('🏦 Step 7: Payments & Withdrawals');
+        // $this->call([
+        //     ComprehensiveWithdrawalSeeder::class,  // Comprehensive withdrawal data
+        //     FinalWithdrawalSeeder::class,          // Final 2 withdrawals to reach 10 total
+        // ]);
 
         // 8. SUPPORT: Support tickets and communications
         $this->command->info('🎧 Step 8: Support System');

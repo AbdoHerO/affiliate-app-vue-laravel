@@ -31,29 +31,24 @@ class AffiliateReferralController extends Controller
         // Get referral code
         $referralCode = ReferralCode::getOrCreateForAffiliate($affiliate);
 
-        // Get clicks for this affiliate's code in date range
-        $totalClicks = ReferralClick::where('referral_code', $referralCode->code)
-            ->whereBetween('clicked_at', [$start, $end])
-            ->count();
+        // Get clicks for this affiliate's code (all time for better visibility)
+        $totalClicks = ReferralClick::where('referral_code', $referralCode->code)->count();
 
-        // Get attributions for this affiliate in date range
-        $totalSignups = ReferralAttribution::where('referrer_affiliate_id', $affiliate->id)
-            ->whereBetween('attributed_at', [$start, $end])
-            ->count();
+        // Get attributions for this affiliate (all time)
+        $totalSignups = ReferralAttribution::where('referrer_affiliate_id', $affiliate->id)->count();
 
-        // Get verified signups
+        // Get verified signups (all time)
         $verifiedSignups = ReferralAttribution::where('referrer_affiliate_id', $affiliate->id)
-            ->whereBetween('attributed_at', [$start, $end])
             ->where('verified', true)
             ->count();
 
         // Calculate conversion rate
         $conversionRate = $totalClicks > 0 ? round(($totalSignups / $totalClicks) * 100, 2) : 0;
 
-        // Get total points from dispensations
-        $totalPoints = ReferralDispensation::where('referrer_affiliate_id', $affiliate->id)
-            ->whereBetween('created_at', [$start, $end])
-            ->sum('points');
+        // Get total points using PointsService (includes earned + dispensed points)
+        $pointsService = new \App\Services\PointsService();
+        $pointsSummary = $pointsService->getPointsSummary($affiliate);
+        $totalPoints = $pointsSummary['earned'];
 
         // Get recent activity (last 10 attributions)
         $recentActivity = ReferralAttribution::with('newUser')
@@ -93,19 +88,22 @@ class AffiliateReferralController extends Controller
             });
 
         return response()->json([
-            'stats' => [
-                'total_clicks' => $totalClicks,
-                'total_signups' => $totalSignups,
-                'verified_signups' => $verifiedSignups,
-                'conversion_rate' => $conversionRate,
-                'total_points' => $totalPoints,
-            ],
-            'referral_code' => $referralCode->code,
-            'referral_url' => url('/signup?ref=' . $referralCode->code),
-            'recent_activity' => $recentActivity,
-            'date_range' => [
-                'start_date' => $startDate,
-                'end_date' => $endDate,
+            'success' => true,
+            'data' => [
+                'stats' => [
+                    'clicks' => $totalClicks,
+                    'signups' => $totalSignups,
+                    'verified_signups' => $verifiedSignups,
+                    'conversion_rate' => $conversionRate,
+                    'total_points' => $totalPoints,
+                ],
+                'referral_code' => $referralCode->code,
+                'referral_url' => url('/affiliate-signup?ref=' . $referralCode->code),
+                'recent_activity' => $recentActivity,
+                'date_range' => [
+                    'start_date' => $startDate,
+                    'end_date' => $endDate,
+                ]
             ]
         ]);
     }

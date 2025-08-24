@@ -38,9 +38,11 @@ class AdminReferralController extends Controller
         // Conversion rate
         $conversionRate = $totalClicks > 0 ? round(($totalSignups / $totalClicks) * 100, 2) : 0;
 
-        // Total points distributed in date range
-        $totalPoints = ReferralDispensation::whereBetween('created_at', [$start, $end])
-            ->sum('points');
+        // Calculate total points earned (all time for better visibility)
+        $clickPoints = ReferralClick::count() * 1;
+        $signupPoints = ReferralAttribution::count() * 10;
+        $verificationPoints = ReferralAttribution::where('verified', true)->count() * 50;
+        $totalPoints = $clickPoints + $signupPoints + $verificationPoints;
 
         // Top performing affiliates
         $topAffiliates = ReferralAttribution::select('referrer_affiliate_id')
@@ -83,19 +85,28 @@ class AdminReferralController extends Controller
                 ];
             });
 
+        // Count active referrers (affiliates with at least one attribution)
+        $activeReferrers = ReferralAttribution::whereBetween('attributed_at', [$start, $end])
+            ->distinct('referrer_affiliate_id')
+            ->count('referrer_affiliate_id');
+
         return response()->json([
-            'stats' => [
-                'total_clicks' => $totalClicks,
-                'total_signups' => $totalSignups,
-                'verified_signups' => $verifiedSignups,
-                'conversion_rate' => $conversionRate,
-                'total_points' => $totalPoints,
-            ],
-            'top_affiliates' => $topAffiliates,
-            'recent_activity' => $recentActivity,
-            'date_range' => [
-                'start_date' => $startDate,
-                'end_date' => $endDate,
+            'success' => true,
+            'data' => [
+                'overview' => [
+                    'total_clicks' => $totalClicks,
+                    'total_signups' => $totalSignups,
+                    'verified_signups' => $verifiedSignups,
+                    'conversion_rate' => $conversionRate,
+                    'total_points_awarded' => $totalPoints,
+                    'active_referrers' => $activeReferrers,
+                ],
+                'top_affiliates' => $topAffiliates,
+                'recent_activity' => $recentActivity,
+                'date_range' => [
+                    'start_date' => $startDate,
+                    'end_date' => $endDate,
+                ]
             ]
         ]);
     }
