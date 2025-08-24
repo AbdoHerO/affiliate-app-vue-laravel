@@ -50,7 +50,7 @@ const fetchCommission = async () => {
     // Check if commission was actually loaded
     if (!result) {
       console.error('❌ Commission not found after fetch')
-      showError('Commission non trouvée')
+      showError(t('admin_commissions_not_found'))
       router.push('/admin/commissions')
       return
     }
@@ -59,7 +59,7 @@ const fetchCommission = async () => {
     console.log('✅ Commission fetched successfully:', result)
   } catch (error) {
     console.error('❌ Error fetching commission:', error)
-    showError('Erreur lors du chargement de la commission')
+    showError(t('admin_commissions_loading_error'))
     router.push('/admin/commissions')
   }
 }

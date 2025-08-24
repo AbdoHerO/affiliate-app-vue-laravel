@@ -70,6 +70,9 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import { useApi } from '@/composables/useApi'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 interface Props {
   url?: string
@@ -113,7 +116,7 @@ const handleFileSelect = (selectedFile: File | null) => {
 
 const uploadFile = async (fileToUpload: File) => {
   if (!props.uploadEndpoint || !props.productId) {
-    uploadStatus.value = { type: 'error', message: 'Upload configuration missing' }
+    uploadStatus.value = { type: 'error', message: t('components_upload_configuration_missing') }
     return
   }
 
@@ -139,17 +142,17 @@ const uploadFile = async (fileToUpload: File) => {
 
     const response = data.value as any
     if (response.success) {
-      uploadStatus.value = { type: 'success', message: response.message || 'File uploaded successfully' }
+      uploadStatus.value = { type: 'success', message: response.message || t('components_file_uploaded_successfully') }
       emit('file-uploaded', { url: response.url, file: fileToUpload })
       emit('update:url', response.url)
     } else {
-      throw new Error(response.message || 'Upload failed')
+      throw new Error(response.message || t('components_upload_failed'))
     }
   } catch (err: any) {
     console.error('Upload error:', err)
     uploadStatus.value = { 
       type: 'error', 
-      message: err.message || 'Upload failed. Please try again.' 
+      message: err.message || t('components_upload_failed_try_again') 
     }
     emit('upload-error', err)
   } finally {

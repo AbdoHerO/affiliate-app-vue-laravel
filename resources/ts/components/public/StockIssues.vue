@@ -1,4 +1,8 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
+
 interface StockIssue {
   id: string
   motif: string
@@ -52,7 +56,7 @@ const getStatusColor = (expectedRestockAt: string | null) => {
 }
 
 const getStatusText = (expectedRestockAt: string | null) => {
-  if (!expectedRestockAt) return 'No restock date'
+  if (!expectedRestockAt) return t('components_no_restock_date')
   
   const restockDate = new Date(expectedRestockAt)
   const now = new Date()

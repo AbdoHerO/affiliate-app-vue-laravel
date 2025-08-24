@@ -110,7 +110,7 @@ const uploadFile = async (file: File) => {
       emit('update:modelValue', result.url)
       console.log('File uploaded successfully:', file.name)
     } else {
-      throw new Error(result.message || 'Upload failed')
+      throw new Error(result.message || t('components_upload_failed'))
     }
 
   } catch (error) {
@@ -120,7 +120,7 @@ const uploadFile = async (file: File) => {
     previewUrl.value = props.modelValue || ''
 
     // You could emit an error event here for better UX
-    alert('Upload failed: ' + (error instanceof Error ? error.message : 'Unknown error'))
+    alert(t('components_upload_failed') + ': ' + (error instanceof Error ? error.message : t('components_unknown_error')))
   } finally {
     isUploading.value = false
   }

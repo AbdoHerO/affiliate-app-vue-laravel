@@ -864,7 +864,7 @@
             :type="deliveryNoteResult.success ? 'success' : 'error'"
             variant="tonal"
           >
-            <VAlertTitle>{{ deliveryNoteResult.success ? 'Succès' : 'Erreur' }}</VAlertTitle>
+            <VAlertTitle>{{ deliveryNoteResult.success ? t('admin_debug_success') : t('admin_debug_error') }}</VAlertTitle>
             {{ deliveryNoteResult.message }}
           </VAlert>
 
@@ -1232,7 +1232,7 @@ const syncFromPlatform = async () => {
       console.error('Error syncing from platform:', error.value)
       syncResult.value = {
         success: false,
-        message: 'Erreur lors de la synchronisation: ' + (error.value as any)?.message
+        message: t('admin_debug_sync_error') + ': ' + (error.value as any)?.message
       }
     } else {
       syncResult.value = data.value
@@ -1245,7 +1245,7 @@ const syncFromPlatform = async () => {
     console.error('Error syncing from platform:', error)
     syncResult.value = {
       success: false,
-      message: 'Erreur lors de la synchronisation: ' + (error as any)?.message
+      message: t('admin_debug_sync_error') + ': ' + (error as any)?.message
     }
   } finally {
     loading.value.sync = false
@@ -1260,7 +1260,7 @@ const loadPlatformParcels = async () => {
       console.error('Error loading platform parcels:', error.value)
       platformParcels.value = {
         success: false,
-        message: 'Erreur lors du chargement des colis plateforme: ' + (error.value as any)?.message
+        message: t('admin_debug_platform_parcels_loading_error') + ': ' + (error.value as any)?.message
       }
     } else {
       platformParcels.value = data.value
@@ -1269,7 +1269,7 @@ const loadPlatformParcels = async () => {
     console.error('Error loading platform parcels:', error)
     platformParcels.value = {
       success: false,
-      message: 'Erreur lors du chargement des colis plateforme: ' + (error as any)?.message
+      message: t('admin_debug_platform_parcels_loading_error') + ': ' + (error as any)?.message
     }
   } finally {
     loading.value.platformParcels = false
@@ -1285,7 +1285,7 @@ const testBulkOperations = async () => {
         console.error('Error testing bulk operations:', error.value)
         bulkTestResult.value = {
           success: false,
-          message: 'Erreur lors du test des opérations en lot: ' + (error.value as any)?.message,
+          message: t('admin_debug_batch_operations_error') + ': ' + (error.value as any)?.message,
           test_mode: 'real'
         }
       } else {
@@ -1357,7 +1357,7 @@ const testCreateParcel = async () => {
     createTestResult.value = result
 
     if (result.success) {
-      showSuccess('Colis test créé avec succès!')
+      showSuccess(t('admin_debug_test_parcel_created'))
       await loadShippingParcels()
     } else {
       showError(result.message || 'Erreur lors de la création du colis test')
@@ -1394,7 +1394,7 @@ const testTrackParcel = async () => {
     showTrackingDialog.value = false
 
     if (result.success) {
-      showSuccess('Suivi mis à jour avec succès!')
+      showSuccess(t('admin_debug_tracking_updated'))
       await loadShippingParcels()
     } else {
       showError(result.message || 'Erreur lors du suivi du colis')
@@ -1432,7 +1432,7 @@ const trackLastCreatedParcel = async () => {
     trackTestResult.value = result
 
     if (result.success) {
-      showSuccess('Suivi du dernier colis créé mis à jour avec succès!')
+      showSuccess(t('admin_debug_last_parcel_tracking_updated'))
       await loadShippingParcels()
     } else {
       showError(result.message || 'Erreur lors du suivi du colis créé')
@@ -1518,7 +1518,7 @@ const sendManualParcel = async () => {
     sendResult.value = result
 
     if (result.success) {
-      showSuccess('Colis envoyé avec succès!')
+      showSuccess(t('admin_debug_parcel_sent'))
       // Reset form
       manualForm.value = {
         receiver: '',
@@ -1551,7 +1551,7 @@ const sendFromOrder = async () => {
     sendResult.value = result
 
     if (result.success) {
-      showSuccess('Colis envoyé avec succès!')
+      showSuccess(t('admin_debug_parcel_sent'))
       selectedOrderId.value = ''
       // Refresh parcels data
       await loadShippingParcels()
@@ -1575,7 +1575,7 @@ const trackParcelEnhanced = async () => {
     trackResult.value = result
 
     if (result.success) {
-      showSuccess('Suivi mis à jour avec succès!')
+      showSuccess(t('admin_debug_tracking_updated'))
       // Refresh parcels data
       await loadShippingParcels()
     } else {
@@ -1589,7 +1589,7 @@ const trackParcelEnhanced = async () => {
 const copyToClipboard = async (text: string) => {
   try {
     await navigator.clipboard.writeText(text)
-    showSuccess('Numéro de suivi copié!')
+    showSuccess(t('admin_shipping_tracking_copied'))
   } catch (error) {
     showError('Erreur lors de la copie')
   }
@@ -1692,7 +1692,7 @@ const testSaveDeliveryNote = async () => {
     deliveryNoteResult.value = data
 
     if (data.success) {
-      showSuccess('Bon de livraison sauvegardé avec succès')
+      showSuccess(t('admin_debug_delivery_note_saved'))
     } else {
       showError(data.message || 'Erreur lors de la sauvegarde')
     }
@@ -1724,7 +1724,7 @@ const testGetDeliveryNotePdf = async () => {
     deliveryNoteResult.value = data
 
     if (data.success) {
-      showSuccess('Liens PDF récupérés avec succès')
+      showSuccess(t('admin_debug_pdf_links_retrieved'))
 
       // Open PDFs if available
       const links = data.data.pdf_links

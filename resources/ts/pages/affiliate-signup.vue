@@ -337,7 +337,7 @@ onMounted(() => {
               >
                 <AppTextField
                   v-model="form.telephone"
-                  label="Téléphone *"
+                  :label="t('form_phone_required')"
                   placeholder="+212 6 12 34 56 78"
                   :error-messages="getError('telephone')"
                 />

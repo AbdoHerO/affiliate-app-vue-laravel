@@ -56,7 +56,7 @@ const orderId = computed(() => route.params.id as string)
 // Status options
 const statusOptions = [
   { title: 'En attente', value: 'en_attente' },
-  { title: 'Confirmée', value: 'confirmee' },
+  { title: t('admin_preorder_status_confirmed_fem'), value: 'confirmee' },
 ]
 
 const confirmationOptions = [
@@ -101,7 +101,7 @@ const saveChanges = async () => {
   isSaving.value = true
   try {
     await preordersStore.updatePreorder(preorder.value.id, formData.value)
-    showSuccess('Commande mise à jour avec succès')
+    showSuccess(t('admin_preorder_update_success'))
     isEditing.value = false
 
     // Re-fetch the order to get updated data
@@ -113,7 +113,7 @@ const saveChanges = async () => {
       params: { id: preorder.value.id }
     })
   } catch (error: any) {
-    showError(error.message || 'Erreur lors de la mise à jour')
+    showError(error.message || t('admin_preorder_update_error'))
   } finally {
     isSaving.value = false
   }
@@ -181,7 +181,7 @@ const getStatusText = (status: string) => {
     case 'en_attente':
       return 'En attente'
     case 'confirmee':
-      return 'Confirmée'
+      return t('admin_preorder_status_confirmed_fem')
     default:
       return status
   }
@@ -276,9 +276,9 @@ ${getClientFinalCity()}, ${getClientFinalCountry()}`
 
   try {
     await navigator.clipboard.writeText(address)
-    showSuccess('Adresse copiée dans le presse-papiers')
+    showSuccess(t('admin_shipping_address_copied'))
   } catch (error) {
-    showError('Échec de la copie de l\'adresse')
+    showError(t('admin_shipping_address_copy_failed'))
   }
 }
 
@@ -490,11 +490,11 @@ onMounted(() => {
                 :headers="[
                   { title: 'Produit', key: 'produit' },
                   { title: 'Variante', key: 'variante' },
-                  { title: 'Quantité', key: 'quantite' },
-                  { title: 'Prix recommandé', key: 'prix_unitaire' },
+                  { title: t('admin_preorder_table_quantity'), key: 'quantite' },
+                  { title: t('admin_preorder_table_recommended_price'), key: 'prix_unitaire' },
                   { title: 'Prix de vente', key: 'sell_price' },
                   { title: 'Commission', key: 'commission_amount' },
-                  { title: 'Total', key: 'total_ligne' },
+                  { title: t('admin_total'), key: 'total_ligne' },
                 ]"
                 :items="preorder?.articles || []"
                 :items-per-page="-1"
@@ -687,7 +687,7 @@ onMounted(() => {
     <OzonExpressConfirmDialog
       v-model="showOzonDialog"
       :loading="ozonDialogLoading"
-      text="Êtes-vous sûr de vouloir envoyer cette commande vers OzonExpress ?"
+      :text="t('admin_preorder_ozon_confirm_text')"
       @confirm="handleOzonConfirm"
       @cancel="handleOzonCancel"
     />

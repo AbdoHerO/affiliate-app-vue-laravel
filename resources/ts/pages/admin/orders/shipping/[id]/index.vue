@@ -68,15 +68,15 @@ const fetchParcelInfo = async () => {
       shippingOrder.value.shipping_parcel.tracking_number
     )
   } catch (error: any) {
-    showError(error.message || 'Erreur lors de la récupération des infos du colis')
+    showError(error.message || t('admin_shipping_parcel_info_error'))
   }
 }
 
 const createDeliveryNote = async () => {
   const confirmed = await confirm({
-    title: 'Créer un bon de livraison',
-    text: 'Voulez-vous créer un nouveau bon de livraison ?',
-    confirmText: 'Créer',
+    title: t('admin_shipping_delivery_note_create_confirm_title'),
+    text: t('admin_shipping_delivery_note_create_confirm_text'),
+    confirmText: t('admin_shipping_delivery_note_create_confirm_button'),
     color: 'primary',
   })
 
@@ -86,7 +86,7 @@ const createDeliveryNote = async () => {
       deliveryNoteRef.value = ref
       showSuccess(`Bon de livraison créé: ${ref}`)
     } catch (error: any) {
-      showError(error.message || 'Erreur lors de la création du bon de livraison')
+      showError(error.message || t('admin_shipping_delivery_note_create_error'))
     }
   }
 }
@@ -112,7 +112,7 @@ const addParcelsToDeliveryNote = async () => {
       )
       showSuccess(t('admin_shipping_parcel_added'))
     } catch (error: any) {
-      showError(error.message || 'Erreur lors de l\'ajout du colis')
+      showError(error.message || t('admin_shipping_add_parcel_error'))
     }
   }
 }
@@ -137,7 +137,7 @@ const saveDeliveryNote = async () => {
       // Update the shipping order to reflect the delivery note
       await fetchShippingOrder()
     } catch (error: any) {
-      showError(error.message || 'Erreur lors de la sauvegarde')
+      showError(error.message || t('admin_shipping_save_error'))
     }
   }
 }
