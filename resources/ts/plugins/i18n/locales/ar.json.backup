@@ -1,449 +1,0 @@
-{
-  // ===========================================
-  // NAVIGATION & MENU ITEMS
-  // ===========================================
-  "nav_dashboard": "لوحة التحكم",
-  "nav_user_management": "إدارة المستخدمين",
-  "nav_all_users": "جميع المستخدمين",
-  "nav_roles_permissions": "الأدوار والصلاحيات",
-  "nav_kyc_documents": "وثائق التحقق",
-  "nav_affiliate_management": "إدارة الشركاء",
-  "nav_all_affiliates": "جميع الشركاء",
-  "nav_affiliate_tiers": "مستويات الشركاء",
-  "nav_order_management": "إدارة الطلبات",
-  "nav_all_orders": "جميع الطلبات",
-  "nav_order_conflicts": "تضارب الطلبات",
-  "nav_product_management": "إدارة المنتجات",
-  "nav_products": "المنتجات",
-  "nav_categories": "الفئات",
-  "nav_boutiques": "المتاجر",
-  "nav_financial_management": "الإدارة المالية",
-  "nav_commissions": "العمولات",
-  "nav_payments": "المدفوعات",
-  "nav_reports_analytics": "التقارير والتحليلات",
-  "nav_sales_reports": "تقارير المبيعات",
-  "nav_affiliate_performance": "أداء الشركاء",
-  "nav_my_orders": "طلباتي",
-  "nav_my_commissions": "عمولاتي",
-  "nav_marketing_materials": "المواد التسويقية",
-
-  // ===========================================
-  // PAGE TITLES & HEADERS
-  // ===========================================
-  "title_admin_dashboard": "لوحة تحكم المدير",
-  "title_affiliate_dashboard": "لوحة تحكم الشريك",
-  "title_simple_admin_dashboard": "لوحة تحكم المدير البسيطة",
-  "title_user_management": "إدارة المستخدمين",
-  "title_roles_permissions": "الأدوار والصلاحيات",
-  "title_kyc_documents": "وثائق التحقق",
-  "title_my_commissions": "عمولاتي",
-  "title_marketing_materials": "المواد التسويقية",
-  "title_my_orders": "طلباتي",
-  "title_all_affiliates": "جميع الشركاء",
-  "title_affiliate_tiers": "مستويات الشركاء",
-  "title_statistics": "الإحصائيات",
-
-  // ===========================================
-  // COMMON ACTIONS & BUTTONS
-  // ===========================================
-  "action_login": "تسجيل الدخول",
-  "action_logout": "تسجيل الخروج",
-  "action_save": "حفظ",
-  "action_cancel": "إلغاء",
-  "action_delete": "حذف",
-  "action_edit": "تعديل",
-  "action_create": "إنشاء",
-  "action_update": "تحديث",
-  "action_view": "عرض",
-  "action_download": "تحميل",
-  "action_upload": "رفع",
-  "action_search": "بحث",
-  "action_filter": "تصفية",
-  "action_clear": "مسح",
-  "action_submit": "إرسال",
-  "action_reset": "إعادة تعيين",
-  "action_add": "إضافة",
-  "action_remove": "إزالة",
-  "action_manage": "إدارة",
-  "action_refresh": "تحديث",
-
-  // ===========================================
-  // QUICK ACTIONS
-  // ===========================================
-  "quick_actions": "الإجراءات السريعة",
-  "create_order": "إنشاء طلب",
-  "order_history": "تاريخ الطلبات",
-  "view_commissions": "العمولات",
-  "view_marketing_materials": "المواد التسويقية",
-  "manage_users": "إدارة المستخدمين",
-  "manage_affiliates": "إدارة الشركاء",
-  "order_management": "إدارة الطلبات",
-  "reports": "التقارير",
-
-  // ===========================================
-  // STATISTICS & METRICS
-  // ===========================================
-  "stats_sales": "المبيعات",
-  "stats_customers": "العملاء",
-  "stats_products": "المنتجات",
-  "stats_revenue": "الإيرادات",
-  "stats_total_affiliates": "إجمالي الشركاء",
-  "stats_total_orders": "إجمالي الطلبات",
-  "stats_pending_orders": "الطلبات المعلقة",
-  "stats_my_orders_count": "طلباتي",
-  "stats_pending_orders_count": "الطلبات المعلقة",
-  "stats_total_earnings": "إجمالي الأرباح",
-  "stats_this_month_earnings": "أرباح هذا الشهر",
-  "stats_earnings": "الأرباح",
-  "stats_profit": "الربح",
-  "stats_expense": "المصروفات",
-  "stats_updated_ago": "تم التحديث منذ {time}",
-
-  // ===========================================
-  // TABLE HEADERS & COLUMNS
-  // ===========================================
-  "table_order_id": "رقم الطلب",
-  "table_product": "المنتج",
-  "table_customer": "العميل",
-  "table_status": "الحالة",
-  "table_commission": "العمولة",
-  "table_name": "الاسم",
-  "table_email": "البريد الإلكتروني",
-  "table_phone": "الهاتف",
-  "table_role": "الدور",
-  "table_kyc_status": "حالة التحقق",
-  "table_created": "تاريخ الإنشاء",
-  "table_actions": "الإجراءات",
-  "table_recent_orders": "الطلبات الأخيرة",
-
-  // ===========================================
-  // STATUS LABELS
-  // ===========================================
-  "status_active": "نشط",
-  "status_inactive": "غير نشط",
-  "status_pending": "معلق",
-  "status_delivered": "تم التسليم",
-  "status_shipped": "تم الشحن",
-  "status_cancelled": "ملغي",
-  "status_blocked": "محظور",
-  "status_current": "حالي",
-  "status_professional": "محترف",
-  "status_rejected": "مرفوض",
-  "status_resigned": "مستقيل",
-  "status_applied": "متقدم",
-  "status_coming_soon": "قريباً",
-
-  // ===========================================
-  // FORM LABELS & PLACEHOLDERS
-  // ===========================================
-  "form_full_name": "الاسم الكامل",
-  "form_email": "البريد الإلكتروني",
-  "form_password": "كلمة المرور",
-  "form_confirm_password": "تأكيد كلمة المرور",
-  "form_phone": "الهاتف",
-  "form_address": "العنوان",
-  "form_role": "الدور",
-  "form_status": "الحالة",
-  "form_kyc_status": "حالة التحقق",
-  "form_document_type": "نوع الوثيقة",
-  "form_file": "الملف",
-  "form_reason": "السبب",
-  "form_search": "بحث",
-  "form_filter_by_role": "تصفية حسب الدور",
-  "form_filter_by_status": "تصفية حسب الحالة",
-  
-  "placeholder_enter_full_name": "أدخل الاسم الكامل",
-  "placeholder_enter_email": "أدخل البريد الإلكتروني",
-  "placeholder_enter_password": "············",
-  "placeholder_enter_phone": "أدخل رقم الهاتف",
-  "placeholder_enter_address": "أدخل العنوان",
-  "placeholder_search_users": "البحث عن المستخدمين...",
-  "placeholder_select_role": "اختر الدور",
-  "placeholder_select_status": "اختر الحالة",
-  "placeholder_email_or_username": "البريد الإلكتروني أو اسم المستخدم",
-
-  // ===========================================
-  // AUTHENTICATION & LOGIN
-  // ===========================================
-  "login_title": "مرحباً بك في {title}! 👋🏻",
-  "login_subtitle": "يرجى تسجيل الدخول إلى حسابك وبدء المغامرة",
-  "demo_credentials": "بيانات اعتماد تجريبية:",
-  "admin_credentials": "المدير: admin / password",
-  "affiliate_credentials": "الشريك: affiliate / password",
-  "remember_me": "تذكرني",
-  "forgot_password": "نسيت كلمة المرور؟",
-  "login_failed": "فشل تسجيل الدخول",
-  "new_on_platform": "جديد على منصتنا؟",
-  "create_account": "إنشاء حساب",
-  "or": "أو",
-
-  // ===========================================
-  // WELCOME & GREETING MESSAGES
-  // ===========================================
-  "welcome_message": "مرحباً",
-  "welcome_admin": "مرحباً، {name}! 👋",
-  "welcome_affiliate": "مرحباً، {name}! 🚀",
-  "welcome_simple": "مرحباً، {name}!",
-  "dashboard_subtitle_admin": "إدارة منصة الشراكة بكفاءة",
-  "dashboard_subtitle_affiliate": "تتبع طلباتك وعمولاتك",
-  "dashboard_subtitle_simple": "هذه لوحة تحكم بسيطة لاختبار الأخطاء.",
-
-  // ===========================================
-  // USER PROFILE & SETTINGS
-  // ===========================================
-  "profile": "الملف الشخصي",
-  "settings": "الإعدادات",
-  "pricing": "التسعير",
-  "faq": "الأسئلة الشائعة",
-  "account_settings": "إعدادات الحساب",
-  "user_profile": "ملف المستخدم",
-  "user_info": "معلومات المستخدم",
-  "user_name": "الاسم",
-  "user_email": "البريد الإلكتروني",
-  "user_role": "الدور",
-  "user_status": "الحالة",
-  "user_kyc_status": "حالة التحقق",
-  "user_created_at": "عضو منذ",
-  "user_permissions": "الصلاحيات",
-
-  // ===========================================
-  // LANGUAGE & LOCALIZATION
-  // ===========================================
-  "language": "اللغة",
-  "english": "الإنجليزية",
-  "french": "الفرنسية",
-  "arabic": "العربية",
-
-  // ===========================================
-  // ERROR MESSAGES
-  // ===========================================
-  "error_generic": "حدث خطأ",
-  "error_validation_failed": "فشل التحقق",
-  "error_conflict": "حدث تضارب",
-  "error_authentication_required": "المصادقة مطلوبة",
-  "error_access_forbidden": "الوصول محظور",
-  "error_resource_not_found": "المورد غير موجود",
-  "error_server_error": "خطأ في الخادم ({status})",
-  "error_network": "خطأ في الشبكة",
-  "error_login_failed": "فشل تسجيل الدخول",
-  "error_invalid_credentials": "بيانات الاعتماد المقدمة غير صحيحة",
-
-  // ===========================================
-  // SUCCESS MESSAGES
-  // ===========================================
-  "success_login": "تم تسجيل الدخول بنجاح",
-  "success_logout": "تم تسجيل الخروج بنجاح",
-  "success_registration": "تم التسجيل بنجاح",
-  "success_user_created": "تم إنشاء المستخدم بنجاح",
-  "success_user_updated": "تم تحديث المستخدم بنجاح",
-  "success_user_deleted": "تم حذف المستخدم بنجاح",
-  "success_role_created": "تم إنشاء الدور بنجاح",
-  "success_role_updated": "تم تحديث الدور بنجاح",
-  "success_role_deleted": "تم حذف الدور بنجاح",
-  "success_permission_created": "تم إنشاء الصلاحية بنجاح",
-  "success_permission_deleted": "تم حذف الصلاحية بنجاح",
-  "success_document_uploaded": "تم رفع الوثيقة بنجاح",
-  "success_document_updated": "تم تحديث الوثيقة بنجاح",
-  "success_document_deleted": "تم حذف الوثيقة بنجاح",
-
-  // ===========================================
-  // CONFIRMATION MESSAGES
-  // ===========================================
-  "confirm_delete": "تأكيد الحذف",
-  "confirm_delete_user": "هل أنت متأكد من حذف {name}؟",
-  "confirm_delete_role": "هل أنت متأكد من حذف الدور '{name}'؟",
-  "confirm_delete_permission": "هل أنت متأكد من حذف الصلاحية '{name}'؟",
-  "confirm_delete_document": "هل أنت متأكد من حذف هذه الوثيقة؟",
-  "confirm_delete_document_desc": "هل أنت متأكد من حذف وثيقة {type} للمستخدم {user}؟ لا يمكن التراجع عن هذا الإجراء.",
-
-  // ===========================================
-  // VALIDATION MESSAGES
-  // ===========================================
-  "validation_required": "هذا الحقل مطلوب",
-  "validation_email": "يرجى إدخال عنوان بريد إلكتروني صحيح",
-  "validation_min_length": "يجب أن يحتوي على {min} أحرف على الأقل",
-  "validation_max_length": "يجب ألا يتجاوز {max} حرف",
-  "validation_password_mismatch": "كلمات المرور غير متطابقة",
-  "validation_unique": "هذه القيمة مستخدمة بالفعل",
-
-  // ===========================================
-  // EMPTY STATES & PLACEHOLDERS
-  // ===========================================
-  "empty_no_data": "لا توجد بيانات متاحة",
-  "empty_no_users": "لم يتم العثور على مستخدمين",
-  "empty_no_roles": "لم يتم العثور على أدوار",
-  "empty_no_permissions": "لم يتم العثور على صلاحيات",
-  "empty_no_documents": "لم يتم العثور على وثائق",
-  "empty_no_orders": "لم يتم العثور على طلبات",
-  "loading": "جاري التحميل...",
-  "no_role": "لا يوجد دور",
-
-  // ===========================================
-  // PAGINATION & FILTERS
-  // ===========================================
-  "pagination_showing": "عرض {from} إلى {to} من {total} إدخال",
-  "pagination_previous": "السابق",
-  "pagination_next": "التالي",
-  "filter_all": "الكل",
-  "filter_clear": "مسح المرشحات",
-
-  // ===========================================
-  // DOCUMENT TYPES & KYC
-  // ===========================================
-  "doc_type_cni": "بطاقة الهوية الوطنية",
-  "doc_type_passport": "جواز السفر",
-  "doc_type_rib": "كشف حساب بنكي",
-  "doc_type_contrat": "عقد",
-  "kyc_status_non_requis": "غير مطلوب",
-  "kyc_status_en_attente": "في الانتظار",
-  "kyc_status_valide": "صالح",
-  "kyc_status_refuse": "مرفوض",
-
-  // ===========================================
-  // BACKEND API MESSAGES
-  // ===========================================
-  "api_access_denied_admin": "تم رفض الوصول. دور المدير مطلوب.",
-  "api_access_denied_affiliate": "تم رفض الوصول. دور الشريك مطلوب.",
-  "api_access_denied_permission": "تم رفض الوصول. صلاحية \"{permission}\" مطلوبة.",
-  "api_welcome_admin": "مرحباً بك في لوحة تحكم المدير",
-  "api_welcome_affiliate": "مرحباً بك في لوحة تحكم الشريك",
-  "api_user_management_panel": "لوحة إدارة المستخدمين",
-  "api_order_creation_form": "نموذج إنشاء الطلب",
-  "api_access_denied_no_role": "تم رفض الوصول. لم يتم تعيين دور صالح.",
-
-  // ===========================================
-  // AFFILIATE DASHBOARD SPECIFIC
-  // ===========================================
-  "affiliate_dashboard_title": "لوحة تحكم الشريك",
-  "welcome_message": "مرحباً",
-  "my_orders_count": "طلباتي",
-  "pending_orders_count": "الطلبات المعلقة",
-  "total_earnings": "إجمالي الأرباح",
-  "this_month_earnings": "أرباح هذا الشهر",
-  "quick_actions": "الإجراءات السريعة",
-  "create_order": "إنشاء طلب",
-  "order_history": "تاريخ الطلبات",
-  "view_commissions": "العمولات",
-  "view_marketing_materials": "المواد التسويقية",
-  "user_info": "معلومات المستخدم",
-  "user_name": "الاسم",
-  "user_email": "البريد الإلكتروني",
-  "user_role": "الدور",
-  "user_status": "الحالة",
-  "user_kyc_status": "حالة التحقق",
-  "user_created_at": "عضو منذ",
-
-  // ===========================================
-  // LEGACY TEMPLATE COMPONENTS (Keep for compatibility)
-  // ===========================================
-  "UI Elements": "عناصر واجهة المستخدم",
-  "Forms & Tables": "النماذج والجداول",
-  "Pages": "الصفحات",
-  "Charts & Maps": "الرسوم البيانية والخرائط",
-  "Others": "أخرى",
-  "Typography": "الطباعة",
-  "Cards": "البطاقات",
-  "Basic": "أساسي",
-  "Advance": "متقدم",
-  "Widgets": "الأدوات",
-  "Components": "المكونات",
-  "Alert": "تنبيه",
-  "Close Alert": "إغلاق التنبيه",
-  "Avatar": "الصورة الرمزية",
-  "Badge": "الشارة",
-  "Button": "زر",
-  "Calendar": "التقويم",
-  "Kanban": "كانبان",
-  "Image": "صورة",
-  "Pagination": "ترقيم الصفحات",
-  "Progress Circular": "التقدم الدائري",
-  "Progress Linear": "التقدم الخطي",
-  "Autocomplete": "الإكمال التلقائي",
-  "Tooltip": "تلميح الأداة",
-  "Slider": "شريط التمرير",
-
-  // ===========================================
-  // VALIDATION MESSAGES
-  // ===========================================
-  "validation_required": "هذا الحقل مطلوب",
-  "validation_email": "يرجى إدخال عنوان بريد إلكتروني صحيح",
-  "validation_min_length": "يجب أن يحتوي على {min} أحرف على الأقل",
-  "validation_max_length": "يجب ألا يتجاوز {max} حرف",
-  "validation_password_mismatch": "كلمات المرور غير متطابقة",
-  "validation_unique": "هذه القيمة مستخدمة بالفعل",
-  "validation_between": "أدخل رقماً بين {min} و {max}",
-  "validation_integer": "يجب أن يكون هذا الحقل رقماً صحيحاً",
-  "validation_format_invalid": "التنسيق غير صحيح",
-  "validation_alpha_only": "يجب أن يحتوي هذا الحقل على أحرف أبجدية فقط",
-  "validation_url_invalid": "الرابط غير صحيح",
-  "validation_exact_length": "يجب أن يحتوي على {length} أحرف بالضبط",
-  "validation_alpha_dash_only": "يجب أن يحتوي هذا الحقل على أحرف وأرقام وشرطات وشرطات سفلية فقط",
-
-  // ===========================================
-  // PROFILE PAGE
-  // ===========================================
-  "profile": "الملف الشخصي",
-  "teams": "الفرق",
-  "projects": "المشاريع",
-  "connections": "الاتصالات",
-  "about": "حول",
-  "contacts": "جهات الاتصال",
-  "overview": "نظرة عامة",
-  "profile_information": "معلومات الملف الشخصي",
-  "profile_image": "صورة الملف الشخصي",
-  "profile_image_url": "رابط صورة الملف الشخصي",
-  "enter_profile_image_url": "أدخل رابط صورة الملف الشخصي",
-  "upload_image": "رفع صورة",
-  "change_image": "تغيير الصورة",
-  "upload_image_hint": "مسموح JPG، GIF أو PNG. حجم أقصى 5MB",
-  "remove": "إزالة",
-
-  "admin_boutiques_title": "المتاجر",
-  "admin_boutiques_description": "إدارة المتاجر وتفاصيلها",
-  "admin_boutiques_list": "قائمة المتاجر",
-  "admin_boutiques_create": "إنشاء متجر جديد",
-  "admin_boutiques_edit": "تحرير المتجر",
-  "admin_boutiques_show": "تفاصيل المتجر",
-  "admin_boutiques_delete": "حذف المتجر",
-  "admin_boutiques_delete_confirm": "هل أنت متأكد من أنك تريد حذف هذا المتجر؟",
-  "admin_boutiques_name": "اسم المتجر",
-  "admin_boutiques_description_field": "الوصف",
-  "admin_boutiques_url": "رابط المتجر",
-  "admin_boutiques_logo": "شعار المتجر",
-  "admin_boutiques_status": "الحالة",
-  "admin_boutiques_category": "الفئة",
-  "admin_boutiques_commission_rate": "معدل العمولة (%)",
-  "admin_boutiques_contact_email": "البريد الإلكتروني للتواصل",
-  "admin_boutiques_phone": "رقم الهاتف",
-  "admin_boutiques_address": "العنوان",
-  "admin_boutiques_country": "البلد",
-  "admin_boutiques_city": "المدينة",
-  "admin_boutiques_postal_code": "الرمز البريدي",
-  "admin_boutiques_search_placeholder": "البحث في المتاجر...",
-  "admin_boutiques_no_results": "لم يتم العثور على متاجر",
-  "admin_boutiques_created_successfully": "تم إنشاء المتجر بنجاح",
-  "admin_boutiques_updated_successfully": "تم تحديث المتجر بنجاح",
-  "admin_boutiques_deleted_successfully": "تم حذف المتجر بنجاح",
-  "admin_boutiques_error_loading": "خطأ في تحميل المتاجر",
-  "admin_boutiques_error_creating": "خطأ في إنشاء المتجر",
-  "admin_boutiques_error_updating": "خطأ في تحديث المتجر",
-  "admin_boutiques_error_deleting": "خطأ في حذف المتجر",
-  "admin_boutiques_bulk_actions": "الإجراءات المجمعة",
-  "admin_boutiques_bulk_delete": "حذف المحدد",
-  "admin_boutiques_bulk_export": "تصدير المحدد",
-  "admin_boutiques_export_all": "تصدير الكل",
-  "admin_boutiques_import": "استيراد",
-  "admin_boutiques_filters": "المرشحات",
-  "admin_boutiques_sort_by": "ترتيب حسب",
-  "admin_boutiques_sort_name_asc": "الاسم (أ-ي)",
-  "admin_boutiques_sort_name_desc": "الاسم (ي-أ)",
-  "admin_boutiques_sort_created_asc": "الأقدم أولاً",
-  "admin_boutiques_sort_created_desc": "الأحدث أولاً",
-  "admin_boutiques_filter_status_all": "كل الحالات",
-  "admin_boutiques_filter_status_active": "نشط",
-  "admin_boutiques_filter_status_inactive": "غير نشط",
-  "admin_boutiques_filter_status_pending": "في الانتظار",
-  "admin_boutiques_filter_category_all": "كل الفئات",
-  "admin_boutiques_pagination_info": "عرض {from} إلى {to} من {total} متجر",
-  "admin_boutiques_items_per_page": "العناصر في كل صفحة"
-}
