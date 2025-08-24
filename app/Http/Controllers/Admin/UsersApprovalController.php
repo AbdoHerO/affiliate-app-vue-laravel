@@ -127,6 +127,22 @@ class UsersApprovalController extends Controller
                         : 'Approuvé le ' . now()->format('Y-m-d H:i'),
                 ]);
             }
+
+            // Update referral attribution to verified if exists and award verification points
+            $attributions = \App\Models\ReferralAttribution::where('new_user_id', $user->id)
+                ->where('verified', false)
+                ->get();
+
+            foreach ($attributions as $attribution) {
+                $attribution->update([
+                    'verified' => true,
+                    'verified_at' => now(),
+                ]);
+
+                // Award verification points
+                $autoPointsService = new \App\Services\AutoPointsDispensationService();
+                $autoPointsService->awardVerificationPoints($attribution);
+            }
         });
 
         // Send approval notification

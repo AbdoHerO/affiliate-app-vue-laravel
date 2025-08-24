@@ -56,6 +56,10 @@ class ReferralTrackingController extends Controller
         $tracked = $this->referralService->trackClick($referralCode, $request);
 
         if ($tracked) {
+            // Award points for click
+            $autoPointsService = new \App\Services\AutoPointsDispensationService();
+            $autoPointsService->awardClickPoints($referralCode);
+
             return response()->json([
                 'success' => true,
                 'message' => 'Click tracked successfully.',

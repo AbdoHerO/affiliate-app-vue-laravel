@@ -54,7 +54,7 @@ const showSuccessScreen = ref(false)
 
 // Referral tracking
 const referralCode = ref('')
-const referralInfo = ref(null)
+const referralInfo = ref<any>(null)
 
 const countries = [
   'Maroc',
@@ -125,7 +125,7 @@ const handleResendVerification = async () => {
 // Referral tracking methods
 const fetchReferralInfo = async (code: string) => {
   try {
-    const response = await axios.get(`/public/referral-info/${code}`)
+    const response = await axios.get(`/api/public/referrals/info?ref=${code}`)
     if (response.data.success) {
       referralInfo.value = response.data.data
     }
@@ -136,8 +136,8 @@ const fetchReferralInfo = async (code: string) => {
 
 const trackReferralClick = async (code: string) => {
   try {
-    await axios.post('/public/referrals/track-click', {
-      referral_code: code,
+    await axios.post('/api/public/referrals/track-click', {
+      ref: code,
       source: 'web',
     })
   } catch (error) {
@@ -300,7 +300,7 @@ onMounted(() => {
                 <VIcon icon="tabler-user-plus" />
               </template>
               <div>
-                <p class="mb-1">{{ t('referred_by') }}: <strong>{{ referralInfo.affiliate_name }}</strong></p>
+                <p class="mb-1">{{ t('referred_by') }}: <strong>{{ referralInfo.referrer_name }}</strong></p>
                 <p class="mb-0 text-sm">{{ t('referral_bonus_info') }}</p>
               </div>
             </VAlert>

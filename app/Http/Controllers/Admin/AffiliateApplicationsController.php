@@ -137,6 +137,7 @@ class AffiliateApplicationsController extends Controller
                     'kyc_statut' => 'non_requis',
                     'rib' => $affilie->rib,
                     'bank_type' => $affilie->bank_type,
+                    'approval_status' => 'approved',
                 ]);
 
                 // Assign affiliate role
@@ -149,6 +150,22 @@ class AffiliateApplicationsController extends Controller
                 $affilie->update([
                     'approval_status' => 'approved'
                 ]);
+
+                // Update referral attribution to verified if exists and award verification points
+                $attributions = \App\Models\ReferralAttribution::where('new_user_id', $user->id)
+                    ->where('verified', false)
+                    ->get();
+
+                foreach ($attributions as $attribution) {
+                    $attribution->update([
+                        'verified' => true,
+                        'verified_at' => now(),
+                    ]);
+
+                    // Award verification points
+                    $autoPointsService = new \App\Services\AutoPointsDispensationService();
+                    $autoPointsService->awardVerificationPoints($attribution);
+                }
             });
 
             return response()->json([

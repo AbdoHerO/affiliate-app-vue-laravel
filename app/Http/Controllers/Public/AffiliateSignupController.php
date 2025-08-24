@@ -100,7 +100,13 @@ class AffiliateSignupController extends Controller
 
             // Handle referral attribution if referral code provided
             if ($request->referral_code) {
-                $this->createReferralAttribution($request->referral_code, $affilie, $request);
+                $attribution = $this->createReferralAttribution($request->referral_code, $affilie, $request);
+
+                // Award signup points if attribution was created
+                if ($attribution) {
+                    $autoPointsService = new \App\Services\AutoPointsDispensationService();
+                    $autoPointsService->awardSignupPoints($attribution);
+                }
             }
 
             return response()->json([
@@ -244,7 +250,7 @@ class AffiliateSignupController extends Controller
     /**
      * Create referral attribution for affiliate signup
      */
-    private function createReferralAttribution(string $referralCode, Affilie $newAffiliate, Request $request): void
+    private function createReferralAttribution(string $referralCode, Affilie $newAffiliate, Request $request): ?ReferralAttribution
     {
         try {
             $referralCodeRecord = ReferralCode::where('code', $referralCode)
@@ -252,7 +258,7 @@ class AffiliateSignupController extends Controller
                 ->first();
 
             if (!$referralCodeRecord) {
-                return; // Silently fail if referral code is invalid
+                return null; // Silently fail if referral code is invalid
             }
 
             // Create a dummy user record for affiliate signup tracking
@@ -270,7 +276,7 @@ class AffiliateSignupController extends Controller
             ]);
 
             // Create attribution record for affiliate signup
-            ReferralAttribution::create([
+            $attribution = ReferralAttribution::create([
                 'referral_code' => $referralCode,
                 'referrer_affiliate_id' => $referralCodeRecord->affiliate_id,
                 'new_user_id' => $dummyUser->id, // Use dummy user ID
@@ -280,6 +286,8 @@ class AffiliateSignupController extends Controller
                 'verified' => false, // Will be verified when email is verified
                 'attributed_at' => now(),
             ]);
+
+            return $attribution;
         } catch (\Exception $e) {
             // Log error but don't fail the signup process
             Log::error('Failed to create referral attribution: ' . $e->getMessage(), [
@@ -287,6 +295,7 @@ class AffiliateSignupController extends Controller
                 'affiliate_id' => $newAffiliate->id,
                 'trace' => $e->getTraceAsString()
             ]);
+            return null;
         }
     }
 }
