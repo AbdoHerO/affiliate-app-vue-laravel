@@ -158,7 +158,7 @@ class AdminDashboardController extends Controller
 
         // Verified signups
         $verifiedSignups = User::role('affiliate')
-            ->whereNotNull('email_verified_at')
+            ->where('email_verifie', true)
             ->count();
         $verificationRate = $totalSignups > 0 ? ($verifiedSignups / $totalSignups) * 100 : 0;
 
@@ -494,7 +494,7 @@ class AdminDashboardController extends Controller
             ->toArray();
 
         $verifiedSignupsData = User::role('affiliate')
-            ->whereNotNull('email_verified_at')
+            ->where('email_verifie', true)
             ->whereBetween('created_at', $dateRange)
             ->selectRaw("DATE_FORMAT(created_at, '{$dateFormat}') as date, COUNT(*) as count")
             ->groupBy('date')
@@ -698,7 +698,7 @@ class AdminDashboardController extends Controller
     {
         $clicks = ReferralClick::count();
         $signups = User::role('affiliate')->count();
-        $verified = User::role('affiliate')->whereNotNull('email_verified_at')->count();
+        $verified = User::role('affiliate')->where('email_verifie', true)->count();
         $orders = Commande::count();
 
         $clickToSignup = $clicks > 0 ? ($signups / $clicks) * 100 : 0;

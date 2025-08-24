@@ -131,6 +131,14 @@ class Commande extends Model
     }
 
     /**
+     * Alias for articles relationship (for dashboard compatibility)
+     */
+    public function commandeArticles(): HasMany
+    {
+        return $this->articles();
+    }
+
+    /**
      * Get the shipments for this order.
      */
     public function expeditions(): HasMany
