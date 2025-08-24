@@ -29,6 +29,8 @@ class AdminDashboardController extends Controller
             return response()->json(['message' => 'Access denied'], Response::HTTP_FORBIDDEN);
         }
 
+
+
         $filters = $this->parseFilters($request);
         $cacheKey = 'admin_dashboard_stats_' . md5(serialize($filters));
 
@@ -44,6 +46,8 @@ class AdminDashboardController extends Controller
                 'tickets' => $this->getTicketStats($filters),
             ];
         });
+
+
 
         return response()->json([
             'success' => true,
@@ -230,12 +234,13 @@ class AdminDashboardController extends Controller
                     'totalCommissions' => (float) $affiliate->totalCommissions,
                     'ordersCount' => (int) $affiliate->ordersCount,
                     'verifiedSignups' => (int) $affiliate->verifiedSignups,
-                    'conversionRate' => $affiliate->verifiedSignups > 0 && $affiliate->ordersCount > 0 
-                        ? round(($affiliate->ordersCount / $affiliate->verifiedSignups) * 100, 2) 
+                    'conversionRate' => $affiliate->verifiedSignups > 0 && $affiliate->ordersCount > 0
+                        ? round(($affiliate->ordersCount / $affiliate->verifiedSignups) * 100, 2)
                         : 0,
                     'joinedAt' => $affiliate->joinedAt,
                 ];
-            });
+            })
+            ->toArray();
 
         // Status distribution
         $statusDistribution = User::role('affiliate')
@@ -428,7 +433,8 @@ class AdminDashboardController extends Controller
                     'pointsDispensed' => 0, // Would come from transactions
                     'balance' => $profile->points,
                 ];
-            });
+            })
+            ->toArray();
 
         return [
             'totalEarned' => $totalEarned,
@@ -758,9 +764,10 @@ class AdminDashboardController extends Controller
                     'verifiedSignups' => (int) $affiliate->verifiedSignups,
                     'lastActivity' => $affiliate->lastActivity,
                 ];
-            });
+            })
+            ->toArray();
 
-        return $affiliates->toArray();
+        return $affiliates;
     }
 
     /**
@@ -794,9 +801,10 @@ class AdminDashboardController extends Controller
                     'processedAt' => $payout->processedAt,
                     'notes' => $payout->notes,
                 ];
-            });
+            })
+            ->toArray();
 
-        return $payouts->toArray();
+        return $payouts; // now an array
     }
 
     /**
@@ -829,9 +837,10 @@ class AdminDashboardController extends Controller
                     'createdAt' => $ticket->created_at,
                     'lastActivity' => $ticket->last_activity_at,
                 ];
-            });
+            })
+            ->toArray();
 
-        return $tickets->toArray();
+        return $tickets; // now an array
     }
 
     /**
@@ -856,7 +865,8 @@ class AdminDashboardController extends Controller
                     'timestamp' => $user->created_at,
                     'metadata' => ['user_id' => $user->id],
                 ];
-            });
+            })
+            ->toArray();
 
         // Recent orders
         $recentOrders = Commande::with('affiliate:id,nom_complet')
@@ -873,9 +883,10 @@ class AdminDashboardController extends Controller
                     'timestamp' => $order->created_at,
                     'metadata' => ['order_id' => $order->id],
                 ];
-            });
+            })
+            ->toArray();
 
-        $activities = $activities->merge($recentSignups)->merge($recentOrders);
+        $activities = collect(array_merge($recentSignups, $recentOrders));
 
         return $activities->sortByDesc('timestamp')->take($filters['per_page'])->values()->toArray();
     }

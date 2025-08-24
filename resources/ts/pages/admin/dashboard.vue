@@ -40,7 +40,6 @@ const breadcrumbs = computed(() => [
 // Computed properties
 const kpiCards = computed(() => {
   if (!dashboardStore.stats) return []
-
   const { overview, revenue, commissions, payouts } = dashboardStore.stats
 
   return [

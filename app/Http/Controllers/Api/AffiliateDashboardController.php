@@ -340,7 +340,8 @@ class AffiliateDashboardController extends Controller
                     'conversionRate' => (float) $product->conversion_rate,
                     'commissions' => (float) ($product->commissions ?? 0),
                 ];
-            });
+            })
+            ->toArray();
 
         // Recent clicks
         $recentClicks = $referralCode ?
@@ -357,7 +358,8 @@ class AffiliateDashboardController extends Controller
                         'orderId' => null,
                         'commission' => null,
                     ];
-                }) : collect();
+                })
+                ->toArray() : [];
 
         return [
             'totalReferrals' => $totalReferrals,
@@ -366,8 +368,8 @@ class AffiliateDashboardController extends Controller
             'referralLink' => $referralCode ? config('app.url') . '/ref/' . $referralCode->code : '',
             'clicksTotal' => $clicksTotal,
             'clicksThisMonth' => $clicksThisMonth,
-            'topPerformingProducts' => $topProducts->toArray(),
-            'recentClicks' => $recentClicks->toArray(),
+            'topPerformingProducts' => $topProducts,
+            'recentClicks' => $recentClicks,
         ];
     }
 
@@ -479,7 +481,8 @@ class AffiliateDashboardController extends Controller
                     'revenue' => (float) ($product->revenue ?? 0),
                     'commission' => (float) ($product->commission ?? 0),
                 ];
-            });
+            })
+            ->toArray();
 
         return [
             'total' => $total,
@@ -488,7 +491,7 @@ class AffiliateDashboardController extends Controller
             'growth' => round($growth, 2),
             'averageValue' => round($averageValue, 2),
             'statusDistribution' => $statusDistribution,
-            'topProducts' => $topProducts->toArray(),
+            'topProducts' => $topProducts,
         ];
     }
 
@@ -710,9 +713,10 @@ class AffiliateDashboardController extends Controller
                     'totalSpent' => 0, // Would need to sum order totals
                     'commissionEarned' => 0, // Would need to sum commissions from this referral
                 ];
-            });
+            })
+            ->toArray();
 
-        return $leads->toArray();
+        return $leads; // now an array
     }
 
     private function getMyOrders(User $user, array $filters): array
@@ -736,9 +740,10 @@ class AffiliateDashboardController extends Controller
                     'commission' => (float) ($commission?->amount ?? 0),
                     'commissionStatus' => $commission?->status ?? 'pending',
                 ];
-            });
+            })
+            ->toArray();
 
-        return $orders->toArray();
+        return $orders; // now an array
     }
 
     private function getMyCommissions(User $user, array $filters): array
@@ -760,9 +765,10 @@ class AffiliateDashboardController extends Controller
                     'paidDate' => $commission->paid_at,
                     'withdrawalId' => $commission->paid_withdrawal_id,
                 ];
-            });
+            })
+            ->toArray();
 
-        return $commissions->toArray();
+        return $commissions; // now an array
     }
 
     private function getReferralClicks(User $user, array $filters): array
@@ -787,9 +793,10 @@ class AffiliateDashboardController extends Controller
                     'orderId' => null,
                     'commission' => null,
                 ];
-            });
+            })
+            ->toArray();
 
-        return $clicks->toArray();
+        return $clicks;
     }
 
     /**

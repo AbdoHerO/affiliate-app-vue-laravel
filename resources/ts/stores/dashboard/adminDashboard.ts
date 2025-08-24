@@ -72,6 +72,7 @@ export const useAdminDashboardStore = defineStore('adminDashboard', () => {
       if (response.success) {
         stats.value = response.data
         lastUpdated.value = new Date()
+
       } else {
         throw new Error(response.message || 'Failed to fetch dashboard stats')
       }
@@ -96,6 +97,7 @@ export const useAdminDashboardStore = defineStore('adminDashboard', () => {
 
       if (response.success) {
         chartData.value = response.data
+
       } else {
         throw new Error(response.message || 'Failed to fetch chart data')
       }

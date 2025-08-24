@@ -56,6 +56,8 @@ Route::get('/test', function () {
     return response()->json(['message' => 'API working', 'timestamp' => now()]);
 });
 
+
+
 // Public routes (no authentication required)
 Route::prefix('public')->group(function () {
     Route::get('produits/{slugOrId}', [PublicProduitController::class, 'show']);
