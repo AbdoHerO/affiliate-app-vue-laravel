@@ -121,7 +121,7 @@ export const useShippingStore = defineStore('shipping', () => {
         Object.assign(filters.value, newFilters)
       }
 
-      const response = await axios.get('/api/admin/shipping/orders', {
+      const response = await axios.get('/admin/shipping/orders', {
         params: filters.value,
       })
 
@@ -283,7 +283,7 @@ export const useShippingStore = defineStore('shipping', () => {
     error.value = null
 
     try {
-      const response = await axios.post('/api/admin/shipping/ozon/parcel-info', {
+      const response = await axios.post('/admin/shipping/ozon/parcel-info', {
         tracking_number: trackingNumber,
       })
 

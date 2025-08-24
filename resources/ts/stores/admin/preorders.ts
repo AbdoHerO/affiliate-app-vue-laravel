@@ -115,7 +115,7 @@ export const usePreordersStore = defineStore('preorders', () => {
         Object.assign(filters.value, newFilters)
       }
 
-      const response = await axios.get('/api/admin/preorders', {
+      const response = await axios.get('/admin/preorders', {
         params: filters.value,
       })
 

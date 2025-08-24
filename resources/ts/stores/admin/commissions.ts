@@ -128,7 +128,7 @@ export const useCommissionsStore = defineStore('commissions', () => {
         Object.assign(filters.value, newFilters)
       }
 
-      const response = await axios.get('/api/admin/commissions', {
+      const response = await axios.get('/admin/commissions', {
         params: filters.value,
       })
 
@@ -161,7 +161,7 @@ export const useCommissionsStore = defineStore('commissions', () => {
 
     try {
       console.log('🌐 Making API call to:', `/api/admin/commissions/${id}`)
-      const response = await axios.get(`/api/admin/commissions/${id}`)
+      const response = await axios.get(`/admin/commissions/${id}`)
       console.log('📡 Raw API response:', response)
 
       if (response.data.success) {

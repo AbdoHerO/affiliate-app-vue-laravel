@@ -50,7 +50,7 @@ export const useAffiliateSignupStore = defineStore('affiliateSignup', () => {
     isLoading.value = true
     
     try {
-      const response = await axios.post('/api/public/affiliates/signup', data)
+      const response = await axios.post('/public/affiliates/signup', data)
       
       if (response.data.success) {
         lastSignupEmail.value = response.data.data?.email || null
@@ -79,7 +79,7 @@ export const useAffiliateSignupStore = defineStore('affiliateSignup', () => {
     isResending.value = true
     
     try {
-      const response = await axios.post('/api/public/affiliates/resend-verification', { email })
+      const response = await axios.post('/public/affiliates/resend-verification', { email })
       
       if (response.data.success) {
         lastSignupEmail.value = response.data.data?.email || null

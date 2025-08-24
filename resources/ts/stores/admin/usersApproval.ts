@@ -88,7 +88,7 @@ export const useUsersApprovalStore = defineStore('usersApproval', () => {
         Object.assign(filters.value, newFilters)
       }
 
-      const response = await axios.get('/api/admin/users/approval-queue', {
+      const response = await axios.get('/admin/users/approval-queue', {
         params: filters.value,
       })
 

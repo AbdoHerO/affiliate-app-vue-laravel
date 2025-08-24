@@ -118,7 +118,7 @@ export const useAffiliatesStore = defineStore('affiliates', () => {
         Object.assign(filters.value, newFilters)
       }
 
-      const response = await axios.get('/api/admin/affiliates', {
+      const response = await axios.get('/admin/affiliates', {
         params: filters.value,
       })
 

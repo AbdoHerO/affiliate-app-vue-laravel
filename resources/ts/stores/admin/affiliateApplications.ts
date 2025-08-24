@@ -89,7 +89,7 @@ export const useAffiliateApplicationsStore = defineStore('affiliateApplications'
         Object.assign(filters.value, newFilters)
       }
 
-      const response = await axios.get('/api/admin/affiliate-applications', {
+      const response = await axios.get('/admin/affiliate-applications', {
         params: filters.value,
       })
 
@@ -109,7 +109,7 @@ export const useAffiliateApplicationsStore = defineStore('affiliateApplications'
 
   const fetchStats = async () => {
     try {
-      const response = await axios.get('/api/admin/affiliate-applications/stats')
+      const response = await axios.get('/admin/affiliate-applications/stats')
       
       if (response.data.success) {
         stats.value = response.data.data
@@ -121,7 +121,7 @@ export const useAffiliateApplicationsStore = defineStore('affiliateApplications'
 
   const approveApplication = async (applicationId: string, reason?: string) => {
     try {
-      const response = await axios.post(`/api/admin/affiliate-applications/${applicationId}/approve`, {
+      const response = await axios.post(`/admin/affiliate-applications/${applicationId}/approve`, {
         reason,
       })
 
@@ -146,7 +146,7 @@ export const useAffiliateApplicationsStore = defineStore('affiliateApplications'
 
   const refuseApplication = async (applicationId: string, reason: string) => {
     try {
-      const response = await axios.post(`/api/admin/affiliate-applications/${applicationId}/refuse`, {
+      const response = await axios.post(`/admin/affiliate-applications/${applicationId}/refuse`, {
         reason,
       })
 
@@ -174,7 +174,7 @@ export const useAffiliateApplicationsStore = defineStore('affiliateApplications'
     resendingIds.value.add(applicationId)
 
     try {
-      const response = await axios.post(`/api/admin/affiliate-applications/${applicationId}/resend-verification`)
+      const response = await axios.post(`/admin/affiliate-applications/${applicationId}/resend-verification`)
 
       if (response.data.success) {
         return response.data
