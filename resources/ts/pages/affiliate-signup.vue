@@ -1,6 +1,9 @@
 <script setup lang="ts">
+import { ref, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import { useGenerateImageVariant } from '@core/composable/useGenerateImageVariant'
 import { useI18n } from 'vue-i18n'
+import axios from '@/plugins/axios'
 import authV2LoginIllustrationBorderedDark from '@images/pages/auth-v2-login-illustration-bordered-dark.png'
 import authV2LoginIllustrationBorderedLight from '@images/pages/auth-v2-login-illustration-bordered-light.png'
 import authV2LoginIllustrationDark from '@images/pages/auth-v2-login-illustration-dark.png'
@@ -21,6 +24,7 @@ definePage({
 })
 
 const { t } = useI18n()
+const route = useRoute()
 const affiliateStore = useAffiliateSignupStore()
 const { showSuccess, showError } = useNotifications()
 const { errors, set: setErrors, clear: clearErrors } = useFormErrors()
@@ -48,6 +52,10 @@ const isPasswordVisible = ref(false)
 const isPasswordConfirmationVisible = ref(false)
 const showSuccessScreen = ref(false)
 
+// Referral tracking
+const referralCode = ref('')
+const referralInfo = ref(null)
+
 const countries = [
   'Maroc',
   'France',
@@ -74,9 +82,14 @@ const bankTypes = [
 
 const handleSubmit = async () => {
   clearErrors()
-  
+
   try {
-    const result = await affiliateStore.signup(form.value)
+    // Include referral code in form data
+    const formData = {
+      ...form.value,
+      referral_code: referralCode.value
+    }
+    const result = await affiliateStore.signup(formData)
     
     if (result.success) {
       showSuccess(result.message)
@@ -109,6 +122,29 @@ const handleResendVerification = async () => {
   }
 }
 
+// Referral tracking methods
+const fetchReferralInfo = async (code: string) => {
+  try {
+    const response = await axios.get(`/public/referral-info/${code}`)
+    if (response.data.success) {
+      referralInfo.value = response.data.data
+    }
+  } catch (error) {
+    console.error('Failed to fetch referral info:', error)
+  }
+}
+
+const trackReferralClick = async (code: string) => {
+  try {
+    await axios.post('/public/referral-click', {
+      referral_code: code,
+      source: 'web',
+    })
+  } catch (error) {
+    console.error('Failed to track referral click:', error)
+  }
+}
+
 const authThemeImg = useGenerateImageVariant(
   authV2LoginIllustrationLight,
   authV2LoginIllustrationDark,
@@ -118,6 +154,21 @@ const authThemeImg = useGenerateImageVariant(
 )
 
 const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
+
+// Lifecycle - Handle referral code detection
+onMounted(() => {
+  // Check for referral code in URL
+  const refParam = route.query.ref as string
+  if (refParam) {
+    referralCode.value = refParam
+
+    // Track the click
+    trackReferralClick(refParam)
+
+    // Fetch referral info
+    fetchReferralInfo(refParam)
+  }
+})
 </script>
 
 <template>
@@ -238,6 +289,22 @@ const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
 
         <VCardText v-if="!showSuccessScreen">
           <VForm @submit.prevent="handleSubmit">
+            <!-- Referral Info Alert -->
+            <VAlert
+              v-if="referralInfo"
+              type="info"
+              variant="tonal"
+              class="mb-6"
+            >
+              <template #prepend>
+                <VIcon icon="tabler-user-plus" />
+              </template>
+              <div>
+                <p class="mb-1">{{ t('referred_by') }}: <strong>{{ referralInfo.affiliate_name }}</strong></p>
+                <p class="mb-0 text-sm">{{ t('referral_bonus_info') }}</p>
+              </div>
+            </VAlert>
+
             <VRow>
               <!-- Nom complet -->
               <VCol cols="12">

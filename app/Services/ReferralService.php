@@ -41,7 +41,7 @@ class ReferralService
         $referralCode = $this->getOrCreateReferralCode($affiliate);
         $baseUrl = config('app.url');
         
-        return "{$baseUrl}/signup?ref={$referralCode->code}";
+        return "{$baseUrl}/affiliate-signup?ref={$referralCode->code}";
     }
 
     /**

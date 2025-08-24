@@ -7,6 +7,7 @@ use App\Models\ReferralCode;
 use App\Models\ReferralClick;
 use App\Models\ReferralAttribution;
 use App\Models\ReferralDispensation;
+use App\Models\Affilie;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
@@ -62,12 +63,32 @@ class AffiliateReferralController extends Controller
             ->limit(10)
             ->get()
             ->map(function ($attribution) {
+                // Check if this is an affiliate signup
+                if ($attribution->source === 'affiliate_signup' && $attribution->device_fingerprint) {
+                    // Extract affiliate ID from device fingerprint
+                    $affiliateId = str_replace('affiliate_', '', $attribution->device_fingerprint);
+                    $affiliate = \App\Models\Affilie::find($affiliateId);
+
+                    if ($affiliate) {
+                        return [
+                            'id' => $attribution->id,
+                            'user_name' => $affiliate->nom_complet . ' (Affiliate)',
+                            'user_email' => $affiliate->email,
+                            'verified' => $attribution->verified,
+                            'attributed_at' => $attribution->attributed_at->format('Y-m-d H:i:s'),
+                            'type' => 'affiliate_signup',
+                        ];
+                    }
+                }
+
+                // Regular user signup
                 return [
                     'id' => $attribution->id,
                     'user_name' => $attribution->newUser->nom_complet ?? 'Unknown',
                     'user_email' => $attribution->newUser->email ?? 'Unknown',
                     'verified' => $attribution->verified,
                     'attributed_at' => $attribution->attributed_at->format('Y-m-d H:i:s'),
+                    'type' => 'user_signup',
                 ];
             });
 
@@ -101,7 +122,7 @@ class AffiliateReferralController extends Controller
 
         return response()->json([
             'code' => $referralCode->code,
-            'url' => url('/signup?ref=' . $referralCode->code),
+            'url' => url('/affiliate-signup?ref=' . $referralCode->code),
             'created_at' => $referralCode->created_at,
         ]);
     }

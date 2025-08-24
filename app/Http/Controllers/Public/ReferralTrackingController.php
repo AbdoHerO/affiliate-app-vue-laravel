@@ -99,7 +99,7 @@ class ReferralTrackingController extends Controller
                 'referral_code' => $referralCode,
                 'referrer_name' => $codeRecord->affiliate->utilisateur->nom_complet,
                 'attribution_window_days' => ReferralService::ATTRIBUTION_WINDOW_DAYS,
-                'signup_url' => config('app.url') . '/signup?ref=' . $referralCode,
+                'signup_url' => config('app.url') . '/affiliate-signup?ref=' . $referralCode,
             ],
         ]);
     }
@@ -187,9 +187,9 @@ class ReferralTrackingController extends Controller
 
         // Determine redirect URL
         $redirectUrl = match ($redirectTo) {
-            'signup' => config('app.url') . '/signup',
+            'signup' => config('app.url') . '/affiliate-signup',
             'home' => config('app.url'),
-            default => config('app.url') . '/signup',
+            default => config('app.url') . '/affiliate-signup',
         };
 
         return response()->json([

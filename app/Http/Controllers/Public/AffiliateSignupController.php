@@ -6,8 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Mail\AffiliateVerifyMail;
 use App\Models\Affilie;
 use App\Models\AffiliateEmailVerification;
+use App\Models\ReferralCode;
+use App\Models\ReferralAttribution;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
@@ -38,6 +41,7 @@ class AffiliateSignupController extends Controller
             'bank_type' => 'required|string|max:50',
             'notes' => 'nullable|string|max:1000',
             'accept_terms' => 'required|accepted',
+            'referral_code' => 'nullable|string|exists:referral_codes,code',
         ], [
             'nom_complet.required' => 'Le nom complet est requis.',
             'email.required' => 'L\'adresse email est requise.',
@@ -92,6 +96,11 @@ class AffiliateSignupController extends Controller
 
             // Send verification email
             Mail::to($affilie->email)->send(new AffiliateVerifyMail($affilie, $verification));
+
+            // Handle referral attribution if referral code provided
+            if ($request->referral_code) {
+                $this->createReferralAttribution($request->referral_code, $affilie, $request);
+            }
 
             return response()->json([
                 'success' => true,
@@ -220,6 +229,55 @@ class AffiliateSignupController extends Controller
 
         } catch (\Exception $e) {
             return redirect('/affiliate-signup?error=server_error');
+        }
+    }
+
+    /**
+     * Create referral attribution for affiliate signup
+     */
+    private function createReferralAttribution(string $referralCode, Affilie $newAffiliate, Request $request): void
+    {
+        try {
+            $referralCodeRecord = ReferralCode::where('code', $referralCode)
+                ->where('active', true)
+                ->first();
+
+            if (!$referralCodeRecord) {
+                return; // Silently fail if referral code is invalid
+            }
+
+            // Create a dummy user record for affiliate signup tracking
+            // Since new_user_id cannot be null, we'll create a special user record
+            $dummyUser = \App\Models\User::create([
+                'nom_complet' => $newAffiliate->nom_complet . ' (Affiliate)',
+                'email' => 'affiliate_' . $newAffiliate->id . '@internal.system',
+                'telephone' => $newAffiliate->telephone,
+                'mot_de_passe_hash' => Hash::make('dummy_password_' . time()),
+                'adresse' => $newAffiliate->adresse,
+                'statut' => 'actif',
+                'email_verifie' => false,
+                'kyc_statut' => 'non_requis',
+                'approval_status' => 'approved', // Use valid enum value
+            ]);
+
+            // Create attribution record for affiliate signup
+            ReferralAttribution::create([
+                'referral_code' => $referralCode,
+                'referrer_affiliate_id' => $referralCodeRecord->affiliate_id,
+                'new_user_id' => $dummyUser->id, // Use dummy user ID
+                'ip_hash' => hash('sha256', $request->ip()),
+                'source' => 'affiliate_signup',
+                'device_fingerprint' => 'affiliate_' . $newAffiliate->id, // Track the new affiliate
+                'verified' => false, // Will be verified when email is verified
+                'attributed_at' => now(),
+            ]);
+        } catch (\Exception $e) {
+            // Log error but don't fail the signup process
+            Log::error('Failed to create referral attribution: ' . $e->getMessage(), [
+                'referral_code' => $referralCode,
+                'affiliate_id' => $newAffiliate->id,
+                'trace' => $e->getTraceAsString()
+            ]);
         }
     }
 }

@@ -34,6 +34,7 @@ use App\Http\Controllers\Admin\AffiliateReferralController as AdminAffiliateRefe
 use App\Http\Controllers\Admin\ReferrersController;
 use App\Http\Controllers\Affiliate\ReferralController as AffiliateReferralController;
 use App\Http\Controllers\Affiliate\PointsController;
+use App\Http\Controllers\PublicController;
 use App\Http\Controllers\Public\ReferralTrackingController;
 use App\Http\Controllers\Admin\CommissionBackfillController;
 use App\Http\Controllers\Admin\SystemHealthController;
@@ -614,4 +615,18 @@ Route::get('admin/kyc-documents/{id}/file', function($id) {
         'Content-Type' => $mimeType,
         'Content-Disposition' => 'inline'
     ]);
+});
+
+// Public routes (no authentication required)
+Route::prefix('public')->group(function () {
+    // Referral tracking
+    Route::get('referral-info/{code}', [PublicController::class, 'getReferralInfo']);
+    Route::post('referral-click', [PublicController::class, 'trackReferralClick']);
+
+    // User signup
+    Route::post('signup', [PublicController::class, 'signup']);
+    Route::post('verify-email', [PublicController::class, 'verifyEmail']);
+
+    // Public statistics
+    Route::get('stats', [PublicController::class, 'getPublicStats']);
 });
