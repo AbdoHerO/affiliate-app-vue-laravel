@@ -25,9 +25,11 @@ const props = withDefaults(defineProps<Props>(), {
   loading: false,
 })
 
+const isValidData = computed(() => !props.loading && Array.isArray(props.data?.weeklyData) && props.data.weeklyData.length > 0)
+const safeWeekly = computed<number[]>(() => Array.isArray(props.data?.weeklyData) ? props.data.weeklyData.filter(v => typeof v === 'number' && isFinite(v)) : [])
 const series = computed(() => [
   {
-    data: props.data.weeklyData,
+    data: safeWeekly.value.length ? safeWeekly.value : [0,0,0,0,0,0,0],
   },
 ])
 
@@ -140,7 +142,7 @@ const moreList = [
         </template>
       </VCardItem>
 
-      <VCardText v-if="!loading">
+  <VCardText v-if="!loading && isValidData">
         <VRow>
           <VCol
             cols="12"

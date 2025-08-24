@@ -17,6 +17,7 @@ import {
   transformToAdvancedStats,
   transformToMixedChart,
 } from '@/utils/chartDataTransformers'
+import { safeNumber } from '@/utils/chartDataTransformers'
 
 import type {
   AnalyticsCarouselData,
@@ -69,6 +70,15 @@ export function useAdminAdvancedCharts(
     // Ensure we have safe access to dashboard store data
     const stats = dashboardStore.stats || {}
     const overview = stats.overview || {}
+    // Safe aggregated stats to guard against undefined
+    const safeStats = {
+      totalRevenue: safeNumber(dashboardStore.totalRevenue),
+      totalAffiliates: safeNumber(dashboardStore.totalAffiliates),
+      totalOrders: safeNumber(dashboardStore.totalOrders),
+      totalCommissions: safeNumber(dashboardStore.totalCommissions),
+      revenueGrowth: safeNumber(dashboardStore.revenueGrowth),
+      signupsGrowth: safeNumber(dashboardStore.signupsGrowth),
+    }
 
     return [
       // Row 1: Main KPI Cards (4 cards)
@@ -78,11 +88,11 @@ export function useAdminAdvancedCharts(
         component: 'AdvancedStatsCard',
         data: transformToAdvancedStats({
           title: 'Total Revenue',
-          value: dashboardStore.totalRevenue || 0,
+          value: safeStats.totalRevenue,
           subtitle: 'Platform earnings',
           icon: 'tabler-currency-dollar',
           color: 'primary',
-          previousValue: (dashboardStore.totalRevenue || 0) * 0.85,
+          previousValue: safeStats.totalRevenue * 0.85,
           period: 'vs last month',
           progressValue: 75,
           progressLabel: 'Monthly target',
@@ -97,11 +107,11 @@ export function useAdminAdvancedCharts(
         component: 'AdvancedStatsCard',
         data: transformToAdvancedStats({
           title: 'Total Affiliates',
-          value: dashboardStore.totalAffiliates || 0,
+          value: safeStats.totalAffiliates,
           subtitle: 'Active partners',
           icon: 'tabler-users',
           color: 'success',
-          previousValue: (dashboardStore.totalAffiliates || 0) * 0.92,
+          previousValue: safeStats.totalAffiliates * 0.92,
           period: 'vs last month',
           progressValue: 85,
           progressLabel: 'Growth target',
@@ -116,11 +126,11 @@ export function useAdminAdvancedCharts(
         component: 'AdvancedStatsCard',
         data: transformToAdvancedStats({
           title: 'Total Orders',
-          value: dashboardStore.totalOrders || 0,
+          value: safeStats.totalOrders,
           subtitle: 'Platform orders',
           icon: 'tabler-shopping-cart',
           color: 'info',
-          previousValue: (dashboardStore.totalOrders || 0) * 0.88,
+          previousValue: safeStats.totalOrders * 0.88,
           period: 'vs last month',
           progressValue: 68,
           progressLabel: 'Monthly goal',
@@ -135,7 +145,7 @@ export function useAdminAdvancedCharts(
         component: 'AdvancedStatsCard',
         data: transformToAdvancedStats({
           title: 'Conversion Rate',
-          value: `${Math.round((overview.verifiedSignups || 0) / Math.max(dashboardStore.totalAffiliates || 1, 1) * 100)}%`,
+          value: Math.round(safeNumber(overview.verifiedSignups) / Math.max(safeStats.totalAffiliates || 1, 1) * 100),
           subtitle: 'Signup conversion',
           icon: 'tabler-trending-up',
           color: 'warning',
@@ -155,9 +165,9 @@ export function useAdminAdvancedCharts(
         title: 'Sales Overview',
         component: 'SalesOverviewCard',
         data: transformToSalesOverview({
-          totalRevenue: dashboardStore.totalRevenue || 0,
-          revenueGrowth: dashboardStore.revenueGrowth || 0,
-          totalOrders: dashboardStore.totalOrders || 0,
+          totalRevenue: safeStats.totalRevenue,
+          revenueGrowth: safeStats.revenueGrowth,
+          totalOrders: safeStats.totalOrders,
           totalVisits: 12749,
           conversionRate: 72,
         }),
@@ -169,12 +179,12 @@ export function useAdminAdvancedCharts(
         title: 'Earning Reports',
         component: 'EarningReportsWeekly',
         data: transformToEarningReports({
-          weeklyTotal: (dashboardStore.totalRevenue || 0) / 4,
+          weeklyTotal: safeStats.totalRevenue / 4,
           weeklyGrowth: 4.2,
           weeklyData: [40, 65, 50, 45, 90, 55, 70],
-          earnings: (dashboardStore.totalRevenue || 0) * 0.6,
-          profit: (dashboardStore.totalRevenue || 0) * 0.3,
-          expenses: (dashboardStore.totalRevenue || 0) * 0.1,
+          earnings: safeStats.totalRevenue * 0.6,
+          profit: safeStats.totalRevenue * 0.3,
+          expenses: safeStats.totalRevenue * 0.1,
         }),
         loading: dashboardStore.loading?.charts || false,
         cols: { cols: 12, md: 6 },
@@ -188,9 +198,9 @@ export function useAdminAdvancedCharts(
         data: transformSignupsToCarousel(
           dashboardStore.signupsChartData,
           {
-            totalSignups: dashboardStore.totalAffiliates || 0,
+            totalSignups: safeStats.totalAffiliates,
             verifiedSignups: overview.verifiedSignups || 0,
-            signupsGrowth: dashboardStore.signupsGrowth || 0,
+            signupsGrowth: safeStats.signupsGrowth,
           }
         ),
         loading: dashboardStore.loading?.charts || false,
@@ -279,9 +289,9 @@ export function useAdminAdvancedCharts(
         data: transformRevenueToEarning(
           dashboardStore.revenueChartData,
           {
-            totalRevenue: dashboardStore.totalRevenue || 0,
-            totalCommissions: dashboardStore.totalCommissions || 0,
-            revenueGrowth: dashboardStore.revenueGrowth || 0,
+            totalRevenue: safeStats.totalRevenue,
+            totalCommissions: safeStats.totalCommissions,
+            revenueGrowth: safeStats.revenueGrowth,
           }
         ),
         loading: dashboardStore.loading?.charts || false,
@@ -390,7 +400,7 @@ export function useAffiliateAdvancedCharts(
         component: 'AdvancedStatsCard',
         data: transformToAdvancedStats({
           title: 'Avg Commission',
-          value: `$${Math.round((dashboardStore.totalCommissions || 0) / Math.max(dashboardStore.verifiedSignups || 1, 1))}`,
+          value: Math.round(safeNumber(dashboardStore.totalCommissions) / Math.max(safeNumber(dashboardStore.verifiedSignups) || 1, 1)),
           subtitle: 'Per verified signup',
           icon: 'tabler-trending-up',
           color: 'warning',

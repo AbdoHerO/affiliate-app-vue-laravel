@@ -24,16 +24,21 @@ const props = withDefaults(defineProps<Props>(), {
   loading: false,
 })
 
+const isValidData = computed(() => {
+  return !props.loading && Array.isArray(props.data?.barData) && Array.isArray(props.data?.lineData)
+})
+const safeBar = computed<number[]>(() => Array.isArray(props.data?.barData) ? props.data.barData.filter(v => typeof v === 'number' && isFinite(v)) : [])
+const safeLine = computed<number[]>(() => Array.isArray(props.data?.lineData) ? props.data.lineData.filter(v => typeof v === 'number' && isFinite(v)) : [])
 const series = computed(() => [
   {
     name: 'Revenue',
     type: 'column',
-    data: props.data.barData,
+    data: safeBar.value.length ? safeBar.value : [0],
   },
   {
     name: 'Growth',
     type: 'line',
-    data: props.data.lineData,
+    data: safeLine.value.length ? safeLine.value : [0],
   },
 ])
 
@@ -199,7 +204,7 @@ const chartOptions = computed(() => {
 
       <VCardText>
         <VueApexCharts
-          v-if="!loading"
+          v-if="isValidData"
           :options="chartOptions"
           :series="series"
           height="300"

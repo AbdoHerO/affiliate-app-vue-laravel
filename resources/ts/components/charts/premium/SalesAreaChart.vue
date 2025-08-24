@@ -25,10 +25,14 @@ const props = withDefaults(defineProps<Props>(), {
 
 const currentTheme = vuetifyTheme.current.value.colors
 
+// Validation & safe fallbacks
+const isValidData = computed(() => !props.loading && Array.isArray(props.data?.chartData) && props.data.chartData.length > 0)
+const safeChartData = computed<number[]>(() => Array.isArray(props.data?.chartData) ? props.data.chartData.filter(v => typeof v === 'number' && isFinite(v)) : [])
+
 const series = computed(() => [
   {
     name: 'Sales',
-    data: props.data.chartData,
+    data: safeChartData.value.length ? safeChartData.value : [0],
   },
 ])
 
@@ -94,6 +98,11 @@ const chartOptions = computed(() => ({
       formatter: (val: number) => val.toLocaleString(),
     },
   },
+  responsive: [
+    { breakpoint: 1200, options: { chart: { height: 68 } } },
+    { breakpoint: 768, options: { chart: { height: 60 } } },
+    { breakpoint: 480, options: { chart: { height: 56 } } },
+  ],
 }))
 </script>
 
@@ -110,7 +119,7 @@ const chartOptions = computed(() => ({
       </VCardItem>
 
       <VueApexCharts
-        v-if="!loading"
+        v-if="isValidData"
         :options="chartOptions"
         :series="series"
         :height="68"
@@ -118,7 +127,7 @@ const chartOptions = computed(() => ({
 
       <!-- Loading State -->
       <div
-        v-else
+  v-else
         class="d-flex align-center justify-center chart-loading"
         style="height: 68px;"
       >

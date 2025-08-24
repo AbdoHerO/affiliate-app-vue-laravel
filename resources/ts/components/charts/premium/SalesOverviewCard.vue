@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 interface Props {
   data: {
     title: string
@@ -16,11 +17,18 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   loading: false,
 })
+
+const isValidData = computed(() => {
+  if (props.loading) return false
+  const d: any = props.data
+  if (!d) return false
+  return typeof d.amount === 'string' && typeof d.growth === 'string'
+})
 </script>
 
 <template>
   <div class="advanced-chart-container">
-    <VCard class="sales-overview-card">
+  <VCard class="sales-overview-card" v-if="isValidData">
       <VCardText>
         <div class="d-flex align-center justify-space-between">
           <div class="text-body-1">
@@ -130,7 +138,7 @@ const props = withDefaults(defineProps<Props>(), {
 
       <!-- Loading State -->
       <VCardText
-        v-if="loading"
+        v-if="loading || !isValidData"
         class="d-flex align-center justify-center chart-loading"
         style="height: 200px;"
       >
@@ -145,6 +153,7 @@ const props = withDefaults(defineProps<Props>(), {
 </template>
 
 <style lang="scss" scoped>
+.advanced-chart-container { height:100%; .v-card{height:100%;display:flex;flex-direction:column;} }
 .sales-overview-card {
   .v-progress-linear {
     transition: all 0.3s ease;

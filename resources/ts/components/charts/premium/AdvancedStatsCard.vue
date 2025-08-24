@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { computed } from 'vue'
+
 interface Props {
   data: {
     title: string
@@ -29,24 +31,37 @@ const props = withDefaults(defineProps<Props>(), {
   loading: false,
   size: 'medium',
 })
+
+// Data validation to prevent runtime errors / NaN propagation
+const isValidData = computed(() => {
+  if (props.loading) return false
+  const d: any = props.data
+  if (!d || typeof d !== 'object') return false
+  const hasValue = d.value !== undefined && d.value !== null && String(d.value).length > 0
+  return hasValue
+})
+
+// Provide a safe color + icon fallback so loading state doesn't crash when data missing
+const safeColor = computed(() => props.data?.color || 'primary')
+const safeIcon = computed(() => props.data?.icon || 'tabler-chart-bar')
 </script>
 
 <template>
   <div class="advanced-chart-container">
-    <VCard 
+    <VCard
       class="advanced-stats-card"
       :class="`stats-card-${size}`"
     >
-      <VCardText>
+      <VCardText v-if="!loading && isValidData">
         <div class="d-flex align-center justify-space-between mb-3">
           <VAvatar
-            :color="data.color"
+            :color="data.color || safeColor"
             variant="tonal"
             :size="size === 'large' ? 48 : size === 'medium' ? 40 : 32"
             rounded
           >
             <VIcon
-              :icon="data.icon"
+              :icon="data.icon || safeIcon"
               :size="size === 'large' ? 24 : size === 'medium' ? 20 : 16"
             />
           </VAvatar>
@@ -131,13 +146,13 @@ const props = withDefaults(defineProps<Props>(), {
 
       <!-- Loading State -->
       <VCardText
-        v-if="loading"
+        v-else
         class="d-flex align-center justify-center chart-loading"
         :style="`height: ${size === 'large' ? '200px' : size === 'medium' ? '150px' : '120px'};`"
       >
         <VProgressCircular
           indeterminate
-          :color="data.color"
+          :color="safeColor"
           :size="size === 'large' ? 48 : size === 'medium' ? 40 : 32"
         />
       </VCardText>
@@ -146,6 +161,13 @@ const props = withDefaults(defineProps<Props>(), {
 </template>
 
 <style lang="scss" scoped>
+.advanced-chart-container { // unified container for consistent heights
+  height: 100%;
+  .v-card { height: 100%; display: flex; flex-direction: column; }
+  @media (max-width: 768px) { min-height: 180px; }
+  @media (max-width: 480px) { min-height: 160px; }
+}
+
 .advanced-stats-card {
   transition: all 0.3s ease;
   position: relative;

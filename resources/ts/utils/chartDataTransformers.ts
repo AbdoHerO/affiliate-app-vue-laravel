@@ -16,6 +16,17 @@ import type {
   MixedChartData,
 } from '@/components/charts/advanced'
 
+// Safe helpers -------------------------------------------------------------
+export function safeNumber(value: any, defaultValue: number = 0): number {
+  const num = Number(value)
+  return isNaN(num) || !isFinite(num) ? defaultValue : num
+}
+
+export function safeArray<T = any>(value: any, defaultValue: T[] = []): T[] {
+  if (Array.isArray(value)) return value.filter(v => v !== null && v !== undefined) as T[]
+  return defaultValue
+}
+
 /**
  * Transform signups chart data for Analytics Carousel
  */
@@ -28,9 +39,9 @@ export function transformSignupsToCarousel(
   }
 ): AnalyticsCarouselData {
   return {
-    totalSignups: stats.totalSignups || 0,
-    verifiedSignups: stats.verifiedSignups || 0,
-    growthRate: stats.signupsGrowth || 0,
+    totalSignups: safeNumber(stats.totalSignups),
+    verifiedSignups: safeNumber(stats.verifiedSignups),
+    growthRate: safeNumber(stats.signupsGrowth),
     chartData: chartData || { labels: [], datasets: [] },
   }
 }
@@ -54,12 +65,12 @@ export function transformRevenueToEarning(
   const commissionsDataset = datasets.find(d => d.label?.toLowerCase().includes('commission'))
 
   return {
-    revenue: revenueDataset?.data || [],
-    commissions: commissionsDataset?.data || [],
-    labels: safeChartData.labels || [],
-    totalRevenue: stats.totalRevenue || 0,
-    totalCommissions: stats.totalCommissions || 0,
-    growth: stats.revenueGrowth || 0,
+    revenue: safeArray(revenueDataset?.data).map(v => safeNumber(v)),
+    commissions: safeArray(commissionsDataset?.data).map(v => safeNumber(v)),
+    labels: safeArray(safeChartData.labels),
+    totalRevenue: safeNumber(stats.totalRevenue),
+    totalCommissions: safeNumber(stats.totalCommissions),
+    growth: safeNumber(stats.revenueGrowth),
   }
 }
 
@@ -79,8 +90,8 @@ export function transformCommissionsToGrowth(
   const commissionsDataset = datasets.find(d => d.label?.toLowerCase().includes('commission'))
 
   return {
-    values: commissionsDataset?.data || [],
-    labels: (safeChartData.labels || []).map(label => {
+    values: safeArray(commissionsDataset?.data, []).map(v => safeNumber(v)),
+  labels: safeArray<any>(safeChartData.labels, []).map((label: any) => {
       // Convert full date labels to short format (e.g., "2024-08-01" -> "Aug")
       if (typeof label === 'string' && label.includes('-')) {
         const date = new Date(label)
@@ -88,8 +99,8 @@ export function transformCommissionsToGrowth(
       }
       return String(label)
     }),
-    total: stats.totalCommissions || 0,
-    growth: stats.commissionsGrowth || 0,
+    total: safeNumber(stats.totalCommissions),
+    growth: safeNumber(stats.commissionsGrowth),
     period,
   }
 }
@@ -104,8 +115,8 @@ export function transformSignupsToSession(
     conversionRate: number
   }
 ): SessionAnalyticsData {
-  const totalReferrals = stats.totalReferrals || 0
-  const verifiedSignups = stats.verifiedSignups || 0
+  const totalReferrals = safeNumber(stats.totalReferrals)
+  const verifiedSignups = safeNumber(stats.verifiedSignups)
   const pending = totalReferrals - verifiedSignups
 
   return {
@@ -126,8 +137,10 @@ export function transformProductsToRadial(
     label?: string
   }
 ): ExpensesRadialData {
-  const percentage = data.totalProducts > 0 
-    ? Math.round((data.activeProducts / data.totalProducts) * 100)
+  const totalProducts = safeNumber(data.totalProducts)
+  const activeProducts = safeNumber(data.activeProducts)
+  const percentage = totalProducts > 0 
+    ? Math.round((activeProducts / totalProducts) * 100)
     : 0
 
   return {
@@ -148,13 +161,13 @@ export function transformTopAffiliatesToGrowth(
   // Extract data from top affiliates chart with safe defaults
   const values = Array.isArray(chartData?.data) ? chartData.data :
                  Array.isArray(chartData?.datasets?.[0]?.data) ? chartData.datasets[0].data :
-                 [10, 20, 15, 25, 30, 18, 22] // Default demo data
+                 [10, 20, 15, 25, 30, 18, 22]
 
   const labels = Array.isArray(chartData?.labels) ? chartData.labels :
                  ['Affiliate A', 'Affiliate B', 'Affiliate C', 'Affiliate D', 'Affiliate E', 'Affiliate F', 'Affiliate G']
 
   return {
-    values,
+    values: safeArray(values).map(v => safeNumber(v)),
     labels: labels.map((label: any) => {
       const labelStr = String(label || 'Unknown')
       // Truncate long affiliate names
@@ -172,8 +185,8 @@ export function transformTopAffiliatesToGrowth(
 export function transformOrdersToSession(
   chartData: any
 ): SessionAnalyticsData {
-  const datasets = chartData?.datasets?.[0]?.data || []
-  const labels = chartData?.labels || []
+  const datasets = safeArray(chartData?.datasets?.[0]?.data)
+  const labels = safeArray(chartData?.labels)
 
   // Find completed and pending orders with safe string operations
   const completedIndex = labels.findIndex((label: any) => {
@@ -185,8 +198,8 @@ export function transformOrdersToSession(
     return labelStr.includes('pending') || labelStr.includes('processing')
   })
 
-  const completed = completedIndex >= 0 ? (datasets[completedIndex] || 0) : 45 // Default demo data
-  const pending = pendingIndex >= 0 ? (datasets[pendingIndex] || 0) : 23 // Default demo data
+  const completed = safeNumber(completedIndex >= 0 ? (datasets[completedIndex] || 0) : 45)
+  const pending = safeNumber(pendingIndex >= 0 ? (datasets[pendingIndex] || 0) : 23)
   const total = completed + pending
 
   return {
@@ -206,8 +219,8 @@ export function calculateGrowthRate(chartData: TimeSeriesData | null | undefined
   const dataset = chartData.datasets[0]
   if (!dataset?.data || dataset.data.length < 2) return 0
 
-  const current = dataset.data[dataset.data.length - 1] || 0
-  const previous = dataset.data[dataset.data.length - 2] || 0
+  const current = safeNumber(dataset.data[dataset.data.length - 1])
+  const previous = safeNumber(dataset.data[dataset.data.length - 2])
 
   if (previous === 0) return current > 0 ? 100 : 0
   return Math.round(((current - previous) / previous) * 100)
@@ -244,18 +257,20 @@ export function transformToSalesOverview(
     conversionRate: number
   }
 ): SalesOverviewData {
-  const orderPercentage = Math.round((stats.totalOrders / (stats.totalOrders + stats.totalVisits)) * 100)
+  const totalOrders = safeNumber(stats.totalOrders)
+  const totalVisits = safeNumber(stats.totalVisits)
+  const orderPercentage = (totalOrders + totalVisits) > 0 ? Math.round((totalOrders / (totalOrders + totalVisits)) * 100) : 0
   const visitPercentage = 100 - orderPercentage
 
   return {
     title: 'Sales Overview',
-    amount: formatCurrency(stats.totalRevenue),
-    growth: formatPercentage(stats.revenueGrowth),
+  amount: formatCurrency(safeNumber(stats.totalRevenue)),
+  growth: formatPercentage(safeNumber(stats.revenueGrowth)),
     orderPercentage,
-    orderCount: stats.totalOrders,
+  orderCount: totalOrders,
     visitPercentage,
-    visitCount: stats.totalVisits,
-    progressValue: Math.round(stats.conversionRate),
+  visitCount: totalVisits,
+  progressValue: Math.round(safeNumber(stats.conversionRate)),
   }
 }
 
@@ -273,29 +288,29 @@ export function transformToEarningReports(
   }
 ): EarningReportsData {
   return {
-    totalAmount: formatCurrency(stats.weeklyTotal),
-    growth: formatPercentage(stats.weeklyGrowth),
-    weeklyData: stats.weeklyData,
+  totalAmount: formatCurrency(safeNumber(stats.weeklyTotal)),
+  growth: formatPercentage(safeNumber(stats.weeklyGrowth)),
+  weeklyData: safeArray(stats.weeklyData).map(v => safeNumber(v)),
     reports: [
       {
         color: 'primary',
         icon: 'tabler-currency-dollar',
-        title: 'Earnings',
-        amount: formatCurrency(stats.earnings),
+    title: 'Earnings',
+    amount: formatCurrency(safeNumber(stats.earnings)),
         progress: 55,
       },
       {
         color: 'info',
         icon: 'tabler-chart-pie-2',
-        title: 'Profit',
-        amount: formatCurrency(stats.profit),
+    title: 'Profit',
+    amount: formatCurrency(safeNumber(stats.profit)),
         progress: 25,
       },
       {
         color: 'error',
         icon: 'tabler-brand-paypal',
-        title: 'Expenses',
-        amount: formatCurrency(stats.expenses),
+    title: 'Expenses',
+    amount: formatCurrency(safeNumber(stats.expenses)),
         progress: 65,
       },
     ],
@@ -321,9 +336,9 @@ export function transformToSalesArea(
   return {
     title: stats.title || 'Sales',
     subtitle: stats.subtitle || 'Last Year',
-    value: `${Math.round(stats.totalSales / 1000)}k`,
-    growth: formatPercentage(stats.salesGrowth),
-    chartData: salesDataset?.data || [200, 55, 400, 250],
+  value: `${Math.round(safeNumber(stats.totalSales) / 1000)}k`,
+  growth: formatPercentage(safeNumber(stats.salesGrowth)),
+  chartData: safeArray(salesDataset?.data, [200, 55, 400, 250]).map(v => safeNumber(v)),
     color: stats.color || 'success',
   }
 }
@@ -347,9 +362,9 @@ export function transformToProfitLine(
   return {
     title: stats.title || 'Profit',
     subtitle: stats.subtitle || 'Last Month',
-    value: `${Math.round(stats.totalProfit / 1000)}k`,
-    growth: formatPercentage(stats.profitGrowth),
-    chartData: profitDataset?.data || [0, 25, 10, 40, 25, 55],
+  value: `${Math.round(safeNumber(stats.totalProfit) / 1000)}k`,
+  growth: formatPercentage(safeNumber(stats.profitGrowth)),
+  chartData: safeArray(profitDataset?.data, [0, 25, 10, 40, 25, 55]).map(v => safeNumber(v)),
     color: stats.color || 'info',
   }
 }
@@ -373,17 +388,19 @@ export function transformToAdvancedStats(
     comparisonLabel?: string
   }
 ): AdvancedStatsData {
-  const growth = stats.previousValue
-    ? Math.round(((stats.value - stats.previousValue) / stats.previousValue) * 100)
+  const valueNum = safeNumber(stats.value)
+  const previousNum = stats.previousValue !== undefined ? safeNumber(stats.previousValue) : undefined
+  const growth = (previousNum !== undefined && previousNum !== 0)
+    ? Math.round(((valueNum - previousNum) / previousNum) * 100)
     : 0
 
   return {
     title: stats.title,
-    value: typeof stats.value === 'number' ? stats.value.toLocaleString() : String(stats.value),
+  value: valueNum.toLocaleString(),
     subtitle: stats.subtitle,
     icon: stats.icon,
     color: stats.color,
-    trend: stats.previousValue ? {
+    trend: previousNum !== undefined ? {
       value: formatPercentage(Math.abs(growth)),
       direction: growth >= 0 ? 'up' : 'down',
       period: stats.period || 'vs last month',
@@ -392,7 +409,7 @@ export function transformToAdvancedStats(
       value: stats.progressValue,
       label: stats.progressLabel || 'Progress',
     } : undefined,
-    comparison: stats.comparisonCurrent ? {
+  comparison: stats.comparisonCurrent ? {
       current: stats.comparisonCurrent,
       previous: stats.comparisonPrevious || '0',
       label: stats.comparisonLabel || 'This period',
@@ -418,9 +435,9 @@ export function transformToMixedChart(
   return {
     title: options.title || 'Revenue & Growth Analysis',
     subtitle: options.subtitle || 'Monthly Performance',
-    barData: safeRevenueData.datasets?.[0]?.data || [44, 55, 57, 56, 61, 58, 63],
-    lineData: safeGrowthData.datasets?.[0]?.data || [76, 85, 101, 98, 87, 105, 91],
-    labels: safeRevenueData.labels || ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
+  barData: safeArray(safeRevenueData.datasets?.[0]?.data, [44, 55, 57, 56, 61, 58, 63]).map(v => safeNumber(v)),
+  lineData: safeArray(safeGrowthData.datasets?.[0]?.data, [76, 85, 101, 98, 87, 105, 91]).map(v => safeNumber(v)),
+  labels: safeArray(safeRevenueData.labels, ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul']).map(l => String(l)),
     colors: options.colors,
   }
 }
