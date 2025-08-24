@@ -166,7 +166,7 @@ const handleSubmit = async () => {
       showError(result.message)
     }
   } catch (error) {
-    showError('Une erreur est survenue')
+    showError(t('admin_withdrawal_action_error'))
   } finally {
     loading.value = false
   }

@@ -52,9 +52,9 @@ const fetchTracking = async () => {
     trackingData.value = await shippingStore.getTracking(
       shippingOrder.value.shipping_parcel.tracking_number
     )
-    showSuccess('Données de suivi récupérées avec succès')
+    showSuccess(t('admin_shipping_tracking_success'))
   } catch (error: any) {
-    showError(error.message || 'Erreur lors de la récupération du tracking')
+    showError(error.message || t('admin_shipping_tracking_error'))
   } finally {
     trackingLoading.value = false
   }
@@ -93,7 +93,7 @@ const createDeliveryNote = async () => {
 
 const addParcelsToDeliveryNote = async () => {
   if (!deliveryNoteRef.value || !shippingOrder.value?.shipping_parcel?.tracking_number) {
-    showError('Veuillez créer un bon de livraison et sélectionner des colis')
+    showError(t('admin_shipping_delivery_note_required'))
     return
   }
 
@@ -110,7 +110,7 @@ const addParcelsToDeliveryNote = async () => {
         deliveryNoteRef.value,
         [shippingOrder.value.shipping_parcel.tracking_number]
       )
-      showSuccess('Colis ajouté au bon de livraison')
+      showSuccess(t('admin_shipping_parcel_added'))
     } catch (error: any) {
       showError(error.message || 'Erreur lors de l\'ajout du colis')
     }
@@ -119,7 +119,7 @@ const addParcelsToDeliveryNote = async () => {
 
 const saveDeliveryNote = async () => {
   if (!deliveryNoteRef.value) {
-    showError('Aucun bon de livraison à sauvegarder')
+    showError(t('admin_shipping_delivery_note_no_save'))
     return
   }
 
@@ -133,7 +133,7 @@ const saveDeliveryNote = async () => {
   if (confirmed) {
     try {
       await shippingStore.saveDeliveryNote(deliveryNoteRef.value)
-      showSuccess('Bon de livraison sauvegardé')
+      showSuccess(t('admin_shipping_delivery_note_saved'))
       // Update the shipping order to reflect the delivery note
       await fetchShippingOrder()
     } catch (error: any) {
@@ -306,9 +306,9 @@ const copyTrackingNumber = async () => {
 
   try {
     await navigator.clipboard.writeText(trackingNumber)
-    showSuccess('Numéro de suivi copié!')
+    showSuccess(t('admin_shipping_tracking_copied'))
   } catch (error) {
-    showError('Erreur lors de la copie')
+    showError(t('admin_shipping_copy_error'))
   }
 }
 
@@ -365,9 +365,9 @@ ${getClientFinalCity()}, ${getClientFinalCountry()}`
 
   try {
     await navigator.clipboard.writeText(address)
-    showSuccess('Adresse copiée dans le presse-papiers')
+    showSuccess(t('admin_shipping_address_copied'))
   } catch (error) {
-    showError('Échec de la copie de l\'adresse')
+    showError(t('admin_shipping_address_copy_failed'))
   }
 }
 

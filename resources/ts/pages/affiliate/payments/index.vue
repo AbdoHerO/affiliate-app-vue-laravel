@@ -225,7 +225,7 @@ const canDownloadPdf = (withdrawal: any) => {
     
     if (!token) {
       console.error('No auth token available')
-      showError('Session expirée. Veuillez vous reconnecter.')
+      showError(t('affiliate_payments_session_expired'))
       return
     }
 
@@ -270,10 +270,10 @@ const canDownloadPdf = (withdrawal: any) => {
           link.click()
           document.body.removeChild(link)
           window.URL.revokeObjectURL(url)
-          showSuccess('PDF téléchargé avec succès')
+          showSuccess(t('affiliate_payments_pdf_download_success'))
         } else {
           console.error('Invalid PDF blob:', { type: blob.type, size: blob.size })
-          showError('Le fichier téléchargé n\'est pas un PDF valide')
+          showError(t('affiliate_payments_pdf_invalid'))
         }
       } else {
         console.error(`PDF download failed with status: ${xhr.status}`)
@@ -285,13 +285,13 @@ const canDownloadPdf = (withdrawal: any) => {
     xhr.onerror = function() {
       console.error('PDF download network error')
       downloadingPdf.value = null
-      showError('Erreur réseau lors du téléchargement')
+      showError(t('affiliate_payments_network_error'))
     }
     
     xhr.ontimeout = function() {
       console.error('PDF download timeout')
       downloadingPdf.value = null
-      showError('Timeout lors du téléchargement')
+      showError(t('affiliate_payments_timeout_error'))
     }
     
     // Set timeout to 60 seconds for PDF generation

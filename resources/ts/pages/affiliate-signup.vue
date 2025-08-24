@@ -102,7 +102,7 @@ const handleSubmit = async () => {
       }
     }
   } catch (error) {
-    showError('Une erreur inattendue est survenue.')
+    showError(t('affiliate_signup_unexpected_error'))
   }
 }
 
@@ -118,7 +118,7 @@ const handleResendVerification = async () => {
       showError(result.message)
     }
   } catch (error) {
-    showError('Une erreur est survenue lors du renvoi de l\'email.')
+    showError(t('affiliate_signup_resend_error'))
   }
 }
 
