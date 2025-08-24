@@ -1477,6 +1477,20 @@
   "form_password": "Password",
   "placeholder_enter_password": "Enter your password",
 
+  // Referral management
+  "Gestion du Parrainage": "Referral Management",
+  "Tableau de Bord Parrainage": "Referral Dashboard",
+  "Utilisateurs Parrainés": "Referred Users",
+  "Récompenses Manuelles": "Manual Rewards",
+  "Gestion des Parrains": "Sponsor Management",
+
+  // Stock management
+  "Gestion des Stocks": "Stock Management",
+  "Gestion Stock": "Stock Management",
+
+  // Settings
+  "Paramètres": "Settings",
+
 
   // ===========================================
   // SUPPORT TICKETS

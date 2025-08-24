@@ -1446,6 +1446,20 @@
   "form_password": "Mot de passe",
   "placeholder_enter_password": "Entrez votre mot de passe",
 
+  // Referral management
+  "Gestion du Parrainage": "Gestion du Parrainage",
+  "Tableau de Bord Parrainage": "Tableau de Bord Parrainage",
+  "Utilisateurs Parrainés": "Utilisateurs Parrainés",
+  "Récompenses Manuelles": "Récompenses Manuelles",
+  "Gestion des Parrains": "Gestion des Parrains",
+
+  // Stock management
+  "Gestion des Stocks": "Gestion des Stocks",
+  "Gestion Stock": "Gestion Stock",
+
+  // Settings
+  "Paramètres": "Paramètres",
+
 
   // ===========================================
   // TICKETS DE SUPPORT
