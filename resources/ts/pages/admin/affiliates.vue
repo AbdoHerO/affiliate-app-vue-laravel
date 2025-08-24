@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, computed, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useAffiliateApplicationsStore } from '@/stores/admin/affiliateApplications'
 import { useNotifications } from '@/composables/useNotifications'
 import ConfirmDialog from '@/components/dialogs/ConfirmDialog.vue'
@@ -11,6 +12,7 @@ definePage({
   },
 })
 
+const { t } = useI18n()
 const affiliateApplicationsStore = useAffiliateApplicationsStore()
 const { showSuccess, showError } = useNotifications()
 
@@ -34,28 +36,28 @@ const stats = computed(() => affiliateApplicationsStore.stats)
 
 // Table headers
 const headers = [
-  { title: 'Utilisateur', key: 'user', sortable: false },
-  { title: 'Email', key: 'email', sortable: true },
-  { title: 'Téléphone', key: 'telephone', sortable: false },
-  { title: 'Banque', key: 'bank_type', sortable: false },
-  { title: 'Email Vérifié', key: 'email_verified', sortable: true },
-  { title: 'Statut Approbation', key: 'approval_status', sortable: true },
-  { title: 'Inscrit le', key: 'created_at', sortable: true },
-  { title: 'Actions', key: 'actions', sortable: false },
+  { title: t('table_column_user'), key: 'user', sortable: false },
+  { title: t('table_column_email'), key: 'email', sortable: true },
+  { title: t('table_column_phone'), key: 'telephone', sortable: false },
+  { title: t('table_column_bank'), key: 'bank_type', sortable: false },
+  { title: t('table_column_email_verified'), key: 'email_verified', sortable: true },
+  { title: t('table_column_approval_status'), key: 'approval_status', sortable: true },
+  { title: t('table_column_created_at'), key: 'created_at', sortable: true },
+  { title: t('table_column_actions'), key: 'actions', sortable: false },
 ]
 
 // Filter options
 const approvalStatusOptions = [
-  { title: 'Tous', value: '' },
-  { title: 'En attente d\'approbation', value: 'pending_approval' },
-  { title: 'Approuvé', value: 'approved' },
-  { title: 'Refusé', value: 'refused' },
+  { title: t('filter_all'), value: '' },
+  { title: t('affiliate_status_pending_approval'), value: 'pending_approval' },
+  { title: t('affiliate_status_approved'), value: 'approved' },
+  { title: t('affiliate_status_refused'), value: 'refused' },
 ]
 
 const emailVerifiedOptions = [
-  { title: 'Tous', value: '' },
-  { title: 'Email vérifié', value: 'true' },
-  { title: 'Email non vérifié', value: 'false' },
+  { title: t('filter_all'), value: '' },
+  { title: t('email_verified'), value: 'true' },
+  { title: t('email_not_verified'), value: 'false' },
 ]
 
 
@@ -118,11 +120,11 @@ const approveApplication = async () => {
 
   try {
     await affiliateApplicationsStore.approveApplication(selectedApplication.value.id, approveReason.value)
-    showSuccess('Demande d\'affiliation approuvée avec succès')
+    showSuccess(t('affiliate_approved_success'))
     showApproveDialog.value = false
     fetchApplications()
   } catch (error: any) {
-    showError(error.message || 'Erreur lors de l\'approbation')
+    showError(error.message || t('error_during_approval'))
   }
 }
 
@@ -131,11 +133,11 @@ const refuseApplication = async () => {
 
   try {
     await affiliateApplicationsStore.refuseApplication(selectedApplication.value.id, refuseReason.value)
-    showSuccess('Demande refusée avec succès')
+    showSuccess(t('affiliate_refused_success'))
     showRefuseDialog.value = false
     fetchApplications()
   } catch (error: any) {
-    showError(error.message || 'Erreur lors du refus')
+    showError(error.message || t('error_during_refusal'))
   }
 }
 
@@ -149,9 +151,9 @@ const confirmResendVerification = async () => {
 
   try {
     await affiliateApplicationsStore.resendVerification(selectedApplication.value.id)
-    showSuccess('Email de vérification envoyé avec succès')
+    showSuccess(t('verification_email_sent_success'))
   } catch (error: any) {
-    showError(error.message || 'Erreur lors de l\'envoi de l\'email')
+    showError(error.message || t('error_sending_email'))
   }
 }
 
@@ -171,11 +173,11 @@ const getApprovalStatusColor = (status: string) => {
 const getApprovalStatusText = (status: string) => {
   switch (status) {
     case 'approved':
-      return 'Approuvé'
+      return t('affiliate_status_approved')
     case 'pending_approval':
-      return 'En attente'
+      return t('affiliate_status_pending_approval_short')
     case 'refused':
-      return 'Refusé'
+      return t('affiliate_status_refused')
     default:
       return status
   }
@@ -247,7 +249,7 @@ onMounted(async () => {
         <VCard variant="tonal" color="warning">
           <VCardText class="text-center">
             <div class="text-h4">{{ stats.pending_approval || 0 }}</div>
-            <div class="text-body-2">En attente</div>
+            <div class="text-body-2">{{ t('affiliate_status_pending_approval_short') }}</div>
           </VCardText>
         </VCard>
       </VCol>
@@ -255,7 +257,7 @@ onMounted(async () => {
         <VCard variant="tonal" color="info">
           <VCardText class="text-center">
             <div class="text-h4">{{ stats.email_not_verified || 0 }}</div>
-            <div class="text-body-2">Email non vérifié</div>
+            <div class="text-body-2">{{ t('email_not_verified') }}</div>
           </VCardText>
         </VCard>
       </VCol>
@@ -263,7 +265,7 @@ onMounted(async () => {
         <VCard variant="tonal" color="success">
           <VCardText class="text-center">
             <div class="text-h4">{{ stats.approved_applications || 0 }}</div>
-            <div class="text-body-2">Approuvés</div>
+            <div class="text-body-2">{{ t('affiliate_status_approved') }}</div>
           </VCardText>
         </VCard>
       </VCol>
@@ -271,7 +273,7 @@ onMounted(async () => {
         <VCard variant="tonal" color="error">
           <VCardText class="text-center">
             <div class="text-h4">{{ stats.refused_applications || 0 }}</div>
-            <div class="text-body-2">Refusés</div>
+            <div class="text-body-2">{{ t('affiliate_status_refused') }}</div>
           </VCardText>
         </VCard>
       </VCol>
@@ -279,7 +281,7 @@ onMounted(async () => {
         <VCard variant="tonal" color="primary">
           <VCardText class="text-center">
             <div class="text-h4">{{ stats.recent_signups || 0 }}</div>
-            <div class="text-body-2">7 derniers jours</div>
+            <div class="text-body-2">{{ t('last_7_days') }}</div>
           </VCardText>
         </VCard>
       </VCol>
@@ -292,8 +294,8 @@ onMounted(async () => {
           <VCol cols="12" md="4">
             <VTextField
               v-model="searchQuery"
-              label="Rechercher"
-              placeholder="Nom, email, téléphone..."
+              :label="t('action_search')"
+              :placeholder="t('search_placeholder_name_email_phone')"
               prepend-inner-icon="tabler-search"
               clearable
               density="compact"
@@ -302,7 +304,7 @@ onMounted(async () => {
           <VCol cols="12" md="3">
             <VSelect
               v-model="selectedApprovalStatus"
-              label="Statut d'approbation"
+              :label="t('table_column_approval_status')"
               :items="approvalStatusOptions"
               clearable
               density="compact"
@@ -311,7 +313,7 @@ onMounted(async () => {
           <VCol cols="12" md="3">
             <VSelect
               v-model="selectedEmailVerified"
-              label="Email vérifié"
+              :label="t('table_column_email_verified')"
               :items="emailVerifiedOptions"
               clearable
               density="compact"
@@ -320,7 +322,7 @@ onMounted(async () => {
           <VCol cols="12" md="2" class="d-flex gap-2">
             <VSelect
               v-model="itemsPerPage"
-              label="Par page"
+              :label="t('items_per_page')"
               :items="[10, 15, 25, 50]"
               density="compact"
             />
@@ -448,7 +450,7 @@ onMounted(async () => {
             <!-- Approve -->
             <VTooltip
               v-if="item.approval_status === 'pending_approval'"
-              text="Approuver la demande"
+              :text="t('approve_request')"
             >
               <template #activator="{ props }">
                 <VBtn
@@ -465,7 +467,7 @@ onMounted(async () => {
             <!-- Refuse -->
             <VTooltip
               v-if="item.approval_status === 'pending_approval'"
-              text="Refuser la demande"
+              :text="t('refuse_request')"
             >
               <template #activator="{ props }">
                 <VBtn
@@ -490,9 +492,9 @@ onMounted(async () => {
               class="mb-4"
               color="disabled"
             />
-            <h3 class="text-h6 mb-2">Aucun utilisateur trouvé</h3>
+            <h3 class="text-h6 mb-2">{{ t('no_users_found') }}</h3>
             <p class="text-body-2 text-medium-emphasis">
-              Aucun utilisateur ne correspond aux critères de recherche
+              {{ t('no_users_match_criteria') }}
             </p>
           </div>
         </template>
@@ -522,21 +524,21 @@ onMounted(async () => {
 
           <!-- Title -->
           <h5 class="text-h5 mb-4">
-            Approuver la demande d'affiliation
+            {{ t('approve_affiliation_request') }}
           </h5>
 
           <!-- Text -->
           <p class="text-body-1 mb-6">
-            Approuver <strong>{{ selectedApplication?.nom_complet }}</strong> comme affilié ?
+            {{ t('approve_affiliate_confirm', { name: selectedApplication?.nom_complet }) }}
             <br>
-            <small class="text-medium-emphasis">Un compte utilisateur sera créé automatiquement.</small>
+            <small class="text-medium-emphasis">{{ t('user_account_created_automatically') }}</small>
           </p>
 
           <!-- Optional Reason -->
           <VTextarea
             v-model="approveReason"
-            label="Raison (optionnel)"
-            placeholder="Raison de l'approbation..."
+            :label="t('reason_optional')"
+            :placeholder="t('approval_reason_placeholder')"
             rows="3"
             variant="outlined"
             class="mb-4"
@@ -550,7 +552,7 @@ onMounted(async () => {
             variant="elevated"
             @click="approveApplication"
           >
-            Approuver
+            {{ t('action_approve') }}
           </VBtn>
 
           <VBtn
@@ -558,7 +560,7 @@ onMounted(async () => {
             variant="outlined"
             @click="showApproveDialog = false"
           >
-            Annuler
+            {{ t('action_cancel') }}
           </VBtn>
         </VCardActions>
       </VCard>
@@ -587,21 +589,21 @@ onMounted(async () => {
 
           <!-- Title -->
           <h5 class="text-h5 mb-4">
-            Refuser la demande d'affiliation
+            {{ t('refuse_affiliation_request') }}
           </h5>
 
           <!-- Text -->
           <p class="text-body-1 mb-6">
-            Refuser la demande d'affiliation de <strong>{{ selectedApplication?.nom_complet }}</strong> ?
+            {{ t('refuse_affiliate_confirm', { name: selectedApplication?.nom_complet }) }}
             <br>
-            <small class="text-medium-emphasis">Cette action nécessite une justification.</small>
+            <small class="text-medium-emphasis">{{ t('action_requires_justification') }}</small>
           </p>
 
           <!-- Required Reason -->
           <VTextarea
             v-model="refuseReason"
-            label="Raison du refus *"
-            placeholder="Expliquez pourquoi vous refusez cette demande..."
+            :label="t('refusal_reason_required')"
+            :placeholder="t('refusal_reason_placeholder')"
             variant="outlined"
             rows="3"
             :error="!refuseReason.trim()"
@@ -617,7 +619,7 @@ onMounted(async () => {
             :disabled="!refuseReason.trim()"
             @click="refuseApplication"
           >
-            Refuser
+            {{ t('action_refuse') }}
           </VBtn>
 
           <VBtn
@@ -625,7 +627,7 @@ onMounted(async () => {
             variant="outlined"
             @click="showRefuseDialog = false"
           >
-            Annuler
+            {{ t('action_cancel') }}
           </VBtn>
         </VCardActions>
       </VCard>
@@ -634,10 +636,10 @@ onMounted(async () => {
     <!-- Resend Verification Confirm Dialog -->
     <ConfirmDialog
       v-model="showResendConfirm"
-      title="Renvoyer l'email de vérification"
-      :text="`Renvoyer l'email de vérification à ${selectedApplication?.email} ?`"
-      confirm-text="Renvoyer"
-      cancel-text="Annuler"
+      :title="t('resend_verification_email')"
+      :text="t('resend_verification_confirm', { email: selectedApplication?.email })"
+      :confirm-text="t('action_resend')"
+      :cancel-text="t('action_cancel')"
       color="info"
       icon="tabler-mail"
       :loading="affiliateApplicationsStore.isResending(selectedApplication?.id || '')"

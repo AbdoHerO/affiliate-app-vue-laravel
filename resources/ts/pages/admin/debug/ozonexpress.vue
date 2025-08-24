@@ -135,7 +135,7 @@
 
         <!-- Platform Sync -->
         <VCard class="mb-4" variant="outlined">
-          <VCardTitle>Synchronisation Plateforme OzonExpress</VCardTitle>
+          <VCardTitle>{{ t('admin.debug.platformSync') }}</VCardTitle>
           <VCardText>
             <div class="d-flex gap-2 mb-4">
               <VBtn
@@ -230,7 +230,7 @@
 
         <!-- Real Parcels Analytics -->
         <VCard class="mb-4" variant="outlined">
-          <VCardTitle>Analyse des Colis Réels</VCardTitle>
+          <VCardTitle>{{ t('admin.debug.realParcelsAnalytics') }}</VCardTitle>
           <VCardText>
             <VBtn
               color="primary"
@@ -285,7 +285,7 @@
 
         <!-- Recent Real Parcels -->
         <VCard class="mb-4" variant="outlined">
-          <VCardTitle>Colis Réels Récents</VCardTitle>
+          <VCardTitle>{{ t('admin.debug.recentRealParcels') }}</VCardTitle>
           <VCardText>
             <div class="d-flex gap-2 mb-4">
               <VBtn
@@ -367,7 +367,7 @@
 
         <!-- Quick Actions -->
         <VCard variant="outlined">
-          <VCardTitle>Actions Rapides</VCardTitle>
+          <VCardTitle>{{ t('admin.debug.quickActions') }}</VCardTitle>
           <VCardText>
             <div class="d-flex gap-2 flex-wrap">
               <VBtn
@@ -548,7 +548,7 @@
     <VCard class="mt-6">
       <VCardTitle class="d-flex align-center gap-2">
         <VIcon icon="tabler-api" />
-        API Debug Avancé
+        {{ t('admin.debug.advancedApiDebug') }}
       </VCardTitle>
       <VCardText>
         <VRow>
@@ -557,12 +557,12 @@
             <VCard variant="outlined">
               <VCardTitle class="d-flex align-center gap-2">
                 <VIcon icon="tabler-package-export" />
-                Envoyer un Colis
+                {{ t('admin.debug.sendParcel') }}
               </VCardTitle>
               <VCardText>
                 <VTabs v-model="sendTab" class="mb-4">
-                  <VTab value="manual">Saisie Manuelle</VTab>
-                  <VTab value="order">Depuis Commande</VTab>
+                  <VTab value="manual">{{ t('admin.debug.manualEntry') }}</VTab>
+                  <VTab value="order">{{ t('admin.debug.fromOrder') }}</VTab>
                 </VTabs>
 
                 <VWindow v-model="sendTab">
@@ -573,14 +573,14 @@
                         <VCol cols="12" md="6">
                           <VTextField
                             v-model="manualForm.receiver"
-                            label="Destinataire"
+                            :label="t('admin.debug.recipient')"
                             required
                           />
                         </VCol>
                         <VCol cols="12" md="6">
                           <VTextField
                             v-model="manualForm.phone"
-                            label="Téléphone"
+                            :label="t('admin.debug.phone')"
                             required
                           />
                         </VCol>
@@ -590,7 +590,7 @@
                             :items="shippingStore.cities"
                             item-title="name"
                             item-value="city_id"
-                            label="Ville"
+                            :label="t('admin.debug.city')"
                             placeholder="Sélectionnez une ville"
                             required
                             :loading="shippingStore.loading"
@@ -599,7 +599,7 @@
                         <VCol cols="12" md="6">
                           <VTextField
                             v-model="manualForm.price"
-                            label="Prix"
+                            :label="t('admin.debug.price')"
                             type="number"
                             step="0.01"
                             required
@@ -608,14 +608,14 @@
                         <VCol cols="12">
                           <VTextarea
                             v-model="manualForm.address"
-                            label="Adresse"
+                            :label="t('admin.debug.address')"
                             required
                           />
                         </VCol>
                         <VCol cols="12" md="6">
                           <VTextField
                             v-model="manualForm.nature"
-                            label="Nature du colis"
+                            :label="t('admin.debug.parcelNature')"
                             required
                           />
                         </VCol>
@@ -626,7 +626,7 @@
                               { title: 'Ramassage', value: 0 },
                               { title: 'Stock', value: 1 }
                             ]"
-                            label="Type de colis"
+                            :label="t('admin.debug.parcelType')"
                             required
                           />
                         </VCol>
@@ -714,7 +714,7 @@
             <VCard variant="outlined">
               <VCardTitle class="d-flex align-center gap-2">
                 <VIcon icon="tabler-search" />
-                Suivre un Colis
+                {{ t('admin.debug.trackParcel') }}
               </VCardTitle>
               <VCardText>
                 <VForm @submit.prevent="trackParcelEnhanced">
@@ -722,7 +722,7 @@
                     <VCol cols="12">
                       <VTextField
                         v-model="enhancedTrackingNumber"
-                        label="Numéro de suivi"
+                        :label="t('admin.debug.trackingNumber')"
                         placeholder="Entrez le numéro de suivi..."
                         required
                       />
@@ -755,7 +755,7 @@
                 <!-- Tracking Details -->
                 <div v-if="trackResult?.success && trackResult.data" class="mt-4">
                   <VCard variant="outlined">
-                    <VCardTitle>Détails du Colis</VCardTitle>
+                    <VCardTitle>{{ t('admin.debug.parcelDetails') }}</VCardTitle>
                     <VCardText>
                       <VRow>
                         <VCol cols="12" md="6">
@@ -795,7 +795,7 @@
     <VCard class="mt-6">
       <VCardTitle class="d-flex align-center gap-2">
         <VIcon icon="tabler-file-plus" />
-        Test Bon de Livraison (BL)
+        {{ t('admin.debug.deliveryNoteTest') }}
       </VCardTitle>
       <VCardText>
         <VAlert
@@ -883,7 +883,7 @@
     <!-- Meta Dialog -->
     <VDialog v-model="metaDialog.show" max-width="600">
       <VCard>
-        <VCardTitle>Détails du Colis</VCardTitle>
+        <VCardTitle>{{ t('admin.debug.parcelDetails') }}</VCardTitle>
         <VCardText>
           <pre class="text-caption">{{ JSON.stringify(metaDialog.data, null, 2) }}</pre>
         </VCardText>
@@ -897,11 +897,11 @@
     <!-- Tracking Dialog -->
     <VDialog v-model="showTrackingDialog" max-width="500">
       <VCard>
-        <VCardTitle>Suivre un Colis</VCardTitle>
+        <VCardTitle>{{ t('admin.debug.trackParcel') }}</VCardTitle>
         <VCardText>
           <VTextField
             v-model="trackingNumber"
-            label="Numéro de Suivi"
+            :label="t('admin.debug.trackingNumber')"
             placeholder="Ex: OZ83PYCK141995"
             variant="outlined"
             :loading="loading.trackTest"
@@ -915,7 +915,7 @@
               @click="trackingNumber = createTestResult.data.tracking_number"
             >
               <VIcon start icon="tabler-copy" />
-              Utiliser Dernier Colis Créé ({{ createTestResult.data.tracking_number }})
+              {{ t('admin.debug.useLastCreated') }} ({{ createTestResult.data.tracking_number }})
             </VBtn>
           </div>
         </VCardText>
@@ -926,7 +926,7 @@
             variant="text"
             @click="showTrackingDialog = false"
           >
-            Annuler
+            {{ t('admin.debug.cancel') }}
           </VBtn>
           <VBtn
             color="primary"
@@ -934,7 +934,7 @@
             :loading="loading.trackTest"
             :disabled="!trackingNumber.trim()"
           >
-            Suivre
+            {{ t('admin.debug.track') }}
           </VBtn>
         </VCardActions>
       </VCard>

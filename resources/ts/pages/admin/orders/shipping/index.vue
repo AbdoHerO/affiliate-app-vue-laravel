@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useShippingStore } from '@/stores/admin/shipping'
 import { useConfirmAction } from '@/composables/useConfirmAction'
 import { useNotifications } from '@/composables/useNotifications'
@@ -15,6 +16,7 @@ definePage({
   },
 })
 
+const { t } = useI18n()
 const router = useRouter()
 const shippingStore = useShippingStore()
 const { confirm } = useConfirmAction()
@@ -43,32 +45,32 @@ const pagination = computed(() => shippingStore.pagination)
 
 // Table headers
 const headers = [
-  { title: 'Code', key: 'id', sortable: true },
-  { title: 'Tracking', key: 'tracking_number', sortable: true },
-  { title: 'Client', key: 'client', sortable: false },
-  { title: 'Ville', key: 'city', sortable: false },
-  { title: 'Statut', key: 'status', sortable: true },
-  { title: 'Total', key: 'total_ttc', sortable: true },
-  { title: 'Mis à jour', key: 'updated_at', sortable: true },
-  { title: 'Actions', key: 'actions', sortable: false },
+  { title: t('code'), key: 'id', sortable: true },
+  { title: t('tracking'), key: 'tracking_number', sortable: true },
+  { title: t('client'), key: 'client', sortable: false },
+  { title: t('city'), key: 'city', sortable: false },
+  { title: t('status'), key: 'status', sortable: true },
+  { title: t('total'), key: 'total_ttc', sortable: true },
+  { title: t('updated'), key: 'updated_at', sortable: true },
+  { title: t('actions'), key: 'actions', sortable: false },
 ]
 
 // Status options - consistent with OzonExpress mapping
 const statusOptions = [
-  { title: 'Tous', value: '' },
-  { title: 'En attente', value: 'pending' },
-  { title: 'Reçu', value: 'received' },
-  { title: 'En transit', value: 'in_transit' },
-  { title: 'Expédié', value: 'shipped' },
-  { title: 'Au centre', value: 'at_facility' },
-  { title: 'Prêt pour livraison', value: 'ready_for_delivery' },
-  { title: 'En cours de livraison', value: 'out_for_delivery' },
-  { title: 'Tentative de livraison', value: 'delivery_attempted' },
-  { title: 'Livré', value: 'delivered' },
-  { title: 'Retourné', value: 'returned' },
-  { title: 'Refusé', value: 'refused' },
-  { title: 'Annulé', value: 'cancelled' },
-  { title: 'Inconnu', value: 'unknown' },
+  { title: t('all'), value: '' },
+  { title: t('pending'), value: 'pending' },
+  { title: t('received'), value: 'received' },
+  { title: t('in_transit'), value: 'in_transit' },
+  { title: t('shipped'), value: 'shipped' },
+  { title: t('at_facility'), value: 'at_facility' },
+  { title: t('ready_for_delivery'), value: 'ready_for_delivery' },
+  { title: t('out_for_delivery'), value: 'out_for_delivery' },
+  { title: t('delivery_attempted'), value: 'delivery_attempted' },
+  { title: t('delivered'), value: 'delivered' },
+  { title: t('returned'), value: 'returned' },
+  { title: t('refused'), value: 'refused' },
+  { title: t('cancelled'), value: 'cancelled' },
+  { title: t('unknown'), value: 'unknown' },
 ]
 
 // Methods
@@ -429,10 +431,10 @@ onMounted(() => {
     <div class="d-flex justify-space-between align-center mb-6">
       <div>
         <h1 class="text-h4 font-weight-bold mb-1">
-          Commandes Expédiées
+          {{ t('shipped_orders') }}
         </h1>
         <p class="text-body-1 mb-0">
-          Gestion des commandes envoyées vers OzonExpress
+          {{ t('shipped_orders_desc') }}
         </p>
       </div>
       <div class="d-flex gap-2">
@@ -443,7 +445,7 @@ onMounted(() => {
           @click="refreshTrackingBulk"
         >
           <VIcon start icon="tabler-refresh" />
-          Actualiser Suivi ({{ selectedOrders.length }})
+          {{ t('refresh_tracking_bulk', { count: selectedOrders.length }) }}
         </VBtn>
         <VBtn
           color="secondary"
@@ -452,7 +454,7 @@ onMounted(() => {
           @click="createDeliveryNote"
         >
           <VIcon start icon="tabler-file-plus" />
-          Bon de Livraison ({{ selectedOrders.length }})
+          {{ t('delivery_note_bulk', { count: selectedOrders.length }) }}
         </VBtn>
         <VBtn
           color="primary"
@@ -460,7 +462,7 @@ onMounted(() => {
           @click="resetFilters"
         >
           <VIcon start icon="tabler-refresh" />
-          Actualiser
+          {{ t('refresh') }}
         </VBtn>
       </div>
     </div>
@@ -472,8 +474,8 @@ onMounted(() => {
           <VCol cols="12" md="3">
             <VTextField
               v-model="searchQuery"
-              label="Rechercher..."
-              placeholder="Client, téléphone, tracking..."
+              :label="t('search')"
+              :placeholder="t('search_client_phone_tracking')"
               prepend-inner-icon="tabler-search"
               clearable
               @input="handleSearch"
@@ -482,7 +484,7 @@ onMounted(() => {
           <VCol cols="12" md="2">
             <VSelect
               v-model="selectedStatus"
-              label="Statut"
+              :label="t('status')"
               :items="statusOptions"
               clearable
               @update:model-value="handleSearch"
@@ -491,7 +493,7 @@ onMounted(() => {
           <VCol cols="12" md="2">
             <VTextField
               v-model="dateFrom"
-              label="Date début"
+              :label="t('date_from')"
               type="date"
               @change="handleSearch"
             />
@@ -499,7 +501,7 @@ onMounted(() => {
           <VCol cols="12" md="2">
             <VTextField
               v-model="dateTo"
-              label="Date fin"
+              :label="t('date_to')"
               type="date"
               @change="handleSearch"
             />
@@ -507,7 +509,7 @@ onMounted(() => {
           <VCol cols="12" md="2">
             <VSelect
               v-model="itemsPerPage"
-              label="Par page"
+              :label="t('per_page')"
               :items="[10, 15, 25, 50]"
               @update:model-value="handleSearch"
             />
@@ -697,23 +699,23 @@ onMounted(() => {
                   v-if="item.shipping_parcel.delivery_note_ref"
                   @click="openPDF(item.shipping_parcel.delivery_note_ref, 'pdf')"
                 >
-                  <VListItemTitle>PDF Standard</VListItemTitle>
+                  <VListItemTitle>{{ t('pdf_standard') }}</VListItemTitle>
                 </VListItem>
                 <VListItem
                   v-if="item.shipping_parcel.delivery_note_ref"
                   @click="openPDF(item.shipping_parcel.delivery_note_ref, 'a4')"
                 >
-                  <VListItemTitle>Étiquettes A4</VListItemTitle>
+                  <VListItemTitle>{{ t('labels_a4') }}</VListItemTitle>
                 </VListItem>
                 <VListItem
                   v-if="item.shipping_parcel.delivery_note_ref"
                   @click="openPDF(item.shipping_parcel.delivery_note_ref, '100x100')"
                 >
-                  <VListItemTitle>Étiquettes 100x100</VListItemTitle>
+                  <VListItemTitle>{{ t('labels_100x100') }}</VListItemTitle>
                 </VListItem>
                 <VListItem v-if="!item.shipping_parcel.delivery_note_ref">
                   <VListItemTitle class="text-medium-emphasis">
-                    Aucun bon de livraison
+                    {{ t('no_delivery_note') }}
                   </VListItemTitle>
                 </VListItem>
               </VList>
@@ -730,9 +732,9 @@ onMounted(() => {
               class="mb-4"
               color="disabled"
             />
-            <h3 class="text-h6 mb-2">Aucune commande expédiée</h3>
+            <h3 class="text-h6 mb-2">{{ t('no_shipped_orders') }}</h3>
             <p class="text-body-2 text-medium-emphasis">
-              Aucune commande envoyée vers OzonExpress trouvée
+              {{ t('no_orders_sent_ozonexpress') }}
             </p>
           </div>
         </template>
@@ -782,25 +784,25 @@ onMounted(() => {
       <VCard>
         <VCardTitle class="text-h6">
           <VIcon start icon="tabler-edit" color="warning" />
-          Modifier le Statut d'Expédition
+          {{ t('modify_shipping_status') }}
         </VCardTitle>
 
         <VCardText>
           <p class="mb-4">
-            Modifier le statut de cette expédition locale.
-            <strong>Note:</strong> Le passage au statut "Livré" créera automatiquement la commission.
+            {{ t('modify_local_shipment_status') }}
+            <strong>{{ t('note') }}:</strong> {{ t('note_delivered_status_commission') }}
           </p>
 
           <VSelect
             v-model="newStatus"
-            label="Nouveau statut"
+            :label="t('new_status')"
             :items="[
-              { title: 'En attente', value: 'pending' },
-              { title: 'Expédiée', value: 'expediee' },
-              { title: 'Livrée', value: 'livree' },
-              { title: 'Refusée', value: 'refusee' },
-              { title: 'Retournée', value: 'retournee' },
-              { title: 'Annulée', value: 'annulee' }
+              { title: t('pending'), value: 'pending' },
+              { title: t('shipped'), value: 'expediee' },
+              { title: t('delivered_livree'), value: 'livree' },
+              { title: t('refused'), value: 'refusee' },
+              { title: t('returned'), value: 'retournee' },
+              { title: t('cancelled'), value: 'annulee' }
             ]"
             variant="outlined"
             class="mb-4"
@@ -808,8 +810,8 @@ onMounted(() => {
 
           <VTextarea
             v-model="statusNote"
-            label="Note (optionnelle)"
-            placeholder="Ajouter une note pour ce changement de statut..."
+            :label="t('note_optional')"
+            :placeholder="t('add_status_change_note')"
             rows="3"
             variant="outlined"
           />

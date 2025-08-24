@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useShippingStore } from '@/stores/admin/shipping'
 import { useConfirmAction } from '@/composables/useConfirmAction'
 import { useNotifications } from '@/composables/useNotifications'
@@ -12,6 +13,7 @@ definePage({
   },
 })
 
+const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const shippingStore = useShippingStore()
@@ -384,7 +386,7 @@ onMounted(() => {
         color="primary"
         size="64"
       />
-      <p class="mt-4">Chargement de la commande...</p>
+      <p class="mt-4">{{ t('loading_order') }}</p>
     </div>
 
     <!-- Order Content -->
@@ -399,7 +401,7 @@ onMounted(() => {
           />
           <div>
             <h1 class="text-h4 font-weight-bold mb-1">
-              Expédition {{ shippingOrder.id.slice(0, 8) }}
+              {{ t('shipment') }} {{ shippingOrder.id.slice(0, 8) }}
             </h1>
             <div class="d-flex align-center gap-2">
               <VChip
@@ -427,7 +429,7 @@ onMounted(() => {
                   start
                   :icon="shippingOrder.shipping_parcel?.sent_to_carrier ? 'tabler-truck' : 'tabler-package'"
                 />
-                {{ shippingOrder.shipping_parcel?.sent_to_carrier ? 'Transporteur' : 'Local' }}
+                {{ shippingOrder.shipping_parcel?.sent_to_carrier ? t('carrier') : t('local') }}
               </VChip>
               <VChip
                 size="small"
@@ -596,27 +598,27 @@ onMounted(() => {
                         </VChip>
                       </div>
                       <div class="mb-4">
-                        <div class="text-body-2 text-medium-emphasis mb-1">Destinataire</div>
+                        <div class="text-body-2 text-medium-emphasis mb-1">{{ t('recipient') }}</div>
                         <div class="text-body-1">{{ shippingOrder.shipping_parcel.receiver }}</div>
                       </div>
                       <div class="mb-4">
-                        <div class="text-body-2 text-medium-emphasis mb-1">Téléphone</div>
+                        <div class="text-body-2 text-medium-emphasis mb-1">{{ t('phone') }}</div>
                         <div class="text-body-1">{{ shippingOrder.shipping_parcel.phone }}</div>
                       </div>
                     </VCol>
                     <VCol cols="12" md="6">
                       <div class="mb-4">
-                        <div class="text-body-2 text-medium-emphasis mb-1">Ville</div>
+                        <div class="text-body-2 text-medium-emphasis mb-1">{{ t('city') }}</div>
                         <VChip color="info" variant="tonal">
                           {{ shippingOrder.shipping_parcel.city_name }}
                         </VChip>
                       </div>
                       <div class="mb-4">
-                        <div class="text-body-2 text-medium-emphasis mb-1">Adresse</div>
+                        <div class="text-body-2 text-medium-emphasis mb-1">{{ t('address') }}</div>
                         <div class="text-body-1">{{ shippingOrder.shipping_parcel.address }}</div>
                       </div>
                       <div class="mb-4">
-                        <div class="text-body-2 text-medium-emphasis mb-1">Prix</div>
+                        <div class="text-body-2 text-medium-emphasis mb-1">{{ t('price') }}</div>
                         <div class="text-h6">{{ formatCurrency(shippingOrder.shipping_parcel.price || 0) }}</div>
                       </div>
                     </VCol>
@@ -1027,8 +1029,8 @@ onMounted(() => {
 
       <VCardText>
         <p class="mb-4">
-          Modifier le statut de cette expédition locale.
-          <strong>Note:</strong> Le passage au statut "Livré" créera automatiquement la commission.
+          {{ t('modify_local_shipment_status') }}
+          <strong>{{ t('note') }}:</strong> {{ t('note_delivered_status_commission') }}
         </p>
 
         <VSelect

@@ -69,33 +69,33 @@ const DEFAULT_DIR = 'desc'
 
 // Computed
 const breadcrumbItems = computed(() => [
-  { title: 'Dashboard', to: '/admin/dashboard' },
-  { title: 'Finance', disabled: true },
-  { title: 'Retraits', disabled: true },
+  { title: t('dashboard'), to: '/admin/dashboard' },
+  { title: t('finance'), disabled: true },
+  { title: t('admin_withdrawals_title'), disabled: true },
 ])
 
 const statusOptions = [
-  { title: 'En attente', value: 'pending' },
-  { title: 'Approuvé', value: 'approved' },
-  { title: 'En cours de paiement', value: 'in_payment' },
-  { title: 'Payé', value: 'paid' },
-  { title: 'Rejeté', value: 'rejected' },
-  { title: 'Annulé', value: 'canceled' },
+  { title: t('admin_withdrawals_pending'), value: 'pending' },
+  { title: t('admin_withdrawals_approved'), value: 'approved' },
+  { title: t('admin_withdrawals_mark_in_payment'), value: 'in_payment' },
+  { title: t('admin_withdrawals_paid'), value: 'paid' },
+  { title: t('admin_withdrawals_rejected'), value: 'rejected' },
+  { title: t('status_canceled'), value: 'canceled' },
 ]
 
 const methodOptions = [
-  { title: 'Virement bancaire', value: 'bank_transfer' },
+  { title: t('payment_method_bank_transfer'), value: 'bank_transfer' },
 ]
 
 const tableHeaders = [
-  { title: 'Référence', key: 'id', sortable: true },
-  { title: 'Affilié', key: 'user.nom_complet', sortable: true },
-  { title: 'Montant', key: 'amount', sortable: true },
-  { title: 'Méthode', key: 'method', sortable: false },
-  { title: 'Statut', key: 'status', sortable: true },
-  { title: 'Commissions', key: 'commission_count', sortable: false },
-  { title: 'Créé le', key: 'created_at', sortable: true },
-  { title: 'Actions', key: 'actions', sortable: false },
+  { title: t('table_column_reference'), key: 'id', sortable: true },
+  { title: t('table_column_affiliate'), key: 'user.nom_complet', sortable: true },
+  { title: t('admin_withdrawals_amount'), key: 'amount', sortable: true },
+  { title: t('table_column_method'), key: 'method', sortable: false },
+  { title: t('table_column_status'), key: 'status', sortable: true },
+  { title: t('table_column_commissions'), key: 'commission_count', sortable: false },
+  { title: t('admin_withdrawals_created_at'), key: 'created_at', sortable: true },
+  { title: t('table_column_actions'), key: 'actions', sortable: false },
 ]
 
 const hasFilters = computed(() => {
@@ -199,7 +199,7 @@ const toggleSelectAll = () => {
 
 const viewWithdrawal = (withdrawal: Withdrawal) => {
   if (!withdrawal?.id) {
-    showError('ID de retrait invalide')
+    showError(t('error_invalid_withdrawal_id'))
     return
   }
   router.push(`/admin/withdrawals/${withdrawal.id}`)
@@ -238,10 +238,10 @@ const handleActionSuccess = async () => {
     await fetchWithdrawals()
 
     // Show success message
-    showSuccess('Action effectuée avec succès')
+    showSuccess(t('action_success'))
   } catch (error) {
     console.error('Error handling action success:', error)
-    showError('Erreur lors de la mise à jour des données')
+    showError(t('error_updating_data'))
   }
 }
 
@@ -257,9 +257,9 @@ const exportWithdrawals = async () => {
 
   const result = await withdrawalsStore.exportCsv(filterParams)
   if (result.success) {
-    showSuccess(result.message || 'Export réussi')
+    showSuccess(result.message || t('export_success'))
   } else {
-    showError(result.message || 'Erreur lors de l\'export')
+    showError(result.message || t('export_error'))
   }
 }
 
@@ -300,9 +300,9 @@ onMounted(() => {
     <!-- Page Header -->
     <VRow class="mb-6">
       <VCol cols="12" md="6">
-        <h1 class="text-h4 font-weight-bold">Gestion des Retraits</h1>
+        <h1 class="text-h4 font-weight-bold">{{ t('admin_withdrawals_title') }}</h1>
         <p class="text-body-1 text-medium-emphasis">
-          Gérez les demandes de retrait des affiliés
+          {{ t('admin_withdrawals_subtitle') }}
         </p>
       </VCol>
       <VCol cols="12" md="6" class="text-md-end">
@@ -311,7 +311,7 @@ onMounted(() => {
           prepend-icon="tabler-plus"
           @click="createWithdrawal"
         >
-          Nouveau Retrait
+          {{ t('admin_withdrawals_create') }}
         </VBtn>
       </VCol>
     </VRow>
@@ -324,7 +324,7 @@ onMounted(() => {
             <div class="d-flex justify-space-between align-center">
               <div>
                 <div class="text-h6">{{ summary?.pending?.count || 0 }}</div>
-                <div class="text-body-2">En attente</div>
+                <div class="text-body-2">{{ t('admin_withdrawals_pending') }}</div>
               </div>
               <VIcon icon="tabler-clock" size="32" />
             </div>
@@ -338,7 +338,7 @@ onMounted(() => {
             <div class="d-flex justify-space-between align-center">
               <div>
                 <div class="text-h6">{{ summary?.approved?.count || 0 }}</div>
-                <div class="text-body-2">Approuvés</div>
+                <div class="text-body-2">{{ t('admin_withdrawals_approved') }}</div>
               </div>
               <VIcon icon="tabler-check" size="32" />
             </div>
@@ -352,7 +352,7 @@ onMounted(() => {
             <div class="d-flex justify-space-between align-center">
               <div>
                 <div class="text-h6">{{ summary?.in_payment?.count || 0 }}</div>
-                <div class="text-body-2">En cours</div>
+                <div class="text-body-2">{{ t('status_in_payment') }}</div>
               </div>
               <VIcon icon="tabler-credit-card" size="32" />
             </div>
@@ -366,7 +366,7 @@ onMounted(() => {
             <div class="d-flex justify-space-between align-center">
               <div>
                 <div class="text-h6">{{ summary?.paid?.count || 0 }}</div>
-                <div class="text-body-2">Payés</div>
+                <div class="text-body-2">{{ t('admin_withdrawals_paid') }}</div>
               </div>
               <VIcon icon="tabler-check-circle" size="32" />
             </div>
@@ -383,11 +383,11 @@ onMounted(() => {
           <VCol cols="12" md="3">
             <VTextField
               v-model="searchQuery"
-              label="Rechercher par nom, email ou référence..."
+              :label="t('search_withdrawals_placeholder')"
               prepend-inner-icon="tabler-search"
               :loading="loading"
               clearable
-              hint="Recherche dans le nom, email de l'affilié ou référence de paiement"
+              :hint="t('search_withdrawals_hint')"
               persistent-hint
             />
           </VCol>
@@ -395,7 +395,7 @@ onMounted(() => {
             <VSelect
               v-model="selectedStatuses"
               :items="statusOptions"
-              label="Statuts"
+              :label="t('table_column_status')"
               multiple
               chips
               clearable
@@ -405,21 +405,21 @@ onMounted(() => {
             <VSelect
               v-model="selectedMethod"
               :items="methodOptions"
-              label="Méthode"
+              :label="t('table_column_method')"
               clearable
             />
           </VCol>
           <VCol cols="12" md="2">
             <VTextField
               v-model="dateFrom"
-              label="Date début"
+              :label="t('filter_date_from')"
               type="date"
             />
           </VCol>
           <VCol cols="12" md="2">
             <VTextField
               v-model="dateTo"
-              label="Date fin"
+              :label="t('filter_date_to')"
               type="date"
             />
           </VCol>
@@ -441,7 +441,7 @@ onMounted(() => {
                   method: selectedMethod,
                   dateFrom,
                   dateTo
-                }).filter(Boolean).length }} filtre(s) actif(s)
+                }).filter(Boolean).length }} {{ t('filters_active') }}
               </VChip>
 
               <!-- Show individual active filters -->
@@ -453,7 +453,7 @@ onMounted(() => {
                 closable
                 @click:close="searchQuery = ''"
               >
-                Recherche: "{{ searchQuery.trim() }}"
+                {{ t('filter_search') }}: "{{ searchQuery.trim() }}"
               </VChip>
 
               <VChip
@@ -464,7 +464,7 @@ onMounted(() => {
                 closable
                 @click:close="selectedStatuses = []"
               >
-                Statuts: {{ selectedStatuses.length }}
+                {{ t('table_column_status') }}: {{ selectedStatuses.length }}
               </VChip>
 
               <VBtn
@@ -474,7 +474,7 @@ onMounted(() => {
                 prepend-icon="tabler-filter-x"
                 @click="clearFilters"
               >
-                Effacer tous les filtres
+                {{ t('clear_all_filters') }}
               </VBtn>
             </div>
           </VCol>
@@ -490,14 +490,14 @@ onMounted(() => {
       <VCardText v-if="selectedWithdrawals.length > 0" class="pb-0">
         <VAlert color="info" variant="tonal">
           <div class="d-flex justify-space-between align-center">
-            <span>{{ selectedWithdrawals.length }} retrait(s) sélectionné(s)</span>
+            <span>{{ selectedWithdrawals.length }} {{ t('selected_withdrawals') }}</span>
             <div class="d-flex gap-2">
               <VBtn
                 variant="tonal"
                 size="small"
                 @click="exportWithdrawals"
               >
-                Exporter sélection
+                {{ t('export_selection') }}
               </VBtn>
             </div>
           </div>
@@ -511,7 +511,7 @@ onMounted(() => {
             :indeterminate="isSomeSelected"
             @click="toggleSelectAll"
           />
-          <span class="text-body-2">Tout sélectionner</span>
+          <span class="text-body-2">{{ t('select_all') }}</span>
         </div>
 
         <div class="d-flex gap-2">
@@ -520,7 +520,7 @@ onMounted(() => {
             prepend-icon="tabler-download"
             @click="exportWithdrawals"
           >
-            Exporter
+            {{ t('action_export') }}
           </VBtn>
         </div>
       </VCardText>
@@ -563,7 +563,7 @@ onMounted(() => {
         <!-- Method Column -->
         <template #item.method="{ item }">
           <VChip variant="tonal" size="small">
-            {{ item?.method === 'bank_transfer' ? 'Virement' : (item?.method || '—') }}
+            {{ item?.method === 'bank_transfer' ? t('payment_method_bank_transfer') : (item?.method || '—') }}
           </VChip>
         </template>
 
@@ -597,7 +597,7 @@ onMounted(() => {
             <!-- View -->
             <ActionIcon
               icon="tabler-eye"
-              label="Voir les détails"
+              :label="t('action_view_details')"
               @click="viewWithdrawal(item)"
             />
 
@@ -605,7 +605,7 @@ onMounted(() => {
             <ActionIcon
               v-if="item.can_approve"
               icon="tabler-check"
-              label="Approuver"
+              :label="t('admin_withdrawals_approve')"
               variant="success"
               @click="openActionDialog(item, 'approve')"
             />
@@ -614,7 +614,7 @@ onMounted(() => {
             <ActionIcon
               v-if="item.can_reject"
               icon="tabler-x"
-              label="Rejeter"
+              :label="t('admin_withdrawals_reject')"
               variant="danger"
               @click="openActionDialog(item, 'reject')"
             />
@@ -623,7 +623,7 @@ onMounted(() => {
             <ActionIcon
               v-if="item.can_mark_in_payment"
               icon="tabler-clock"
-              label="Marquer en cours de paiement"
+              :label="t('admin_withdrawals_mark_in_payment')"
               variant="primary"
               @click="openActionDialog(item, 'mark_in_payment')"
             />
@@ -632,7 +632,7 @@ onMounted(() => {
             <ActionIcon
               v-if="item.can_mark_paid"
               icon="tabler-credit-card"
-              label="Marquer comme payé"
+              :label="t('admin_withdrawals_mark_paid')"
               variant="success"
               @click="openActionDialog(item, 'mark_paid')"
             />
@@ -643,16 +643,16 @@ onMounted(() => {
         <template #no-data>
           <div class="text-center py-8">
             <VIcon icon="tabler-inbox" size="64" class="mb-4" />
-            <h3 class="text-h6 mb-2">Aucun retrait trouvé</h3>
+            <h3 class="text-h6 mb-2">{{ t('no_withdrawals_found') }}</h3>
             <p class="text-body-2 text-medium-emphasis mb-4">
-              {{ hasFilters ? 'Aucun retrait ne correspond aux filtres appliqués' : 'Aucun retrait n\'a été créé' }}
+              {{ hasFilters ? t('no_withdrawals_match_filters') : t('no_withdrawals_created') }}
             </p>
             <VBtn
               v-if="!hasFilters"
               color="primary"
               @click="createWithdrawal"
             >
-              Créer le premier retrait
+              {{ t('create_first_withdrawal') }}
             </VBtn>
           </div>
         </template>

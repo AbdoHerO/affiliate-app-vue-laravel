@@ -73,7 +73,7 @@ const breadcrumbs = computed(() => [
 ])
 
 const headers = computed(() => [
-  { title: 'Photo', key: 'image', sortable: false, width: 80, align: 'center' as const },
+  { title: t('admin_produits_photo'), key: 'image', sortable: false, width: 80, align: 'center' as const },
   { title: t('admin_produits_titre'), key: 'titre', sortable: true, width: 350 },
   { title: t('admin_produits_boutique'), key: 'boutique.nom', sortable: true },
   { title: t('admin_produits_categorie'), key: 'categorie.nom', sortable: true },

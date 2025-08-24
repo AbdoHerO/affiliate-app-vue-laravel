@@ -51,20 +51,20 @@ const actionDialog = ref({
 
 // Computed
 const breadcrumbItems = computed(() => [
-  { title: 'Dashboard', to: '/admin/dashboard' },
-  { title: 'Finance', disabled: true },
-  { title: 'Retraits', to: '/admin/withdrawals' },
-  { title: currentWithdrawal.value?.id.substring(0, 8) || 'Détails', disabled: true },
+  { title: t('nav_dashboard'), to: '/admin/dashboard' },
+  { title: t('nav_financial_management'), disabled: true },
+  { title: t('nav_withdrawals'), to: '/admin/withdrawals' },
+  { title: currentWithdrawal.value?.id.substring(0, 8) || t('admin_withdrawals_details'), disabled: true },
 ])
 
 const commissionHeaders = [
-  { title: 'Commission', key: 'commission.id', sortable: false },
-  { title: 'Commande', key: 'commission.commande.id', sortable: false },
-  { title: 'Produit', key: 'commission.produit.titre', sortable: false },
-  { title: 'Montant', key: 'amount', sortable: false },
-  { title: 'Statut', key: 'commission.status', sortable: false },
-  { title: 'Date', key: 'commission.created_at', sortable: false },
-  { title: 'Actions', key: 'actions', sortable: false },
+  { title: t('admin_commissions_title'), key: 'commission.id', sortable: false },
+  { title: t('table_order_id'), key: 'commission.commande.id', sortable: false },
+  { title: t('table_product'), key: 'commission.produit.titre', sortable: false },
+  { title: t('admin_withdrawals_amount'), key: 'amount', sortable: false },
+  { title: t('table_status'), key: 'commission.status', sortable: false },
+  { title: t('table_created'), key: 'commission.created_at', sortable: false },
+  { title: t('table_actions'), key: 'actions', sortable: false },
 ]
 
 const canManageCommissions = computed(() => {
@@ -77,19 +77,19 @@ const fetchWithdrawal = async () => {
   try {
     const id = withdrawalId.value
     if (!id) {
-      showError('ID de retrait invalide')
+      showError(t('invalid_withdrawal_id'))
       router.push('/admin/withdrawals')
       return
     }
 
     const result = await withdrawalsStore.fetchOne(id)
     if (!result.success) {
-      showError(result.message || 'Erreur lors du chargement du retrait')
+      showError(result.message || t('error_loading_withdrawal'))
       router.push('/admin/withdrawals')
     }
   } catch (error) {
     console.error('Error fetching withdrawal:', error)
-    showError('Erreur lors du chargement du retrait')
+    showError(t('error_loading_withdrawal'))
     router.push('/admin/withdrawals')
   }
 }
@@ -114,10 +114,10 @@ const handleActionSuccess = async () => {
     await fetchWithdrawal()
 
     // Show success message
-    showSuccess('Action effectuée avec succès')
+    showSuccess(t('action_successful'))
   } catch (error) {
     console.error('Error handling action success:', error)
-    showError('Erreur lors de la mise à jour des données')
+    showError(t('error_updating_data'))
   }
 }
 
@@ -125,9 +125,9 @@ const detachCommissions = async () => {
   if (!currentWithdrawal.value || selectedCommissions.value.length === 0) return
 
   const confirmed = await confirm({
-    title: 'Détacher les commissions',
-    text: `Êtes-vous sûr de vouloir détacher ${selectedCommissions.value.length} commission(s) de ce retrait ?`,
-    confirmText: 'Détacher',
+    title: t('admin_withdrawals_detach_commissions'),
+    text: t('detach_commissions_confirm', { count: selectedCommissions.value.length }),
+    confirmText: t('detach'),
     color: 'error',
     type: 'danger',
   })
@@ -151,7 +151,7 @@ const exportWithdrawal = async () => {
   if (!currentWithdrawal.value) return
   
   // Export single withdrawal (you could implement this endpoint)
-  showSuccess('Export en cours...')
+  showSuccess(t('export_in_progress'))
 }
 
 const goBack = () => {
@@ -172,7 +172,7 @@ onMounted(() => {
     <!-- Loading State -->
     <div v-if="loading" class="text-center py-8">
       <VProgressCircular indeterminate size="64" />
-      <p class="mt-4">Chargement du retrait...</p>
+      <p class="mt-4">{{ t('loading_data') }}</p>
     </div>
 
     <!-- Content -->
@@ -187,11 +187,11 @@ onMounted(() => {
               size="small"
               @click="goBack"
             />
-            <h1 class="text-h4 font-weight-bold">Retrait {{ currentWithdrawal.id.substring(0, 8) }}</h1>
+            <h1 class="text-h4 font-weight-bold">{{ t('nav_withdrawals') }} {{ currentWithdrawal.id.substring(0, 8) }}</h1>
             <WithdrawalStatusBadge :status="currentWithdrawal.status" />
           </div>
           <p class="text-body-1 text-medium-emphasis">
-            Détails et gestion du retrait
+            {{ t('admin_withdrawals_details') }}
           </p>
         </VCol>
         <VCol cols="12" md="6" class="text-md-end">
@@ -204,7 +204,7 @@ onMounted(() => {
               prepend-icon="tabler-check"
               @click="openActionDialog('approve')"
             >
-              Approuver
+              {{ t('admin_withdrawals_approve') }}
             </VBtn>
             
             <VBtn
@@ -214,7 +214,7 @@ onMounted(() => {
               prepend-icon="tabler-x"
               @click="openActionDialog('reject')"
             >
-              Rejeter
+              {{ t('admin_withdrawals_reject') }}
             </VBtn>
             
             <VBtn
@@ -224,7 +224,7 @@ onMounted(() => {
               prepend-icon="tabler-clock"
               @click="openActionDialog('mark_in_payment')"
             >
-              En cours de paiement
+              {{ t('admin_withdrawals_mark_in_payment') }}
             </VBtn>
             
             <VBtn
@@ -233,7 +233,7 @@ onMounted(() => {
               prepend-icon="tabler-credit-card"
               @click="openActionDialog('mark_paid')"
             >
-              Marquer payé
+              {{ t('admin_withdrawals_mark_paid') }}
             </VBtn>
 
             <VBtn
@@ -241,7 +241,7 @@ onMounted(() => {
               prepend-icon="tabler-download"
               @click="exportWithdrawal"
             >
-              Exporter
+              {{ t('action_download') }}
             </VBtn>
           </div>
         </VCol>
@@ -252,37 +252,37 @@ onMounted(() => {
         <!-- Withdrawal Info -->
         <VCol cols="12" md="6">
           <VCard>
-            <VCardTitle>Informations du retrait</VCardTitle>
+            <VCardTitle>{{ t('admin_withdrawals_details') }}</VCardTitle>
             <VCardText>
               <VRow>
                 <VCol cols="6">
-                  <div class="text-caption text-medium-emphasis">Montant</div>
+                  <div class="text-caption text-medium-emphasis">{{ t('admin_withdrawals_amount') }}</div>
                   <div class="text-h6 font-weight-bold">{{ Number(currentWithdrawal.amount).toFixed(2) }} MAD</div>
                 </VCol>
                 <VCol cols="6">
-                  <div class="text-caption text-medium-emphasis">Méthode</div>
+                  <div class="text-caption text-medium-emphasis">{{ t('payment_method') }}</div>
                   <div class="text-body-1">
-                    {{ currentWithdrawal.method === 'bank_transfer' ? 'Virement bancaire' : currentWithdrawal.method }}
+                    {{ currentWithdrawal.method === 'bank_transfer' ? t('bank_transfer') : currentWithdrawal.method }}
                   </div>
                 </VCol>
                 <VCol cols="6">
-                  <div class="text-caption text-medium-emphasis">Commissions</div>
-                  <div class="text-body-1">{{ currentWithdrawal.commission_count }} commission(s)</div>
+                  <div class="text-caption text-medium-emphasis">{{ t('commissions') }}</div>
+                  <div class="text-body-1">{{ t('commission_count_text', { count: currentWithdrawal.commission_count }) }}</div>
                 </VCol>
                 <VCol cols="6">
-                  <div class="text-caption text-medium-emphasis">Créé le</div>
+                  <div class="text-caption text-medium-emphasis">{{ t('admin_withdrawals_created_at') }}</div>
                   <div class="text-body-1">{{ new Date(currentWithdrawal.created_at).toLocaleString() }}</div>
                 </VCol>
                 <VCol v-if="currentWithdrawal.approved_at" cols="6">
-                  <div class="text-caption text-medium-emphasis">Approuvé le</div>
+                  <div class="text-caption text-medium-emphasis">{{ t('admin_withdrawals_approved_at') }}</div>
                   <div class="text-body-1">{{ new Date(currentWithdrawal.approved_at).toLocaleString() }}</div>
                 </VCol>
                 <VCol v-if="currentWithdrawal.paid_at" cols="6">
-                  <div class="text-caption text-medium-emphasis">Payé le</div>
+                  <div class="text-caption text-medium-emphasis">{{ t('admin_withdrawals_paid_at') }}</div>
                   <div class="text-body-1">{{ new Date(currentWithdrawal.paid_at).toLocaleString() }}</div>
                 </VCol>
                 <VCol v-if="currentWithdrawal.payment_ref" cols="12">
-                  <div class="text-caption text-medium-emphasis">Référence de paiement</div>
+                  <div class="text-caption text-medium-emphasis">{{ t('payment_reference') }}</div>
                   <div class="text-body-1 font-family-monospace">{{ currentWithdrawal.payment_ref }}</div>
                 </VCol>
               </VRow>
@@ -293,7 +293,7 @@ onMounted(() => {
         <!-- Affiliate Info -->
         <VCol cols="12" md="6">
           <VCard>
-            <VCardTitle>Informations de l'affilié</VCardTitle>
+            <VCardTitle>{{ t('admin_withdrawals_affiliate_info') }}</VCardTitle>
             <VCardText>
               <div class="d-flex align-center gap-3 mb-4">
                 <VAvatar size="48" color="primary">
@@ -307,15 +307,15 @@ onMounted(() => {
               
               <VRow>
                 <VCol v-if="currentWithdrawal.user?.telephone" cols="12">
-                  <div class="text-caption text-medium-emphasis">Téléphone</div>
+                  <div class="text-caption text-medium-emphasis">{{ t('phone') }}</div>
                   <div class="text-body-1">{{ currentWithdrawal.user.telephone }}</div>
                 </VCol>
                 <VCol v-if="currentWithdrawal.iban_rib" cols="12">
-                  <div class="text-caption text-medium-emphasis">RIB/IBAN</div>
+                  <div class="text-caption text-medium-emphasis">{{ t('rib') }}/IBAN</div>
                   <div class="text-body-1 font-family-monospace">{{ currentWithdrawal.iban_rib }}</div>
                 </VCol>
                 <VCol v-if="currentWithdrawal.bank_type" cols="12">
-                  <div class="text-caption text-medium-emphasis">Type de banque</div>
+                  <div class="text-caption text-medium-emphasis">{{ t('bank_type') }}</div>
                   <div class="text-body-1">{{ currentWithdrawal.bank_type }}</div>
                 </VCol>
               </VRow>
@@ -328,7 +328,7 @@ onMounted(() => {
       <VRow v-if="currentWithdrawal.notes || currentWithdrawal.admin_reason" class="mb-6">
         <VCol v-if="currentWithdrawal.notes" cols="12" md="6">
           <VCard>
-            <VCardTitle>Notes</VCardTitle>
+            <VCardTitle>{{ t('notes') }}</VCardTitle>
             <VCardText>
               <div class="text-body-2" style="white-space: pre-line;">
                 {{ currentWithdrawal.notes }}
@@ -338,7 +338,7 @@ onMounted(() => {
         </VCol>
         <VCol v-if="currentWithdrawal.admin_reason" cols="12" md="6">
           <VCard color="error" variant="tonal">
-            <VCardTitle>Raison du rejet</VCardTitle>
+            <VCardTitle>{{ t('rejection_reason') }}</VCardTitle>
             <VCardText>
               <div class="text-body-2">
                 {{ currentWithdrawal.admin_reason }}
@@ -352,7 +352,7 @@ onMounted(() => {
       <VRow v-if="currentWithdrawal.evidence_url" class="mb-6">
         <VCol cols="12">
           <VCard>
-            <VCardTitle>Preuve de paiement</VCardTitle>
+            <VCardTitle>{{ t('payment_proof') }}</VCardTitle>
             <VCardText>
               <VBtn
                 :href="currentWithdrawal.evidence_url"
@@ -361,7 +361,7 @@ onMounted(() => {
                 variant="tonal"
                 prepend-icon="tabler-download"
               >
-                Télécharger la preuve
+                {{ t('download_proof') }}
               </VBtn>
             </VCardText>
           </VCard>
@@ -371,7 +371,7 @@ onMounted(() => {
       <!-- Linked Commissions -->
       <VCard>
         <VCardTitle class="d-flex justify-space-between align-center">
-          <span>Commissions liées ({{ currentWithdrawal.items?.length || 0 }})</span>
+          <span>{{ t('admin_withdrawals_linked_commissions') }} ({{ currentWithdrawal.items?.length || 0 }})</span>
           <div v-if="canManageCommissions && selectedCommissions.length > 0" class="d-flex gap-2">
             <VBtn
               color="error"
@@ -380,7 +380,7 @@ onMounted(() => {
               prepend-icon="tabler-unlink"
               @click="detachCommissions"
             >
-              Détacher ({{ selectedCommissions.length }})
+              {{ t('action_detach') }} ({{ selectedCommissions.length }})
             </VBtn>
           </div>
         </VCardTitle>
@@ -429,7 +429,7 @@ onMounted(() => {
               variant="tonal"
               size="small"
             >
-              {{ item.commission?.status }}
+              {{ item.commission?.status === 'paid' ? t('status_paid') : t('status_pending') }}
             </VChip>
           </template>
 
@@ -444,8 +444,8 @@ onMounted(() => {
           <template #item.actions="{ item }">
             <ActionIcon
               icon="tabler-eye"
-              label="Voir"
-              tooltip="Voir la commission"
+              :label="t('action_view')"
+              :tooltip="t('admin_withdrawals_view_commission')"
               @click="router.push(`/admin/commissions/${item.commission?.id}`)"
             />
           </template>
@@ -454,7 +454,7 @@ onMounted(() => {
           <template #no-data>
             <div class="text-center py-8">
               <VIcon icon="tabler-inbox" size="48" class="mb-2" />
-              <p>Aucune commission liée à ce retrait</p>
+              <p>{{ t('no_commissions_linked') }}</p>
             </div>
           </template>
         </VDataTable>
@@ -462,7 +462,7 @@ onMounted(() => {
         <VCardText v-else>
           <div class="text-center py-8">
             <VIcon icon="tabler-inbox" size="48" class="mb-2" />
-            <p>Aucune commission liée à ce retrait</p>
+            <p>{{ t('no_commissions_linked') }}</p>
           </div>
         </VCardText>
       </VCard>
@@ -471,12 +471,12 @@ onMounted(() => {
     <!-- Error State -->
     <div v-else class="text-center py-8">
       <VIcon icon="tabler-alert-circle" size="64" color="error" class="mb-4" />
-      <h3 class="text-h6 mb-2">Retrait non trouvé</h3>
+      <h3 class="text-h6 mb-2">{{ t('admin_withdrawals_not_found') }}</h3>
       <p class="text-body-2 text-medium-emphasis mb-4">
-        Le retrait demandé n'existe pas ou a été supprimé.
+        {{ t('admin_withdrawals_not_found_description') }}
       </p>
       <VBtn color="primary" @click="goBack">
-        Retour à la liste
+        {{ t('admin_withdrawals_back_to_list') }}
       </VBtn>
     </div>
 

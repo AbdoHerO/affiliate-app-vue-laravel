@@ -67,10 +67,10 @@ const fetchCommission = async () => {
 const handleApprove = async () => {
   if (!commission.value) return
 
-  const confirmed = await confirm({
-    title: 'Approuver la commission',
-    text: `Êtes-vous sûr de vouloir approuver cette commission de ${commission.value.amount} ${commission.value.currency} ?`,
-    confirmText: 'Approuver',
+    const confirmed = await confirm({
+    title: t('admin_commissions_confirm_approval'),
+    text: t('admin_commissions_approve_confirmation', { amount: commission.value.amount, currency: commission.value.currency }),
+    confirmText: t('actions.approve'),
     color: 'success',
     type: 'success',
   })
@@ -109,9 +109,9 @@ const handleMarkAsPaid = async () => {
   if (!commission.value) return
 
   const confirmed = await confirm({
-    title: 'Marquer comme payée',
-    text: `Confirmer le paiement de cette commission de ${commission.value.amount} ${commission.value.currency} ?`,
-    confirmText: 'Confirmer le paiement',
+    title: t('admin_commissions_mark_as_paid'),
+    text: t('admin_commissions_payment_confirmation', { amount: commission.value.amount, currency: commission.value.currency }),
+    confirmText: t('actions.confirm_payment'),
     color: 'primary',
     type: 'success',
   })
@@ -164,7 +164,7 @@ onMounted(async () => {
   // Check if ID is valid
   if (!route.params.id || route.params.id === 'undefined') {
     console.error('❌ Invalid commission ID:', route.params.id)
-    showError('ID de commission invalide')
+    showError(t('admin_commissions_invalid_id'))
     router.push('/admin/commissions')
     return
   }
@@ -185,14 +185,14 @@ onMounted(async () => {
     <!-- Loading State -->
     <div v-if="loading" class="text-center py-8">
       <VProgressCircular indeterminate color="primary" />
-      <p class="mt-4">Chargement de la commission...</p>
+      <p class="mt-4">{{ t('admin_commissions_loading') }}</p>
     </div>
 
     <!-- Error State -->
     <div v-else-if="!commission && !loading" class="text-center py-8">
       <VIcon icon="tabler-alert-circle" size="64" class="mb-4" color="error" />
-      <h2 class="text-h5 mb-2">Commission non trouvée</h2>
-      <p class="text-body-1 mb-4">La commission demandée n'existe pas ou a été supprimée.</p>
+      <h2 class="text-h5 mb-2">{{ t('admin_commissions_not_found') }}</h2>
+      <p class="text-body-1 mb-4">{{ t('admin_commissions_not_found_description') }}</p>
       <VBtn
         color="primary"
         variant="elevated"
@@ -241,7 +241,7 @@ onMounted(async () => {
             prepend-icon="tabler-check"
             @click="handleApprove"
           >
-            Approuver
+            {{ t('actions.approve') }}
           </VBtn>
 
           <VBtn
@@ -251,7 +251,7 @@ onMounted(async () => {
             prepend-icon="tabler-x"
             @click="openRejectDialog"
           >
-            Rejeter
+            {{ t('actions.reject') }}
           </VBtn>
 
           <VBtn
@@ -261,7 +261,7 @@ onMounted(async () => {
             prepend-icon="tabler-edit"
             @click="openAdjustDialog"
           >
-            Ajuster
+            {{ t('actions.adjust') }}
           </VBtn>
 
           <VBtn
@@ -271,7 +271,7 @@ onMounted(async () => {
             prepend-icon="tabler-cash"
             @click="handleMarkAsPaid"
           >
-            Marquer comme payée
+            {{ t('admin_commissions_mark_as_paid') }}
           </VBtn>
         </div>
       </div>
@@ -283,53 +283,53 @@ onMounted(async () => {
           <VCard>
             <VCardTitle>
               <VIcon icon="tabler-percentage" class="me-2" />
-              {{ t('admin.commissions.details') }}
+              {{ t('admin_commissions_details') }}
             </VCardTitle>
             <VCardText>
               <VList>
                 <VListItem>
-                  <VListItemTitle>Montant de base</VListItemTitle>
+                  <VListItemTitle>{{ t('admin_commissions_base_amount') }}</VListItemTitle>
                   <VListItemSubtitle>{{ commission.base_amount }} {{ commission.currency }}</VListItemSubtitle>
                 </VListItem>
                 
                 <VListItem v-if="commission.rate">
-                  <VListItemTitle>Taux</VListItemTitle>
+                  <VListItemTitle>{{ t('admin_commissions_rate') }}</VListItemTitle>
                   <VListItemSubtitle>{{ commission.rate }}%</VListItemSubtitle>
                 </VListItem>
                 
                 <VListItem v-if="commission.qty">
-                  <VListItemTitle>Quantité</VListItemTitle>
+                  <VListItemTitle>{{ t('admin_commissions_quantity') }}</VListItemTitle>
                   <VListItemSubtitle>{{ commission.qty }}</VListItemSubtitle>
                 </VListItem>
                 
                 <VListItem>
-                  <VListItemTitle>Montant final</VListItemTitle>
+                  <VListItemTitle>{{ t('admin_commissions_final_amount') }}</VListItemTitle>
                   <VListItemSubtitle class="text-success font-weight-bold">
                     {{ commission.amount }} {{ commission.currency }}
                   </VListItemSubtitle>
                 </VListItem>
                 
                 <VListItem v-if="commission.rule_code">
-                  <VListItemTitle>Règle appliquée</VListItemTitle>
+                  <VListItemTitle>{{ t('admin_commissions_applied_rule') }}</VListItemTitle>
                   <VListItemSubtitle>{{ commission.rule_code }}</VListItemSubtitle>
                 </VListItem>
                 
                 <VListItem v-if="commission.eligible_at">
-                  <VListItemTitle>Éligible le</VListItemTitle>
+                  <VListItemTitle>{{ t('admin_commissions_eligible_on') }}</VListItemTitle>
                   <VListItemSubtitle>
                     {{ new Date(commission.eligible_at).toLocaleString('fr-FR') }}
                   </VListItemSubtitle>
                 </VListItem>
                 
                 <VListItem v-if="commission.approved_at">
-                  <VListItemTitle>Approuvée le</VListItemTitle>
+                  <VListItemTitle>{{ t('admin_commissions_approved_on') }}</VListItemTitle>
                   <VListItemSubtitle>
                     {{ new Date(commission.approved_at).toLocaleString('fr-FR') }}
                   </VListItemSubtitle>
                 </VListItem>
                 
                 <VListItem v-if="commission.paid_at">
-                  <VListItemTitle>Payée le</VListItemTitle>
+                  <VListItemTitle>{{ t('admin_commissions_paid_on') }}</VListItemTitle>
                   <VListItemSubtitle>
                     {{ new Date(commission.paid_at).toLocaleString('fr-FR') }}
                   </VListItemSubtitle>
@@ -344,7 +344,7 @@ onMounted(async () => {
           <VCard>
             <VCardTitle>
               <VIcon icon="tabler-user" class="me-2" />
-              Informations de l'affilié
+              {{ t('admin_commissions_affiliate_info') }}
             </VCardTitle>
             <VCardText>
               <div v-if="commission.affiliate" class="d-flex align-center mb-4">
@@ -368,13 +368,13 @@ onMounted(async () => {
           <VCard>
             <VCardTitle>
               <VIcon icon="tabler-shopping-cart" class="me-2" />
-              Informations de la commande
+              {{ t('admin_commissions_order_info') }}
             </VCardTitle>
             <VCardText>
               <div v-if="commission.commande">
                 <VList>
                   <VListItem>
-                    <VListItemTitle>ID Commande</VListItemTitle>
+                    <VListItemTitle>{{ t('admin_orders_id') }}</VListItemTitle>
                     <VListItemSubtitle>
                       <VChip
                         :to="`/admin/orders/${commission.commande.id}`"
@@ -388,19 +388,19 @@ onMounted(async () => {
                   </VListItem>
                   
                   <VListItem>
-                    <VListItemTitle>Statut</VListItemTitle>
+                    <VListItemTitle>{{ t('admin_orders_status') }}</VListItemTitle>
                     <VListItemSubtitle>{{ commission.commande.statut }}</VListItemSubtitle>
                   </VListItem>
                   
                   <VListItem>
-                    <VListItemTitle>Total TTC</VListItemTitle>
+                    <VListItemTitle>{{ t('admin_orders_total_ttc') }}</VListItemTitle>
                     <VListItemSubtitle>
                       {{ commission.commande.total_ttc }} {{ commission.commande.devise }}
                     </VListItemSubtitle>
                   </VListItem>
                   
                   <VListItem>
-                    <VListItemTitle>Date de création</VListItemTitle>
+                    <VListItemTitle>{{ t('admin_orders_created_at') }}</VListItemTitle>
                     <VListItemSubtitle>
                       {{ new Date(commission.commande.created_at).toLocaleString('fr-FR') }}
                     </VListItemSubtitle>
@@ -416,7 +416,7 @@ onMounted(async () => {
           <VCard>
             <VCardTitle>
               <VIcon icon="tabler-notes" class="me-2" />
-              Notes
+              {{ t('admin_commissions_notes') }}
             </VCardTitle>
             <VCardText>
               <pre class="text-wrap">{{ commission.notes }}</pre>
@@ -429,9 +429,9 @@ onMounted(async () => {
     <!-- Not Found -->
     <div v-else class="text-center py-8">
       <VIcon icon="tabler-alert-circle" size="64" class="mb-4" color="error" />
-      <h3 class="text-h6 mb-2">Commission non trouvée</h3>
+      <h3 class="text-h6 mb-2">{{ t('admin_commissions_not_found') }}</h3>
       <p class="text-body-2 text-medium-emphasis mb-4">
-        La commission demandée n'existe pas ou a été supprimée.
+        {{ t('admin_commissions_not_found_description') }}
       </p>
       <VBtn color="primary" @click="goBack">
         {{ t('actions.backToCommissions') }}
@@ -442,18 +442,18 @@ onMounted(async () => {
     <VDialog v-model="showRejectDialog" max-width="500">
       <VCard>
         <VCardTitle>
-          <span class="text-h6">Rejeter la commission</span>
+          <span class="text-h6">{{ t('admin_commissions_reject_commission') }}</span>
         </VCardTitle>
         
         <VCardText>
           <p class="mb-4">
-            Vous êtes sur le point de rejeter cette commission. Veuillez indiquer la raison :
+            {{ t('admin_commissions_reject_message') }}
           </p>
           
           <VTextarea
             v-model="rejectReason"
-            label="Raison du rejet"
-            placeholder="Expliquez pourquoi cette commission est rejetée..."
+            :label="t('admin_commissions_reject_reason')"
+            :placeholder="t('admin_commissions_reject_placeholder')"
             rows="3"
             required
           />
@@ -474,7 +474,7 @@ onMounted(async () => {
             :disabled="!rejectReason.trim()"
             @click="handleReject"
           >
-            Rejeter
+            {{ t('actions.reject') }}
           </VBtn>
         </VCardActions>
       </VCard>
@@ -484,17 +484,17 @@ onMounted(async () => {
     <VDialog v-model="showAdjustDialog" max-width="500">
       <VCard>
         <VCardTitle>
-          <span class="text-h6">Ajuster la commission</span>
+          <span class="text-h6">{{ t('admin_commissions_adjust_commission') }}</span>
         </VCardTitle>
         
         <VCardText>
           <p class="mb-4">
-            Montant actuel : <strong>{{ commission?.amount }} {{ commission?.currency }}</strong>
+            {{ t('admin_commissions_current_amount') }}: <strong>{{ commission?.amount }} {{ commission?.currency }}</strong>
           </p>
           
           <VTextField
             v-model.number="adjustAmount"
-            label="Nouveau montant"
+            :label="t('admin_commissions_new_amount')"
             type="number"
             step="0.01"
             min="0"
@@ -505,8 +505,8 @@ onMounted(async () => {
           
           <VTextarea
             v-model="adjustNote"
-            label="Raison de l'ajustement"
-            placeholder="Expliquez pourquoi cette commission est ajustée..."
+            :label="t('admin_commissions_adjust_reason')"
+            :placeholder="t('admin_commissions_adjust_placeholder')"
             rows="3"
             required
           />

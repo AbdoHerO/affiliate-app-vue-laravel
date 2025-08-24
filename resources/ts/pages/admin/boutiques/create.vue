@@ -40,15 +40,15 @@ const validateForm = () => {
   errors.value = {}
   
   if (!form.value.nom.trim()) {
-    errors.value.nom = ['Le nom est requis']
+    errors.value.nom = [t('name_required')]
   }
   
   if (!form.value.proprietaire_id) {
-    errors.value.proprietaire_id = ['Le propriétaire est requis']
+    errors.value.proprietaire_id = [t('owner_required')]
   }
   
   if (form.value.email_pro && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.value.email_pro)) {
-    errors.value.email_pro = ['Format email invalide']
+    errors.value.email_pro = [t('invalid_email_format')]
   }
   
   return Object.keys(errors.value).length === 0
@@ -59,12 +59,12 @@ const loadUsers = async () => {
   try {
     const { data, error } = await useApi<any>('/admin/users?per_page=100')
     if (error.value) {
-      showError('Erreur lors du chargement des utilisateurs')
+      showError(t('error_loading_users'))
       return
     }
     users.value = data.value?.users || []
   } catch (err) {
-    showError('Erreur lors du chargement des utilisateurs')
+    showError(t('error_loading_users'))
   }
 }
 
@@ -131,7 +131,7 @@ onMounted(() => {
               size="small"
               @click="goBack"
             >
-              {{ t('action_cancel') || 'Retour' }}
+              {{ t('action_cancel') }}
             </VBtn>
           </VCardTitle>
           
@@ -142,7 +142,7 @@ onMounted(() => {
                 <VCol cols="12" md="6">
                   <VTextField
                     v-model="form.nom"
-                    :label="t('admin_boutiques_name') || 'Nom'"
+                    :label="t('admin_boutiques_name')"
                     :error-messages="errors.nom"
                     variant="outlined"
                     required
@@ -154,10 +154,10 @@ onMounted(() => {
                 <VCol cols="12" md="6">
                   <VTextField
                     v-model="form.slug"
-                    :label="t('admin_boutiques_slug') || 'Slug'"
+                    :label="t('admin_boutiques_slug')"
                     :error-messages="errors.slug"
                     variant="outlined"
-                    hint="URL-friendly version du nom (généré automatiquement)"
+                    :hint="t('slug_hint')"
                   />
                 </VCol>
 
@@ -168,7 +168,7 @@ onMounted(() => {
                     :items="users"
                     item-value="id"
                     item-title="nom_complet"
-                    :label="t('admin_boutiques_owner') || 'Propriétaire'"
+                    :label="t('admin_boutiques_owner')"
                     :error-messages="errors.proprietaire_id"
                     variant="outlined"
                     required
@@ -202,7 +202,7 @@ onMounted(() => {
                 <VCol cols="12" md="6">
                   <VTextField
                     v-model="form.email_pro"
-                    :label="t('admin_boutiques_contact_email') || 'Email professionnel'"
+                    :label="t('admin_boutiques_contact_email')"
                     :error-messages="errors.email_pro"
                     variant="outlined"
                     type="email"
@@ -213,7 +213,7 @@ onMounted(() => {
                 <VCol cols="12" md="6">
                   <VTextField
                     v-model.number="form.commission_par_defaut"
-                    :label="t('admin_boutiques_commission_rate') || 'Commission par défaut (%)'"
+                    :label="t('admin_boutiques_commission_rate')"
                     :error-messages="errors.commission_par_defaut"
                     variant="outlined"
                     type="number"
@@ -227,7 +227,7 @@ onMounted(() => {
                 <VCol cols="12">
                   <VTextarea
                     v-model="form.adresse"
-                    :label="t('admin_boutiques_address') || 'Adresse'"
+                    :label="t('admin_boutiques_address')"
                     :error-messages="errors.adresse"
                     variant="outlined"
                     rows="3"

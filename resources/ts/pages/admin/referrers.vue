@@ -9,7 +9,7 @@ definePage({
     requiresRole: 'admin',
     breadcrumb: [
       { title: 'Dashboard', to: { name: 'admin-dashboard' } },
-      { title: 'Referrers Management', disabled: true },
+      { title: 'Gestion des Parrains', disabled: true },
     ],
   },
 })
@@ -189,7 +189,7 @@ const fetchReferrers = async () => {
       referrers.value = response.data.data
     }
   } catch (error) {
-    console.error('Failed to fetch referrers:', error)
+    console.error('Error fetching referrers:', error)
   } finally {
     loading.value = false
   }
@@ -222,7 +222,7 @@ const fetchStatistics = async () => {
       statistics.value = response.data.data
     }
   } catch (error) {
-    console.error('Failed to fetch statistics:', error)
+    console.error('Error fetching statistics:', error)
   }
 }
 
@@ -231,7 +231,7 @@ const openDispensationModal = (affiliate: Referrer) => {
   dispensationForm.value = {
     affiliate_id: affiliate.id,
     points: affiliate.points_balance, // Default to full balance
-    comment: `Points dispensation for ${affiliate.user.nom_complet}`,
+    comment: t('points_dispensation_for_user', { name: affiliate.user.nom_complet }),
     reference: `REF-${Date.now()}`,
   }
   showDispensationModal.value = true
@@ -263,7 +263,7 @@ const createDispensation = async () => {
       console.log('Dispensation created successfully')
     }
   } catch (error) {
-    console.error('Failed to create dispensation:', error)
+    console.error('Error creating dispensation:', error)
     // TODO: Show error message
   } finally {
     dispensationLoading.value = false
@@ -281,7 +281,7 @@ const openHistoryModal = async (affiliate: Referrer) => {
       historyData.value = response.data.data
     }
   } catch (error) {
-    console.error('Failed to fetch dispensation history:', error)
+    console.error('Error fetching dispensation history:', error)
   } finally {
     historyLoading.value = false
   }

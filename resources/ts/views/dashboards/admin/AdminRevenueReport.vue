@@ -1,27 +1,29 @@
 <script setup lang="ts">
 import { useTheme } from 'vuetify'
 import { hexToRgb } from '@layouts/utils'
+import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n()
 const vuetifyTheme = useTheme()
 
 const series = {
   bar: [
     {
-      name: 'Earning',
+      name: t('earning'),
       data: [270, 210, 180, 200, 250, 280, 250, 270, 150],
     },
     {
-      name: 'Expense',
+      name: t('expense'),
       data: [-140, -160, -180, -150, -100, -60, -80, -100, -180],
     },
   ],
   line: [
     {
-      name: 'Last Month',
+      name: t('last_month'),
       data: [20, 10, 30, 16, 24, 5, 40, 23, 28, 5, 30],
     },
     {
-      name: 'This Month',
+      name: t('this_month'),
       data: [50, 40, 60, 46, 54, 35, 70, 53, 58, 35, 60],
     },
   ],
@@ -349,7 +351,7 @@ const chartOptions = computed(() => {
       >
         <VCardText>
           <h6 class="text-h5 mb-sm-n8">
-            Revenue Report
+            {{ t('revenue_report') }}
           </h6>
 
           <VueApexCharts
@@ -395,7 +397,7 @@ const chartOptions = computed(() => {
               $25,825
             </h5>
             <p class="mb-0">
-              <span class="text-high-emphasis font-weight-medium me-1">Budget:</span>
+              <span class="text-high-emphasis font-weight-medium me-1">{{ t('budget') }}:</span>
               <span>56,800</span>
             </p>
           </div>
@@ -407,7 +409,7 @@ const chartOptions = computed(() => {
           />
 
           <VBtn class="mt-8">
-            Increase Budget
+            {{ t('increase_budget') }}
           </VBtn>
         </VCardText>
       </VCol>

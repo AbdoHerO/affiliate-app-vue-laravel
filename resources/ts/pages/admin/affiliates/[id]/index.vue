@@ -48,12 +48,12 @@ const changeTier = async () => {
   if (!selectedTier.value || !affiliate.value) return
 
   try {
-    await affiliatesStore.changeTier(affiliate.value.id, selectedTier.value, 'Changement de tier depuis l\'interface admin')
-    showSuccess('Tier modifié avec succès')
+    await affiliatesStore.changeTier(affiliate.value.id, selectedTier.value, t('tier_change_from_admin'))
+    showSuccess(t('tier_updated_successfully'))
     showTierDialog.value = false
     selectedTier.value = ''
   } catch (error: any) {
-    showError(error.message || 'Erreur lors du changement de tier')
+    showError(error.message || t('tier_change_error'))
   }
 }
 
@@ -64,15 +64,15 @@ const toggleBlock = async (action: 'block' | 'unblock') => {
     await affiliatesStore.toggleBlock(
       affiliate.value.id, 
       action, 
-      action === 'block' ? blockReason.value : 'Débloqué depuis l\'interface admin'
+      action === 'block' ? blockReason.value : t('unblocked_from_admin')
     )
     showSuccess(
-      action === 'block' ? 'Affilié bloqué avec succès' : 'Affilié débloqué avec succès'
+      action === 'block' ? t('affiliate_blocked_successfully') : t('affiliate_unblocked_successfully')
     )
     showBlockDialog.value = false
     blockReason.value = ''
   } catch (error: any) {
-    showError(error.message || 'Erreur lors de l\'opération')
+    showError(error.message || t('operation_error'))
   }
 }
 
@@ -128,13 +128,13 @@ const getKycStatusColor = (status: string) => {
 const getKycStatusText = (status: string) => {
   switch (status) {
     case 'valide':
-      return 'Validé'
+      return t('kyc_status_valid')
     case 'en_attente':
-      return 'En attente'
+      return t('kyc_status_pending')
     case 'refuse':
-      return 'Refusé'
+      return t('kyc_status_rejected')
     case 'non_requis':
-      return 'Non requis'
+      return t('kyc_status_not_required')
     default:
       return status
   }
@@ -178,7 +178,7 @@ onMounted(async () => {
         color="primary"
         size="64"
       />
-      <p class="mt-4">Chargement de l'affilié...</p>
+      <p class="mt-4">{{ t('loading_affiliate') }}</p>
     </div>
 
     <!-- Affiliate Content -->
@@ -230,7 +230,7 @@ onMounted(async () => {
             @click="showTierDialog = true"
           >
             <VIcon start icon="tabler-medal" />
-            Changer Tier
+            {{ t('change_tier') }}
           </VBtn>
           
           <VBtn
@@ -240,7 +240,7 @@ onMounted(async () => {
             @click="showBlockDialog = true"
           >
             <VIcon start icon="tabler-ban" />
-            Bloquer
+            {{ t('block') }}
           </VBtn>
 
           <VBtn
@@ -250,7 +250,7 @@ onMounted(async () => {
             @click="toggleBlock('unblock')"
           >
             <VIcon start icon="tabler-check" />
-            Débloquer
+            {{ t('unblock') }}
           </VBtn>
 
           <VBtn
@@ -271,19 +271,19 @@ onMounted(async () => {
       >
         <VTab value="profile">
           <VIcon start icon="tabler-user" />
-          Profil
+          {{ t('profile') }}
         </VTab>
         <VTab value="performance">
           <VIcon start icon="tabler-chart-line" />
-          Performance
+          {{ t('performance') }}
         </VTab>
         <VTab value="orders">
           <VIcon start icon="tabler-shopping-cart" />
-          Commandes
+          {{ t('orders') }}
         </VTab>
         <VTab value="commissions">
           <VIcon start icon="tabler-currency-dollar" />
-          Commissions
+          {{ t('commissions') }}
         </VTab>
       </VTabs>
 
@@ -294,7 +294,7 @@ onMounted(async () => {
           <VRow>
             <VCol cols="12" md="8">
               <VCard>
-                <VCardTitle>Informations Personnelles</VCardTitle>
+                <VCardTitle>{{ t('personal_information') }}</VCardTitle>
                 <VCardText>
                   <VRow>
                     <VCol cols="12" md="6">
@@ -308,24 +308,24 @@ onMounted(async () => {
                       </div>
                       <div class="mb-4">
                         <div class="text-body-2 text-medium-emphasis mb-1">{{ t('form.phone') }}</div>
-                        <div class="text-body-1">{{ affiliate.telephone || 'Non renseigné' }}</div>
+                        <div class="text-body-1">{{ affiliate.telephone || t('not_provided') }}</div>
                       </div>
                     </VCol>
                     <VCol cols="12" md="6">
                       <div class="mb-4">
-                        <div class="text-body-2 text-medium-emphasis mb-1">Statut utilisateur</div>
+                        <div class="text-body-2 text-medium-emphasis mb-1">{{ t('user_status') }}</div>
                         <VChip :color="getStatusColor(affiliate.statut)" variant="tonal">
                           {{ getStatusText(affiliate.statut) }}
                         </VChip>
                       </div>
                       <div class="mb-4">
-                        <div class="text-body-2 text-medium-emphasis mb-1">Statut KYC</div>
+                        <div class="text-body-2 text-medium-emphasis mb-1">{{ t('kyc_status') }}</div>
                         <VChip :color="getKycStatusColor(affiliate.kyc_statut)" variant="tonal">
                           {{ getKycStatusText(affiliate.kyc_statut) }}
                         </VChip>
                       </div>
                       <div class="mb-4">
-                        <div class="text-body-2 text-medium-emphasis mb-1">Date d'inscription</div>
+                        <div class="text-body-2 text-medium-emphasis mb-1">{{ t('registration_date') }}</div>
                         <div class="text-body-1">{{ formatDate(affiliate.created_at) }}</div>
                       </div>
                     </VCol>
@@ -342,12 +342,12 @@ onMounted(async () => {
 
               <!-- Affiliate Profile Card -->
               <VCard class="mt-4">
-                <VCardTitle>Profil Affilié</VCardTitle>
+                <VCardTitle>{{ t('affiliate_profile') }}</VCardTitle>
                 <VCardText>
                   <VRow>
                     <VCol cols="12" md="6">
                       <div class="mb-4">
-                        <div class="text-body-2 text-medium-emphasis mb-1">Tier</div>
+                        <div class="text-body-2 text-medium-emphasis mb-1">{{ t('tier') }}</div>
                         <VChip
                           v-if="affiliate.profil_affilie?.gamme"
                           :color="affiliate.profil_affilie.gamme.code === 'BASIC' ? 'info' : affiliate.profil_affilie.gamme.code === 'SILVER' ? 'warning' : 'success'"
@@ -355,10 +355,10 @@ onMounted(async () => {
                         >
                           {{ affiliate.profil_affilie.gamme.libelle }}
                         </VChip>
-                        <span v-else class="text-medium-emphasis">Non défini</span>
+                        <span v-else class="text-medium-emphasis">{{ t('not_defined') }}</span>
                       </div>
                       <div class="mb-4">
-                        <div class="text-body-2 text-medium-emphasis mb-1">Statut affilié</div>
+                        <div class="text-body-2 text-medium-emphasis mb-1">{{ t('affiliate_status') }}</div>
                         <VChip
                           v-if="affiliate.profil_affilie"
                           :color="getStatusColor(affiliate.profil_affilie.statut)"
@@ -370,18 +370,18 @@ onMounted(async () => {
                     </VCol>
                     <VCol cols="12" md="6">
                       <div class="mb-4">
-                        <div class="text-body-2 text-medium-emphasis mb-1">Points</div>
+                        <div class="text-body-2 text-medium-emphasis mb-1">{{ t('points') }}</div>
                         <div class="text-h6">{{ affiliate.profil_affilie?.points || 0 }}</div>
                       </div>
                       <div class="mb-4">
-                        <div class="text-body-2 text-medium-emphasis mb-1">RIB</div>
-                        <div class="text-body-1">{{ affiliate.profil_affilie?.rib || 'Non renseigné' }}</div>
+                        <div class="text-body-2 text-medium-emphasis mb-1">{{ t('rib') }}</div>
+                        <div class="text-body-1">{{ affiliate.profil_affilie?.rib || t('not_provided') }}</div>
                       </div>
                     </VCol>
                   </VRow>
 
                   <div v-if="affiliate.profil_affilie?.notes_interne" class="mb-4">
-                    <div class="text-body-2 text-medium-emphasis mb-1">Notes internes</div>
+                    <div class="text-body-2 text-medium-emphasis mb-1">{{ t('internal_notes') }}</div>
                     <div class="text-body-1" style="white-space: pre-line;">
                       {{ affiliate.profil_affilie.notes_interne }}
                     </div>
@@ -391,18 +391,18 @@ onMounted(async () => {
             </VCol>
             <VCol cols="12" md="4">
               <VCard>
-                <VCardTitle>Statistiques Rapides</VCardTitle>
+                <VCardTitle>{{ t('quick_stats') }}</VCardTitle>
                 <VCardText>
                   <div class="mb-4">
-                    <div class="text-body-2 text-medium-emphasis mb-1">Total Commandes</div>
+                    <div class="text-body-2 text-medium-emphasis mb-1">{{ t('total_orders') }}</div>
                     <div class="text-h5">{{ affiliate.orders_count || 0 }}</div>
                   </div>
                   <div class="mb-4">
-                    <div class="text-body-2 text-medium-emphasis mb-1">Total Commissions</div>
+                    <div class="text-body-2 text-medium-emphasis mb-1">{{ t('total_commissions') }}</div>
                     <div class="text-h5">{{ affiliate.total_commissions ? formatCurrency(affiliate.total_commissions) : '0 MAD' }}</div>
                   </div>
                   <div class="mb-4">
-                    <div class="text-body-2 text-medium-emphasis mb-1">Commissions en cours</div>
+                    <div class="text-body-2 text-medium-emphasis mb-1">{{ t('pending_commissions') }}</div>
                     <div class="text-h6">{{ affiliate.commissions_count || 0 }}</div>
                   </div>
                 </VCardText>
@@ -414,7 +414,7 @@ onMounted(async () => {
         <!-- Performance Tab -->
         <VWindowItem value="performance">
           <VCard>
-            <VCardTitle>Performance de l'Affilié</VCardTitle>
+            <VCardTitle>{{ t('affiliate_performance') }}</VCardTitle>
             <VCardText>
               <div v-if="performance">
                 <VRow>
@@ -422,8 +422,8 @@ onMounted(async () => {
                     <VCard variant="tonal" color="primary">
                       <VCardText>
                         <div class="text-h4">{{ performance.orders.total }}</div>
-                        <div class="text-body-2">Total Commandes</div>
-                        <div class="text-caption">{{ performance.orders.this_month }} ce mois</div>
+                        <div class="text-body-2">{{ t('total_orders') }}</div>
+                        <div class="text-caption">{{ performance.orders.this_month }} {{ t('this_month') }}</div>
                       </VCardText>
                     </VCard>
                   </VCol>
@@ -431,8 +431,8 @@ onMounted(async () => {
                     <VCard variant="tonal" color="success">
                       <VCardText>
                         <div class="text-h4">{{ formatCurrency(performance.commissions.total) }}</div>
-                        <div class="text-body-2">Total Commissions</div>
-                        <div class="text-caption">{{ formatCurrency(performance.commissions.this_month) }} ce mois</div>
+                        <div class="text-body-2">{{ t('total_commissions') }}</div>
+                        <div class="text-caption">{{ formatCurrency(performance.commissions.this_month) }} {{ t('this_month') }}</div>
                       </VCardText>
                     </VCard>
                   </VCol>
@@ -440,8 +440,8 @@ onMounted(async () => {
                     <VCard variant="tonal" color="warning">
                       <VCardText>
                         <div class="text-h4">{{ formatCurrency(performance.payments.total_paid) }}</div>
-                        <div class="text-body-2">Total Payé</div>
-                        <div class="text-caption">{{ formatCurrency(performance.payments.pending) }} en attente</div>
+                        <div class="text-body-2">{{ t('total_paid') }}</div>
+                        <div class="text-caption">{{ formatCurrency(performance.payments.pending) }} {{ t('pending') }}</div>
                       </VCardText>
                     </VCard>
                   </VCol>
@@ -449,7 +449,7 @@ onMounted(async () => {
               </div>
               <div v-else class="text-center py-8">
                 <VProgressCircular indeterminate />
-                <p class="mt-2">Chargement des performances...</p>
+                <p class="mt-2">{{ t('loading_performance') }}</p>
               </div>
             </VCardText>
           </VCard>
@@ -458,7 +458,7 @@ onMounted(async () => {
         <!-- Orders Tab -->
         <VWindowItem value="orders">
           <VCard>
-            <VCardTitle>Commandes Récentes</VCardTitle>
+            <VCardTitle>{{ t('recent_orders') }}</VCardTitle>
             <VCardText>
               <div v-if="affiliate.profil_affilie?.commandes?.length">
                 <VList>
@@ -466,7 +466,7 @@ onMounted(async () => {
                     v-for="order in affiliate.profil_affilie.commandes"
                     :key="order.id"
                   >
-                    <VListItemTitle>Commande {{ order.id.slice(0, 8) }}</VListItemTitle>
+                    <VListItemTitle>{{ t('order') }} {{ order.id.slice(0, 8) }}</VListItemTitle>
                     <VListItemSubtitle>{{ formatDate(order.created_at) }}</VListItemSubtitle>
                     <template #append>
                       <VChip size="small" :color="getStatusColor(order.statut)" variant="tonal">
@@ -478,9 +478,9 @@ onMounted(async () => {
               </div>
               <div v-else class="text-center py-8">
                 <VIcon icon="tabler-shopping-cart-off" size="64" class="mb-4" color="disabled" />
-                <h3 class="text-h6 mb-2">Aucune commande</h3>
+                <h3 class="text-h6 mb-2">{{ t('no_orders') }}</h3>
                 <p class="text-body-2 text-medium-emphasis">
-                  Cet affilié n'a pas encore passé de commande
+                  {{ t('affiliate_no_orders_yet') }}
                 </p>
               </div>
             </VCardText>
@@ -490,7 +490,7 @@ onMounted(async () => {
         <!-- Commissions Tab -->
         <VWindowItem value="commissions">
           <VCard>
-            <VCardTitle>Commissions Récentes</VCardTitle>
+            <VCardTitle>{{ t('recent_commissions') }}</VCardTitle>
             <VCardText>
               <div v-if="affiliate.commissions?.length">
                 <VList>
@@ -510,9 +510,9 @@ onMounted(async () => {
               </div>
               <div v-else class="text-center py-8">
                 <VIcon icon="tabler-currency-dollar-off" size="64" class="mb-4" color="disabled" />
-                <h3 class="text-h6 mb-2">Aucune commission</h3>
+                <h3 class="text-h6 mb-2">{{ t('no_commissions') }}</h3>
                 <p class="text-body-2 text-medium-emphasis">
-                  Cet affilié n'a pas encore de commission
+                  {{ t('affiliate_no_commissions_yet') }}
                 </p>
               </div>
             </VCardText>
@@ -529,9 +529,9 @@ onMounted(async () => {
         class="mb-4"
         color="error"
       />
-      <h3 class="text-h6 mb-2">Affilié introuvable</h3>
+      <h3 class="text-h6 mb-2">{{ t('affiliate_not_found') }}</h3>
       <p class="text-body-2 text-medium-emphasis mb-4">
-        L'affilié demandé n'existe pas ou a été supprimé
+        {{ t('affiliate_not_found_description') }}
       </p>
       <VBtn
         color="primary"
@@ -548,11 +548,11 @@ onMounted(async () => {
       max-width="500"
     >
       <VCard>
-        <VCardTitle>Changer le Tier</VCardTitle>
+        <VCardTitle>{{ t('change_tier') }}</VCardTitle>
         <VCardText>
           <VSelect
             v-model="selectedTier"
-            label="Nouveau tier"
+            :label="t('new_tier')"
             :items="tiers.map(t => ({ title: t.libelle, value: t.id }))"
             variant="outlined"
           />
@@ -572,7 +572,7 @@ onMounted(async () => {
             :disabled="!selectedTier"
             @click="changeTier"
           >
-            Confirmer
+            {{ t('confirm') }}
           </VBtn>
         </VCardActions>
       </VCard>
@@ -584,12 +584,12 @@ onMounted(async () => {
       max-width="500"
     >
       <VCard>
-        <VCardTitle>Bloquer l'Affilié</VCardTitle>
+        <VCardTitle>{{ t('block_affiliate') }}</VCardTitle>
         <VCardText>
           <VTextarea
             v-model="blockReason"
-            label="Raison du blocage"
-            placeholder="Expliquez pourquoi vous bloquez cet affilié..."
+            :label="t('block_reason')"
+            :placeholder="t('block_reason_placeholder')"
             variant="outlined"
             rows="3"
           />
@@ -608,7 +608,7 @@ onMounted(async () => {
             variant="elevated"
             @click="toggleBlock('block')"
           >
-            Bloquer
+            {{ t('block') }}
           </VBtn>
         </VCardActions>
       </VCard>

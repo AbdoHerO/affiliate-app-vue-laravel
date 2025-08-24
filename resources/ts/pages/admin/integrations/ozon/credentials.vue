@@ -1,8 +1,12 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useOzonSettingsStore } from '@/stores/admin/ozonSettings'
 import { useQuickConfirm } from '@/composables/useConfirmAction'
 import { useNotifications } from '@/composables/useNotifications'
+
+// Composables
+const { t } = useI18n()
 
 // Store
 const ozonSettingsStore = useOzonSettingsStore()
@@ -89,10 +93,10 @@ const clearFieldError = (field: string) => {
     <div class="d-flex justify-space-between align-center mb-6">
       <div>
         <h1 class="text-h4 font-weight-bold mb-1">
-          Paramètres OzonExpress
+          {{ t('ozonexpress_settings') }}
         </h1>
         <p class="text-body-1 text-medium-emphasis">
-          Configurez vos identifiants OzonExpress pour l'intégration des expéditions
+          {{ t('ozonexpress_settings_desc') }}
         </p>
       </div>
     </div>
@@ -101,7 +105,7 @@ const clearFieldError = (field: string) => {
     <VCard>
       <VCardTitle class="d-flex align-center">
         <VIcon icon="tabler-settings" class="me-3" />
-        Identifiants API
+        {{ t('api_credentials') }}
       </VCardTitle>
       
       <VCardText>
@@ -111,8 +115,8 @@ const clearFieldError = (field: string) => {
             <VCol cols="12" md="6">
               <VTextField
                 v-model="form.customer_id"
-                label="Customer ID"
-                placeholder="Votre Customer ID OzonExpress"
+                :label="t('customer_id')"
+                :placeholder="t('customer_id_placeholder')"
                 variant="outlined"
                 required
                 :error-messages="formErrors.customer_id"
@@ -124,9 +128,9 @@ const clearFieldError = (field: string) => {
             <VCol cols="12" md="6">
               <VTextField
                 v-model="form.api_key"
-                :label="showApiKey ? 'API Key' : 'API Key (masquée)'"
+                :label="showApiKey ? t('api_key') : t('api_key_masked')"
                 :type="showApiKey ? 'text' : 'password'"
-                placeholder="Votre clé API OzonExpress"
+                :placeholder="t('api_key_placeholder')"
                 variant="outlined"
                 required
                 :error-messages="formErrors.api_key"
@@ -149,7 +153,7 @@ const clearFieldError = (field: string) => {
             <VCol cols="12">
               <VTextField
                 v-model="form.base_url"
-                label="URL de base de l'API"
+                :label="t('api_base_url')"
                 placeholder="https://api.ozonexpress.ma"
                 variant="outlined"
                 required

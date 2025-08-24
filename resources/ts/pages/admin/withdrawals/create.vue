@@ -44,10 +44,10 @@ const formRef = ref()
 
 // Computed
 const breadcrumbItems = computed(() => [
-  { title: 'Dashboard', to: '/admin/dashboard' },
-  { title: 'Finance', disabled: true },
-  { title: 'Retraits', to: '/admin/withdrawals' },
-  { title: 'Nouveau retrait', disabled: true },
+  { title: t('dashboard'), to: '/admin/dashboard' },
+  { title: t('finance'), disabled: true },
+  { title: t('admin_withdrawals_title'), to: '/admin/withdrawals' },
+  { title: t('admin_withdrawals_create'), disabled: true },
 ])
 
 const canSubmit = computed(() => {
@@ -155,18 +155,18 @@ const handleSubmit = async () => {
     const result = await withdrawalsStore.create(payload)
 
     if (result.success) {
-      showSuccess(result.message || 'Retrait créé avec succès')
+      showSuccess(result.message || t('admin_withdrawals_create_success'))
       // Use safe navigation to the withdrawal detail page
       await safePush(`/admin/withdrawals/${result.data?.id}`)
     } else {
-      showError(result.message || 'Erreur lors de la création du retrait')
+      showError(result.message || t('admin_withdrawals_create_error'))
     }
   } catch (error: any) {
     console.error('🚫 [Create Withdrawal] Error:', error)
     if (error.data?.errors) {
       setErrors(error.data.errors)
     } else {
-      showError('Une erreur est survenue lors de la création du retrait')
+      showError(t('admin_withdrawals_create_error_general'))
     }
   } finally {
     loading.value = false
@@ -242,9 +242,9 @@ fetchUsers()
     <!-- Page Header -->
     <VRow class="mb-6">
       <VCol cols="12">
-        <h1 class="text-h4 font-weight-bold">Créer un nouveau retrait</h1>
+        <h1 class="text-h4 font-weight-bold">{{ t('admin_withdrawals_create_new') }}</h1>
         <p class="text-body-1 text-medium-emphasis">
-          Créez un retrait pour un affilié en sélectionnant les commissions éligibles
+          {{ t('admin_withdrawals_create_description') }}
         </p>
       </VCol>
     </VRow>
@@ -255,9 +255,9 @@ fetchUsers()
         <VStepper
           v-model="currentStep"
           :items="[
-            { title: 'Sélection de l\'affilié', subtitle: 'Choisir l\'affilié' },
-            { title: 'Sélection des commissions', subtitle: 'Choisir les commissions' },
-            { title: 'Confirmation', subtitle: 'Vérifier et créer' },
+            { title: t('admin_withdrawals_step_select_affiliate'), subtitle: t('admin_withdrawals_step_select_affiliate_subtitle') },
+            { title: t('admin_withdrawals_step_select_commissions'), subtitle: t('admin_withdrawals_step_select_commissions_subtitle') },
+            { title: t('admin_withdrawals_step_confirmation'), subtitle: t('admin_withdrawals_step_confirmation_subtitle') },
           ]"
           flat
         />
@@ -308,8 +308,8 @@ fetchUsers()
               <VCol cols="12" md="6">
                 <VSelect
                   v-model="form.method"
-                  :items="[{ title: 'Virement bancaire', value: 'bank_transfer' }]"
-                  label="Méthode de retrait"
+                  :items="[{ title: t('admin_withdrawals_bank_transfer'), value: 'bank_transfer' }]"
+                  :label="t('admin_withdrawals_method')"
                   :error="hasError('method')"
                   :error-messages="getError('method')"
                 />
@@ -317,8 +317,8 @@ fetchUsers()
               <VCol cols="12" md="6">
                 <VTextarea
                   v-model="form.notes"
-                  label="Notes (optionnel)"
-                  placeholder="Ajouter des notes pour ce retrait..."
+                  :label="t('admin_withdrawals_notes_optional')"
+                  :placeholder="t('admin_withdrawals_notes_placeholder')"
                   rows="3"
                   :error="hasError('notes')"
                   :error-messages="getError('notes')"
@@ -331,7 +331,7 @@ fetchUsers()
 
           <!-- Step 2: Commission Selection -->
           <div v-if="currentStep === 2 && form.user_id">
-            <h3 class="text-h6 mb-4">Sélection des commissions</h3>
+            <h3 class="text-h6 mb-4">{{ t('admin_withdrawals_commission_selection') }}</h3>
             
             <CommissionSelector
               :user-id="form.user_id"
@@ -343,44 +343,44 @@ fetchUsers()
 
           <!-- Step 3: Confirmation -->
           <div v-if="currentStep === 3">
-            <h3 class="text-h6 mb-4">Confirmation</h3>
+            <h3 class="text-h6 mb-4">{{ t('confirmation') }}</h3>
             
             <VAlert color="info" variant="tonal" class="mb-4">
               <VIcon icon="tabler-info-circle" class="me-2" />
-              Vérifiez les informations avant de créer le retrait
+              {{ t('verify_before_creating_withdrawal') }}
             </VAlert>
 
             <VRow>
               <VCol cols="12" md="6">
                 <VCard variant="tonal">
-                  <VCardTitle>Informations du retrait</VCardTitle>
+                  <VCardTitle>{{ t('withdrawal_information') }}</VCardTitle>
                   <VCardText>
                     <div class="mb-2">
-                      <strong>Affilié:</strong> 
+                      <strong>{{ t('affiliate') }}:</strong> 
                       {{ users.find(u => u.id === form.user_id)?.nom_complet }}
                     </div>
                     <div class="mb-2">
-                      <strong>Email:</strong> 
+                      <strong>{{ t('email') }}:</strong> 
                       {{ users.find(u => u.id === form.user_id)?.email }}
                     </div>
                     <div class="mb-2">
-                      <strong>Méthode:</strong> 
-                      {{ form.method === 'bank_transfer' ? 'Virement bancaire' : form.method }}
+                      <strong>{{ t('method') }}:</strong> 
+                      {{ form.method === 'bank_transfer' ? t('bank_transfer') : form.method }}
                     </div>
                     <div class="mb-2">
-                      <strong>Mode de sélection:</strong> 
-                      {{ selectionMode === 'auto' ? 'Automatique' : 'Manuel' }}
+                      <strong>{{ t('selection_mode') }}:</strong> 
+                      {{ selectionMode === 'auto' ? t('automatic') : t('manual') }}
                     </div>
                     <div v-if="selectionMode === 'auto'" class="mb-2">
-                      <strong>Montant cible:</strong> 
+                      <strong>{{ t('target_amount') }}:</strong> 
                       {{ Number(targetAmount).toFixed(2) }} MAD
                     </div>
                     <div class="mb-2">
-                      <strong>Commissions sélectionnées:</strong> 
+                      <strong>{{ t('selected_commissions') }}:</strong> 
                       {{ form.commission_ids.length }}
                     </div>
                     <div v-if="form.notes" class="mb-2">
-                      <strong>Notes:</strong> 
+                      <strong>{{ t('notes') }}:</strong> 
                       {{ form.notes }}
                     </div>
                   </VCardText>
@@ -417,7 +417,7 @@ fetchUsers()
                     :disabled="currentStep === 1 && !form.user_id"
                     @click="nextStep"
                   >
-                    Suivant
+                    {{ t('actions.next') }}
                   </VBtn>
                   
                   <VBtn
@@ -427,7 +427,7 @@ fetchUsers()
                     :disabled="!canSubmit"
                     type="submit"
                   >
-                    Créer le retrait
+                    {{ t('admin_withdrawals_create_withdrawal') }}
                   </VBtn>
                 </div>
               </div>

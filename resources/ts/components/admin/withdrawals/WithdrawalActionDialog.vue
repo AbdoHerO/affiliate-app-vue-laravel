@@ -2,6 +2,7 @@
 import { ref, computed, watch, nextTick } from 'vue'
 import { useWithdrawalsStore } from '@/stores/admin/withdrawals'
 import { useNotifications } from '@/composables/useNotifications'
+import { useI18n } from 'vue-i18n'
 
 interface Props {
   isVisible: boolean
@@ -20,6 +21,7 @@ const emit = defineEmits<Emits>()
 
 const withdrawalsStore = useWithdrawalsStore()
 const { showSuccess, showError } = useNotifications()
+const { t } = useI18n()
 
 // Local state
 const loading = ref(false)
@@ -33,11 +35,11 @@ const isClosing = ref(false)
 // Computed
 const dialogTitle = computed(() => {
   switch (props.action) {
-    case 'approve': return 'Approuver le retrait'
-    case 'reject': return 'Rejeter le retrait'
-    case 'mark_in_payment': return 'Marquer en cours de paiement'
-    case 'mark_paid': return 'Marquer comme payé'
-    default: return 'Action'
+    case 'approve': return t('admin_withdrawals_approve_withdrawal')
+    case 'reject': return t('admin_withdrawals_reject_withdrawal')
+    case 'mark_in_payment': return t('admin_withdrawals_mark_in_payment')
+    case 'mark_paid': return t('admin_withdrawals_mark_paid')
+    default: return t('actions.action')
   }
 })
 
@@ -63,11 +65,11 @@ const dialogColor = computed(() => {
 
 const confirmText = computed(() => {
   switch (props.action) {
-    case 'approve': return 'Approuver'
-    case 'reject': return 'Rejeter'
-    case 'mark_in_payment': return 'Marquer en cours'
-    case 'mark_paid': return 'Marquer payé'
-    default: return 'Confirmer'
+    case 'approve': return t('actions.approve')
+    case 'reject': return t('actions.reject')
+    case 'mark_in_payment': return t('admin_withdrawals_mark_in_payment_short')
+    case 'mark_paid': return t('admin_withdrawals_mark_paid_short')
+    default: return t('actions.confirm')
   }
 })
 

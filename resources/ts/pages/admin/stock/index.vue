@@ -17,7 +17,7 @@ import type { StockItem } from '@/types/admin/stock'
 
 definePage({
   meta: {
-    title: 'Gestion des Stocks',
+    title: 'Stock Management',
     requiresAuth: true,
     requiresRole: 'admin',
   },

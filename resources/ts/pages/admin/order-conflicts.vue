@@ -1,4 +1,8 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
+
 definePage({
   meta: {
     requiresAuth: true,
@@ -13,10 +17,10 @@ definePage({
       <VCardText>
         <div class="text-center py-8">
           <VIcon icon="tabler-alert-triangle" size="64" class="mb-4" color="error" />
-          <h2 class="text-h4 mb-2">Order Conflicts</h2>
-          <p class="text-body-1 mb-4">Manage order conflicts and fraud detection</p>
+          <h2 class="text-h4 mb-2">{{ t('order_conflicts') }}</h2>
+          <p class="text-body-1 mb-4">{{ t('manage_order_conflicts_fraud_detection') }}</p>
           <VChip color="warning" variant="tonal">
-            Coming Soon
+            {{ t('coming_soon') }}
           </VChip>
         </div>
       </VCardText>

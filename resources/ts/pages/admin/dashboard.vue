@@ -50,7 +50,7 @@ const dateRange = ref([
 
 // Breadcrumbs
 const breadcrumbs = computed(() => [
-  { title: 'Admin', disabled: false, href: '/admin' },
+  { title: t('admin_breadcrumb'), disabled: false, href: '/admin' },
   { title: t('dashboard'), disabled: true, href: '/admin/dashboard' },
 ])
 
@@ -152,10 +152,10 @@ const refreshData = async () => {
   try {
     await dashboardStore.refreshAll()
     if (autoRefresh.value) {
-      showSuccess('Dashboard data refreshed')
+      showSuccess(t('dashboard_data_refreshed'))
     }
   } catch (error) {
-    showError('Failed to refresh dashboard data')
+    showError(t('dashboard_refresh_failed'))
   }
 }
 

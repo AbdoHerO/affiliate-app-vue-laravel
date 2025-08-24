@@ -67,17 +67,17 @@ const pagination = computed(() => preordersStore.pagination)
 // Table headers
 const headers = [
   { title: '', key: 'select', sortable: false, width: '50px' },
-  { title: 'Code', key: 'id', sortable: true },
-  { title: 'Client', key: 'client', sortable: false },
-  { title: 'Ville', key: 'city', sortable: false },  
-  { title: 'Affilié', key: 'affilie', sortable: false },
-  { title: 'Boutique', key: 'boutique', sortable: false },
-  { title: 'Total', key: 'total_ttc', sortable: true },
-  { title: 'No Answer', key: 'no_answer_count', sortable: true, width: '100px' },
-  { title: 'Statut', key: 'statut', sortable: true },
-  { title: 'Expédition', key: 'shipping', sortable: false, width: '120px' },
-  { title: 'Date', key: 'created_at', sortable: true },
-  { title: 'Actions', key: 'actions', sortable: false, width: '150px' },
+  { title: t('table_order_code'), key: 'id', sortable: true },
+  { title: t('table_client'), key: 'client', sortable: false },
+  { title: t('table_city'), key: 'city', sortable: false },  
+  { title: t('table_affiliate'), key: 'affilie', sortable: false },
+  { title: t('table_boutique'), key: 'boutique', sortable: false },
+  { title: t('table_total'), key: 'total_ttc', sortable: true },
+  { title: t('table_no_answer'), key: 'no_answer_count', sortable: true, width: '100px' },
+  { title: t('table_status'), key: 'statut', sortable: true },
+  { title: t('table_shipping'), key: 'shipping', sortable: false, width: '120px' },
+  { title: t('table_date'), key: 'created_at', sortable: true },
+  { title: t('table_actions'), key: 'actions', sortable: false, width: '150px' },
 ]
 
 // Status options

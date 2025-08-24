@@ -222,7 +222,10 @@
     "create": "Créer",
     "back": "Retour",
     "backToList": "Retour à la liste",
-    "backToCommissions": "Retour aux commissions"
+    "backToCommissions": "Retour aux commissions",
+    "confirm_payment": "Confirmer le paiement",
+    "next": "Suivant",
+    "action": "Action"
   },
 
   // ===========================================
@@ -401,6 +404,24 @@
   "table_created": "Créé",
   "table_actions": "Actions",
   "table_recent_orders": "Commandes récentes",
+  
+  // Pre-orders specific
+  "table_order_code": "Code",
+  "table_client": "Client",
+  "table_city": "Ville",
+  "table_affiliate": "Affilié",
+  "table_boutique": "Boutique",
+  "table_total": "Total",
+  "table_no_answer": "No Answer",
+  "table_shipping": "Expédition",
+  "table_date": "Date",
+  
+  // Boutiques specific
+  "name_required": "Le nom est requis",
+  "owner_required": "Le propriétaire est requis",
+  "invalid_email_format": "Format email invalide",
+  "error_loading_users": "Erreur lors du chargement des utilisateurs",
+  "slug_hint": "URL-friendly version du nom (généré automatiquement)",
 
   // ===========================================
   // STATUS LABELS
@@ -686,7 +707,7 @@
   "enter_permission_name": "Entrez le nom de la permission",
   "description": "Description",
   "permissions": "Permissions",
-  "users_count": "Nombre d'Utilisateurs",
+  "users_count": "{count} utilisateur(s)",
   "assign_permissions": "Assigner Permissions",
   "create_role": "Créer Rôle",
   "update_role": "Mettre à Jour Rôle",
@@ -1036,6 +1057,7 @@
   "admin_produits_boutique": "Boutique",
   "admin_produits_categorie": "Catégorie",
   "admin_produits_titre": "Titre du Produit",
+  "admin_produits_photo": "Photo",
   "admin_produits_titre_placeholder": "Saisir le titre du produit",
   "admin_produits_category": "Catégorie",
   "admin_produits_name": "Nom du Produit",
@@ -1488,6 +1510,20 @@
     "dashboard": {
       "title": "Tableau de Bord Admin",
       "welcome": "Bienvenue dans l'espace administrateur",
+      "earningReports": "Rapports de Revenus",
+      "weeklyEarningsOverview": "Aperçu des Revenus Hebdomadaires",
+      "youInformed": "Vous êtes informé de cette semaine par rapport à la semaine dernière",
+      "earnings": "Revenus",
+      "profit": "Profit",
+      "expense": "Dépenses",
+      "viewMore": "Voir Plus",
+      "delete": "Supprimer",
+      "statistics": "Statistiques",
+      "updatedAgo": "Mis à jour il y a {time}",
+      "sales": "Ventes",
+      "customers": "Clients",
+      "products": "Produits",
+      "revenue": "Revenus",
       "stats": {
         "totalUsers": "Total Utilisateurs",
         "totalOrders": "Total Commandes",
@@ -1505,13 +1541,77 @@
       "productionModeDesc": "Les appels API créent de vrais colis avec de vrais numéros de suivi",
       "testModeDesc": "Les appels API utilisent des données fictives pour les tests",
       "systemStatus": "État du Système",
-      "checkStatus": "Vérifier l'État"
+      "checkStatus": "Vérifier l'État",
+      "platformSync": "Synchronisation Plateforme OzonExpress",
+      "realParcelsAnalytics": "Analyse des Colis Réels",
+      "recentRealParcels": "Colis Réels Récents",
+      "quickActions": "Actions Rapides",
+      "advancedApiDebug": "API Debug Avancé",
+      "sendParcel": "Envoyer un Colis",
+      "trackParcel": "Suivre un Colis",
+      "deliveryNoteTest": "Test Bon de Livraison (BL)",
+      "manualEntry": "Saisie Manuelle",
+      "fromOrder": "Depuis Commande",
+      "recipient": "Destinataire",
+      "phone": "Téléphone",
+      "city": "Ville",
+      "price": "Prix",
+      "address": "Adresse",
+      "parcelNature": "Nature du colis",
+      "parcelType": "Type de colis",
+      "parcelDetails": "Détails du Colis",
+      "trackingInfo": "Informations de Suivi",
+      "result": "Résultat",
+      "trackingNumber": "Numéro de suivi",
+      "close": "Fermer",
+      "cancel": "Annuler",
+      "track": "Suivre",
+      "useLastCreated": "Utiliser Dernier Colis",
+      "createdSuccessfully": "créé avec succès",
+      "updated": "mis à jour",
+      "error": "Erreur",
+      "success": "Succès"
     },
     "orders": {
       "bulkUpdateSuccess": "{count} commande(s) mise(s) à jour vers \"{status}\""
     },
     "cities": {
-      "editCity": "Modifier la ville"
+      "editCity": "Modifier la ville",
+      "ozonExpressCities": "Villes OzonExpress",
+      "manageCitiesDesc": "Gérez les villes disponibles pour les expéditions OzonExpress",
+      "import": "Importer",
+      "newCity": "Nouvelle ville",
+      "totalCities": "Total des villes",
+      "activeCities": "Villes actives",
+      "inactiveCities": "Villes inactives",
+      "search": "Rechercher",
+      "searchPlaceholder": "Nom, ID ou référence...",
+      "status": "Statut",
+      "all": "Tous",
+      "active": "Actives",
+      "inactive": "Inactives",
+      "perPage": "Par page",
+      "clear": "Effacer",
+      "cityId": "ID Ville",
+      "name": "Nom",
+      "lastUpdate": "Dernière MAJ",
+      "cityIdPlaceholder": "Ex: 97",
+      "reference": "Référence",
+      "referencePlaceholder": "Ex: CSA",
+      "cityName": "Nom de la ville",
+      "cityNamePlaceholder": "Ex: Casablanca",
+      "activeCity": "Ville active",
+      "deliveryPrice": "Prix livraison (MAD)",
+      "returnPrice": "Prix retour (MAD)",
+      "refusedPrice": "Prix refus (MAD)",
+      "importCities": "Importer des villes",
+      "fileToImport": "Fichier à importer",
+      "importFormats": "Formats acceptés : JSON, CSV. Le fichier doit contenir les colonnes : city_id, name, ref (optionnel), prices.",
+      "cityModifiedSuccess": "Ville modifiée avec succès",
+      "cityCreatedSuccess": "Ville créée avec succès",
+      "saveError": "Erreur lors de la sauvegarde",
+      "citiesImportedSuccess": "Villes importées avec succès",
+      "importError": "Erreur lors de l'importation"
     },
     "commissions": {
       "details": "Détails de la commission"
@@ -1555,6 +1655,9 @@
 
   // Dashboard and actions keys
   "dashboard": "Tableau de bord",
+  "admin_breadcrumb": "Admin",
+  "dashboard_data_refreshed": "Données du tableau de bord actualisées",
+  "dashboard_refresh_failed": "Échec de l'actualisation du tableau de bord",
   "actions.edit": "Modifier",
   "actions.view": "Voir",
   "actions.delete": "Supprimer",
@@ -2089,7 +2192,6 @@
   "current_points": "Points Actuels",
   "available_points": "Points Disponibles",
   "total_commissions": "Commissions Totales",
-  "this_month": "Ce Mois",
   "monthly_earnings": "Gains Mensuels",
   "verified_signups": "Inscriptions Vérifiées",
   "conversion_rate": "Taux de Conversion",
@@ -2238,5 +2340,761 @@
   "banks": {
       "attijariwafa": "Attijariwafa",
       "banque_populaire": "Banque Populaire"
-  }
+  },
+
+  // ===========================================
+  // ADMIN PANEL - GENERAL
+  // ===========================================
+  "admin_dashboard_title": "Tableau de bord administrateur",
+  "admin_simple_dashboard_title": "Tableau de bord administrateur simple",
+  "admin_panel": "Panneau d'administration",
+
+  // ===========================================
+  // ADMIN PANEL - PRODUCTS
+  // ===========================================
+  "admin_products_title": "Gestion des produits",
+  "admin_products_titre": "Titre",
+  "admin_products_boutique": "Boutique",
+  "admin_products_categorie": "Catégorie",
+  "admin_products_prix_vente": "Prix de vente",
+  "admin_products_prix_affilie": "Prix affilié",
+  "admin_products_create": "Créer un produit",
+  "admin_products_edit": "Modifier le produit",
+  "admin_products_view": "Voir le produit",
+  "admin_products_delete": "Supprimer le produit",
+  "admin_products_duplicate": "Dupliquer",
+  "admin_products_stock": "Stock",
+  "admin_products_description": "Description",
+  "admin_products_images": "Images",
+  "admin_products_variants": "Variantes",
+  "admin_products_rating": "Note",
+  "admin_products_status": "Statut",
+
+  // ===========================================
+  // ADMIN PANEL - ORDERS
+  // ===========================================
+  // ADMIN PANEL - ORDERS
+  // ===========================================
+  "admin_orders_title": "Gestion des commandes",
+  "admin_orders_all": "Toutes les commandes",
+  "admin_orders_pending": "Commandes en attente",
+  "admin_orders_shipped": "Commandes expédiées",
+  "admin_orders_delivered": "Commandes livrées",
+  "admin_orders_cancelled": "Commandes annulées",
+  "admin_orders_conflicts": "Conflits de commandes",
+  "admin_orders_view": "Voir la commande",
+  "admin_orders_edit": "Modifier la commande",
+  "admin_orders_track": "Suivre la commande",
+  "admin_orders_print": "Imprimer",
+  "admin_orders_export": "Exporter",
+  "admin_orders_id": "ID Commande",
+  "admin_orders_status": "Statut",
+  "admin_orders_total_ttc": "Total TTC",
+  "admin_orders_created_at": "Date de création",
+
+  // ===========================================
+  // ADMIN PANEL - USERS
+  // ===========================================
+  "admin_users_title": "Gestion des utilisateurs",
+  "admin_users_create": "Créer un utilisateur",
+  "admin_users_edit": "Modifier l'utilisateur",
+  "admin_users_view": "Voir l'utilisateur",
+  "admin_users_delete": "Supprimer l'utilisateur",
+  "admin_users_activate": "Activer",
+  "admin_users_deactivate": "Désactiver",
+  "admin_users_block": "Bloquer",
+  "admin_users_unblock": "Débloquer",
+  "admin_users_kyc_approve": "Approuver KYC",
+  "admin_users_kyc_reject": "Rejeter KYC",
+
+  // ===========================================
+  // ADMIN PANEL - AFFILIATES
+  // ===========================================
+  "admin_affiliates_title": "Gestion des affiliés",
+  "admin_affiliates_all": "Tous les affiliés",
+  "admin_affiliates_pending": "Affiliés en attente",
+  "admin_affiliates_approved": "Affiliés approuvés",
+  "admin_affiliates_rejected": "Affiliés rejetés",
+  "admin_affiliates_tiers": "Niveaux d'affiliés",
+  "admin_affiliates_performance": "Performance des affiliés",
+  "admin_affiliates_approve": "Approuver",
+  "admin_affiliates_reject": "Rejeter",
+
+  // ===========================================
+  // ADMIN PANEL - COMMISSIONS
+  // ===========================================
+  "admin_commissions_title": "Gestion des commissions",
+  "admin_commissions_pending": "Commissions en attente",
+  "admin_commissions_paid": "Commissions payées",
+  "admin_commissions_cancelled": "Commissions annulées",
+  "admin_commissions_approve": "Approuver commission",
+  "admin_commissions_reject": "Rejeter commission",
+  "admin_commissions_pay": "Payer commission",
+  "admin_commissions_amount": "Montant commission",
+  "admin_commissions_confirm_approval": "Confirmer l'approbation",
+  "admin_commissions_approve_confirmation": "Approuver cette commission de {amount} {currency} ?",
+  "admin_commissions_mark_as_paid": "Marquer comme payée",
+  "admin_commissions_payment_confirmation": "Confirmer le paiement de cette commission de {amount} {currency} ?",
+  "admin_commissions_invalid_id": "ID de commission invalide",
+  "admin_commissions_loading": "Chargement de la commission...",
+  "admin_commissions_not_found": "Commission non trouvée",
+  "admin_commissions_not_found_description": "La commission demandée n'existe pas ou a été supprimée.",
+  "admin_commissions_details": "Détails de la commission",
+  "admin_commissions_base_amount": "Montant de base",
+  "admin_commissions_rate": "Taux",
+  "admin_commissions_quantity": "Quantité",
+  "admin_commissions_final_amount": "Montant final",
+  "admin_commissions_applied_rule": "Règle appliquée",
+  "admin_commissions_eligible_on": "Éligible le",
+  "admin_commissions_approved_on": "Approuvée le",
+  "admin_commissions_paid_on": "Payée le",
+  "admin_commissions_affiliate_info": "Informations de l'affilié",
+  "admin_commissions_order_info": "Informations de la commande",
+  "admin_commissions_notes": "Notes",
+  "admin_commissions_reject_commission": "Rejeter la commission",
+  "admin_commissions_reject_message": "Vous êtes sur le point de rejeter cette commission. Veuillez indiquer la raison :",
+  "admin_commissions_reject_reason": "Raison du rejet",
+  "admin_commissions_reject_placeholder": "Expliquez pourquoi cette commission est rejetée...",
+  "admin_commissions_adjust_commission": "Ajuster la commission",
+  "admin_commissions_current_amount": "Montant actuel",
+  "admin_commissions_new_amount": "Nouveau montant",
+  "admin_commissions_adjust_reason": "Raison de l'ajustement",
+  "admin_commissions_adjust_placeholder": "Expliquez pourquoi cette commission est ajustée...",
+
+  // ===========================================
+  // ADMIN PANEL - WITHDRAWALS
+  // ===========================================
+  "admin_withdrawals_title": "Gestion des retraits",
+  "admin_withdrawals_pending": "Retraits en attente",
+  "admin_withdrawals_approved": "Retraits approuvés",
+  "admin_withdrawals_paid": "Retraits payés",
+  "admin_withdrawals_rejected": "Retraits rejetés",
+  "admin_withdrawals_create": "Créer un retrait",
+  "admin_withdrawals_approve": "Approuver",
+  "admin_withdrawals_reject": "Rejeter",
+  "admin_withdrawals_mark_paid": "Marquer comme payé",
+  "admin_withdrawals_mark_in_payment": "Marquer en paiement",
+  "admin_withdrawals_details": "Détails du retrait",
+  "admin_withdrawals_affiliate_info": "Informations de l'affilié",
+  "admin_withdrawals_commissions_linked": "Commissions liées",
+  "admin_withdrawals_detach_commissions": "Détacher les commissions",
+  "admin_withdrawals_amount": "Montant",
+  "admin_withdrawals_commission_count": "Nombre de commissions",
+  "admin_withdrawals_create_new": "Créer un nouveau retrait",
+  "admin_withdrawals_in_payment": "En cours de paiement",
+  "admin_withdrawals_canceled": "Annulé",
+  "admin_withdrawals_create_description": "Créez un retrait pour un affilié en sélectionnant les commissions éligibles",
+  "admin_withdrawals_create_success": "Retrait créé avec succès",
+  "admin_withdrawals_create_error": "Erreur lors de la création du retrait",
+  "admin_withdrawals_create_error_general": "Une erreur est survenue lors de la création du retrait",
+  "admin_withdrawals_step_select_affiliate": "Sélection de l'affilié",
+  "admin_withdrawals_step_select_affiliate_subtitle": "Choisir l'affilié",
+  "admin_withdrawals_step_select_commissions": "Sélection des commissions",
+  "admin_withdrawals_step_select_commissions_subtitle": "Choisir les commissions",
+  "admin_withdrawals_step_confirmation": "Confirmation",
+  "admin_withdrawals_step_confirmation_subtitle": "Vérifier et créer",
+  "admin_withdrawals_method": "Méthode de retrait",
+  "admin_withdrawals_bank_transfer": "Virement bancaire",
+  "admin_withdrawals_notes_optional": "Notes (optionnel)",
+  "admin_withdrawals_notes_placeholder": "Ajouter des notes pour ce retrait...",
+  "admin_withdrawals_commission_selection": "Sélection des commissions",
+  "admin_withdrawals_create_withdrawal": "Créer le retrait",
+  "admin_withdrawals_approve_withdrawal": "Approuver le retrait",
+  "admin_withdrawals_reject_withdrawal": "Rejeter le retrait",
+  "admin_withdrawals_mark_in_payment_short": "Marquer en cours",
+  "admin_withdrawals_mark_paid_short": "Marquer payé",
+  "admin_withdrawals_created_at": "Date de création",
+  "admin_withdrawals_approved_at": "Date d'approbation",
+  "admin_withdrawals_paid_at": "Date de paiement",
+  "admin_withdrawals_back_to_list": "Retour à la liste",
+  "admin_withdrawals_linked_commissions": "Commissions liées",
+  "admin_withdrawals_view_commission": "Voir la commission",
+  "admin_withdrawals_not_found": "Retrait non trouvé",
+  "admin_withdrawals_not_found_description": "Le retrait demandé n'existe pas ou a été supprimé.",
+  "admin_withdrawals_subtitle": "Gérez les demandes de retrait des affiliés",
+  "payment_reference": "Référence de paiement",
+  "payment_proof": "Preuve de paiement",
+  "download_proof": "Télécharger la preuve",
+  "action_detach": "Détacher",
+  "status_paid": "Payée",
+  "no_commissions_linked": "Aucune commission liée à ce retrait",
+  "finance": "Finance",
+  "table_column_reference": "Référence",
+  "table_column_affiliate": "Affilié",
+  "table_column_method": "Méthode",
+  "table_column_status": "Statut",
+  "table_column_commissions": "Commissions",
+  "table_column_actions": "Actions",
+  "status_canceled": "Annulé",
+  "payment_method_bank_transfer": "Virement bancaire",
+  "search_withdrawals_placeholder": "Rechercher par nom, email ou référence...",
+  "search_withdrawals_hint": "Recherche dans le nom, email de l'affilié ou référence de paiement",
+  "filter_date_from": "Date début",
+  "filter_date_to": "Date fin",
+  "filters_active": "filtre(s) actif(s)",
+  "filter_search": "Recherche",
+  "clear_all_filters": "Effacer tous les filtres",
+  "selected_withdrawals": "retrait(s) sélectionné(s)",
+  "export_selection": "Exporter sélection",
+  "select_all": "Tout sélectionner",
+  "action_export": "Exporter",
+  "action_view_details": "Voir les détails",
+  "status_in_payment": "En cours",
+  "error_invalid_withdrawal_id": "ID de retrait invalide",
+  "action_success": "Action effectuée avec succès",
+  "error_updating_data": "Erreur lors de la mise à jour des données",
+  "export_success": "Export réussi",
+  "export_error": "Erreur lors de l'export",
+  "export_in_progress": "Export en cours...",
+  "no_withdrawals_found": "Aucun retrait trouvé",
+  "no_withdrawals_match_filters": "Aucun retrait ne correspond aux filtres appliqués",
+  "no_withdrawals_created": "Aucun retrait n'a été créé",
+  "create_first_withdrawal": "Créer le premier retrait",
+
+  // ===========================================
+  // ADMIN PANEL - CATEGORIES
+  // ===========================================
+  "admin_categories_title": "Gestion des catégories",
+  "admin_categories_create": "Créer une catégorie",
+  "admin_categories_edit": "Modifier la catégorie",
+  "admin_categories_delete": "Supprimer la catégorie",
+  "admin_categories_name": "Nom de la catégorie",
+  "admin_categories_description": "Description",
+  "admin_categories_parent": "Catégorie parent",
+  "admin_categories_children": "Sous-catégories",
+
+  // ===========================================
+  // ADMIN PANEL - BOUTIQUES
+  // ===========================================
+  "admin_boutiques_title": "Gestion des boutiques",
+  "admin_boutiques_create": "Créer une boutique",
+  "admin_boutiques_edit": "Modifier la boutique",
+  "admin_boutiques_delete": "Supprimer la boutique",
+  "admin_boutiques_name": "Nom de la boutique",
+  "admin_boutiques_description": "Description",
+  "admin_boutiques_website": "Site web",
+  "admin_boutiques_contact": "Contact",
+
+  // ===========================================
+  // ADMIN PANEL - SUPPORT
+  // ===========================================
+  "admin_support_title": "Gestion du support",
+  "admin_support_tickets": "Tickets de support",
+  "admin_support_create_ticket": "Créer un ticket",
+  "admin_support_view_ticket": "Voir le ticket",
+  "admin_support_close_ticket": "Fermer le ticket",
+  "admin_support_reopen_ticket": "Rouvrir le ticket",
+  "admin_support_assign_ticket": "Assigner le ticket",
+  "admin_support_priority": "Priorité",
+  "admin_support_status": "Statut",
+  "admin_support_category": "Catégorie",
+
+  // ===========================================
+  // ADMIN PANEL - REPORTS
+  // ===========================================
+  "admin_reports_title": "Rapports et analyses",
+  "admin_reports_sales": "Rapports de ventes",
+  "admin_reports_affiliates": "Performance des affiliés",
+  "admin_reports_commissions": "Rapports de commissions",
+  "admin_reports_users": "Statistiques utilisateurs",
+  "admin_reports_export": "Exporter le rapport",
+  "admin_reports_period": "Période",
+  "admin_reports_filter": "Filtrer",
+
+  // ===========================================
+  // ADMIN PANEL - STOCK
+  // ===========================================
+  "admin_stock_title": "Gestion du stock",
+  "admin_stock_movements": "Mouvements de stock",
+  "admin_stock_adjust": "Ajuster le stock",
+  "admin_stock_low": "Stock faible",
+  "admin_stock_out": "Rupture de stock",
+  "admin_stock_quantity": "Quantité",
+  "admin_stock_movement_type": "Type de mouvement",
+
+  // ===========================================
+  // ADMIN PANEL - INTEGRATIONS
+  // ===========================================
+  "admin_integrations_title": "Intégrations",
+  "admin_integrations_ozonexpress": "OzonExpress",
+  "admin_integrations_credentials": "Identifiants",
+  "admin_integrations_cities": "Villes",
+  "admin_integrations_settings": "Paramètres",
+  "admin_integrations_test_connection": "Tester la connexion",
+
+  // ===========================================
+  // ADMIN PANEL - ROLES & PERMISSIONS
+  // ===========================================
+  "admin_roles_title": "Rôles et permissions",
+  "admin_roles_create": "Créer un rôle",
+  "admin_roles_edit": "Modifier le rôle",
+  "admin_roles_delete": "Supprimer le rôle",
+  "admin_roles_permissions": "Permissions",
+  "admin_roles_assign": "Assigner un rôle",
+
+  // ===========================================
+  // ADMIN PANEL - KYC
+  // ===========================================
+  "admin_kyc_title": "Documents KYC",
+  "admin_kyc_pending": "En attente de vérification",
+  "admin_kyc_approved": "Approuvés",
+  "admin_kyc_rejected": "Rejetés",
+  "admin_kyc_view_document": "Voir le document",
+  "admin_kyc_approve": "Approuver",
+  "admin_kyc_reject": "Rejeter",
+
+  // ===========================================
+  // ADMIN PANEL - PAYMENTS
+  // ===========================================
+  "admin_payments_title": "Gestion des paiements",
+  "admin_payments_pending": "Paiements en attente",
+  "admin_payments_completed": "Paiements complétés",
+  "admin_payments_failed": "Paiements échoués",
+  "admin_payments_refunded": "Paiements remboursés",
+
+  // ===========================================
+  // TABLE & LIST ACTIONS
+  // ===========================================
+  "table_actions": "Actions",
+  "table_view": "Voir",
+  "table_edit": "Modifier",
+  "table_delete": "Supprimer",
+  "table_duplicate": "Dupliquer",
+  "table_export": "Exporter",
+  "table_print": "Imprimer",
+  "table_details": "Détails",
+
+  // ===========================================
+  // FORM ACTIONS
+  // ===========================================
+  "form_save": "Enregistrer",
+  "form_cancel": "Annuler",
+  "form_submit": "Soumettre",
+  "form_reset": "Réinitialiser",
+  "form_create": "Créer",
+  "form_update": "Mettre à jour",
+  "form_delete": "Supprimer",
+
+  // ===========================================
+  // FILTERS & SEARCH
+  // ===========================================
+  "filter_all": "Tous",
+  "filter_active": "Actifs",
+  "filter_inactive": "Inactifs",
+  "filter_pending": "En attente",
+  "filter_approved": "Approuvés",
+  "filter_rejected": "Rejetés",
+  "filter_search": "Rechercher",
+  "filter_clear": "Effacer les filtres",
+  "filter_apply": "Appliquer",
+  "filter_reset": "Réinitialiser",
+  "filter_date_from": "Date de début",
+  "filter_date_to": "Date de fin",
+
+  // ===========================================
+  // PAGINATION
+  // ===========================================
+  "pagination_previous": "Précédent",
+  "pagination_next": "Suivant",
+  "pagination_first": "Premier",
+  "pagination_last": "Dernier",
+  "pagination_showing": "Affichage de {start} à {end} sur {total}",
+  "pagination_per_page": "Par page",
+
+  // ===========================================
+  // CONFIRMATION DIALOGS
+  // ===========================================
+  "confirm_delete_title": "Confirmer la suppression",
+  "confirm_delete_message": "Êtes-vous sûr de vouloir supprimer {item} ?",
+  "confirm_action": "Confirmer l'action",
+  "confirm_approve": "Approuver",
+  "confirm_reject": "Rejeter",
+  "confirm_yes": "Oui",
+  "confirm_no": "Non",
+
+  // ===========================================
+  // SUCCESS MESSAGES
+  // ===========================================
+  "success_created": "{item} créé avec succès",
+  "success_updated": "{item} mis à jour avec succès",
+  "success_deleted": "{item} supprimé avec succès",
+  "success_approved": "{item} approuvé avec succès",
+  "success_rejected": "{item} rejeté avec succès",
+  "success_status_changed": "Statut modifié avec succès",
+
+  // ===========================================
+  // ERROR MESSAGES
+  // ===========================================
+  "error_failed_to_load": "Échec du chargement de {item}",
+  "error_failed_to_create": "Échec de la création de {item}",
+  "error_failed_to_update": "Échec de la mise à jour de {item}",
+  "error_failed_to_delete": "Échec de la suppression de {item}",
+  "error_network": "Erreur réseau",
+  "error_server": "Erreur serveur",
+  "error_validation": "Erreur de validation",
+  "error_access_denied": "Accès refusé",
+
+  // ===========================================
+  // LOADING & EMPTY STATES
+  // ===========================================
+  "loading": "Chargement...",
+  "loading_data": "Chargement des données...",
+  "no_data": "Aucune donnée disponible",
+  "no_results": "Aucun résultat trouvé",
+  "empty_list": "La liste est vide",
+
+  // ===========================================
+  // CHART PERIODS
+  // ===========================================
+  "period_day": "Jour",
+  "period_week": "Semaine",
+  "period_month": "Mois",
+  "period_year": "Année",
+  "period_custom": "Personnalisé",
+
+  // ===========================================
+  // CHART TYPES
+  // ===========================================
+  "chart_basic": "Graphiques de base",
+  "chart_advanced": "Graphiques avancés",
+  "chart_switch_to_basic": "Passer aux graphiques de base",
+  "chart_switch_to_advanced": "Passer aux graphiques avancés",
+
+  // ===========================================
+  // RECORD STATUS
+  // ===========================================
+  "record_status": "Statut d'enregistrement",
+  "record_active": "Actif",
+  "record_deleted": "Supprimé",
+  "record_archived": "Archivé",
+
+  // ===========================================
+  // SOFT DELETE
+  // ===========================================
+  "soft_delete_show_all": "Afficher tous",
+  "soft_delete_show_active": "Afficher actifs",
+  "soft_delete_show_deleted": "Afficher supprimés",
+  "soft_delete_restore": "Restaurer",
+  "soft_delete_force_delete": "Supprimer définitivement",
+
+  // ===========================================
+  // HARDCODED STRINGS FROM ADMIN FILES
+  // ===========================================
+  "create_new_user": "Créer un nouvel utilisateur",
+  "user_updated_successfully": "Utilisateur mis à jour avec succès",
+  "failed_to_update_user": "Échec de la mise à jour de l'utilisateur",
+  "user_status_updated_successfully": "Statut de l'utilisateur mis à jour avec succès",
+  "user_deleted_successfully": "Utilisateur supprimé avec succès",
+  "user_created_successfully": "Utilisateur créé avec succès",
+  "failed_to_create_user": "Échec de la création de l'utilisateur",
+  "failed_to_load_users": "Échec du chargement des utilisateurs",
+  "failed_to_toggle_user_status": "Échec du changement de statut de l'utilisateur",
+
+  // Withdrawals specific
+  "details_and_management": "Détails et gestion du retrait",
+  "withdrawal_management": "Gestion et actions",
+  "withdrawal_information": "Informations du retrait",
+  "affiliate_information": "Informations de l'affilié",
+  "linked_commissions": "Commissions liées",
+  "no_linked_commissions": "Aucune commission liée à ce retrait",
+  "detach_selected": "Détacher ({count})",
+  "confirm_detach_commissions": "Êtes-vous sûr de vouloir détacher {count} commission(s) de ce retrait ?",
+  "detach": "Détacher",
+  "export_withdrawal": "Exporter",
+  "view_commission": "Voir la commission",
+  "commission_id_short": "Commission",
+  "order_id_short": "Commande",
+  "product_title": "Produit",
+  "amount": "Montant",
+  "status": "Statut",
+  "date": "Date",
+  "phone": "Téléphone",
+  "commissions_count": "{count} commission(s)",
+
+  // Dashboard periods
+  "day": "Jour",
+  "week": "Semaine",
+  "month": "Mois",
+  "year": "Année",
+
+  // Generic messages
+  "invalid_withdrawal_id": "ID de retrait invalide",
+  "error_loading_withdrawal": "Erreur lors du chargement du retrait",
+  "action_successful": "Action effectuée avec succès",
+  "error_updating_data": "Erreur lors de la mise à jour des données",
+  "withdrawal_not_found": "Retrait non trouvé",
+  "back_to_list": "Retour à la liste",
+
+  "switch_to_basic_charts": "Passer aux graphiques de base",
+  "switch_to_advanced_charts": "Passer aux graphiques avancés",
+  "advanced_charts": "Graphiques Avancés",
+  "basic_charts": "Graphiques de Base",
+
+  "commission_adjust_title": "Ajuster la commission",
+  "commission_adjust_confirm": "Voulez-vous ajuster cette commission de {amount} {currency} ?",
+  "commission_adjusted_success": "Commission ajustée avec succès",
+  "commission_adjust_error": "Erreur lors de l'ajustement de la commission",
+  "commission_bulk_reject_title": "Rejeter les commissions sélectionnées",
+  "commission_bulk_reject_confirm": "Êtes-vous sûr de vouloir rejeter {count} commission(s) ?",
+  "commission_bulk_reject_reason": "Rejetées en masse par l'administrateur",
+  "commission_status_calculated": "Calculées",
+  "commission_status_eligible": "Éligibles", 
+  "commission_status_approved": "Approuvées",
+  "commission_status_paid": "Payées",
+  "commission_status_rejected": "Rejetées",
+  "commission_status_adjusted": "Ajustées",
+  "commission_status_canceled": "Annulées",
+  "filter_search_placeholder": "Nom, email de l'affilié...",
+  "commission_eligible_only": "Éligibles uniquement",
+  "commission_selected_count": "{count} commission(s) sélectionnée(s)",
+  "commission_rate_fixed": "Fixe",
+  "action_mark_as_paid": "Marquer comme payée",
+  "commission_confirm_payment": "Confirmer le paiement de cette commission de {amount} {currency} ?",
+  "action_confirm_payment": "Confirmer le paiement",
+  "action_approve_all": "Approuver tout",
+  "action_reject_all": "Rejeter tout",
+  "not_available": "N/A",
+
+  "table_column_user": "Utilisateur",
+  "table_column_phone": "Téléphone",
+  "table_column_bank": "Banque",
+  "table_column_email_verified": "Email Vérifié",
+  "table_column_approval_status": "Statut Approbation", 
+  "table_column_created_at": "Inscrit le",
+  "affiliate_status_pending_approval": "En attente d'approbation",
+  "affiliate_status_approved": "Approuvé",
+  "affiliate_status_refused": "Refusé",
+  "affiliate_status_pending_approval_short": "En attente",
+  
+  // Affiliate Detail Page
+  "tier_change_from_admin": "Changement de tier depuis l'interface admin",
+  "tier_updated_successfully": "Tier modifié avec succès",
+  "tier_change_error": "Erreur lors du changement de tier",
+  "unblocked_from_admin": "Débloqué depuis l'interface admin",
+  "affiliate_blocked_successfully": "Affilié bloqué avec succès",
+  "affiliate_unblocked_successfully": "Affilié débloqué avec succès",
+  "operation_error": "Erreur lors de l'opération",
+  "kyc_status_valid": "Validé",
+  "kyc_status_pending": "En attente",
+  "kyc_status_rejected": "Refusé",
+  "kyc_status_not_required": "Non requis",
+  "loading_affiliate": "Chargement de l'affilié...",
+  "change_tier": "Changer Tier",
+  "block": "Bloquer",
+  "unblock": "Débloquer",
+  "profile": "Profil",
+  "performance": "Performance",
+  "orders": "Commandes",
+  "commissions": "Commissions",
+  "personal_information": "Informations Personnelles",
+  "not_provided": "Non renseigné",
+  "user_status": "Statut utilisateur",
+  "kyc_status": "Statut KYC",
+  "registration_date": "Date d'inscription",
+  "affiliate_profile": "Profil Affilié",
+  "tier": "Tier",
+  "not_defined": "Non défini",
+  "affiliate_status": "Statut affilié",
+  "points": "Points",
+  "rib": "RIB",
+  "internal_notes": "Notes internes",
+  "quick_stats": "Statistiques Rapides",
+  "total_orders": "Total Commandes",
+  "total_commissions": "Total Commissions",
+  "pending_commissions": "Commissions en cours",
+  "affiliate_performance": "Performance de l'Affilié",
+  "this_month": "ce mois",
+  "total_paid": "Total Payé",
+  "pending": "en attente",
+  "loading_performance": "Chargement des performances...",
+  "recent_orders": "Commandes Récentes",
+  "order": "Commande",
+  "no_orders": "Aucune commande",
+  "affiliate_no_orders_yet": "Cet affilié n'a pas encore passé de commande",
+  "recent_commissions": "Commissions Récentes",
+  "no_commissions": "Aucune commission",
+  "affiliate_no_commissions_yet": "Cet affilié n'a pas encore de commission",
+  "affiliate_not_found": "Affilié introuvable",
+  "affiliate_not_found_description": "L'affilié demandé n'existe pas ou a été supprimé",
+  "new_tier": "Nouveau tier",
+  "confirm": "Confirmer",
+  "block_affiliate": "Bloquer l'Affilié",
+  "block_reason": "Raison du blocage",
+  "block_reason_placeholder": "Expliquez pourquoi vous bloquez cet affilié...",
+  
+  "email_not_verified": "Email non vérifié",
+  "affiliate_approved_success": "Demande d'affiliation approuvée avec succès",
+  "error_during_approval": "Erreur lors de l'approbation",
+  "affiliate_refused_success": "Demande refusée avec succès",
+  "error_during_refusal": "Erreur lors du refus",
+  "verification_email_sent_success": "Email de vérification envoyé avec succès",
+  "error_sending_email": "Erreur lors de l'envoi de l'email",
+  "last_7_days": "7 derniers jours",
+  "search_placeholder_name_email_phone": "Nom, email, téléphone...",
+  "items_per_page": "Par page",
+  "approve_request": "Approuver la demande",
+  "refuse_request": "Refuser la demande",
+  "no_users_match_criteria": "Aucun utilisateur ne correspond aux critères de recherche",
+  "approve_affiliation_request": "Approuver la demande d'affiliation",
+  "approve_affiliate_confirm": "Approuver {name} comme affilié ?",
+  "user_account_created_automatically": "Un compte utilisateur sera créé automatiquement.",
+  "reason_optional": "Raison (optionnel)",
+  "approval_reason_placeholder": "Raison de l'approbation...",
+  "refuse_affiliation_request": "Refuser la demande d'affiliation", 
+  "refuse_affiliate_confirm": "Refuser la demande d'affiliation de {name} ?",
+  "action_requires_justification": "Cette action nécessite une justification.",
+  "refusal_reason_required": "Raison du refus *",
+  "refusal_reason_placeholder": "Expliquez pourquoi vous refusez cette demande...",
+  "action_refuse": "Refuser",
+  "resend_verification_email": "Renvoyer l'email de vérification",
+  "resend_verification_confirm": "Renvoyer l'email de vérification à {email} ?",
+  "action_resend": "Renvoyer",
+
+  "failed_to_load_permissions": "Échec du chargement des permissions",
+  "roles_and_permissions": "Rôles et Permissions",
+  "manage_system_roles_permissions": "Gérer les rôles et permissions du système",
+  "loading_roles": "Chargement des rôles...",
+  "create_first_role": "Créez votre premier rôle pour commencer",
+
+  "manage_payment_processing": "Gérer le traitement des paiements et les règlements",
+  "coming_soon": "Bientôt disponible",
+
+  "sales_reports": "Rapports de ventes",
+  "view_detailed_sales_analytics": "Afficher des analyses et rapports de ventes détaillés",
+
+  "affiliate_performance": "Performance des affiliés",
+  "view_affiliate_performance_analytics": "Afficher les analyses et rapports de performance des affiliés",
+
+  "order_conflicts": "Conflits de commandes",
+  "manage_order_conflicts_fraud_detection": "Gérer les conflits de commandes et la détection de fraude",
+
+  "affiliate_tiers": "Niveaux d'affiliés",
+  "manage_affiliate_tier_levels_benefits": "Gérer les niveaux d'affiliés et les avantages",
+
+  "simple_admin_dashboard": "Tableau de bord admin simple",
+  "welcome_user": "Bienvenue, {name} !",
+  "minimal_dashboard_test_message": "Il s'agit d'un tableau de bord minimal pour tester les erreurs.",
+
+  "variants": "Variantes",
+  "attributes": "Attributs",
+  "variant_attributes": "Attributs de variantes",
+  "manage_variant_attributes_desc": "Gérer les attributs de variantes comme Taille, Couleur, Matériau",
+  "add_attribute": "Ajouter un attribut",
+  "search_attributes": "Rechercher des attributs...",
+  "no_attributes_found": "Aucun attribut trouvé",
+  "create_first_variant_attribute": "Créez votre premier attribut de variante",
+  "manage_values": "Gérer les valeurs",
+  "create_variant_attribute": "Créer un attribut de variante",
+  "edit_variant_attribute": "Modifier l'attribut de variante",
+  "code": "Code",
+  "code_placeholder": "ex: taille, couleur",
+  "name_placeholder": "ex: Taille, Couleur",
+
+  "admin_variants_title": "Gestion des variantes",
+  "admin_variants_attributes": "Attributs",
+  "admin_variants_values": "Valeurs",
+  "admin_variants_add_value": "Ajouter une valeur",
+  "admin_variants_value_name": "Nom de la valeur",
+  "admin_variants_value_code": "Code de la valeur",
+  "admin_variants_edit_value": "Modifier la valeur",
+  "admin_variants_delete_value": "Supprimer la valeur",
+  "admin_variants_no_values": "Aucune valeur définie",
+  "admin_variants_create_value": "Créer une valeur",
+
+  "shipped_orders": "Commandes expédiées",
+  "shipped_orders_desc": "Gestion des commandes envoyées vers OzonExpress",
+  "refresh_tracking_bulk": "Actualiser Suivi ({count})",
+  "delivery_note_bulk": "Bon de Livraison ({count})",
+  "tracking": "Suivi",
+  "updated": "Mis à jour",
+  "received": "Reçu",
+  "in_transit": "En transit",
+  "at_facility": "Au centre",
+  "ready_for_delivery": "Prêt pour livraison",
+  "out_for_delivery": "En cours de livraison",
+  "delivery_attempted": "Tentative de livraison",
+  "returned": "Retourné",
+  "unknown": "Inconnu",
+
+  "search_client_phone_tracking": "Client, téléphone, tracking...",
+  "date_from": "Date début",
+  "date_to": "Date fin",
+  "per_page": "Par page",
+
+  "ozonexpress_settings": "Paramètres OzonExpress",
+  "ozonexpress_settings_desc": "Configurez vos identifiants OzonExpress pour l'intégration des expéditions",
+  "api_credentials": "Identifiants API",
+  "customer_id": "Customer ID",
+  "customer_id_placeholder": "Votre Customer ID OzonExpress",
+  "api_key": "API Key",
+  "api_key_masked": "API Key (masquée)",
+  "api_key_placeholder": "Votre clé API OzonExpress",
+  "api_base_url": "URL de base de l'API",
+
+  "revenue_report": "Rapport de Revenus",
+  "earning": "Gains",
+  "expense": "Dépenses",
+  "last_month": "Mois Dernier",
+  "budget": "Budget",
+  "increase_budget": "Augmenter le Budget",
+
+  "no_values_found": "Aucune valeur trouvée",
+  "create_first_value_attribute": "Créez votre première valeur pour cet attribut",
+  "display_order": "Ordre",
+  "create_value": "Créer une Valeur",
+  "edit_value": "Modifier la Valeur",
+  "label": "Libellé",
+  "update": "Mettre à jour",
+
+  "pdf_standard": "PDF Standard",
+  "labels_a4": "Étiquettes A4",
+  "labels_100x100": "Étiquettes 100x100",
+  "no_delivery_note": "Aucun bon de livraison",
+  "no_shipped_orders": "Aucune commande expédiée",
+  "no_orders_sent_ozonexpress": "Aucune commande envoyée vers OzonExpress trouvée",
+
+  "confirmation": "Confirmation",
+  "verify_before_creating_withdrawal": "Vérifiez les informations avant de créer le retrait",
+  "method": "Méthode",
+  "bank_transfer": "Virement bancaire",
+  "selection_mode": "Mode de sélection",
+  "automatic": "Automatique",
+  "manual": "Manuel",
+  "target_amount": "Montant cible",
+  "selected_commissions": "Commissions sélectionnées",
+  "notes": "Notes",
+
+  "administrative_adjustment": "Ajustement administratif",
+  "approve_all": "Approuver tout",
+
+  "approve_selected_commissions": "Approuver les commissions sélectionnées",
+  "confirm_approve_commissions": "Êtes-vous sûr de vouloir approuver {count} commission(s) ?",
+
+  "copywriting_marketing_content": "Copywriting (Contenu Marketing)",
+
+  "loading_order": "Chargement de la commande...",
+  "shipment": "Expédition",
+  "carrier": "Transporteur",
+  "local": "Local",
+  "recipient": "Destinataire",
+  "price": "Prix",
+
+  "modify_local_shipment_status": "Modifier le statut de cette expédition locale.",
+  "note_delivered_status_commission": "Le passage au statut \"Livré\" créera automatiquement la commission.",
+  "delivered": "Livré",
+
+  "modify_shipping_status": "Modifier le Statut d'Expédition",
+  "shipped": "Expédiée",
+  "delivered_livree": "Livrée",
+  "refused": "Refusée",
+  "cancelled": "Annulée",
+  "note_optional": "Note (optionnelle)",
+  "add_status_change_note": "Ajouter une note pour ce changement de statut...",
+
+  "document_cni": "CNI",
+  "document_passport": "Passeport",
+  "document_rib": "RIB",
+  "document_contract": "Contrat",
+
+  "points_dispensation_for_user": "Distribution de points pour {name}"
 }

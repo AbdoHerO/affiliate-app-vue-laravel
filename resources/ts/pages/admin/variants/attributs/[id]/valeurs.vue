@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useApi } from '@/composables/useApi'
 import { useQuickConfirm } from '@/composables/useConfirmAction'
 
@@ -12,6 +13,12 @@ definePage({
     requiresAuth: true,
   },
 })
+
+// Composables
+const { t } = useI18n()
+const route = useRoute()
+const { confirmCreate, confirmUpdate, confirmDelete } = useQuickConfirm()
+const router = useRouter()
 
 // Types
 interface VariantAttribut {
@@ -29,11 +36,6 @@ interface VariantValeur {
   actif: boolean
   ordre: number
 }
-
-// Composables
-const route = useRoute()
-const { confirmCreate, confirmUpdate, confirmDelete } = useQuickConfirm()
-const router = useRouter()
 
 // State
 const attribut = ref<VariantAttribut | null>(null)
@@ -235,8 +237,8 @@ onMounted(() => {
       :items="[
         { title: 'Admin', disabled: true },
         { title: 'Variants', disabled: true },
-        { title: 'Attributes', to: '/admin/variants/attributs' },
-        { title: attribut?.nom || 'Values', disabled: true }
+        { title: t('admin_variants_attributes'), to: '/admin/variants/attributs' },
+        { title: attribut?.nom || t('admin_variants_values'), disabled: true }
       ]"
       class="px-0"
     />
@@ -251,11 +253,11 @@ onMounted(() => {
             @click="goBack"
           />
           <h1 class="text-h4 font-weight-bold">
-            {{ attribut?.nom }} Values
+            {{ t('admin_variants_attribute_values', { name: attribut?.nom }) }}
           </h1>
         </div>
         <p class="text-body-1 text-medium-emphasis">
-          Manage values for the "{{ attribut?.nom }}" attribute
+          {{ t('admin_variants_manage_values_desc', { name: attribut?.nom }) }}
         </p>
       </div>
       
@@ -264,7 +266,7 @@ onMounted(() => {
         prepend-icon="tabler-plus"
         @click="handleCreate"
       >
-        Add Value
+        {{ t('admin_variants_add_value') }}
       </VBtn>
     </div>
 
@@ -291,9 +293,9 @@ onMounted(() => {
         
         <div v-else-if="filteredValeurs.length === 0" class="text-center py-8">
           <VIcon icon="tabler-list" size="64" color="grey" class="mb-4" />
-          <h3 class="text-h6 mb-2">No values found</h3>
+          <h3 class="text-h6 mb-2">{{ t('no_values_found') }}</h3>
           <p class="text-body-2 text-medium-emphasis">
-            {{ searchQuery ? 'Try adjusting your search' : 'Create your first value for this attribute' }}
+            {{ searchQuery ? t('try_adjusting_search') : t('create_first_value_attribute') }}
           </p>
         </div>
         
@@ -317,7 +319,7 @@ onMounted(() => {
                     <h4 class="text-h6 font-weight-bold">{{ valeur.libelle }}</h4>
                     <p class="text-caption text-medium-emphasis">{{ valeur.code }}</p>
                     <VChip size="x-small" variant="outlined" class="mt-1">
-                      Order: {{ valeur.ordre }}
+                      {{ t('order') }}: {{ valeur.ordre }}
                     </VChip>
                   </div>
                   <VChip
@@ -325,7 +327,7 @@ onMounted(() => {
                     size="small"
                     variant="flat"
                   >
-                    {{ valeur.actif ? 'Active' : 'Inactive' }}
+                    {{ valeur.actif ? t('active') : t('inactive') }}
                   </VChip>
                 </div>
               </VCardText>
@@ -354,7 +356,7 @@ onMounted(() => {
     <!-- Create Dialog -->
     <VDialog v-model="showCreateDialog" max-width="500">
       <VCard>
-        <VCardTitle>Create Value</VCardTitle>
+        <VCardTitle>{{ t('create_value') }}</VCardTitle>
         <VCardText>
           <VForm @submit.prevent="submitCreate">
             <VTextField
@@ -394,8 +396,8 @@ onMounted(() => {
         </VCardText>
         <VCardActions>
           <VSpacer />
-          <VBtn type="button" @click="showCreateDialog = false">Cancel</VBtn>
-          <VBtn color="primary" type="button" @click="submitCreate">Create</VBtn>
+          <VBtn type="button" @click="showCreateDialog = false">{{ t('cancel') }}</VBtn>
+          <VBtn color="primary" type="button" @click="submitCreate">{{ t('create') }}</VBtn>
         </VCardActions>
       </VCard>
     </VDialog>
@@ -403,12 +405,12 @@ onMounted(() => {
     <!-- Edit Dialog -->
     <VDialog v-model="showEditDialog" max-width="500">
       <VCard>
-        <VCardTitle>Edit Value</VCardTitle>
+        <VCardTitle>{{ t('edit_value') }}</VCardTitle>
         <VCardText>
           <VForm @submit.prevent="submitEdit">
             <VTextField
               v-model="formData.code"
-              label="Code"
+              :label="t('code')"
               :error-messages="formErrors.code"
               variant="outlined"
               class="mb-4"
@@ -417,7 +419,7 @@ onMounted(() => {
             
             <VTextField
               v-model="formData.libelle"
-              label="Label"
+              :label="t('label')"
               :error-messages="formErrors.libelle"
               variant="outlined"
               class="mb-4"
@@ -426,7 +428,7 @@ onMounted(() => {
             
             <VTextField
               v-model.number="formData.ordre"
-              label="Order"
+              :label="t('order')"
               type="number"
               :error-messages="formErrors.ordre"
               variant="outlined"
@@ -435,14 +437,14 @@ onMounted(() => {
             
             <VCheckbox
               v-model="formData.actif"
-              label="Active"
+              :label="t('active')"
             />
           </VForm>
         </VCardText>
         <VCardActions>
           <VSpacer />
-          <VBtn type="button" @click="showEditDialog = false">Cancel</VBtn>
-          <VBtn color="primary" type="button" @click="submitEdit">Update</VBtn>
+          <VBtn type="button" @click="showEditDialog = false">{{ t('cancel') }}</VBtn>
+          <VBtn color="primary" type="button" @click="submitEdit">{{ t('update') }}</VBtn>
         </VCardActions>
       </VCard>
     </VDialog>

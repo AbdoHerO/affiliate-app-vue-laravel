@@ -205,7 +205,7 @@ onMounted(async () => {
 
               <!-- Copywriting Section -->
               <div v-if="produit.copywriting" class="mt-4">
-                <h6 class="text-h6 mb-2">Copywriting (Marketing Content)</h6>
+                <h6 class="text-h6 mb-2">{{ $t('copywriting_marketing_content') }}</h6>
                 <VCard variant="outlined" class="pa-3 bg-grey-lighten-5">
                   <div class="text-body-1 copywriting-content" v-html="formatCopywriting(produit.copywriting)"></div>
                 </VCard>

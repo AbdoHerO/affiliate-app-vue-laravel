@@ -152,7 +152,7 @@ const fetchUsers = async (page = 1) => {
     const { data, error: apiError } = await useApi<any>(url)
 
     if (apiError.value) {
-      error.value = apiError.value.message || 'Failed to load users'
+      error.value = apiError.value.message || t('failed_to_load_users')
       showError(t('failed_to_load_users'))
       console.error('Users fetch error:', apiError.value)
 
@@ -185,7 +185,7 @@ const fetchUsers = async (page = 1) => {
       pagination.value = data.value.pagination
     }
   } catch (err: any) {
-    error.value = err.message || 'Failed to load users'
+    error.value = err.message || t('failed_to_load_users')
     showError(t('failed_to_load_users'))
     console.error('Users fetch error:', err)
   } finally {

@@ -54,7 +54,7 @@ const fetchRoles = async () => {
     const { data, error: apiError } = await useApi<any>('/admin/roles')
 
     if (apiError.value) {
-      const errorMessage = apiError.value.message || 'Failed to load roles'
+      const errorMessage = apiError.value.message || t('failed_to_load_roles')
       error.value = errorMessage
       showError(errorMessage)
       console.error('Roles fetch error:', apiError.value)
@@ -64,7 +64,7 @@ const fetchRoles = async () => {
       console.log('✅ Roles loaded successfully:', roles.value.length)
     }
   } catch (err: any) {
-    error.value = err.message || 'Failed to load roles'
+    error.value = err.message || t('failed_to_load_roles')
     showError(t('failed_to_load_roles'))
     console.error('Roles fetch error:', err)
   } finally {
@@ -77,7 +77,7 @@ const fetchPermissions = async () => {
     const { data, error: apiError } = await useApi<any>('/admin/permissions')
 
     if (apiError.value) {
-      const errorMessage = apiError.value.message || 'Failed to load permissions'
+      const errorMessage = apiError.value.message || t('failed_to_load_permissions')
       showError(errorMessage)
       console.error('Permissions fetch error:', apiError.value)
     } else if (data.value) {
@@ -86,7 +86,7 @@ const fetchPermissions = async () => {
       console.log('✅ Permissions loaded successfully:', permissions.value.length)
     }
   } catch (err: any) {
-    const errorMessage = err.message || 'Failed to load permissions'
+    const errorMessage = err.message || t('failed_to_load_permissions')
     showError(errorMessage)
     console.error('Permissions fetch error:', err)
   }
@@ -307,8 +307,8 @@ onMounted(async () => {
       <VCardText>
         <div class="d-flex justify-space-between align-center">
           <div>
-            <h2 class="text-h4 mb-2">Roles & Permissions</h2>
-            <p class="text-body-1 mb-0">Manage system roles and permissions</p>
+            <h2 class="text-h4 mb-2">{{ t('roles_and_permissions') }}</h2>
+            <p class="text-body-1 mb-0">{{ t('manage_system_roles_permissions') }}</p>
           </div>
           <div class="d-flex gap-2">
             <VBtn
@@ -318,7 +318,7 @@ onMounted(async () => {
               :disabled="!hasPermission('manage users')"
               @click="showCreatePermissionDialog = true"
             >
-              Add Permission
+              {{ t('add_permission') }}
             </VBtn>
             <VBtn
               color="primary"
@@ -326,7 +326,7 @@ onMounted(async () => {
               :disabled="!hasPermission('manage users')"
               @click="showCreateRoleDialog = true"
             >
-              Add Role
+              {{ t('add_role') }}
             </VBtn>
           </div>
         </div>
@@ -338,12 +338,12 @@ onMounted(async () => {
       <VCol cols="12" md="8">
         <VCard>
           <VCardText>
-            <h5 class="text-h5 mb-4">Roles</h5>
+            <h5 class="text-h5 mb-4">{{ t('roles') }}</h5>
             
             <!-- Loading State -->
             <div v-if="loading" class="text-center py-8">
               <VProgressCircular indeterminate color="primary" />
-              <p class="mt-4">Loading roles...</p>
+              <p class="mt-4">{{ t('loading_roles') }}</p>
             </div>
 
             <!-- Roles List -->
@@ -360,7 +360,7 @@ onMounted(async () => {
                       <div class="d-flex justify-space-between align-start mb-3">
                         <div>
                           <h6 class="text-h6 mb-1">{{ role.name }}</h6>
-                          <p class="text-body-2 mb-0">{{ role.users_count }} users</p>
+                          <p class="text-body-2 mb-0">{{ t('users_count', { count: role.users_count }) }}</p>
                         </div>
                         <div class="d-flex gap-1">
                           <VBtn
@@ -405,8 +405,8 @@ onMounted(async () => {
             <!-- Empty State -->
             <div v-else class="text-center py-8">
               <VIcon icon="tabler-shield" size="64" class="mb-4" color="disabled" />
-              <h6 class="text-h6 mb-2">No roles found</h6>
-              <p class="text-body-2">Create your first role to get started</p>
+              <h6 class="text-h6 mb-2">{{ t('no_roles_found') }}</h6>
+              <p class="text-body-2">{{ t('create_first_role') }}</p>
             </div>
           </VCardText>
         </VCard>
@@ -416,7 +416,7 @@ onMounted(async () => {
       <VCol cols="12" md="4">
         <VCard>
           <VCardText>
-            <h5 class="text-h5 mb-4">Permissions</h5>
+            <h5 class="text-h5 mb-4">{{ t('permissions') }}</h5>
             
             <div v-if="permissions.length">
               <div
@@ -439,7 +439,7 @@ onMounted(async () => {
             </div>
             
             <div v-else class="text-center py-4">
-              <p class="text-body-2">No permissions found</p>
+              <p class="text-body-2">{{ t('no_permissions_found') }}</p>
             </div>
           </VCardText>
         </VCard>
@@ -449,19 +449,19 @@ onMounted(async () => {
     <!-- Create Role Dialog -->
     <VDialog v-model="showCreateRoleDialog" max-width="600">
       <VCard>
-        <VCardTitle>Create New Role</VCardTitle>
+        <VCardTitle>{{ t('create_new_role') }}</VCardTitle>
         <VCardText>
           <VForm @submit.prevent="createRole">
             <VTextField
               v-model="roleForm.name"
-              label="Role Name"
-              placeholder="Enter role name"
+              :label="t('role_name')"
+              :placeholder="t('enter_role_name')"
               :error-messages="roleErrors.name"
               required
               class="mb-4"
             />
             
-            <h6 class="text-h6 mb-3">Permissions</h6>
+            <h6 class="text-h6 mb-3">{{ t('permissions') }}</h6>
             <div class="d-flex flex-wrap gap-2">
               <VCheckbox
                 v-for="permission in permissions"
@@ -476,8 +476,8 @@ onMounted(async () => {
         </VCardText>
         <VCardActions>
           <VSpacer />
-          <VBtn variant="outlined" type="button" @click="showCreateRoleDialog = false">Cancel</VBtn>
-          <VBtn color="primary" type="button" :loading="loading" @click="createRole">Create Role</VBtn>
+          <VBtn variant="outlined" type="button" @click="showCreateRoleDialog = false">{{ t('action_cancel') }}</VBtn>
+          <VBtn color="primary" type="button" :loading="loading" @click="createRole">{{ t('create_role') }}</VBtn>
         </VCardActions>
       </VCard>
     </VDialog>
@@ -485,19 +485,19 @@ onMounted(async () => {
     <!-- Edit Role Dialog -->
     <VDialog v-model="showEditRoleDialog" max-width="600">
       <VCard>
-        <VCardTitle>Edit Role</VCardTitle>
+        <VCardTitle>{{ t('edit_role') }}</VCardTitle>
         <VCardText>
           <VForm @submit.prevent="updateRole">
             <VTextField
               v-model="roleForm.name"
-              label="Role Name"
-              placeholder="Enter role name"
+              :label="t('role_name')"
+              :placeholder="t('enter_role_name')"
               :error-messages="roleErrors.name"
               required
               class="mb-4"
             />
             
-            <h6 class="text-h6 mb-3">Permissions</h6>
+            <h6 class="text-h6 mb-3">{{ t('permissions') }}</h6>
             <div class="d-flex flex-wrap gap-2">
               <VCheckbox
                 v-for="permission in permissions"
@@ -512,8 +512,8 @@ onMounted(async () => {
         </VCardText>
         <VCardActions>
           <VSpacer />
-          <VBtn variant="outlined" type="button" @click="showEditRoleDialog = false">Cancel</VBtn>
-          <VBtn color="primary" type="button" :loading="loading" @click="updateRole">Update Role</VBtn>
+          <VBtn variant="outlined" type="button" @click="showEditRoleDialog = false">{{ t('action_cancel') }}</VBtn>
+          <VBtn color="primary" type="button" :loading="loading" @click="updateRole">{{ t('update_role') }}</VBtn>
         </VCardActions>
       </VCard>
     </VDialog>
@@ -521,13 +521,13 @@ onMounted(async () => {
     <!-- Create Permission Dialog -->
     <VDialog v-model="showCreatePermissionDialog" max-width="400">
       <VCard>
-        <VCardTitle>Create New Permission</VCardTitle>
+        <VCardTitle>{{ t('create_new_permission') }}</VCardTitle>
         <VCardText>
           <VForm @submit.prevent="createPermission">
             <VTextField
               v-model="permissionForm.name"
-              label="Permission Name"
-              placeholder="Enter permission name"
+              :label="t('permission_name')"
+              :placeholder="t('enter_permission_name')"
               :error-messages="permissionErrors.name"
               required
             />
@@ -535,8 +535,8 @@ onMounted(async () => {
         </VCardText>
         <VCardActions>
           <VSpacer />
-          <VBtn variant="outlined" type="button" @click="showCreatePermissionDialog = false">Cancel</VBtn>
-          <VBtn color="primary" type="button" :loading="loading" @click="createPermission">Create Permission</VBtn>
+          <VBtn variant="outlined" type="button" @click="showCreatePermissionDialog = false">{{ t('action_cancel') }}</VBtn>
+          <VBtn color="primary" type="button" :loading="loading" @click="createPermission">{{ t('create_permission') }}</VBtn>
         </VCardActions>
       </VCard>
     </VDialog>

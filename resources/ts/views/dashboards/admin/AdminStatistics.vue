@@ -1,25 +1,29 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
+
 const statistics = [
   {
-    title: 'Sales',
+    title: t('admin.dashboard.sales'),
     stats: '230k',
     icon: 'tabler-chart-pie-2',
     color: 'primary',
   },
   {
-    title: 'Customers',
+    title: t('admin.dashboard.customers'),
     stats: '8.549k',
     icon: 'tabler-users',
     color: 'info',
   },
   {
-    title: 'Products',
+    title: t('admin.dashboard.products'),
     stats: '1.423k',
     icon: 'tabler-shopping-cart',
     color: 'error',
   },
   {
-    title: 'Revenue',
+    title: t('admin.dashboard.revenue'),
     stats: '$9745',
     icon: 'tabler-currency-dollar',
     color: 'success',
@@ -28,9 +32,9 @@ const statistics = [
 </script>
 
 <template>
-  <VCard title="Statistics">
+  <VCard :title="t('admin.dashboard.statistics')">
     <template #append>
-      <span class="text-sm text-disabled">Updated 1 month ago</span>
+      <span class="text-sm text-disabled">{{ t('admin.dashboard.updatedAgo', { time: '1 mois' }) }}</span>
     </template>
 
     <VCardText>

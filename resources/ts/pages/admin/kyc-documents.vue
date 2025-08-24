@@ -97,10 +97,10 @@ const reviewForm = ref({
 // Options
 const documentTypes = [
   { title: t('all_types'), value: '' },
-  { title: 'CNI', value: 'cni' },
-  { title: 'Passeport', value: 'passport' },
-  { title: 'RIB', value: 'rib' },
-  { title: 'Contrat', value: 'contrat' },
+  { title: t('document_cni'), value: 'cni' },
+  { title: t('document_passport'), value: 'passport' },
+  { title: t('document_rib'), value: 'rib' },
+  { title: t('document_contract'), value: 'contrat' },
 ]
 
 const statusOptions = [
