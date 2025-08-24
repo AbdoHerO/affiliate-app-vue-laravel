@@ -50,29 +50,29 @@ const showWithdrawalModal = ref(false)
 
 // Computed
 const breadcrumbs = computed(() => [
-  { title: 'Dashboard', to: { name: 'affiliate-dashboard' } },
-  { title: 'Mes Paiements', active: true },
+  { title: t('nav.dashboard'), to: { name: 'affiliate-dashboard' } },
+  { title: t('affiliate_payments_title'), active: true },
 ])
 
 const commissionsHeaders = [
-  { title: 'Commande', key: 'commande.id', sortable: false },
-  { title: 'Produit', key: 'commandeArticle.produit.titre', sortable: false },
-  { title: 'Type', key: 'type', sortable: true },
-  { title: 'Montant de base', key: 'base_amount', sortable: true },
-  { title: 'Taux', key: 'rate', sortable: true },
-  { title: 'Commission', key: 'amount', sortable: true },
-  { title: 'Statut', key: 'status', sortable: true },
-  { title: 'Date', key: 'created_at', sortable: true },
+  { title: t('table.order'), key: 'commande.id', sortable: false },
+  { title: t('table.product'), key: 'commandeArticle.produit.titre', sortable: false },
+  { title: t('table.type'), key: 'type', sortable: true },
+  { title: t('affiliate_payments_base_amount'), key: 'base_amount', sortable: true },
+  { title: t('affiliate_payments_rate'), key: 'rate', sortable: true },
+  { title: t('table.commission'), key: 'amount', sortable: true },
+  { title: t('table.status'), key: 'status', sortable: true },
+  { title: t('table.date'), key: 'created_at', sortable: true },
 ]
 
 const withdrawalsHeaders = [
-  { title: 'Référence', key: 'id', sortable: false },
-  { title: 'Montant', key: 'amount', sortable: true },
-  { title: 'Méthode', key: 'method', sortable: false },
-  { title: 'Statut', key: 'status', sortable: true },
-  { title: 'Commissions', key: 'commission_count', sortable: false },
-  { title: 'Date', key: 'created_at', sortable: true },
-  { title: 'Actions', key: 'actions', sortable: false },
+  { title: t('table.reference'), key: 'id', sortable: false },
+  { title: t('table.amount'), key: 'amount', sortable: true },
+  { title: t('affiliate_payments_method'), key: 'method', sortable: false },
+  { title: t('table.status'), key: 'status', sortable: true },
+  { title: t('affiliate_payments_commissions'), key: 'commission_count', sortable: false },
+  { title: t('table.date'), key: 'created_at', sortable: true },
+  { title: t('table.actions'), key: 'actions', sortable: false },
 ]
 
 const canRequestPayout = computed(() => {
@@ -84,7 +84,7 @@ const fetchCommissions = async (page = 1) => {
   try {
     await paymentsStore.fetchCommissions(page)
   } catch (err) {
-    showError('Erreur lors du chargement des commissions')
+    showError(t('errors.commissions_load_failed'))
   }
 }
 
@@ -92,7 +92,7 @@ const fetchWithdrawals = async (page = 1) => {
   try {
     await paymentsStore.fetchWithdrawals(page)
   } catch (err) {
-    showError('Erreur lors du chargement des retraits')
+    showError(t('errors.withdrawals_load_failed'))
   }
 }
 
@@ -138,7 +138,7 @@ const handleWithdrawalsSort = (sortBy: any) => {
 
 const openPayoutDialog = () => {
   if (!canRequestPayout.value) {
-    showError('Aucune commission éligible pour un retrait')
+    showError(t('errors.no_eligible_commissions'))
     return
   }
   showPayoutDialog.value = true
@@ -148,19 +148,22 @@ const openPayoutDialog = () => {
 const requestPayout = async () => {
   try {
     const result = await confirm({
-      title: 'Confirmer la demande de retrait',
-      text: `Voulez-vous vraiment demander un retrait de ${formatCurrency(eligibleCommissionsTotal.value)} pour ${eligibleCommissionsCount.value} commission(s) éligible(s) ?`,
+      title: t('affiliate_payments_confirm_withdrawal'),
+      text: t('affiliate_payments_confirm_withdrawal_text', { 
+        amount: formatCurrency(eligibleCommissionsTotal.value), 
+        count: eligibleCommissionsCount.value 
+      }),
       icon: 'tabler-wallet',
       color: 'primary',
     })
 
     if (result) {
       await paymentsStore.requestPayout(payoutNotes.value)
-      showSuccess('Demande de retrait créée avec succès')
+      showSuccess(t('affiliate_payments_withdrawal_success'))
       showPayoutDialog.value = false
     }
   } catch (err: any) {
-    showError(err.message || 'Erreur lors de la demande de retrait')
+    showError(err.message || t('errors.withdrawal_request_failed'))
   }
 }
 

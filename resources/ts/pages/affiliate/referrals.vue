@@ -85,7 +85,7 @@ const fetchDashboard = async () => {
       referralLink.value = dashboardData.value.stats.referral_url
     }
   } catch (error) {
-    console.error('Failed to fetch referral dashboard:', error)
+    console.error('Error fetching referral dashboard:', error)
   } finally {
     loading.value = false
   }
@@ -98,7 +98,7 @@ const fetchReferralLink = async () => {
       referralLink.value = response.data.data.referral_url
     }
   } catch (error) {
-    console.error('Failed to fetch referral link:', error)
+    console.error('Error fetching referral link:', error)
   }
 }
 
@@ -115,7 +115,7 @@ const copyReferralLink = async () => {
       showCopySuccess.value = false
     }, 2000)
   } catch (error) {
-    console.error('Failed to copy link:', error)
+    console.error('Error copying link:', error)
   }
 }
 
@@ -136,7 +136,7 @@ const shareReferralLink = async () => {
       await copyReferralLink()
     }
   } catch (error) {
-    console.error('Failed to share link:', error)
+    console.error('Error sharing link:', error)
     // Fallback to copy if share fails
     await copyReferralLink()
   }

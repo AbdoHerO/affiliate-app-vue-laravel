@@ -42,43 +42,43 @@ const createForm = ref({
 
 // Computed
 const breadcrumbs = computed(() => [
-  { title: 'Dashboard', to: { name: 'affiliate-dashboard' } },
-  { title: 'Support', active: true },
+  { title: t('nav.dashboard'), to: { name: 'affiliate-dashboard' } },
+  { title: t('affiliate_tickets_title'), active: true },
 ])
 
 const statusOptions = [
-  { value: 'open', title: 'Ouvert', color: 'info' },
-  { value: 'pending', title: 'En attente', color: 'warning' },
-  { value: 'waiting_user', title: 'En attente utilisateur', color: 'orange' },
-  { value: 'resolved', title: 'Résolu', color: 'success' },
-  { value: 'closed', title: 'Fermé', color: 'secondary' },
+  { value: 'open', title: t('affiliate_tickets_status_open'), color: 'info' },
+  { value: 'pending', title: t('affiliate_tickets_status_pending'), color: 'warning' },
+  { value: 'waiting_user', title: t('affiliate_tickets_status_waiting_user'), color: 'orange' },
+  { value: 'resolved', title: t('affiliate_tickets_status_resolved'), color: 'success' },
+  { value: 'closed', title: t('affiliate_tickets_status_closed'), color: 'secondary' },
 ]
 
 const priorityOptions = [
-  { value: 'low', title: 'Faible', color: 'success' },
-  { value: 'normal', title: 'Normal', color: 'info' },
-  { value: 'high', title: 'Élevée', color: 'warning' },
-  { value: 'urgent', title: 'Urgent', color: 'error' },
+  { value: 'low', title: t('affiliate_tickets_priority_low'), color: 'success' },
+  { value: 'normal', title: t('affiliate_tickets_priority_normal'), color: 'info' },
+  { value: 'high', title: t('affiliate_tickets_priority_high'), color: 'warning' },
+  { value: 'urgent', title: t('affiliate_tickets_priority_urgent'), color: 'error' },
 ]
 
 const categoryOptions = [
-  { value: 'general', title: 'Général' },
-  { value: 'orders', title: 'Commandes' },
-  { value: 'payments', title: 'Paiements' },
-  { value: 'commissions', title: 'Commissions' },
-  { value: 'kyc', title: 'KYC' },
-  { value: 'technical', title: 'Technique' },
-  { value: 'other', title: 'Autre' },
+  { value: 'general', title: t('affiliate_tickets_category_general') },
+  { value: 'orders', title: t('affiliate_tickets_category_orders') },
+  { value: 'payments', title: t('affiliate_tickets_category_payments') },
+  { value: 'commissions', title: t('affiliate_tickets_category_commissions') },
+  { value: 'kyc', title: t('affiliate_tickets_category_kyc') },
+  { value: 'technical', title: t('affiliate_tickets_category_technical') },
+  { value: 'other', title: t('affiliate_tickets_category_other') },
 ]
 
 const headers = [
-  { title: 'Référence', key: 'id', sortable: false },
-  { title: 'Sujet', key: 'subject', sortable: true },
-  { title: 'Catégorie', key: 'category', sortable: true },
-  { title: 'Priorité', key: 'priority', sortable: true },
-  { title: 'Statut', key: 'status', sortable: true },
-  { title: 'Dernière activité', key: 'last_activity_at', sortable: true },
-  { title: 'Actions', key: 'actions', sortable: false },
+  { title: t('table.reference'), key: 'id', sortable: false },
+  { title: t('affiliate_tickets_subject'), key: 'subject', sortable: true },
+  { title: t('table.category'), key: 'category', sortable: true },
+  { title: t('affiliate_tickets_priority'), key: 'priority', sortable: true },
+  { title: t('table.status'), key: 'status', sortable: true },
+  { title: t('affiliate_tickets_last_activity'), key: 'last_activity_at', sortable: true },
+  { title: t('table.actions'), key: 'actions', sortable: false },
 ]
 
 // Methods
@@ -198,10 +198,10 @@ onMounted(() => {
     <div class="d-flex justify-space-between align-center mb-6">
       <div>
         <h1 class="text-h4 font-weight-bold mb-1">
-          Support
+          {{ t('support') }}
         </h1>
         <p class="text-body-1 text-medium-emphasis">
-          Créez et gérez vos tickets de support
+          {{ t('affiliate_tickets_description') }}
         </p>
       </div>
       <VBtn
@@ -380,9 +380,9 @@ onMounted(() => {
               size="64"
               class="text-disabled mb-4"
             />
-            <h3 class="text-h6 mb-2">Aucun ticket trouvé</h3>
+            <h3 class="text-h6 mb-2">{{ t('affiliate_tickets_no_tickets_found') }}</h3>
             <p class="text-body-2 text-medium-emphasis">
-              Vous n'avez pas encore créé de ticket de support.
+              {{ t('affiliate_tickets_no_tickets_description') }}
             </p>
             <VBtn
               color="primary"

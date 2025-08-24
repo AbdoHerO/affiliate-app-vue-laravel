@@ -32,30 +32,30 @@ const showFilters = ref(false)
 
 // Computed
 const breadcrumbs = computed(() => [
-  { title: 'Dashboard', to: { name: 'affiliate-dashboard' } },
-  { title: 'Mes Commandes', active: true },
+  { title: t('nav.dashboard'), to: { name: 'affiliate-dashboard' } },
+  { title: t('affiliate_orders_title'), active: true },
 ])
 
 const statusOptions = [
-  { value: 'pending', title: 'En attente', color: 'warning' },
-  { value: 'confirmed', title: 'Confirmée', color: 'info' },
-  { value: 'sent', title: 'Envoyée', color: 'primary' },
-  { value: 'expedited', title: 'Expédiée', color: 'purple' },
-  { value: 'delivered', title: 'Livrée', color: 'success' },
-  { value: 'canceled', title: 'Annulée', color: 'error' },
-  { value: 'returned', title: 'Retournée', color: 'orange' },
-  { value: 'delivery_failed', title: 'Échec livraison', color: 'error' },
-  { value: 'paid', title: 'Payée', color: 'success' },
+  { value: 'pending', title: t('affiliate_orders_status_pending'), color: 'warning' },
+  { value: 'confirmed', title: t('affiliate_orders_status_confirmed'), color: 'info' },
+  { value: 'sent', title: t('affiliate_orders_status_sent'), color: 'primary' },
+  { value: 'expedited', title: t('affiliate_orders_status_expedited'), color: 'purple' },
+  { value: 'delivered', title: t('affiliate_orders_status_delivered'), color: 'success' },
+  { value: 'canceled', title: t('affiliate_orders_status_canceled'), color: 'error' },
+  { value: 'returned', title: t('affiliate_orders_status_returned'), color: 'orange' },
+  { value: 'delivery_failed', title: t('affiliate_orders_status_delivery_failed'), color: 'error' },
+  { value: 'paid', title: t('affiliate_orders_status_paid'), color: 'success' },
 ]
 
 const headers = [
-  { title: 'Référence', key: 'id', sortable: true },
-  { title: 'Client', key: 'client.nom_complet', sortable: false },
-  { title: 'Boutique', key: 'boutique.nom', sortable: false },
-  { title: 'Statut', key: 'statut', sortable: true },
-  { title: 'Total TTC', key: 'total_ttc', sortable: true },
-  { title: 'Date', key: 'created_at', sortable: true },
-  { title: 'Actions', key: 'actions', sortable: false },
+  { title: t('table.reference'), key: 'id', sortable: true },
+  { title: t('table.client'), key: 'client.nom_complet', sortable: false },
+  { title: t('table.boutique'), key: 'boutique.nom', sortable: false },
+  { title: t('table.status'), key: 'statut', sortable: true },
+  { title: t('table.total_ttc'), key: 'total_ttc', sortable: true },
+  { title: t('table.date'), key: 'created_at', sortable: true },
+  { title: t('table.actions'), key: 'actions', sortable: false },
 ]
 
 // Methods
@@ -84,7 +84,7 @@ const fetchOrders = async (page = 1) => {
   try {
     await ordersStore.fetchOrders(page)
   } catch (err) {
-    showError('Erreur lors du chargement des commandes')
+    showError(t('errors.orders_load_failed'))
   }
 }
 
@@ -151,10 +151,10 @@ onMounted(() => {
     <div class="d-flex justify-space-between align-center mb-6">
       <div>
         <h1 class="text-h4 font-weight-bold mb-1">
-          Mes Commandes
+          {{ t('affiliate_orders_title') }}
         </h1>
         <p class="text-body-1 text-medium-emphasis">
-          Consultez l'historique de vos commandes et leur statut
+          {{ t('affiliate_orders_description') }}
         </p>
       </div>
     </div>
@@ -166,8 +166,8 @@ onMounted(() => {
           <VCol cols="12" sm="6" md="4" lg="4">
             <VTextField
               v-model="searchQuery"
-              label="Rechercher..."
-              placeholder="Référence, client, téléphone..."
+              :label="t('search.label')"
+              :placeholder="t('affiliate_orders_search_placeholder')"
               prepend-inner-icon="tabler-search"
               clearable
               @keyup.enter="applyFilters"
@@ -177,7 +177,7 @@ onMounted(() => {
             <VSelect
               v-model="selectedStatus"
               :items="statusOptions"
-              label="Statut"
+              :label="t('table.status')"
               multiple
               chips
               clearable
@@ -188,14 +188,14 @@ onMounted(() => {
           <VCol cols="12" sm="6" md="4" lg="2">
             <VTextField
               v-model="dateFrom"
-              label="Date début"
+              :label="t('filters.date_start')"
               type="date"
             />
           </VCol>
           <VCol cols="12" sm="6" md="4" lg="2">
             <VTextField
               v-model="dateTo"
-              label="Date fin"
+              :label="t('filters.date_end')"
               type="date"
             />
           </VCol>
@@ -313,9 +313,9 @@ onMounted(() => {
               size="64"
               class="text-disabled mb-4"
             />
-            <h3 class="text-h6 mb-2">Aucune commande trouvée</h3>
+            <h3 class="text-h6 mb-2">{{ t('affiliate_orders_no_orders_found') }}</h3>
             <p class="text-body-2 text-medium-emphasis">
-              Aucune commande ne correspond aux critères de recherche.
+              {{ t('affiliate_orders_no_orders_description') }}
             </p>
           </div>
         </template>

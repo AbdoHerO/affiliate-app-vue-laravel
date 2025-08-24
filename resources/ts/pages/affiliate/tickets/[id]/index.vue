@@ -34,9 +34,9 @@ const messagesContainer = ref<HTMLElement>()
 
 // Computed
 const breadcrumbs = computed(() => [
-  { title: 'Dashboard', to: '/affiliate/dashboard' },
-  { title: 'Support', to: '/affiliate/tickets' },
-  { title: `Ticket #${route.params.id?.toString().slice(-8)}`, active: true },
+  { title: t('nav.dashboard'), to: '/affiliate/dashboard' },
+  { title: t('affiliate_tickets_title'), to: '/affiliate/tickets' },
+  { title: t('affiliate_tickets_detail_title', { id: route.params.id?.toString().slice(-8) }), active: true },
 ])
 
 const canClose = computed(() => {
@@ -61,7 +61,7 @@ const fetchTicket = async () => {
     await nextTick()
     scrollToBottom()
   } catch (err) {
-    showError('Erreur lors du chargement du ticket')
+    showError(t('errors.ticket_load_failed'))
     router.push({ name: 'affiliate-tickets' })
   }
 }
@@ -75,7 +75,7 @@ const handleFileUpload = (event: Event) => {
 
 const addMessage = async () => {
   if (!newMessage.value.trim()) {
-    showError('Veuillez saisir un message')
+    showError(t('errors.message_required'))
     return
   }
 
@@ -87,48 +87,48 @@ const addMessage = async () => {
     
     newMessage.value = ''
     attachments.value = []
-    showSuccess('Message ajouté avec succès')
+    showSuccess(t('affiliate_tickets_message_success'))
     
     await nextTick()
     scrollToBottom()
   } catch (err: any) {
-    showError(err.message || 'Erreur lors de l\'ajout du message')
+    showError(err.message || t('errors.message_add_failed'))
   }
 }
 
 const closeTicket = async () => {
   try {
     const result = await confirm({
-      title: 'Fermer le ticket',
-      text: 'Voulez-vous vraiment fermer ce ticket ? Vous pourrez le rouvrir plus tard si nécessaire.',
+      title: t('affiliate_tickets_close_title'),
+      text: t('affiliate_tickets_close_text'),
       icon: 'tabler-lock',
       color: 'warning',
     })
 
     if (result) {
       await ticketsStore.updateTicketStatus(route.params.id as string, 'closed')
-      showSuccess('Ticket fermé avec succès')
+      showSuccess(t('affiliate_tickets_close_success'))
     }
   } catch (err: any) {
-    showError(err.message || 'Erreur lors de la fermeture du ticket')
+    showError(err.message || t('errors.ticket_close_failed'))
   }
 }
 
 const reopenTicket = async () => {
   try {
     const result = await confirm({
-      title: 'Rouvrir le ticket',
-      text: 'Voulez-vous vraiment rouvrir ce ticket ?',
+      title: t('affiliate_tickets_reopen_title'),
+      text: t('affiliate_tickets_reopen_text'),
       icon: 'tabler-lock-open',
       color: 'info',
     })
 
     if (result) {
       await ticketsStore.updateTicketStatus(route.params.id as string, 'open')
-      showSuccess('Ticket rouvert avec succès')
+      showSuccess(t('affiliate_tickets_reopen_success'))
     }
   } catch (err: any) {
-    showError(err.message || 'Erreur lors de la réouverture du ticket')
+    showError(err.message || t('errors.ticket_reopen_failed'))
   }
 }
 
@@ -178,7 +178,7 @@ onMounted(() => {
         color="primary"
         size="64"
       />
-      <p class="text-body-1 mt-4">Chargement du ticket...</p>
+      <p class="text-body-1 mt-4">{{ t('affiliate_tickets_loading') }}</p>
     </div>
 
     <!-- Ticket Details -->
@@ -211,7 +211,7 @@ onMounted(() => {
               {{ ticketsStore.getCategoryLabel(currentTicket.category) }}
             </VChip>
             <span class="text-body-2 text-medium-emphasis">
-              Créé le {{ formatDate(currentTicket.created_at) }}
+              {{ t('affiliate_tickets_created_on', { date: formatDate(currentTicket.created_at) }) }}
             </span>
           </div>
         </div>
@@ -224,7 +224,7 @@ onMounted(() => {
             :loading="loading.status"
             @click="reopenTicket"
           >
-            Rouvrir
+            {{ t('actions.reopen') }}
           </VBtn>
           <VBtn
             v-if="canClose"
@@ -234,21 +234,21 @@ onMounted(() => {
             :loading="loading.status"
             @click="closeTicket"
           >
-            Fermer
+            {{ t('actions.close') }}
           </VBtn>
           <VBtn
             variant="outlined"
             prepend-icon="tabler-arrow-left"
             @click="goBack"
           >
-            Retour
+            {{ t('actions.back') }}
           </VBtn>
         </div>
       </div>
 
       <!-- Messages -->
       <VCard class="mb-6">
-        <VCardTitle>Conversation</VCardTitle>
+        <VCardTitle>{{ t('affiliate_tickets_conversation') }}</VCardTitle>
         <VCardText>
           <div
             ref="messagesContainer"
@@ -267,7 +267,7 @@ onMounted(() => {
                 <div class="flex-grow-1">
                   <div class="d-flex align-center justify-space-between mb-2">
                     <div>
-                      <span class="font-weight-medium">{{ message.sender?.nom_complet || 'Support' }}</span>
+                      <span class="font-weight-medium">{{ message.sender?.nom_complet || t('support') }}</span>
                       <VChip
                         v-if="message.sender?.id === currentTicket.requester_id"
                         size="x-small"
@@ -275,7 +275,7 @@ onMounted(() => {
                         variant="tonal"
                         class="ml-2"
                       >
-                        Vous
+                        {{ t('affiliate_tickets_you') }}
                       </VChip>
                       <VChip
                         v-else
@@ -284,7 +284,7 @@ onMounted(() => {
                         variant="tonal"
                         class="ml-2"
                       >
-                        Support
+                        {{ t('affiliate_tickets_support') }}
                       </VChip>
                     </div>
                     <span class="text-caption text-medium-emphasis">
@@ -296,7 +296,7 @@ onMounted(() => {
                     
                     <!-- Attachments -->
                     <div v-if="message.attachments?.length" class="attachments">
-                      <h4 class="text-subtitle-2 mb-2">Pièces jointes:</h4>
+                      <h4 class="text-subtitle-2 mb-2">{{ t('affiliate_tickets_attachments') }}:</h4>
                       <div class="d-flex flex-wrap gap-2">
                         <VChip
                           v-for="attachment in message.attachments"
@@ -326,13 +326,13 @@ onMounted(() => {
 
       <!-- Reply Form -->
       <VCard v-if="currentTicket.status !== 'closed'">
-        <VCardTitle>Ajouter une réponse</VCardTitle>
+        <VCardTitle>{{ t('affiliate_tickets_add_reply') }}</VCardTitle>
         <VCardText>
           <VForm @submit.prevent="addMessage">
             <VTextarea
               v-model="newMessage"
-              label="Votre message"
-              placeholder="Tapez votre réponse..."
+              :label="t('affiliate_tickets_your_message')"
+              :placeholder="t('affiliate_tickets_message_placeholder')"
               rows="4"
               counter="5000"
               maxlength="5000"
@@ -340,7 +340,7 @@ onMounted(() => {
             />
             
             <VFileInput
-              label="Pièces jointes (optionnel)"
+              :label="t('affiliate_tickets_attachments_optional')"
               multiple
               accept="image/*,.pdf,.doc,.docx,.txt"
               prepend-icon="tabler-paperclip"
@@ -348,7 +348,7 @@ onMounted(() => {
               @change="handleFileUpload"
             />
             <p class="text-caption text-medium-emphasis mt-1">
-              Formats acceptés: Images, PDF, DOC, DOCX, TXT (max 10MB par fichier)
+              {{ t('affiliate_tickets_file_formats') }}
             </p>
           </VForm>
         </VCardText>
@@ -360,7 +360,7 @@ onMounted(() => {
             :loading="loading.message"
             @click="addMessage"
           >
-            Envoyer
+            {{ t('actions.send') }}
           </VBtn>
         </VCardActions>
       </VCard>
@@ -372,7 +372,7 @@ onMounted(() => {
         variant="tonal"
         class="mt-6"
       >
-        Ce ticket est fermé. Vous pouvez le rouvrir pour continuer la conversation.
+        {{ t('affiliate_tickets_closed_notice') }}
       </VAlert>
     </div>
 
@@ -383,13 +383,13 @@ onMounted(() => {
         size="64"
         class="text-error mb-4"
       />
-      <h3 class="text-h6 mb-2">Erreur</h3>
+      <h3 class="text-h6 mb-2">{{ t('general.error') }}</h3>
       <p class="text-body-2 text-medium-emphasis mb-4">{{ error }}</p>
       <VBtn
         color="primary"
         @click="goBack"
       >
-        Retour aux tickets
+        {{ t('affiliate_tickets_back_to_tickets') }}
       </VBtn>
     </div>
 

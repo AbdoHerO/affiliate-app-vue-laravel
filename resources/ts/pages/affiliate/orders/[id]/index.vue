@@ -28,9 +28,9 @@ const activeTab = ref('details')
 
 // Computed
 const breadcrumbs = computed(() => [
-  { title: 'Dashboard', to: { name: 'affiliate-dashboard' } },
-  { title: 'Mes Commandes', to: { name: 'affiliate-orders' } },
-  { title: `Commande #${route.params.id?.toString().slice(-8)}`, active: true },
+  { title: t('dashboard'), to: { name: 'affiliate-dashboard' } },
+  { title: t('my_orders'), to: { name: 'affiliate-orders' } },
+  { title: order.value?.numero_commande || t('order_details'), active: true },
 ])
 
 const orderTotal = computed(() => {
@@ -45,7 +45,7 @@ const fetchOrder = async () => {
   try {
     await ordersStore.fetchOrder(route.params.id as string)
   } catch (err) {
-    showError('Erreur lors du chargement de la commande')
+    showError(t('order_loading_error'))
     router.push({ name: 'affiliate-orders' })
   }
 }

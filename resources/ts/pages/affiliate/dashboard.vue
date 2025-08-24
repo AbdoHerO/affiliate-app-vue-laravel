@@ -49,7 +49,7 @@ const dateRange = ref([
 
 // Breadcrumbs
 const breadcrumbs = computed(() => [
-  { title: 'Affiliate', disabled: false, href: '/affiliate' },
+  { title: t('affiliate'), disabled: false, href: '/affiliate' },
   { title: t('dashboard'), disabled: true, href: '/affiliate/dashboard' },
 ])
 
@@ -149,10 +149,10 @@ const refreshData = async () => {
   try {
     await dashboardStore.refreshAll()
     if (autoRefresh.value) {
-      showSuccess('Dashboard data refreshed')
+      showSuccess(t('affiliate_dashboard_refresh_success'))
     }
   } catch (error) {
-    showError('Failed to refresh dashboard data')
+    showError(t('errors.dashboard_refresh_failed'))
   }
 }
 
@@ -174,17 +174,17 @@ const changePeriod = (period: string) => {
 const copyReferralLink = async () => {
   try {
     await dashboardStore.copyReferralLink()
-    showSuccess('Referral link copied to clipboard!')
+    showSuccess(t('affiliate_dashboard_link_copied'))
   } catch (error) {
-    showError('Failed to copy referral link')
+    showError(t('errors.link_copy_failed'))
   }
 }
 
 const shareReferralLink = () => {
   if (navigator.share && dashboardStore.referralLink) {
     navigator.share({
-      title: 'Join our affiliate program',
-      text: 'Join our affiliate program and start earning commissions!',
+      title: t('join_affiliate_program'),
+      text: t('join_affiliate_program_description'),
       url: dashboardStore.referralLink.link,
     })
   } else {
@@ -215,10 +215,10 @@ const exportDashboard = () => {
     document.body.removeChild(link)
     URL.revokeObjectURL(url)
 
-    showSuccess('Performance report exported successfully')
+    showSuccess(t('affiliate_dashboard_export_success'))
   } catch (error) {
     console.error('Error exporting dashboard:', error)
-    showError('Error exporting performance report')
+    showError(t('errors.export_failed'))
   }
 }
 
@@ -387,10 +387,10 @@ watch(autoRefresh, setupAutoRefresh)
         <div class="d-flex align-center justify-space-between mb-4 flex-wrap gap-4">
           <div>
             <h2 class="text-h5 font-weight-bold">
-              Performance Analytics
+              {{ t('performance_analytics') }}
             </h2>
             <p class="text-body-2 text-disabled mb-0">
-              Personal affiliate performance dashboard
+              {{ t('personal_affiliate_performance_dashboard') }}
             </p>
           </div>
 

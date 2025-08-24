@@ -64,12 +64,12 @@ const sortOptions = computed(() => [
 ])
 
 const profitOptions = computed(() => [
-  { value: undefined, text: 'Toutes les commissions' },
-  { value: 20, text: '20 MAD+ par unité' },
-  { value: 50, text: '50 MAD+ par unité' },
-  { value: 100, text: '100 MAD+ par unité' },
-  { value: 200, text: '200 MAD+ par unité' },
-  { value: 500, text: '500 MAD+ par unité' },
+  { value: undefined, text: t('catalogue.filters.all_commissions') },
+  { value: 20, text: t('catalogue.filters.profit_over', { amount: '20 MAD' }) },
+  { value: 50, text: t('catalogue.filters.profit_over', { amount: '50 MAD' }) },
+  { value: 100, text: t('catalogue.filters.profit_over', { amount: '100 MAD' }) },
+  { value: 200, text: t('catalogue.filters.profit_over', { amount: '200 MAD' }) },
+  { value: 500, text: t('catalogue.filters.profit_over', { amount: '500 MAD' }) },
 ])
 
 const hasActiveFilters = computed(() => {
@@ -151,7 +151,7 @@ const handleProductOpen = async (productId: string) => {
     // For now, the drawer will start with no variants selected
   } catch (error) {
     showProductDrawer.value = false
-    showError('Erreur lors du chargement du produit')
+    showError(t('catalogue.errors.product_loading_error'))
   }
 }
 
@@ -161,12 +161,12 @@ const handleAddToCart = async (data: { produit_id: string; variante_id?: string;
 
     // Validate the data before sending
     if (!data.produit_id) {
-      showError('Produit invalide')
+      showError(t('catalogue.errors.invalid_product'))
       return
     }
 
     if (data.qty < 1) {
-      showError('Quantité invalide')
+      showError(t('catalogue.errors.invalid_quantity'))
       return
     }
 
