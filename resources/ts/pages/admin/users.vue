@@ -515,8 +515,8 @@ watch(
               <th>{{ t('name') }}</th>
               <th>{{ t('email') }}</th>
               <th>{{ t('phone') }}</th>
-              <th>Type de banque</th>
-              <th>RIB</th>
+              <th>{{ t('bank_type') }}</th>
+              <th>{{ t('rib') }}</th>
               <th>{{ t('role') }}</th>
               <th>{{ t('status') }}</th>
               <th>{{ t('record_status') }}</th>
@@ -542,12 +542,12 @@ watch(
               <td>
                 <div class="d-flex align-center">
                   <VIcon icon="tabler-building-bank" size="16" class="me-2" />
-                  {{ user.bank_type || 'Non renseigné' }}
+                  {{ user.bank_type ? user.bank_type : t('bank_not_provided') }}
                 </div>
               </td>
               <td>
                 <div style="font-family: monospace; font-size: 0.875rem;">
-                  {{ user.rib || 'Non renseigné' }}
+                  {{ user.rib ? user.rib : t('bank_not_provided') }}
                 </div>
               </td>
               <td>
@@ -639,19 +639,19 @@ watch(
               <VCol cols="12" md="6">
                 <VSelect
                   v-model="userForm.bank_type"
-                  :label="'Type de banque'"
-                  :placeholder="'Sélectionner une banque'"
+                  :label="t('bank_type')"
+                  :placeholder="t('select_bank')"
                   :error-messages="userErrors.bank_type"
                   :items="[
-                    'Attijariwafa Bank',
-                    'Banque Populaire',
-                    'BMCE Bank',
-                    'BMCI',
-                    'CIH Bank',
-                    'Crédit Agricole',
-                    'Crédit du Maroc',
-                    'Société Générale',
-                    'Autre'
+                    { value: 'attijari', text: t('banks.attijariwafa') },
+                    { value: 'populaire', text: t('banks.banque_populaire') },
+                    { value: 'bmce', text: t('banks.bmce_bank') },
+                    { value: 'bmci', text: t('banks.bmci') },
+                    { value: 'cih', text: t('banks.cih_bank') },
+                    { value: 'credit_agricole', text: t('banks.credit_agricole') },
+                    { value: 'credit_maroc', text: t('banks.credit_du_maroc') },
+                    { value: 'societe_generale', text: t('banks.societe_generale') },
+                    { value: 'autre', text: t('other') }
                   ]"
                   clearable
                 />
@@ -659,8 +659,8 @@ watch(
               <VCol cols="12" md="6">
                 <VTextField
                   v-model="userForm.rib"
-                  :label="'RIB'"
-                  :placeholder="'Entrer le RIB'"
+                  :label="t('rib')"
+                  :placeholder="t('enter_rib')"
                   :error-messages="userErrors.rib"
                   style="font-family: monospace;"
                 />
@@ -702,19 +702,19 @@ watch(
               <VCol cols="12" md="6">
                 <VSelect
                   v-model="userForm.bank_type"
-                  :label="'Type de banque'"
-                  :placeholder="'Sélectionner une banque'"
+                  :label="t('bank_type')"
+                  :placeholder="t('select_bank')"
                   :error-messages="userErrors.bank_type"
                   :items="[
-                    'Attijariwafa Bank',
-                    'Banque Populaire',
-                    'BMCE Bank',
-                    'BMCI',
-                    'CIH Bank',
-                    'Crédit Agricole',
-                    'Crédit du Maroc',
-                    'Société Générale',
-                    'Autre'
+                    { value: 'attijari', text: t('banks.attijariwafa') },
+                    { value: 'populaire', text: t('banks.banque_populaire') },
+                    { value: 'bmce', text: t('banks.bmce_bank') },
+                    { value: 'bmci', text: t('banks.bmci') },
+                    { value: 'cih', text: t('banks.cih_bank') },
+                    { value: 'credit_agricole', text: t('banks.credit_agricole') },
+                    { value: 'credit_maroc', text: t('banks.credit_du_maroc') },
+                    { value: 'societe_generale', text: t('banks.societe_generale') },
+                    { value: 'autre', text: t('other') }
                   ]"
                   clearable
                 />
@@ -722,8 +722,8 @@ watch(
               <VCol cols="12" md="6">
                 <VTextField
                   v-model="userForm.rib"
-                  :label="'RIB'"
-                  :placeholder="'Entrer le RIB'"
+                  :label="t('rib')"
+                  :placeholder="t('enter_rib')"
                   :error-messages="userErrors.rib"
                   style="font-family: monospace;"
                 />
@@ -806,17 +806,17 @@ watch(
             <!-- Bank Information -->
             <VCol cols="12" md="6">
               <div class="mb-3">
-                <strong>Type de banque:</strong>
+                <strong>{{ t('bank_type') }}:</strong>
                 <div class="d-flex align-center">
                   <VIcon icon="tabler-building-bank" size="16" class="me-2" />
-                  {{ selectedUser.bank_type || 'Non renseigné' }}
+                  {{ selectedUser.bank_type || t('bank_not_provided') }}
                 </div>
               </div>
             </VCol>
             <VCol cols="12" md="6">
               <div class="mb-3">
-                <strong>RIB:</strong>
-                <div style="font-family: monospace;">{{ selectedUser.rib || 'Non renseigné' }}</div>
+                <strong>{{ t('rib') }}:</strong>
+                <div style="font-family: monospace;">{{ selectedUser.rib || t('bank_not_provided') }}</div>
               </div>
             </VCol>
 
@@ -845,12 +845,12 @@ watch(
             </VCol>
             <VCol cols="12" md="6">
               <div class="mb-3">
-                <strong>Email vérifié:</strong>
+                <strong>{{ t('email_verified') }}:</strong>
                 <VChip
                   :color="selectedUser.email_verifie ? 'success' : 'warning'"
                   size="small"
                 >
-                  {{ selectedUser.email_verifie ? 'Oui' : 'Non' }}
+                  {{ selectedUser.email_verifie ? t('yes') : t('no') }}
                 </VChip>
               </div>
             </VCol>

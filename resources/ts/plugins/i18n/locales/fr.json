@@ -1830,6 +1830,7 @@
   "stock.filters.reason": "Raison",
   "stock.filters.date_from": "Date de début",
   "stock.filters.date_to": "Date de fin",
+  "stock.filters.warehouse": "Entrepôt",
 
   // Actions
   "stock.actions.in": "Entrée stock",
@@ -2216,5 +2217,26 @@
   "earn_tip_2": "Encouragez vos contacts à vérifier leur email après inscription",
   "earn_tip_3": "Participez aux campagnes spéciales de parrainage",
   "unverified": "Non Vérifié",
-  
+
+  // Insert new translation keys at the end of the file before the closing brace
+  "bank_type": "Type de banque",
+  "select_bank": "Sélectionner une banque",
+  "rib": "RIB",
+  "enter_rib": "Entrer le RIB",
+  "bank_not_provided": "Non renseigné",
+  "view_user": "Voir l'utilisateur",
+  "select_kyc_status": "Sélectionner le statut KYC",
+  "all_roles": "All Roles",
+  "filter_by_role": "Filter by role",
+  "email_verified": "Email vérifié",
+  "yes": "Oui",
+  "no": "Non",
+  "close": "Fermer",
+  "edit": "Modifier",
+  "error_user_has_related_data": "L'utilisateur {name} a des données associées qui empêchent sa suppression.",
+  "error_user_constraint_violation": "Violation de contrainte pour l'utilisateur {name}.",
+  "banks": {
+      "attijariwafa": "Attijariwafa",
+      "banque_populaire": "Banque Populaire"
+  }
 }
