@@ -358,3 +358,11 @@ export function sanitizeDonutChartData(verified: any, pending: any, centerLabel:
     centerLabel: String(centerLabel || 'Rate')
   }
 }
+
+/**
+ * Sanitize data specifically for ProfitLineChart component
+ * (Same format as SalesAreaChart)
+ */
+export function sanitizeProfitLineChartData(data: any, title: string, subtitle: string, value: any, growth: any, color = 'info'): any {
+  return sanitizeAreaChartData(data, title, subtitle, value, growth, color)
+}

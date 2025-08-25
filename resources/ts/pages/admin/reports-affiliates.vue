@@ -935,13 +935,15 @@ onBeforeUnmount(() => {
             </div>
 
             <ProfitLineChart
-              v-else-if="chartData.payouts_over_time"
-              :data="{
-                chartData: chartData.payouts_over_time,
-                title: t('payouts_mad'),
-                subtitle: t('paid_withdrawals'),
-                color: 'success',
-              }"
+              v-else-if="chartData.payouts_over_time && !chartData.payouts_over_time.isEmpty"
+              :data="sanitizeAreaChartData(
+                chartData.payouts_over_time.data,
+                t('payouts_mad'),
+                t('paid_withdrawals'),
+                (summary?.total_payouts?.value || 0) + ' MAD',
+                summary?.total_payouts?.delta || '+0%',
+                'success'
+              )"
               :loading="loading.charts"
             />
 

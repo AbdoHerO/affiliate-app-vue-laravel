@@ -169,6 +169,7 @@ declare global {
   const sanitizeDonutChartData: typeof import('./resources/ts/utils/reportDataSanitizer')['sanitizeDonutChartData']
   const sanitizeKPI: typeof import('./resources/ts/utils/reportDataSanitizer')['sanitizeKPI']
   const sanitizePagination: typeof import('./resources/ts/utils/reportDataSanitizer')['sanitizePagination']
+  const sanitizeProfitLineChartData: typeof import('./resources/ts/utils/reportDataSanitizer')['sanitizeProfitLineChartData']
   const sanitizeReportData: typeof import('./resources/ts/utils/reportDataSanitizer')['sanitizeReportData']
   const sanitizeTableData: typeof import('./resources/ts/utils/reportDataSanitizer')['sanitizeTableData']
   const setActivePinia: typeof import('pinia')['setActivePinia']
@@ -611,6 +612,7 @@ declare module 'vue' {
     readonly sanitizeDonutChartData: UnwrapRef<typeof import('./resources/ts/utils/reportDataSanitizer')['sanitizeDonutChartData']>
     readonly sanitizeKPI: UnwrapRef<typeof import('./resources/ts/utils/reportDataSanitizer')['sanitizeKPI']>
     readonly sanitizePagination: UnwrapRef<typeof import('./resources/ts/utils/reportDataSanitizer')['sanitizePagination']>
+    readonly sanitizeProfitLineChartData: UnwrapRef<typeof import('./resources/ts/utils/reportDataSanitizer')['sanitizeProfitLineChartData']>
     readonly sanitizeReportData: UnwrapRef<typeof import('./resources/ts/utils/reportDataSanitizer')['sanitizeReportData']>
     readonly sanitizeTableData: UnwrapRef<typeof import('./resources/ts/utils/reportDataSanitizer')['sanitizeTableData']>
     readonly setActivePinia: UnwrapRef<typeof import('pinia')['setActivePinia']>

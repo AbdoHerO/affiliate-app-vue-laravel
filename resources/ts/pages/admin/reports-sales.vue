@@ -971,13 +971,15 @@ onBeforeUnmount(() => {
             </div>
 
             <ProfitLineChart
-              v-else-if="chartData.top_products"
-              :data="{
-                chartData: chartData.top_products,
-                title: t('revenue_mad'),
-                subtitle: t('top_10_products'),
-                color: 'primary',
-              }"
+              v-else-if="chartData.top_products && !chartData.top_products.isEmpty"
+              :data="sanitizeAreaChartData(
+                chartData.top_products.data,
+                t('revenue_mad'),
+                t('top_10_products'),
+                (summary?.total_sales?.value || 0) + ' MAD',
+                summary?.total_sales?.delta || '+0%',
+                'primary'
+              )"
               :loading="loading.charts"
             />
 
@@ -992,30 +994,16 @@ onBeforeUnmount(() => {
       <VCol cols="12" lg="6">
         <AdvancedStatsCard
           :data="{
-            stats: [
-              {
-                title: t('total_revenue'),
-                value: summary?.total_sales?.value || 0,
-                change: summary?.total_sales?.delta || 0,
-                icon: 'tabler-currency-dollar',
-                color: 'success',
-              },
-              {
-                title: t('avg_order_value'),
-                value: summary?.avg_order_value?.value || 0,
-                change: summary?.avg_order_value?.delta || 0,
-                icon: 'tabler-chart-line',
-                color: 'info',
-              },
-              {
-                title: t('delivery_rate'),
-                value: summary?.delivered_rate?.value || 0,
-                change: summary?.delivered_rate?.delta || 0,
-                icon: 'tabler-truck-delivery',
-                color: 'success',
-                suffix: '%',
-              },
-            ],
+            title: t('total_revenue'),
+            value: String(summary?.total_sales?.value || 0) + ' MAD',
+            subtitle: t('platform_earnings'),
+            icon: 'tabler-currency-dollar',
+            color: 'success',
+            trend: summary?.total_sales?.delta ? {
+              value: String(Math.abs(summary.total_sales.delta)) + '%',
+              direction: summary.total_sales.delta >= 0 ? 'up' : 'down',
+              period: t('vs_previous_period')
+            } : undefined
           }"
           :loading="loading.summary"
         />
