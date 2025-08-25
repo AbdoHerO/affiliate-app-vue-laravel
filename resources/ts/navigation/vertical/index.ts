@@ -148,6 +148,11 @@ const adminNavigation = [
     icon: { icon: 'tabler-settings' },
     children: [
       {
+        title: 'nav_app_settings',
+        to: '/admin/settings',
+        icon: { icon: 'tabler-adjustments-horizontal' },
+      },
+      {
         title: 'nav_variant_catalog',
         to: '/admin/variants/attributs',
         icon: { icon: 'tabler-palette' },

@@ -159,6 +159,11 @@ export function useNavigation() {
             icon: { icon: 'tabler-settings' },
             children: [
               {
+                title: t('nav_app_settings'),
+                to: 'admin-settings',
+                icon: { icon: 'tabler-adjustments-horizontal' },
+              },
+              {
                 title: t('nav_variant_catalog'),
                 to: 'admin-variants-attributs',
                 icon: { icon: 'tabler-palette' },
