@@ -67,6 +67,8 @@ declare module 'vue' {
     DeliveryNoteDialog: typeof import('./resources/ts/components/dialogs/DeliveryNoteDialog.vue')['default']
     DialogCloseBtn: typeof import('./resources/ts/@core/components/DialogCloseBtn.vue')['default']
     DropZone: typeof import('./resources/ts/@core/components/DropZone.vue')['default']
+    DynamicAppTitle: typeof import('./resources/ts/components/common/DynamicAppTitle.vue')['default']
+    DynamicLogo: typeof import('./resources/ts/components/common/DynamicLogo.vue')['default']
     EarningReportsWeekly: typeof import('./resources/ts/components/charts/premium/EarningReportsWeekly.vue')['default']
     EnableOneTimePasswordDialog: typeof import('./resources/ts/components/dialogs/EnableOneTimePasswordDialog.vue')['default']
     ErrorBoundary: typeof import('./resources/ts/components/ErrorBoundary.vue')['default']

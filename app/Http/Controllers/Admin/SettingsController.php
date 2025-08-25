@@ -10,6 +10,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class SettingsController extends Controller
 {
@@ -85,9 +86,26 @@ class SettingsController extends Controller
         try {
             $settings = Setting::getByCategory($category);
 
+            // Clean up nested keys (remove category prefixes)
+            $cleanedSettings = [];
+            foreach ($settings as $key => $value) {
+                // Remove all category prefixes to get the clean key
+                $cleanKey = $key;
+
+                // Remove repeated category prefixes (e.g., "general.general.general.app_name" -> "app_name")
+                while (strpos($cleanKey, $category . '.') === 0) {
+                    $cleanKey = substr($cleanKey, strlen($category) + 1);
+                }
+
+                // Only keep the setting if we don't already have a cleaner version
+                if (!isset($cleanedSettings[$cleanKey])) {
+                    $cleanedSettings[$cleanKey] = $value;
+                }
+            }
+
             return response()->json([
                 'success' => true,
-                'data' => $settings,
+                'data' => $cleanedSettings,
                 'message' => "Settings for {$category} retrieved successfully"
             ]);
         } catch (\Exception $e) {
@@ -135,8 +153,20 @@ class SettingsController extends Controller
             DB::beginTransaction();
 
             foreach ($data as $key => $value) {
-                $settingKey = "{$category}.{$key}";
-                $settingData = $this->getSettingMetadata($category, $key);
+                // Handle file uploads for specific settings
+                if ($this->isFileUploadField($key) && $request->hasFile($key)) {
+                    $value = $this->handleFileUpload($request->file($key), $key);
+                }
+
+                // Clean the key to avoid nested categories
+                $cleanKey = $key;
+                // Remove category prefix if it already exists
+                if (strpos($cleanKey, $category . '.') === 0) {
+                    $cleanKey = substr($cleanKey, strlen($category) + 1);
+                }
+
+                $settingKey = "{$category}.{$cleanKey}";
+                $settingData = $this->getSettingMetadata($category, $cleanKey);
 
                 Setting::set($settingKey, $value, array_merge([
                     'category' => $category,
@@ -149,10 +179,14 @@ class SettingsController extends Controller
 
             DB::commit();
 
+            // Return updated settings with public URLs for files
+            $updatedSettings = Setting::getByCategory($category);
+            $processedSettings = $this->processSettingsForResponse($updatedSettings);
+
             return response()->json([
                 'success' => true,
                 'message' => ucfirst($category) . ' settings updated successfully',
-                'data' => Setting::getByCategory($category)
+                'data' => $processedSettings
             ]);
 
         } catch (\Exception $e) {
@@ -652,5 +686,97 @@ class SettingsController extends Controller
         ];
 
         return $metadata[$category][$key] ?? ['type' => 'string', 'is_public' => false];
+    }
+
+    /**
+     * Check if a field is a file upload field
+     */
+    private function isFileUploadField(string $key): bool
+    {
+        $fileFields = [
+            'app_logo',
+            'app_favicon',
+            'login_background_image',
+            'signup_background_image'
+        ];
+
+        return in_array($key, $fileFields);
+    }
+
+    /**
+     * Handle file upload for settings
+     */
+    private function handleFileUpload($file, string $key): string
+    {
+        // Validate file
+        $allowedMimes = $this->getAllowedMimesForField($key);
+        $maxSize = $this->getMaxSizeForField($key);
+
+        if (!in_array($file->getMimeType(), $allowedMimes)) {
+            throw new \Exception("Invalid file type for {$key}");
+        }
+
+        if ($file->getSize() > $maxSize) {
+            throw new \Exception("File too large for {$key}");
+        }
+
+        // Generate unique filename
+        $extension = $file->getClientOriginalExtension();
+        $filename = $key . '_' . time() . '.' . $extension;
+
+        // Store file in public disk
+        $path = $file->storeAs('settings', $filename, 'public');
+
+        // Return public URL
+        return Storage::disk('public')->url($path);
+    }
+
+    /**
+     * Get allowed MIME types for a field
+     */
+    private function getAllowedMimesForField(string $key): array
+    {
+        $mimeMap = [
+            'app_logo' => ['image/jpeg', 'image/png', 'image/svg+xml'],
+            'app_favicon' => ['image/x-icon', 'image/png', 'image/jpeg'],
+            'login_background_image' => ['image/jpeg', 'image/png', 'image/webp'],
+            'signup_background_image' => ['image/jpeg', 'image/png', 'image/webp']
+        ];
+
+        return $mimeMap[$key] ?? ['image/jpeg', 'image/png'];
+    }
+
+    /**
+     * Get max file size for a field (in bytes)
+     */
+    private function getMaxSizeForField(string $key): int
+    {
+        $sizeMap = [
+            'app_logo' => 2 * 1024 * 1024, // 2MB
+            'app_favicon' => 1 * 1024 * 1024, // 1MB
+            'login_background_image' => 5 * 1024 * 1024, // 5MB
+            'signup_background_image' => 5 * 1024 * 1024 // 5MB
+        ];
+
+        return $sizeMap[$key] ?? 2 * 1024 * 1024; // Default 2MB
+    }
+
+    /**
+     * Process settings for response (convert file paths to public URLs)
+     */
+    private function processSettingsForResponse(array $settings): array
+    {
+        $processed = [];
+
+        foreach ($settings as $key => $value) {
+            if ($this->isFileUploadField($key) && $value && !filter_var($value, FILTER_VALIDATE_URL)) {
+                // If it's a file field and not already a URL, convert to public URL
+                $processed[$key] = Storage::disk('public')->url($value);
+            } else {
+                $processed[$key] = $value;
+            }
+        }
+
+        return $processed;
     }
 }

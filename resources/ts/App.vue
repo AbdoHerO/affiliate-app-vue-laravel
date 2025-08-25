@@ -4,6 +4,7 @@ import ScrollToTop from '@core/components/ScrollToTop.vue'
 import initCore from '@core/initCore'
 import { initConfigStore, useConfigStore } from '@core/stores/config'
 import { hexToRgb } from '@core/utils/colorConverter'
+import { useAppInitialization } from '@/composables/useAppInitialization'
 
 const { global } = useTheme()
 
@@ -12,6 +13,9 @@ initCore()
 initConfigStore()
 
 const configStore = useConfigStore()
+
+// Initialize app settings and services (now with fixed composable calls)
+useAppInitialization()
 </script>
 
 <template>

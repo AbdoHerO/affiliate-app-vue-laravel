@@ -41,6 +41,21 @@ registerPlugins(app)
 // Mount app
 app.mount('#app')
 
-// Initialize auth store after app is mounted
-const authStore = useAuthStore()
-authStore.initializeAuth()
+// Hide loading screen after app is mounted
+const loadingElement = document.getElementById('loading-bg')
+if (loadingElement) {
+  loadingElement.style.display = 'none'
+  console.log('✅ Loading screen hidden')
+}
+
+// Initialize auth store after app is mounted (non-blocking)
+setTimeout(async () => {
+  try {
+    const authStore = useAuthStore()
+    await authStore.initializeAuth()
+    console.log('✅ Auth store initialized')
+  } catch (error) {
+    console.error('❌ Auth store initialization failed:', error)
+    // Don't block the app if auth fails
+  }
+}, 100)
