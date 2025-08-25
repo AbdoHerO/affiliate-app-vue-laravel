@@ -657,122 +657,175 @@ onBeforeUnmount(() => {
     </div>
 
     <!-- Filters Card -->
-    <VCard class="mb-6">
-      <VCardTitle class="d-flex align-center justify-space-between">
+    <VCard class="mb-6 filters-card" elevation="2">
+      <VCardTitle class="d-flex align-center justify-space-between pa-6 pb-4">
         <div class="d-flex align-center">
-          <VIcon icon="tabler-filter" class="me-2" />
-          {{ t('filters') }}
+          <VAvatar size="32" color="primary" variant="tonal" class="me-3">
+            <VIcon icon="tabler-filter" size="18" />
+          </VAvatar>
+          <div>
+            <h3 class="text-h6 font-weight-semibold mb-0">{{ t('filters') }}</h3>
+            <p class="text-body-2 text-medium-emphasis mb-0">{{ t('filter_your_affiliate_data') }}</p>
+          </div>
         </div>
         <div class="d-flex gap-2">
           <VBtn
             variant="outlined"
-            size="small"
+            color="primary"
             prepend-icon="tabler-refresh"
             :loading="isLoading"
             @click="refreshAll"
+            class="filter-action-btn"
           >
             {{ t('apply') }}
           </VBtn>
           <VBtn
             variant="text"
-            size="small"
+            color="secondary"
             prepend-icon="tabler-x"
             @click="resetFilters"
+            class="filter-action-btn"
           >
             {{ t('reset') }}
           </VBtn>
         </div>
       </VCardTitle>
 
-      <VCardText>
-        <!-- Responsive Filter Grid -->
-        <div class="filter-grid">
-          <!-- Date Range -->
-          <div class="filter-item filter-item-wide">
-            <VLabel class="filter-label">{{ t('date_range') }}</VLabel>
-            <div class="date-range-container">
-              <VTextField
-                v-model="filters.dateRange.start"
-                type="date"
-                density="compact"
+      <VDivider />
+
+      <VCardText class="pa-6">
+        <!-- Main Filters Row -->
+        <div class="filters-layout">
+          <!-- Primary Filters Section -->
+          <div class="primary-filters">
+            <!-- Date Range with Icon -->
+            <div class="filter-group">
+              <div class="filter-header">
+                <VIcon icon="tabler-calendar" size="16" class="me-2 text-primary" />
+                <span class="filter-title">{{ t('date_range') }}</span>
+              </div>
+              <div class="date-range-container">
+                <VTextField
+                  v-model="filters.dateRange.start"
+                  type="date"
+                  variant="outlined"
+                  density="comfortable"
+                  hide-details
+                  prepend-inner-icon="tabler-calendar-event"
+                  class="date-input"
+                  :placeholder="t('start_date')"
+                />
+                <div class="date-separator">
+                  <VIcon icon="tabler-arrow-right" size="16" class="text-medium-emphasis" />
+                </div>
+                <VTextField
+                  v-model="filters.dateRange.end"
+                  type="date"
+                  variant="outlined"
+                  density="comfortable"
+                  hide-details
+                  prepend-inner-icon="tabler-calendar-event"
+                  class="date-input"
+                  :placeholder="t('end_date')"
+                />
+              </div>
+            </div>
+
+            <!-- Period Toggle with Icon -->
+            <div class="filter-group">
+              <div class="filter-header">
+                <VIcon icon="tabler-clock" size="16" class="me-2 text-primary" />
+                <span class="filter-title">{{ t('period') }}</span>
+              </div>
+              <VBtnToggle
+                v-model="filters.period"
                 variant="outlined"
-                hide-details
-                class="date-input"
-              />
-              <VTextField
-                v-model="filters.dateRange.end"
-                type="date"
-                density="compact"
-                variant="outlined"
-                hide-details
-                class="date-input"
-              />
+                color="primary"
+                divided
+                mandatory
+                class="period-toggle"
+              >
+                <VBtn value="day" class="period-btn">
+                  <VIcon icon="tabler-calendar-day" size="16" class="me-1" />
+                  {{ t('day') }}
+                </VBtn>
+                <VBtn value="week" class="period-btn">
+                  <VIcon icon="tabler-calendar-week" size="16" class="me-1" />
+                  {{ t('week') }}
+                </VBtn>
+                <VBtn value="month" class="period-btn">
+                  <VIcon icon="tabler-calendar-month" size="16" class="me-1" />
+                  {{ t('month') }}
+                </VBtn>
+              </VBtnToggle>
             </div>
           </div>
 
-          <!-- Period Toggle -->
-          <div class="filter-item">
-            <VLabel class="filter-label">{{ t('period') }}</VLabel>
-            <VBtnToggle
-              v-model="filters.period"
-              variant="outlined"
-              divided
-              mandatory
-              class="filter-toggle"
-            >
-              <VBtn value="day" size="small" class="flex-1-1-0">{{ t('day') }}</VBtn>
-              <VBtn value="week" size="small" class="flex-1-1-0">{{ t('week') }}</VBtn>
-              <VBtn value="month" size="small" class="flex-1-1-0">{{ t('month') }}</VBtn>
-            </VBtnToggle>
-          </div>
+          <!-- Secondary Filters Section -->
+          <div class="secondary-filters">
+            <!-- Sort By -->
+            <div class="filter-group">
+              <div class="filter-header">
+                <VIcon icon="tabler-sort-descending" size="16" class="me-2 text-primary" />
+                <span class="filter-title">{{ t('sort_by') }}</span>
+              </div>
+              <VSelect
+                v-model="filters.sort_by"
+                :items="[
+                  { title: t('commission'), value: 'commission' },
+                  { title: t('sales'), value: 'sales' },
+                  { title: t('orders'), value: 'orders' },
+                  { title: t('payouts'), value: 'payouts' },
+                ]"
+                item-title="title"
+                item-value="value"
+                variant="outlined"
+                density="comfortable"
+                hide-details
+                prepend-inner-icon="tabler-list"
+                class="modern-select"
+              />
+            </div>
 
-          <!-- Sort By -->
-          <div class="filter-item">
-            <VLabel class="filter-label">{{ t('sort_by') }}</VLabel>
-            <VSelect
-              v-model="filters.sort_by"
-              :items="[
-                { title: t('commission'), value: 'commission' },
-                { title: t('sales'), value: 'sales' },
-                { title: t('orders'), value: 'orders' },
-                { title: t('payouts'), value: 'payouts' },
-              ]"
-              item-title="title"
-              item-value="value"
-              density="compact"
-              variant="outlined"
-              hide-details
-              class="filter-select"
-            />
-          </div>
+            <!-- Min Orders -->
+            <div class="filter-group">
+              <div class="filter-header">
+                <VIcon icon="tabler-shopping-cart" size="16" class="me-2 text-primary" />
+                <span class="filter-title">{{ t('min_orders') }}</span>
+              </div>
+              <VTextField
+                v-model.number="filters.min_orders"
+                type="number"
+                min="0"
+                variant="outlined"
+                density="comfortable"
+                hide-details
+                prepend-inner-icon="tabler-hash"
+                class="modern-input"
+                :placeholder="t('enter_minimum_orders')"
+              />
+            </div>
 
-          <!-- Min Orders -->
-          <div class="filter-item">
-            <VLabel class="filter-label">{{ t('min_orders') }}</VLabel>
-            <VTextField
-              v-model.number="filters.min_orders"
-              type="number"
-              min="0"
-              density="compact"
-              variant="outlined"
-              hide-details
-              class="filter-select"
-            />
-          </div>
-
-          <!-- Min Commission -->
-          <div class="filter-item">
-            <VLabel class="filter-label">{{ t('min_commission') }}</VLabel>
-            <VTextField
-              v-model.number="filters.min_commission"
-              type="number"
-              min="0"
-              step="0.01"
-              density="compact"
-              variant="outlined"
-              hide-details
-              class="filter-select"
-            />
+            <!-- Min Commission -->
+            <div class="filter-group">
+              <div class="filter-header">
+                <VIcon icon="tabler-coins" size="16" class="me-2 text-primary" />
+                <span class="filter-title">{{ t('min_commission') }}</span>
+              </div>
+              <VTextField
+                v-model.number="filters.min_commission"
+                type="number"
+                min="0"
+                step="0.01"
+                variant="outlined"
+                density="comfortable"
+                hide-details
+                prepend-inner-icon="tabler-currency-dollar"
+                class="modern-input"
+                :placeholder="t('enter_minimum_commission')"
+                suffix="MAD"
+              />
+            </div>
           </div>
         </div>
       </VCardText>
@@ -1116,161 +1169,286 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
-/* Filter Grid Layout */
-.filter-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1.5rem;
-  align-items: end;
-  width: 100%;
+/* Modern Filters Design */
+.filters-card {
+  border-radius: 16px !important;
+  border: 1px solid rgba(var(--v-theme-primary), 0.12);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08) !important;
+  overflow: hidden;
 }
 
-.filter-item {
+.filters-card :deep(.v-card-title) {
+  background: linear-gradient(135deg, rgba(var(--v-theme-primary), 0.02) 0%, rgba(var(--v-theme-primary), 0.06) 100%);
+}
+
+.filters-layout {
   display: flex;
   flex-direction: column;
-  min-width: 250px;
-  width: 100%;
+  gap: 2rem;
 }
 
-.filter-item-wide {
-  grid-column: span 2;
-  min-width: 500px;
+.primary-filters,
+.secondary-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  align-items: flex-start;
 }
 
-.filter-label {
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  min-width: 240px;
+  flex: 1;
+}
+
+.filter-header {
+  display: flex;
+  align-items: center;
   margin-bottom: 0.75rem;
+  padding-bottom: 0.25rem;
+  border-bottom: 2px solid rgba(var(--v-theme-primary), 0.1);
+}
+
+.filter-title {
   font-size: 0.875rem;
   font-weight: 600;
   color: rgb(var(--v-theme-on-surface));
-  opacity: 0.8;
-  white-space: nowrap;
+  letter-spacing: 0.025em;
 }
 
-/* Button Toggle Styles */
-.filter-toggle {
-  width: 100%;
-  display: flex;
-}
-
-.filter-toggle :deep(.v-btn-group) {
-  width: 100%;
-  display: flex;
-}
-
-.filter-toggle :deep(.v-btn) {
-  flex: 1 1 0;
-  min-width: 0;
-  font-size: 0.8rem;
-}
-
-/* Date Range Styles */
+/* Date Range Specific Styles */
 .date-range-container {
   display: flex;
-  gap: 0.75rem;
+  align-items: center;
+  gap: 1rem;
   width: 100%;
 }
 
 .date-input {
   flex: 1;
-  min-width: 0;
+  min-width: 140px;
 }
 
-.date-input :deep(.v-field__input) {
-  font-size: 0.875rem;
+.date-input :deep(.v-field) {
+  border-radius: 12px;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08);
+  transition: all 0.2s ease;
 }
 
-/* Select Styles */
-.filter-select {
+.date-input :deep(.v-field:hover) {
+  box-shadow: 0 2px 12px rgba(var(--v-theme-primary), 0.15);
+  border-color: rgba(var(--v-theme-primary), 0.5);
+}
+
+.date-input :deep(.v-field--focused) {
+  box-shadow: 0 2px 12px rgba(var(--v-theme-primary), 0.25);
+}
+
+.date-separator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 32px;
+  background: rgba(var(--v-theme-primary), 0.08);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Period Toggle Styles */
+.period-toggle {
+  width: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08);
+}
+
+.period-toggle :deep(.v-btn-group) {
+  width: 100%;
+  border-radius: 12px;
+}
+
+.period-btn {
+  flex: 1;
+  min-height: 44px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.period-btn :deep(.v-btn__content) {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.period-toggle :deep(.v-btn--active) {
+  background: rgba(var(--v-theme-primary), 0.12) !important;
+  color: rgb(var(--v-theme-primary)) !important;
+  box-shadow: inset 0 2px 4px rgba(var(--v-theme-primary), 0.2);
+}
+
+/* Modern Input and Select Styles */
+.modern-input,
+.modern-select {
   width: 100%;
 }
 
-.filter-select :deep(.v-field__input) {
-  font-size: 0.875rem;
+.modern-input :deep(.v-field),
+.modern-select :deep(.v-field) {
+  border-radius: 12px;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08);
+  transition: all 0.2s ease;
 }
 
-/* Responsive Breakpoints */
+.modern-input :deep(.v-field:hover),
+.modern-select :deep(.v-field:hover) {
+  box-shadow: 0 2px 12px rgba(var(--v-theme-primary), 0.15);
+  border-color: rgba(var(--v-theme-primary), 0.5);
+}
+
+.modern-input :deep(.v-field--focused),
+.modern-select :deep(.v-field--focused) {
+  box-shadow: 0 2px 12px rgba(var(--v-theme-primary), 0.25);
+}
+
+.modern-input :deep(.v-field__prepend-inner),
+.modern-select :deep(.v-field__prepend-inner) {
+  padding-inline-end: 0.75rem;
+}
+
+.modern-input :deep(.v-field__prepend-inner .v-icon),
+.modern-select :deep(.v-field__prepend-inner .v-icon) {
+  color: rgba(var(--v-theme-primary), 0.7);
+}
+
+/* Action Button Styles */
+.filter-action-btn {
+  min-height: 40px;
+  border-radius: 10px;
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: 0.025em;
+  transition: all 0.2s ease;
+}
+
+.filter-action-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Responsive Design */
 @media (max-width: 1200px) {
-  .filter-grid {
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 1rem;
+  .primary-filters,
+  .secondary-filters {
+    gap: 1.25rem;
   }
-
-  .filter-item {
-    min-width: 220px;
-  }
-
-  .filter-item-wide {
-    min-width: 440px;
+  
+  .filter-group {
+    min-width: 200px;
   }
 }
 
 @media (max-width: 960px) {
-  .filter-grid {
-    grid-template-columns: repeat(2, 1fr);
+  .filters-layout {
+    gap: 1.5rem;
+  }
+  
+  .primary-filters,
+  .secondary-filters {
+    flex-direction: column;
     gap: 1rem;
   }
-
-  .filter-item {
-    min-width: 200px;
-  }
-
-  .filter-item-wide {
-    grid-column: span 2;
+  
+  .filter-group {
     min-width: 100%;
+  }
+  
+  .date-range-container {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+  
+  .date-separator {
+    transform: rotate(90deg);
+    align-self: center;
+    margin: 0.25rem 0;
   }
 }
 
 @media (max-width: 768px) {
-  .filter-grid {
-    grid-template-columns: 1fr;
+  .filters-card :deep(.v-card-title) {
+    flex-direction: column;
+    align-items: stretch;
     gap: 1rem;
   }
-
-  .filter-item,
-  .filter-item-wide {
-    grid-column: span 1;
-    min-width: 100%;
+  
+  .period-toggle {
+    margin-top: 0.5rem;
   }
-
-  .date-range-container {
-    flex-direction: column;
-    gap: 0.75rem;
+  
+  .period-btn {
+    min-height: 40px;
+    font-size: 0.875rem;
+  }
+  
+  .filter-action-btn {
+    min-height: 36px;
+    font-size: 0.875rem;
   }
 }
 
 @media (max-width: 600px) {
-  .filter-grid {
-    gap: 0.75rem;
+  .filters-card :deep(.v-card-title),
+  .filters-card :deep(.v-card-text) {
+    padding: 1rem;
   }
-
-  .filter-item {
-    min-width: 100%;
-  }
-
-  .filter-toggle :deep(.v-btn) {
-    font-size: 0.75rem;
-    padding: 0.5rem 0.75rem;
-  }
-
-  .filter-label {
-    font-size: 0.8rem;
+  
+  .filter-header {
     margin-bottom: 0.5rem;
+  }
+  
+  .filter-title {
+    font-size: 0.8rem;
+  }
+  
+  .period-btn {
+    min-height: 36px;
+    font-size: 0.8rem;
+  }
+  
+  .period-btn :deep(.v-icon) {
+    display: none;
   }
 }
 
-@media (max-width: 480px) {
-  .filter-grid {
-    gap: 0.5rem;
-  }
+/* Loading and Animation States */
+.filter-group {
+  animation: fadeInUp 0.3s ease;
+}
 
-  .date-range-container {
-    gap: 0.5rem;
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
   }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 
-  .filter-toggle :deep(.v-btn) {
-    font-size: 0.7rem;
-    padding: 0.4rem 0.6rem;
-    min-height: 32px;
-  }
+/* Focus States */
+.modern-input :deep(.v-field--focused .v-field__prepend-inner .v-icon),
+.modern-select :deep(.v-field--focused .v-field__prepend-inner .v-icon) {
+  color: rgb(var(--v-theme-primary));
+}
+
+/* Suffix Styling */
+.modern-input :deep(.v-field__suffix) {
+  color: rgba(var(--v-theme-on-surface), 0.6);
+  font-weight: 500;
+  padding-inline-start: 0.5rem;
 }
 </style>
