@@ -1,4 +1,10 @@
 <script setup lang="ts">
+definePage({
+  meta: {
+    requiresAuth: true,
+    requiresRole: 'admin',
+  },
+})
 import { ref, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useOzonSettingsStore } from '@/stores/admin/ozonSettings'

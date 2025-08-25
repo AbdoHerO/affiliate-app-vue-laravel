@@ -1,4 +1,9 @@
 <script setup lang="ts">
+definePage({
+  meta: {
+    requiresAuth: true,
+  },
+})
 import UserProfileHeader from '@/views/pages/user-profile/UserProfileHeader.vue'
 import About from '@/views/pages/user-profile/profile/About.vue'
 import ActivityTimeline from '@/views/pages/user-profile/profile/ActivityTimeline.vue'

@@ -953,7 +953,7 @@ definePage({
   meta: {
     title: 'Debug OzonExpress',
     requiresAuth: true,
-    roles: ['admin']
+    requiresRole: 'admin'
   }
 })
 

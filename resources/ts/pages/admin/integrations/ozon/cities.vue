@@ -1,4 +1,10 @@
 <script setup lang="ts">
+definePage({
+  meta: {
+    requiresAuth: true,
+    requiresRole: 'admin',
+  },
+})
 import { ref, onMounted, watch } from 'vue'
 import { useOzonCitiesStore, type ShippingCity } from '@/stores/admin/ozonCities'
 import { useNotifications } from '@/composables/useNotifications'

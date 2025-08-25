@@ -48,11 +48,15 @@ export function setupRouterGuards(router: Router) {
       const requiresPermission = to.meta?.requiresPermission
       const isPublic = to.meta?.public === true
 
+      // Default to requiring authentication unless explicitly marked as public
+      const needsAuth = requiresAuth || requiresRole || requiresPermission || (!isPublic && !routePath.includes('/login') && !routePath.includes('/affiliate-signup') && !routePath.includes('/affiliate-verified'))
+
       console.log('🛡️ [Route Guard] Route meta:', {
         requiresAuth,
         requiresRole,
         requiresPermission,
         isPublic,
+        needsAuth,
         isAuthenticated: authStore.isAuthenticated
       })
 
@@ -62,8 +66,8 @@ export function setupRouterGuards(router: Router) {
         return next()
       }
 
-      // If route requires authentication
-      if (requiresAuth) {
+      // If route needs authentication (either explicitly or by default)
+      if (needsAuth) {
         if (!authStore.isAuthenticated) {
           console.log('🚫 [Route Guard] Authentication required - redirecting to login')
           return next({

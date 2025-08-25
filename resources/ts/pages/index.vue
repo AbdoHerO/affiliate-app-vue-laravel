@@ -1,4 +1,9 @@
 <script setup lang="ts">
+definePage({
+  meta: {
+    requiresAuth: true,
+  },
+})
 import { useAuth } from '@/composables/useAuth'
 import { useRouter } from 'vue-router'
 

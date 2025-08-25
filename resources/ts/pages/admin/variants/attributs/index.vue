@@ -11,9 +11,8 @@ import SoftDeleteActions from '@/components/common/SoftDeleteActions.vue'
 // Page meta
 definePage({
   meta: {
-    action: 'read',
-    subject: 'Admin',
     requiresAuth: true,
+    requiresRole: 'admin',
   },
 })
 

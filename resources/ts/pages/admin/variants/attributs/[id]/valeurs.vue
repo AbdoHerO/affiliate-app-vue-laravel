@@ -8,9 +8,8 @@ import { useQuickConfirm } from '@/composables/useConfirmAction'
 // Page meta
 definePage({
   meta: {
-    action: 'read',
-    subject: 'Admin',
     requiresAuth: true,
+    requiresRole: 'admin',
   },
 })
 
