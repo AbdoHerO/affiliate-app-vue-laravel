@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { $api } from '@/utils/api'
 // import { useAdvancedCharts } from '@/composables/useAdvancedCharts'
@@ -49,6 +49,9 @@ let chartsController: AbortController | null = null
 let leaderboardController: AbortController | null = null
 let ledgerController: AbortController | null = null
 let segmentsController: AbortController | null = null
+
+// Flag to prevent watchers from triggering during reset
+const isResetting = ref(false)
 
 // State
 const loading = ref({
@@ -402,7 +405,28 @@ const refreshAll = async () => {
   ])
 }
 
-const resetFilters = () => {
+const resetFilters = async () => {
+  // Cancel all pending requests first
+  cancelAllRequests()
+  
+  // Clear any pending timeouts
+  if (refreshTimeout) {
+    clearTimeout(refreshTimeout)
+    refreshTimeout = null
+  }
+  if (chartTimeout) {
+    clearTimeout(chartTimeout)
+    chartTimeout = null
+  }
+  if (leaderboardTimeout) {
+    clearTimeout(leaderboardTimeout)
+    leaderboardTimeout = null
+  }
+
+  // Set resetting flag to prevent watchers from triggering
+  isResetting.value = true
+
+  // Reset filters
   filters.value = {
     dateRange: {
       start: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
@@ -418,6 +442,14 @@ const resetFilters = () => {
     page: 1,
     per_page: 15,
   }
+
+  // Wait a tick to ensure watchers don't trigger
+  await nextTick()
+  
+  // Reset the flag
+  isResetting.value = false
+
+  // Now refresh data
   refreshAll()
 }
 
@@ -502,6 +534,8 @@ const getCommissionStatusColor = (status: string) => {
 // Debounced refresh to prevent recursive calls
 let refreshTimeout: NodeJS.Timeout | null = null
 const debouncedRefresh = () => {
+  if (isResetting.value) return // Skip if we're resetting
+  
   if (refreshTimeout) {
     clearTimeout(refreshTimeout)
   }
@@ -512,6 +546,8 @@ const debouncedRefresh = () => {
 
 let chartTimeout: NodeJS.Timeout | null = null
 const debouncedChartRefresh = () => {
+  if (isResetting.value) return // Skip if we're resetting
+  
   if (chartTimeout) {
     clearTimeout(chartTimeout)
   }
@@ -522,6 +558,8 @@ const debouncedChartRefresh = () => {
 
 let leaderboardTimeout: NodeJS.Timeout | null = null
 const debouncedLeaderboardRefresh = () => {
+  if (isResetting.value) return // Skip if we're resetting
+  
   if (leaderboardTimeout) {
     clearTimeout(leaderboardTimeout)
   }
