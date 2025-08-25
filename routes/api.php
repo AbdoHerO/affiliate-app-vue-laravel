@@ -47,6 +47,8 @@ use App\Http\Controllers\Public\ProduitController as PublicProduitController;
 use App\Http\Controllers\Public\AffiliateSignupController;
 use App\Http\Controllers\Api\AdminDashboardController;
 use App\Http\Controllers\Api\AffiliateDashboardController;
+use App\Http\Controllers\Api\SalesReportsController;
+use App\Http\Controllers\Api\AffiliatePerformanceController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -112,6 +114,25 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('dashboard/stats', [AdminDashboardController::class, 'getStats']);
         Route::get('dashboard/charts', [AdminDashboardController::class, 'getChartData']);
         Route::get('dashboard/tables', [AdminDashboardController::class, 'getTableData']);
+
+        // Sales Reports API
+        Route::prefix('reports/sales')->group(function () {
+            Route::get('summary', [SalesReportsController::class, 'getSummary']);
+            Route::get('series', [SalesReportsController::class, 'getSeries']);
+            Route::get('status-breakdown', [SalesReportsController::class, 'getStatusBreakdown']);
+            Route::get('top-products', [SalesReportsController::class, 'getTopProducts']);
+            Route::get('orders', [SalesReportsController::class, 'getOrders']);
+            Route::get('top-affiliates', [SalesReportsController::class, 'getTopAffiliates']);
+        });
+
+        // Affiliate Performance Reports API
+        Route::prefix('reports/affiliates')->group(function () {
+            Route::get('summary', [AffiliatePerformanceController::class, 'getSummary']);
+            Route::get('series', [AffiliatePerformanceController::class, 'getSeries']);
+            Route::get('leaderboard', [AffiliatePerformanceController::class, 'getLeaderboard']);
+            Route::get('ledger', [AffiliatePerformanceController::class, 'getLedger']);
+            Route::get('segments', [AffiliatePerformanceController::class, 'getSegments']);
+        });
 
         // Legacy dashboard routes (keep for backward compatibility)
         Route::get('dashboard/legacy/stats', [DashboardStatsController::class, 'getDashboardStats']);

@@ -15,9 +15,11 @@ declare global {
   const acceptHMRUpdate: typeof import('pinia')['acceptHMRUpdate']
   const alphaDashValidator: typeof import('./resources/ts/@core/utils/validators')['alphaDashValidator']
   const alphaValidator: typeof import('./resources/ts/@core/utils/validators')['alphaValidator']
+  const arrayToCSV: typeof import('./resources/ts/utils/csvExporter')['arrayToCSV']
   const asyncComputed: typeof import('@vueuse/core')['asyncComputed']
   const autoResetRef: typeof import('@vueuse/core')['autoResetRef']
   const avatarText: typeof import('./resources/ts/@core/utils/formatters')['avatarText']
+  const batchExportCharts: typeof import('./resources/ts/utils/chartExporter')['batchExportCharts']
   const betweenValidator: typeof import('./resources/ts/@core/utils/validators')['betweenValidator']
   const calculateGrowthRate: typeof import('./resources/ts/utils/chartDataTransformers')['calculateGrowthRate']
   const computed: typeof import('vue')['computed']
@@ -51,19 +53,34 @@ declare global {
   const defineLoader: typeof import('vue-router/auto')['defineLoader']
   const definePage: typeof import('unplugin-vue-router/runtime')['definePage']
   const defineStore: typeof import('pinia')['defineStore']
+  const downloadCSV: typeof import('./resources/ts/utils/csvExporter')['downloadCSV']
   const eagerComputed: typeof import('@vueuse/core')['eagerComputed']
   const effectScope: typeof import('vue')['effectScope']
   const emailValidator: typeof import('./resources/ts/@core/utils/validators')['emailValidator']
+  const exportAffiliateLeaderboardCSV: typeof import('./resources/ts/utils/csvExporter')['exportAffiliateLeaderboardCSV']
+  const exportApexChart: typeof import('./resources/ts/utils/chartExporter')['exportApexChart']
+  const exportChartBySelector: typeof import('./resources/ts/utils/chartExporter')['exportChartBySelector']
+  const exportChartWithLoading: typeof import('./resources/ts/utils/chartExporter')['exportChartWithLoading']
+  const exportCommissionLedgerCSV: typeof import('./resources/ts/utils/csvExporter')['exportCommissionLedgerCSV']
+  const exportDashboardSummary: typeof import('./resources/ts/utils/chartExporter')['exportDashboardSummary']
+  const exportElementAsImage: typeof import('./resources/ts/utils/chartExporter')['exportElementAsImage']
+  const exportMultipleCharts: typeof import('./resources/ts/utils/chartExporter')['exportMultipleCharts']
+  const exportSalesOrdersCSV: typeof import('./resources/ts/utils/csvExporter')['exportSalesOrdersCSV']
+  const exportTopAffiliatesCSV: typeof import('./resources/ts/utils/csvExporter')['exportTopAffiliatesCSV']
+  const exportTopProductsCSV: typeof import('./resources/ts/utils/csvExporter')['exportTopProductsCSV']
   const extendRef: typeof import('@vueuse/core')['extendRef']
   const formatCurrency: typeof import('./resources/ts/utils/chartDataTransformers')['formatCurrency']
   const formatDate: typeof import('./resources/ts/@core/utils/formatters')['formatDate']
   const formatDateToMonthShort: typeof import('./resources/ts/@core/utils/formatters')['formatDateToMonthShort']
+  const formatDisplayNumber: typeof import('./resources/ts/utils/reportDataSanitizer')['formatDisplayNumber']
   const formatPercentage: typeof import('./resources/ts/utils/chartDataTransformers')['formatPercentage']
   const getActivePinia: typeof import('pinia')['getActivePinia']
   const getAvatarUrl: typeof import('./resources/ts/utils/imageUtils')['getAvatarUrl']
   const getCurrentInstance: typeof import('vue')['getCurrentInstance']
   const getCurrentScope: typeof import('vue')['getCurrentScope']
+  const getExportErrorMessage: typeof import('./resources/ts/utils/chartExporter')['getExportErrorMessage']
   const getImageUrl: typeof import('./resources/ts/utils/imageUtils')['getImageUrl']
+  const getTrendDisplay: typeof import('./resources/ts/utils/reportDataSanitizer')['getTrendDisplay']
   const h: typeof import('vue')['h']
   const hexToRgb: typeof import('./resources/ts/@core/utils/colorConverter')['hexToRgb']
   const ignorableWatch: typeof import('@vueuse/core')['ignorableWatch']
@@ -74,6 +91,7 @@ declare global {
   const isDefined: typeof import('@vueuse/core')['isDefined']
   const isEmpty: typeof import('./resources/ts/@core/utils/helpers')['isEmpty']
   const isEmptyArray: typeof import('./resources/ts/@core/utils/helpers')['isEmptyArray']
+  const isExportAvailable: typeof import('./resources/ts/utils/chartExporter')['isExportAvailable']
   const isNullOrUndefined: typeof import('./resources/ts/@core/utils/helpers')['isNullOrUndefined']
   const isObject: typeof import('./resources/ts/@core/utils/helpers')['isObject']
   const isProxy: typeof import('vue')['isProxy']
@@ -118,6 +136,7 @@ declare global {
   const passwordValidator: typeof import('./resources/ts/@core/utils/validators')['passwordValidator']
   const pausableWatch: typeof import('@vueuse/core')['pausableWatch']
   const prefixWithPlus: typeof import('./resources/ts/@core/utils/formatters')['prefixWithPlus']
+  const prepareChartForExport: typeof import('./resources/ts/utils/chartExporter')['prepareChartForExport']
   const provide: typeof import('vue')['provide']
   const provideLocal: typeof import('@vueuse/core')['provideLocal']
   const reactify: typeof import('@vueuse/core')['reactify']
@@ -143,7 +162,13 @@ declare global {
   const resolveVuetifyTheme: typeof import('./resources/ts/@core/utils/vuetify')['resolveVuetifyTheme']
   const rgbaToHex: typeof import('./resources/ts/@core/utils/colorConverter')['rgbaToHex']
   const safeArray: typeof import('./resources/ts/utils/chartDataTransformers')['safeArray']
-  const safeNumber: typeof import('./resources/ts/utils/chartDataTransformers')['safeNumber']
+  const safeNumber: typeof import('./resources/ts/utils/reportDataSanitizer')['safeNumber']
+  const safeNumberArray: typeof import('./resources/ts/utils/reportDataSanitizer')['safeNumberArray']
+  const sanitizeChartData: typeof import('./resources/ts/utils/reportDataSanitizer')['sanitizeChartData']
+  const sanitizeKPI: typeof import('./resources/ts/utils/reportDataSanitizer')['sanitizeKPI']
+  const sanitizePagination: typeof import('./resources/ts/utils/reportDataSanitizer')['sanitizePagination']
+  const sanitizeReportData: typeof import('./resources/ts/utils/reportDataSanitizer')['sanitizeReportData']
+  const sanitizeTableData: typeof import('./resources/ts/utils/reportDataSanitizer')['sanitizeTableData']
   const setActivePinia: typeof import('pinia')['setActivePinia']
   const setMapStoreSuffix: typeof import('pinia')['setMapStoreSuffix']
   const shallowReactive: typeof import('vue')['shallowReactive']
@@ -328,6 +353,7 @@ declare global {
   const useQuickConfirm: typeof import('./resources/ts/composables/useConfirmAction')['useQuickConfirm']
   const useRafFn: typeof import('@vueuse/core')['useRafFn']
   const useRefHistory: typeof import('@vueuse/core')['useRefHistory']
+  const useReportErrorHandling: typeof import('./resources/ts/composables/useReportErrorHandling')['useReportErrorHandling']
   const useResizeObserver: typeof import('@vueuse/core')['useResizeObserver']
   const useResponsiveLeftSidebar: typeof import('./resources/ts/@core/composable/useResponsiveSidebar')['useResponsiveLeftSidebar']
   const useRound: typeof import('@vueuse/math')['useRound']
@@ -424,7 +450,6 @@ import { UnwrapRef } from 'vue'
 declare module 'vue' {
   interface GlobalComponents {}
   interface ComponentCustomProperties {
-    readonly $api: UnwrapRef<typeof import('./resources/ts/utils/api')['$api']>
     readonly COOKIE_MAX_AGE_1_YEAR: UnwrapRef<typeof import('./resources/ts/utils/constants')['COOKIE_MAX_AGE_1_YEAR']>
     readonly EffectScope: UnwrapRef<typeof import('vue')['EffectScope']>
     readonly NavigationErrorType: UnwrapRef<typeof import('./resources/ts/utils/navigationSafety')['NavigationErrorType']>
@@ -432,9 +457,11 @@ declare module 'vue' {
     readonly acceptHMRUpdate: UnwrapRef<typeof import('pinia')['acceptHMRUpdate']>
     readonly alphaDashValidator: UnwrapRef<typeof import('./resources/ts/@core/utils/validators')['alphaDashValidator']>
     readonly alphaValidator: UnwrapRef<typeof import('./resources/ts/@core/utils/validators')['alphaValidator']>
+    readonly arrayToCSV: UnwrapRef<typeof import('./resources/ts/utils/csvExporter')['arrayToCSV']>
     readonly asyncComputed: UnwrapRef<typeof import('@vueuse/core')['asyncComputed']>
     readonly autoResetRef: UnwrapRef<typeof import('@vueuse/core')['autoResetRef']>
     readonly avatarText: UnwrapRef<typeof import('./resources/ts/@core/utils/formatters')['avatarText']>
+    readonly batchExportCharts: UnwrapRef<typeof import('./resources/ts/utils/chartExporter')['batchExportCharts']>
     readonly betweenValidator: UnwrapRef<typeof import('./resources/ts/@core/utils/validators')['betweenValidator']>
     readonly calculateGrowthRate: UnwrapRef<typeof import('./resources/ts/utils/chartDataTransformers')['calculateGrowthRate']>
     readonly computed: UnwrapRef<typeof import('vue')['computed']>
@@ -467,19 +494,34 @@ declare module 'vue' {
     readonly defineComponent: UnwrapRef<typeof import('vue')['defineComponent']>
     readonly definePage: UnwrapRef<typeof import('unplugin-vue-router/runtime')['definePage']>
     readonly defineStore: UnwrapRef<typeof import('pinia')['defineStore']>
+    readonly downloadCSV: UnwrapRef<typeof import('./resources/ts/utils/csvExporter')['downloadCSV']>
     readonly eagerComputed: UnwrapRef<typeof import('@vueuse/core')['eagerComputed']>
     readonly effectScope: UnwrapRef<typeof import('vue')['effectScope']>
     readonly emailValidator: UnwrapRef<typeof import('./resources/ts/@core/utils/validators')['emailValidator']>
+    readonly exportAffiliateLeaderboardCSV: UnwrapRef<typeof import('./resources/ts/utils/csvExporter')['exportAffiliateLeaderboardCSV']>
+    readonly exportApexChart: UnwrapRef<typeof import('./resources/ts/utils/chartExporter')['exportApexChart']>
+    readonly exportChartBySelector: UnwrapRef<typeof import('./resources/ts/utils/chartExporter')['exportChartBySelector']>
+    readonly exportChartWithLoading: UnwrapRef<typeof import('./resources/ts/utils/chartExporter')['exportChartWithLoading']>
+    readonly exportCommissionLedgerCSV: UnwrapRef<typeof import('./resources/ts/utils/csvExporter')['exportCommissionLedgerCSV']>
+    readonly exportDashboardSummary: UnwrapRef<typeof import('./resources/ts/utils/chartExporter')['exportDashboardSummary']>
+    readonly exportElementAsImage: UnwrapRef<typeof import('./resources/ts/utils/chartExporter')['exportElementAsImage']>
+    readonly exportMultipleCharts: UnwrapRef<typeof import('./resources/ts/utils/chartExporter')['exportMultipleCharts']>
+    readonly exportSalesOrdersCSV: UnwrapRef<typeof import('./resources/ts/utils/csvExporter')['exportSalesOrdersCSV']>
+    readonly exportTopAffiliatesCSV: UnwrapRef<typeof import('./resources/ts/utils/csvExporter')['exportTopAffiliatesCSV']>
+    readonly exportTopProductsCSV: UnwrapRef<typeof import('./resources/ts/utils/csvExporter')['exportTopProductsCSV']>
     readonly extendRef: UnwrapRef<typeof import('@vueuse/core')['extendRef']>
     readonly formatCurrency: UnwrapRef<typeof import('./resources/ts/utils/chartDataTransformers')['formatCurrency']>
     readonly formatDate: UnwrapRef<typeof import('./resources/ts/@core/utils/formatters')['formatDate']>
     readonly formatDateToMonthShort: UnwrapRef<typeof import('./resources/ts/@core/utils/formatters')['formatDateToMonthShort']>
+    readonly formatDisplayNumber: UnwrapRef<typeof import('./resources/ts/utils/reportDataSanitizer')['formatDisplayNumber']>
     readonly formatPercentage: UnwrapRef<typeof import('./resources/ts/utils/chartDataTransformers')['formatPercentage']>
     readonly getActivePinia: UnwrapRef<typeof import('pinia')['getActivePinia']>
     readonly getAvatarUrl: UnwrapRef<typeof import('./resources/ts/utils/imageUtils')['getAvatarUrl']>
     readonly getCurrentInstance: UnwrapRef<typeof import('vue')['getCurrentInstance']>
     readonly getCurrentScope: UnwrapRef<typeof import('vue')['getCurrentScope']>
+    readonly getExportErrorMessage: UnwrapRef<typeof import('./resources/ts/utils/chartExporter')['getExportErrorMessage']>
     readonly getImageUrl: UnwrapRef<typeof import('./resources/ts/utils/imageUtils')['getImageUrl']>
+    readonly getTrendDisplay: UnwrapRef<typeof import('./resources/ts/utils/reportDataSanitizer')['getTrendDisplay']>
     readonly h: UnwrapRef<typeof import('vue')['h']>
     readonly hexToRgb: UnwrapRef<typeof import('./resources/ts/@core/utils/colorConverter')['hexToRgb']>
     readonly ignorableWatch: UnwrapRef<typeof import('@vueuse/core')['ignorableWatch']>
@@ -489,6 +531,7 @@ declare module 'vue' {
     readonly isDefined: UnwrapRef<typeof import('@vueuse/core')['isDefined']>
     readonly isEmpty: UnwrapRef<typeof import('./resources/ts/@core/utils/helpers')['isEmpty']>
     readonly isEmptyArray: UnwrapRef<typeof import('./resources/ts/@core/utils/helpers')['isEmptyArray']>
+    readonly isExportAvailable: UnwrapRef<typeof import('./resources/ts/utils/chartExporter')['isExportAvailable']>
     readonly isNullOrUndefined: UnwrapRef<typeof import('./resources/ts/@core/utils/helpers')['isNullOrUndefined']>
     readonly isObject: UnwrapRef<typeof import('./resources/ts/@core/utils/helpers')['isObject']>
     readonly isProxy: UnwrapRef<typeof import('vue')['isProxy']>
@@ -533,6 +576,7 @@ declare module 'vue' {
     readonly passwordValidator: UnwrapRef<typeof import('./resources/ts/@core/utils/validators')['passwordValidator']>
     readonly pausableWatch: UnwrapRef<typeof import('@vueuse/core')['pausableWatch']>
     readonly prefixWithPlus: UnwrapRef<typeof import('./resources/ts/@core/utils/formatters')['prefixWithPlus']>
+    readonly prepareChartForExport: UnwrapRef<typeof import('./resources/ts/utils/chartExporter')['prepareChartForExport']>
     readonly provide: UnwrapRef<typeof import('vue')['provide']>
     readonly provideLocal: UnwrapRef<typeof import('@vueuse/core')['provideLocal']>
     readonly reactify: UnwrapRef<typeof import('@vueuse/core')['reactify']>
@@ -558,6 +602,13 @@ declare module 'vue' {
     readonly rgbaToHex: UnwrapRef<typeof import('./resources/ts/@core/utils/colorConverter')['rgbaToHex']>
     readonly safeArray: UnwrapRef<typeof import('./resources/ts/utils/chartDataTransformers')['safeArray']>
     readonly safeNumber: UnwrapRef<typeof import('./resources/ts/utils/chartDataTransformers')['safeNumber']>
+    readonly safeNumber: UnwrapRef<typeof import('./resources/ts/utils/reportDataSanitizer')['safeNumber']>
+    readonly safeNumberArray: UnwrapRef<typeof import('./resources/ts/utils/reportDataSanitizer')['safeNumberArray']>
+    readonly sanitizeChartData: UnwrapRef<typeof import('./resources/ts/utils/reportDataSanitizer')['sanitizeChartData']>
+    readonly sanitizeKPI: UnwrapRef<typeof import('./resources/ts/utils/reportDataSanitizer')['sanitizeKPI']>
+    readonly sanitizePagination: UnwrapRef<typeof import('./resources/ts/utils/reportDataSanitizer')['sanitizePagination']>
+    readonly sanitizeReportData: UnwrapRef<typeof import('./resources/ts/utils/reportDataSanitizer')['sanitizeReportData']>
+    readonly sanitizeTableData: UnwrapRef<typeof import('./resources/ts/utils/reportDataSanitizer')['sanitizeTableData']>
     readonly setActivePinia: UnwrapRef<typeof import('pinia')['setActivePinia']>
     readonly setMapStoreSuffix: UnwrapRef<typeof import('pinia')['setMapStoreSuffix']>
     readonly shallowReactive: UnwrapRef<typeof import('vue')['shallowReactive']>
@@ -739,6 +790,7 @@ declare module 'vue' {
     readonly useQuickConfirm: UnwrapRef<typeof import('./resources/ts/composables/useConfirmAction')['useQuickConfirm']>
     readonly useRafFn: UnwrapRef<typeof import('@vueuse/core')['useRafFn']>
     readonly useRefHistory: UnwrapRef<typeof import('@vueuse/core')['useRefHistory']>
+    readonly useReportErrorHandling: UnwrapRef<typeof import('./resources/ts/composables/useReportErrorHandling')['useReportErrorHandling']>
     readonly useResizeObserver: UnwrapRef<typeof import('@vueuse/core')['useResizeObserver']>
     readonly useResponsiveLeftSidebar: UnwrapRef<typeof import('./resources/ts/@core/composable/useResponsiveSidebar')['useResponsiveLeftSidebar']>
     readonly useRound: UnwrapRef<typeof import('@vueuse/math')['useRound']>
