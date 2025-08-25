@@ -54,9 +54,14 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 
-// Test route
+// Test routes
 Route::get('/test', function () {
     return response()->json(['message' => 'API working', 'timestamp' => now()]);
+});
+
+// Test 401 endpoint for testing authentication handling
+Route::get('/test-401-endpoint', function () {
+    return response()->json(['message' => 'Unauthorized'], 401);
 });
 
 

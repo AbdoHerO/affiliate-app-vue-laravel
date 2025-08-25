@@ -83,11 +83,13 @@ declare global {
   const getTrendDisplay: typeof import('./resources/ts/utils/reportDataSanitizer')['getTrendDisplay']
   const globalSettings: typeof import('./resources/ts/composables/useSettings')['globalSettings']
   const h: typeof import('vue')['h']
+  const handle401Unauthorized: typeof import('./resources/ts/utils/authHandler')['handle401Unauthorized']
   const hexToRgb: typeof import('./resources/ts/@core/utils/colorConverter')['hexToRgb']
   const ignorableWatch: typeof import('@vueuse/core')['ignorableWatch']
   const inject: typeof import('vue')['inject']
   const injectLocal: typeof import('@vueuse/core')['injectLocal']
   const integerValidator: typeof import('./resources/ts/@core/utils/validators')['integerValidator']
+  const is401Error: typeof import('./resources/ts/utils/authHandler')['is401Error']
   const isDarkPreferred: typeof import('./src/@core/composable/useThemeConfig')['isDarkPreferred']
   const isDefined: typeof import('@vueuse/core')['isDefined']
   const isEmpty: typeof import('./resources/ts/@core/utils/helpers')['isEmpty']
@@ -459,6 +461,7 @@ import { UnwrapRef } from 'vue'
 declare module 'vue' {
   interface GlobalComponents {}
   interface ComponentCustomProperties {
+    readonly $api: UnwrapRef<typeof import('./resources/ts/utils/api')['$api']>
     readonly COOKIE_MAX_AGE_1_YEAR: UnwrapRef<typeof import('./resources/ts/utils/constants')['COOKIE_MAX_AGE_1_YEAR']>
     readonly EffectScope: UnwrapRef<typeof import('vue')['EffectScope']>
     readonly NavigationErrorType: UnwrapRef<typeof import('./resources/ts/utils/navigationSafety')['NavigationErrorType']>
@@ -533,11 +536,13 @@ declare module 'vue' {
     readonly getTrendDisplay: UnwrapRef<typeof import('./resources/ts/utils/reportDataSanitizer')['getTrendDisplay']>
     readonly globalSettings: UnwrapRef<typeof import('./resources/ts/composables/useSettings')['globalSettings']>
     readonly h: UnwrapRef<typeof import('vue')['h']>
+    readonly handle401Unauthorized: UnwrapRef<typeof import('./resources/ts/utils/authHandler')['handle401Unauthorized']>
     readonly hexToRgb: UnwrapRef<typeof import('./resources/ts/@core/utils/colorConverter')['hexToRgb']>
     readonly ignorableWatch: UnwrapRef<typeof import('@vueuse/core')['ignorableWatch']>
     readonly inject: UnwrapRef<typeof import('vue')['inject']>
     readonly injectLocal: UnwrapRef<typeof import('@vueuse/core')['injectLocal']>
     readonly integerValidator: UnwrapRef<typeof import('./resources/ts/@core/utils/validators')['integerValidator']>
+    readonly is401Error: UnwrapRef<typeof import('./resources/ts/utils/authHandler')['is401Error']>
     readonly isDefined: UnwrapRef<typeof import('@vueuse/core')['isDefined']>
     readonly isEmpty: UnwrapRef<typeof import('./resources/ts/@core/utils/helpers')['isEmpty']>
     readonly isEmptyArray: UnwrapRef<typeof import('./resources/ts/@core/utils/helpers')['isEmptyArray']>

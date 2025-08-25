@@ -3,6 +3,7 @@ import { createApp } from 'vue'
 import App from '@/App.vue'
 import { registerPlugins } from '@core/utils/plugins'
 import { useAuthStore } from '@/stores/auth'
+import { setupGlobalErrorHandler } from '@/plugins/globalErrorHandler'
 
 // Styles
 import '@core-scss/template/index.scss'
@@ -37,6 +38,9 @@ app.config.errorHandler = (err, instance, info) => {
 
 // Register plugins (including navigation safety)
 registerPlugins(app)
+
+// Setup global error handler for 401 responses
+setupGlobalErrorHandler(app)
 
 // Mount app
 app.mount('#app')

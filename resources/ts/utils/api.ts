@@ -1,4 +1,5 @@
 import { ofetch } from 'ofetch'
+import { handle401Unauthorized } from './authHandler'
 
 export const $api = ofetch.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
@@ -15,6 +16,12 @@ export const $api = ofetch.create({
         ...options.headers,
         'Authorization': `Bearer ${token}`
       }
+    }
+  },
+  async onResponseError({ response }) {
+    // Handle 401 Unauthorized errors
+    if (response.status === 401) {
+      await handle401Unauthorized()
     }
   },
 })

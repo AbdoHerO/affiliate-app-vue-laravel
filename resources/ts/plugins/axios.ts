@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { handle401Unauthorized } from '@/utils/authHandler'
 
 // Create axios instance with default config
 const axiosInstance = axios.create({
@@ -38,12 +39,10 @@ axiosInstance.interceptors.response.use(
   (response) => {
     return response
   },
-  (error) => {
+  async (error) => {
     // Handle common errors
     if (error.response?.status === 401) {
-      // Unauthorized - redirect to login
-      localStorage.removeItem('auth_token')
-      window.location.href = '/login'
+      await handle401Unauthorized()
     }
 
     if (error.response?.status === 403) {
