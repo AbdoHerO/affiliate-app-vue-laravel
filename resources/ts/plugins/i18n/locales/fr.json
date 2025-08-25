@@ -2919,5 +2919,9 @@
   "export_affiliates_csv": "Exporter les Affiliés en CSV",
   "export_products_csv": "Exporter les Produits en CSV",
   "export_leaderboard_csv": "Exporter le Classement en CSV",
-  "export_ledger_csv": "Exporter le Registre en CSV"
+  "export_ledger_csv": "Exporter le Registre en CSV",
+  "sales_over_time": "Ventes dans le Temps",
+  "top_products_revenue": "Chiffre d'Affaires des Top Produits",
+  "commissions_over_time": "Commissions dans le Temps",
+  "payouts_over_time": "Paiements dans le Temps"
 }

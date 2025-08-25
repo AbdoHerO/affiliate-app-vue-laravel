@@ -2919,5 +2919,9 @@
   "export_affiliates_csv": "تصدير الشركاء كـ CSV",
   "export_products_csv": "تصدير المنتجات كـ CSV",
   "export_leaderboard_csv": "تصدير الترتيب كـ CSV",
-  "export_ledger_csv": "تصدير السجل كـ CSV"
+  "export_ledger_csv": "تصدير السجل كـ CSV",
+  "sales_over_time": "المبيعات عبر الوقت",
+  "top_products_revenue": "إيرادات أفضل المنتجات",
+  "commissions_over_time": "العمولات عبر الوقت",
+  "payouts_over_time": "المدفوعات عبر الوقت"
 }

@@ -2919,5 +2919,9 @@
   "export_affiliates_csv": "Export Affiliates as CSV",
   "export_products_csv": "Export Products as CSV",
   "export_leaderboard_csv": "Export Leaderboard as CSV",
-  "export_ledger_csv": "Export Ledger as CSV"
+  "export_ledger_csv": "Export Ledger as CSV",
+  "sales_over_time": "Sales Over Time",
+  "top_products_revenue": "Top Products Revenue",
+  "commissions_over_time": "Commissions Over Time",
+  "payouts_over_time": "Payouts Over Time"
 }
