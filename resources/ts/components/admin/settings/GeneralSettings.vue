@@ -122,7 +122,13 @@ const colorPresets = [
 // Watch for props.data changes and update localData
 watch(() => props.data, (newData) => {
   if (newData) {
-    Object.assign(localData.value, newData)
+    // Filter out prefixed keys to avoid duplicates
+    Object.keys(newData).forEach(key => {
+      // Only use clean keys (not prefixed with "general.")
+      if (!key.startsWith('general.') && localData.value.hasOwnProperty(key)) {
+        localData.value[key] = newData[key]
+      }
+    })
   }
 }, { deep: true, immediate: true })
 
@@ -149,10 +155,13 @@ const initializeSettings = async () => {
     })
 
     if (response.success && response.data) {
-      // Populate form with fetched data
+      // Populate form with fetched data, handling both clean and prefixed keys
       Object.keys(localData.value).forEach(key => {
+        // Try clean key first, then prefixed key
         if (response.data[key] !== undefined) {
           localData.value[key] = response.data[key]
+        } else if (response.data[`general.${key}`] !== undefined) {
+          localData.value[key] = response.data[`general.${key}`]
         }
       })
     }

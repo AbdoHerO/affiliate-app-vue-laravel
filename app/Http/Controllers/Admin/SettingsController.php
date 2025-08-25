@@ -127,6 +127,8 @@ class SettingsController extends Controller
         try {
             $data = $request->all();
 
+
+
             // Validate the category
             $validCategories = ['general', 'business', 'shipping', 'users', 'products', 'communication', 'security', 'system'];
             if (!in_array($category, $validCategories)) {
@@ -152,6 +154,10 @@ class SettingsController extends Controller
 
             DB::beginTransaction();
 
+            // Filter out duplicate keys to avoid processing both clean and prefixed versions
+            $filteredData = [];
+            $processedKeys = [];
+
             foreach ($data as $key => $value) {
                 // Handle file uploads for specific settings
                 if ($this->isFileUploadField($key) && $request->hasFile($key)) {
@@ -165,8 +171,24 @@ class SettingsController extends Controller
                     $cleanKey = substr($cleanKey, strlen($category) + 1);
                 }
 
+                // Skip if we've already processed this clean key (avoid duplicates)
+                if (in_array($cleanKey, $processedKeys)) {
+                    continue;
+                }
+
+                $processedKeys[] = $cleanKey;
                 $settingKey = "{$category}.{$cleanKey}";
                 $settingData = $this->getSettingMetadata($category, $cleanKey);
+
+                // Debug log
+                Log::info("Setting update attempt", [
+                    'category' => $category,
+                    'key' => $key,
+                    'clean_key' => $cleanKey,
+                    'setting_key' => $settingKey,
+                    'value' => $value,
+                    'setting_data' => $settingData
+                ]);
 
                 Setting::set($settingKey, $value, array_merge([
                     'category' => $category,
@@ -681,7 +703,21 @@ class SettingsController extends Controller
                 'tier_2_threshold' => ['type' => 'float', 'is_public' => false, 'description' => 'Tier 2 threshold'],
                 'tier_3_rate' => ['type' => 'float', 'is_public' => false, 'description' => 'Tier 3 commission rate'],
                 'tier_3_threshold' => ['type' => 'float', 'is_public' => false, 'description' => 'Tier 3 threshold'],
-                // Add more business settings metadata as needed
+                'auto_confirm_timeout' => ['type' => 'integer', 'is_public' => false, 'description' => 'Auto-confirm timeout in hours'],
+                'order_number_prefix' => ['type' => 'string', 'is_public' => false, 'description' => 'Order number prefix'],
+                'order_number_format' => ['type' => 'string', 'is_public' => false, 'description' => 'Order number format'],
+                'return_window_days' => ['type' => 'integer', 'is_public' => false, 'description' => 'Return window in days'],
+                'refund_processing_days' => ['type' => 'integer', 'is_public' => false, 'description' => 'Refund processing days'],
+                'min_withdrawal_amount' => ['type' => 'float', 'is_public' => false, 'description' => 'Minimum withdrawal amount'],
+                'max_withdrawal_amount' => ['type' => 'float', 'is_public' => false, 'description' => 'Maximum withdrawal amount'],
+                'withdrawal_fee_percentage' => ['type' => 'float', 'is_public' => false, 'description' => 'Withdrawal fee percentage'],
+                'withdrawal_fee_fixed' => ['type' => 'float', 'is_public' => false, 'description' => 'Fixed withdrawal fee'],
+                'withdrawal_processing_days' => ['type' => 'integer', 'is_public' => false, 'description' => 'Withdrawal processing days'],
+                'tax_rate' => ['type' => 'float', 'is_public' => false, 'description' => 'Tax rate percentage'],
+                'tax_included_in_prices' => ['type' => 'boolean', 'is_public' => false, 'description' => 'Tax included in prices'],
+                'payment_delay_days' => ['type' => 'integer', 'is_public' => false, 'description' => 'Payment delay in days'],
+                'auto_payout_enabled' => ['type' => 'boolean', 'is_public' => false, 'description' => 'Auto payout enabled'],
+                'auto_payout_threshold' => ['type' => 'float', 'is_public' => false, 'description' => 'Auto payout threshold amount'],
             ],
         ];
 
