@@ -164,7 +164,9 @@ declare global {
   const safeArray: typeof import('./resources/ts/utils/chartDataTransformers')['safeArray']
   const safeNumber: typeof import('./resources/ts/utils/reportDataSanitizer')['safeNumber']
   const safeNumberArray: typeof import('./resources/ts/utils/reportDataSanitizer')['safeNumberArray']
+  const sanitizeAreaChartData: typeof import('./resources/ts/utils/reportDataSanitizer')['sanitizeAreaChartData']
   const sanitizeChartData: typeof import('./resources/ts/utils/reportDataSanitizer')['sanitizeChartData']
+  const sanitizeDonutChartData: typeof import('./resources/ts/utils/reportDataSanitizer')['sanitizeDonutChartData']
   const sanitizeKPI: typeof import('./resources/ts/utils/reportDataSanitizer')['sanitizeKPI']
   const sanitizePagination: typeof import('./resources/ts/utils/reportDataSanitizer')['sanitizePagination']
   const sanitizeReportData: typeof import('./resources/ts/utils/reportDataSanitizer')['sanitizeReportData']
@@ -604,7 +606,9 @@ declare module 'vue' {
     readonly safeNumber: UnwrapRef<typeof import('./resources/ts/utils/chartDataTransformers')['safeNumber']>
     readonly safeNumber: UnwrapRef<typeof import('./resources/ts/utils/reportDataSanitizer')['safeNumber']>
     readonly safeNumberArray: UnwrapRef<typeof import('./resources/ts/utils/reportDataSanitizer')['safeNumberArray']>
+    readonly sanitizeAreaChartData: UnwrapRef<typeof import('./resources/ts/utils/reportDataSanitizer')['sanitizeAreaChartData']>
     readonly sanitizeChartData: UnwrapRef<typeof import('./resources/ts/utils/reportDataSanitizer')['sanitizeChartData']>
+    readonly sanitizeDonutChartData: UnwrapRef<typeof import('./resources/ts/utils/reportDataSanitizer')['sanitizeDonutChartData']>
     readonly sanitizeKPI: UnwrapRef<typeof import('./resources/ts/utils/reportDataSanitizer')['sanitizeKPI']>
     readonly sanitizePagination: UnwrapRef<typeof import('./resources/ts/utils/reportDataSanitizer')['sanitizePagination']>
     readonly sanitizeReportData: UnwrapRef<typeof import('./resources/ts/utils/reportDataSanitizer')['sanitizeReportData']>

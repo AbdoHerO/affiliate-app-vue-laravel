@@ -328,3 +328,33 @@ export function getTrendDisplay(delta: number | null) {
     }
   }
 }
+
+/**
+ * Sanitize data specifically for SalesAreaChart component
+ */
+export function sanitizeAreaChartData(data: any, title: string, subtitle: string, value: any, growth: any, color = 'success'): any {
+  return {
+    title: String(title || ''),
+    subtitle: String(subtitle || ''),
+    value: String(value || '0'),
+    growth: String(growth || '+0%'),
+    chartData: Array.isArray(data) ? data.map(safeNumber).map(n => n.value) : [0],
+    color: String(color || 'success')
+  }
+}
+
+/**
+ * Sanitize data specifically for SessionAnalyticsDonut component
+ */
+export function sanitizeDonutChartData(verified: any, pending: any, centerLabel: string): any {
+  const verifiedNum = safeNumber(verified).value
+  const pendingNum = safeNumber(pending).value
+  const total = verifiedNum + pendingNum
+
+  return {
+    verified: verifiedNum,
+    pending: pendingNum,
+    centerMetric: total > 0 ? Math.round((verifiedNum / total) * 100) : 0,
+    centerLabel: String(centerLabel || 'Rate')
+  }
+}

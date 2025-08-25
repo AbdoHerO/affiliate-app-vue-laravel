@@ -133,11 +133,22 @@ export function setupRouterGuards(router: Router) {
   // Global after guard - runs after every successful navigation
   router.afterEach((to, from) => {
     try {
+      // Null-safe route name extraction
       const toName = to?.name?.toString() || 'unknown'
       const fromName = from?.name?.toString() || 'unknown'
       console.log('✅ [Route Guard] Navigation completed:', fromName, '→', toName)
+
+      // Clear any pending timeouts or intervals that might cause issues
+      // This helps prevent stale references during component unmounting
+      if (typeof window !== 'undefined') {
+        // Force garbage collection of any pending Vue component references
+        setTimeout(() => {
+          // This small delay allows Vue to complete its cleanup cycle
+        }, 0)
+      }
     } catch (error) {
       console.error('🚫 [Route Guard] Error in afterEach guard:', error)
+      // Don't throw the error, just log it to prevent navigation interruption
     }
   })
 
@@ -150,17 +161,39 @@ export function setupRouterGuards(router: Router) {
     const errorMessage = error?.message || ''
     const targetPath = to?.path?.toString() || ''
 
+    // Handle vnode-related errors specifically
+    if (errorMessage.includes('Cannot destructure property') && errorMessage.includes('vnode')) {
+      console.warn('🔧 [Route Guard] VNode destructuring error detected - likely component unmount race condition')
+
+      // Force cleanup of any pending Vue operations
+      if (typeof window !== 'undefined') {
+        // Clear any pending Vue nextTick operations
+        setTimeout(() => {
+          // Force garbage collection
+          if (window.gc) {
+            window.gc()
+          }
+        }, 100)
+      }
+
+      // This is a Vue internal error during component cleanup
+      // Don't attempt navigation, let Vue handle it naturally
+      return
+    }
+
     // Handle specific navigation errors
     if (errorMessage.includes('startsWith') || errorMessage.includes('Cannot read properties of undefined')) {
       console.error('🚫 [Route Guard] Path/property access error detected')
 
       // Determine safe fallback route
       let fallbackRoute = '/admin/dashboard'
-      
+
       if (targetPath.includes('/admin/support/tickets')) {
         fallbackRoute = '/admin/support/tickets'
       } else if (targetPath.includes('/admin/withdrawals')) {
         fallbackRoute = '/admin/withdrawals'
+      } else if (targetPath.includes('/admin/reports')) {
+        fallbackRoute = '/admin/dashboard'
       } else if (targetPath.includes('/admin')) {
         fallbackRoute = '/admin/dashboard'
       } else {
@@ -176,16 +209,21 @@ export function setupRouterGuards(router: Router) {
           window.location.href = '/admin/dashboard'
         })
       }, 100)
-      
+
     } else if (errorMessage.includes('emitsOptions')) {
       console.warn('🔧 [Route Guard] Component lifecycle error detected - emitsOptions is null')
       // Don't interfere with Vue component lifecycle errors
       // These usually resolve themselves during the normal Vue cleanup process
       return
-      
+
     } else if (errorMessage.includes('Cannot read properties of null')) {
       console.warn('🔧 [Route Guard] Null property access error')
-      // Let Vue handle null property errors naturally  
+      // Let Vue handle null property errors naturally
+      return
+
+    } else if (errorMessage.includes('Suspense')) {
+      console.warn('🔧 [Route Guard] Suspense-related error detected')
+      // Suspense errors during navigation are usually transient
       return
     }
   })

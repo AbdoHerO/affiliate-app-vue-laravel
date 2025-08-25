@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { $api } from '@/utils/api'
-import { useAdvancedCharts } from '@/composables/useAdvancedCharts'
+// import { useAdvancedCharts } from '@/composables/useAdvancedCharts'
 import { useSafeApexChart } from '@/composables/useSafeApexChart'
 import {
   SalesAreaChart,
@@ -15,6 +15,8 @@ import {
   sanitizeKPI,
   sanitizeChartData,
   sanitizeTableData,
+  sanitizeAreaChartData,
+  sanitizeDonutChartData,
   formatDisplayNumber,
   getTrendDisplay,
   safeNumber,
@@ -41,6 +43,11 @@ definePage({
   },
 })
 
+// Request cancellation - separate controllers for each request type
+let summaryController: AbortController | null = null
+let chartsController: AbortController | null = null
+let tablesController: AbortController | null = null
+
 // State
 const loading = ref({
   summary: false,
@@ -49,6 +56,11 @@ const loading = ref({
 })
 
 const error = ref<string | null>(null)
+const hasNoData = ref({
+  summary: false,
+  charts: false,
+  tables: false,
+})
 const summary = ref<any>(null)
 const chartData = ref<any>({})
 const tableData = ref<any>({})
@@ -174,13 +186,36 @@ const kpiCards = computed(() => {
 })
 
 // Methods
+const cancelAllRequests = () => {
+  if (summaryController) {
+    summaryController.abort()
+    summaryController = null
+  }
+  if (chartsController) {
+    chartsController.abort()
+    chartsController = null
+  }
+  if (tablesController) {
+    tablesController.abort()
+    tablesController = null
+  }
+}
+
 const fetchSummary = async () => {
   loading.value.summary = true
   error.value = null
+  hasNoData.value.summary = false
 
   try {
+    // Cancel previous summary request only
+    if (summaryController) {
+      summaryController.abort()
+    }
+    summaryController = new AbortController()
+
     const response = await $api('/admin/reports/sales/summary', {
       method: 'GET',
+      signal: summaryController.signal,
       params: {
         date_start: filters.value.dateRange.start,
         date_end: filters.value.dateRange.end,
@@ -189,17 +224,28 @@ const fetchSummary = async () => {
     })
 
     if (response.success) {
-      // Sanitize the summary data before storing
-      summary.value = {}
-      for (const [key, value] of Object.entries(response.data)) {
-        summary.value[key] = sanitizeKPI(value)
+      // Check if data is empty
+      const hasData = response.data && Object.keys(response.data).length > 0
+      hasNoData.value.summary = !hasData
+
+      if (hasData) {
+        // Sanitize the summary data before storing
+        summary.value = {}
+        for (const [key, value] of Object.entries(response.data)) {
+          summary.value[key] = sanitizeKPI(value)
+        }
+      } else {
+        summary.value = null
       }
     } else {
       throw new Error(response.message || 'Failed to fetch summary')
     }
-  } catch (err) {
-    error.value = err instanceof Error ? err.message : 'An error occurred'
-    console.error('Error fetching sales summary:', err)
+  } catch (err: any) {
+    // Don't set error if request was aborted (user navigated away)
+    if (err.name !== 'AbortError') {
+      error.value = err instanceof Error ? err.message : 'An error occurred'
+      console.error('Error fetching sales summary:', err)
+    }
   } finally {
     loading.value.summary = false
   }
@@ -207,56 +253,86 @@ const fetchSummary = async () => {
 
 const fetchChartData = async () => {
   loading.value.charts = true
+  hasNoData.value.charts = false
 
   try {
-    const response = await $api('/admin/reports/sales/series', {
-      method: 'GET',
-      params: {
-        date_start: filters.value.dateRange.start,
-        date_end: filters.value.dateRange.end,
-        period: filters.value.period,
-        ...filters.value,
-      },
-    })
+    // Cancel previous charts request only
+    if (chartsController) {
+      chartsController.abort()
+    }
+    chartsController = new AbortController()
 
-    if (response.success) {
-      // Sanitize chart data
-      chartData.value = {}
-      for (const [key, value] of Object.entries(response.data)) {
-        chartData.value[key] = sanitizeChartData(value)
+    // Fetch all chart data in parallel with proper error handling
+    const [seriesResponse, statusResponse, productsResponse] = await Promise.allSettled([
+      $api('/admin/reports/sales/series', {
+        method: 'GET',
+        signal: chartsController.signal,
+        params: {
+          date_start: filters.value.dateRange.start,
+          date_end: filters.value.dateRange.end,
+          period: filters.value.period,
+        },
+      }),
+      $api('/admin/reports/sales/status-breakdown', {
+        method: 'GET',
+        signal: chartsController.signal,
+        params: {
+          date_start: filters.value.dateRange.start,
+          date_end: filters.value.dateRange.end,
+        },
+      }),
+      $api('/admin/reports/sales/top-products', {
+        method: 'GET',
+        signal: chartsController.signal,
+        params: {
+          date_start: filters.value.dateRange.start,
+          date_end: filters.value.dateRange.end,
+          limit: 10,
+        },
+      }),
+    ])
+
+    // Initialize chart data
+    chartData.value = {}
+    let hasAnyData = false
+
+    // Process series data
+    if (seriesResponse.status === 'fulfilled' && seriesResponse.value.success) {
+      for (const [key, value] of Object.entries(seriesResponse.value.data)) {
+        const sanitized = sanitizeChartData(value)
+        chartData.value[key] = sanitized
+        if (!sanitized.isEmpty) hasAnyData = true
       }
+    } else if (seriesResponse.status === 'rejected') {
+      console.error('Error fetching series data:', seriesResponse.reason)
     }
 
-    // Also fetch status breakdown
-    const statusResponse = await $api('/admin/reports/sales/status-breakdown', {
-      method: 'GET',
-      params: {
-        date_start: filters.value.dateRange.start,
-        date_end: filters.value.dateRange.end,
-        ...filters.value,
-      },
-    })
-
-    if (statusResponse.success) {
-      chartData.value.status_breakdown = sanitizeChartData(statusResponse.data)
+    // Process status breakdown
+    if (statusResponse.status === 'fulfilled' && statusResponse.value.success) {
+      const sanitized = sanitizeChartData(statusResponse.value.data)
+      chartData.value.status_breakdown = sanitized
+      if (!sanitized.isEmpty) hasAnyData = true
+    } else if (statusResponse.status === 'rejected') {
+      console.error('Error fetching status breakdown:', statusResponse.reason)
     }
 
-    // Fetch top products
-    const productsResponse = await $api('/admin/reports/sales/top-products', {
-      method: 'GET',
-      params: {
-        date_start: filters.value.dateRange.start,
-        date_end: filters.value.dateRange.end,
-        limit: 10,
-        ...filters.value,
-      },
-    })
-
-    if (productsResponse.success) {
-      chartData.value.top_products = sanitizeChartData(productsResponse.data)
+    // Process top products
+    if (productsResponse.status === 'fulfilled' && productsResponse.value.success) {
+      const sanitized = sanitizeChartData(productsResponse.value.data)
+      chartData.value.top_products = sanitized
+      if (!sanitized.isEmpty) hasAnyData = true
+    } else if (productsResponse.status === 'rejected') {
+      console.error('Error fetching top products:', productsResponse.reason)
     }
-  } catch (err) {
-    console.error('Error fetching chart data:', err)
+
+    hasNoData.value.charts = !hasAnyData
+
+  } catch (err: any) {
+    // Don't set error if request was aborted
+    if (err.name !== 'AbortError') {
+      console.error('Error fetching chart data:', err)
+      hasNoData.value.charts = true
+    }
   } finally {
     loading.value.charts = false
   }
@@ -264,44 +340,70 @@ const fetchChartData = async () => {
 
 const fetchTableData = async () => {
   loading.value.tables = true
+  hasNoData.value.tables = false
 
   try {
-    const [ordersResponse, affiliatesResponse] = await Promise.all([
+    // Cancel previous tables request only
+    if (tablesController) {
+      tablesController.abort()
+    }
+    tablesController = new AbortController()
+
+    const [ordersResponse, affiliatesResponse] = await Promise.allSettled([
       $api('/admin/reports/sales/orders', {
         method: 'GET',
+        signal: tablesController.signal,
         params: {
           date_start: filters.value.dateRange.start,
           date_end: filters.value.dateRange.end,
           page: filters.value.page,
           per_page: filters.value.per_page,
-          ...filters.value,
         },
       }),
       $api('/admin/reports/sales/top-affiliates', {
         method: 'GET',
+        signal: tablesController.signal,
         params: {
           date_start: filters.value.dateRange.start,
           date_end: filters.value.dateRange.end,
           limit: 10,
-          ...filters.value,
         },
       }),
     ])
 
-    if (ordersResponse.success) {
-      // Sanitize orders table data
+    // Initialize table data
+    tableData.value = {}
+    let hasAnyData = false
+
+    // Process orders data
+    if (ordersResponse.status === 'fulfilled' && ordersResponse.value.success) {
+      const ordersData = ordersResponse.value.data
       tableData.value.orders = {
-        ...ordersResponse.data,
-        data: sanitizeTableData(ordersResponse.data.data || []),
+        ...ordersData,
+        data: sanitizeTableData(ordersData.data || []),
       }
+      if (ordersData.data && ordersData.data.length > 0) hasAnyData = true
+    } else if (ordersResponse.status === 'rejected') {
+      console.error('Error fetching orders data:', ordersResponse.reason)
     }
 
-    if (affiliatesResponse.success) {
-      // Sanitize affiliates data
-      tableData.value.affiliates = sanitizeTableData(affiliatesResponse.data || [])
+    // Process affiliates data
+    if (affiliatesResponse.status === 'fulfilled' && affiliatesResponse.value.success) {
+      const affiliatesData = sanitizeTableData(affiliatesResponse.value.data || [])
+      tableData.value.affiliates = affiliatesData
+      if (affiliatesData.length > 0) hasAnyData = true
+    } else if (affiliatesResponse.status === 'rejected') {
+      console.error('Error fetching affiliates data:', affiliatesResponse.reason)
     }
-  } catch (err) {
-    console.error('Error fetching table data:', err)
+
+    hasNoData.value.tables = !hasAnyData
+
+  } catch (err: any) {
+    // Don't set error if request was aborted
+    if (err.name !== 'AbortError') {
+      console.error('Error fetching table data:', err)
+      hasNoData.value.tables = true
+    }
   } finally {
     loading.value.tables = false
   }
@@ -327,6 +429,26 @@ const refreshAll = async () => {
     fetchChartData(),
     fetchTableData(),
   ])
+}
+
+const resetFilters = () => {
+  filters.value = {
+    dateRange: {
+      start: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      end: new Date().toISOString().split('T')[0],
+    },
+    period: 'day',
+    status: '',
+    affiliate_ids: [],
+    product_ids: [],
+    category_ids: [],
+    boutique_ids: [],
+    country: '',
+    city: '',
+    page: 1,
+    per_page: 15,
+  }
+  refreshAll()
 }
 
 const exportData = () => {
@@ -428,13 +550,69 @@ const getStatusLabel = (status: string) => {
   return statusLabels[status] || status
 }
 
-// Watchers
-watch(() => filters.value.dateRange, refreshAll, { deep: true })
-watch(() => filters.value.period, fetchChartData)
+// Debounced refresh to prevent recursive calls
+let refreshTimeout: NodeJS.Timeout | null = null
+const debouncedRefresh = () => {
+  if (refreshTimeout) {
+    clearTimeout(refreshTimeout)
+  }
+  refreshTimeout = setTimeout(() => {
+    refreshAll()
+  }, 300)
+}
+
+let chartTimeout: NodeJS.Timeout | null = null
+const debouncedChartRefresh = () => {
+  if (chartTimeout) {
+    clearTimeout(chartTimeout)
+  }
+  chartTimeout = setTimeout(() => {
+    fetchChartData()
+  }, 300)
+}
+
+// Watchers with debouncing to prevent recursive calls
+watch(() => filters.value.dateRange, debouncedRefresh, { deep: true })
+watch(() => filters.value.period, debouncedChartRefresh)
 
 // Lifecycle
 onMounted(() => {
   refreshAll()
+})
+
+onBeforeUnmount(() => {
+  // Cancel any pending requests
+  cancelAllRequests()
+
+  // Clear any pending timeouts
+  if (refreshTimeout) {
+    clearTimeout(refreshTimeout)
+    refreshTimeout = null
+  }
+  if (chartTimeout) {
+    clearTimeout(chartTimeout)
+    chartTimeout = null
+  }
+
+  // Force clear all reactive data to prevent vnode errors
+  summary.value = null
+  chartData.value = {}
+  tableData.value = {}
+
+  // Reset loading states
+  loading.value = {
+    summary: false,
+    charts: false,
+    tables: false,
+  }
+
+  // Reset error states
+  error.value = null
+  hasNoData.value = {
+    summary: false,
+    charts: false,
+    tables: false,
+  }
 })
 </script>
 
@@ -517,39 +695,62 @@ onMounted(() => {
 
     <!-- Filters Card -->
     <VCard class="mb-6">
-      <VCardTitle>
-        <VIcon icon="tabler-filter" class="me-2" />
-        {{ t('filters') }}
+      <VCardTitle class="d-flex align-center justify-space-between">
+        <div class="d-flex align-center">
+          <VIcon icon="tabler-filter" class="me-2" />
+          {{ t('filters') }}
+        </div>
+        <div class="d-flex gap-2">
+          <VBtn
+            variant="outlined"
+            size="small"
+            prepend-icon="tabler-refresh"
+            :loading="isLoading"
+            @click="refreshAll"
+          >
+            {{ t('apply') }}
+          </VBtn>
+          <VBtn
+            variant="text"
+            size="small"
+            prepend-icon="tabler-x"
+            @click="resetFilters"
+          >
+            {{ t('reset') }}
+          </VBtn>
+        </div>
       </VCardTitle>
 
       <VCardText>
-        <VRow>
-          <!-- Date Range Presets -->
-          <VCol cols="12" md="3">
-            <VLabel class="mb-2">{{ t('period') }}</VLabel>
+        <!-- Responsive Filter Grid -->
+        <div class="filter-grid">
+          <!-- Period Toggle -->
+          <div class="filter-item">
+            <VLabel class="filter-label">{{ t('period') }}</VLabel>
             <VBtnToggle
               v-model="filters.period"
               variant="outlined"
               divided
               mandatory
-              class="w-100"
+              class="filter-toggle"
             >
-              <VBtn value="day" size="small">{{ t('day') }}</VBtn>
-              <VBtn value="week" size="small">{{ t('week') }}</VBtn>
-              <VBtn value="month" size="small">{{ t('month') }}</VBtn>
+              <VBtn value="day" size="small" class="flex-1-1-0">{{ t('day') }}</VBtn>
+              <VBtn value="week" size="small" class="flex-1-1-0">{{ t('week') }}</VBtn>
+              <VBtn value="month" size="small" class="flex-1-1-0">{{ t('month') }}</VBtn>
             </VBtnToggle>
-          </VCol>
+          </div>
 
           <!-- Date Range -->
-          <VCol cols="12" md="4">
-            <VLabel class="mb-2">{{ t('date_range') }}</VLabel>
-            <div class="d-flex gap-2">
+          <div class="filter-item filter-item-wide">
+            <VLabel class="filter-label">{{ t('date_range') }}</VLabel>
+            <div class="date-range-container">
               <VTextField
                 v-model="filters.dateRange.start"
                 type="date"
                 density="compact"
                 variant="outlined"
                 hide-details
+                class="date-input"
               />
               <VTextField
                 v-model="filters.dateRange.end"
@@ -557,13 +758,14 @@ onMounted(() => {
                 density="compact"
                 variant="outlined"
                 hide-details
+                class="date-input"
               />
             </div>
-          </VCol>
+          </div>
 
           <!-- Quick Presets -->
-          <VCol cols="12" md="3">
-            <VLabel class="mb-2">{{ t('quick_select') }}</VLabel>
+          <div class="filter-item">
+            <VLabel class="filter-label">{{ t('quick_select') }}</VLabel>
             <VSelect
               :items="datePresets"
               item-title="title"
@@ -571,13 +773,14 @@ onMounted(() => {
               density="compact"
               variant="outlined"
               hide-details
+              class="filter-select"
               @update:model-value="applyDatePreset"
             />
-          </VCol>
+          </div>
 
           <!-- Status Filter -->
-          <VCol cols="12" md="2">
-            <VLabel class="mb-2">{{ t('status') }}</VLabel>
+          <div class="filter-item">
+            <VLabel class="filter-label">{{ t('status') }}</VLabel>
             <VSelect
               v-model="filters.status"
               :items="[
@@ -594,9 +797,10 @@ onMounted(() => {
               density="compact"
               variant="outlined"
               hide-details
+              class="filter-select"
             />
-          </VCol>
-        </VRow>
+          </div>
+        </div>
       </VCardText>
     </VCard>
 
@@ -688,19 +892,36 @@ onMounted(() => {
 
             <div v-else-if="chartData.sales_over_time && !chartData.sales_over_time.isEmpty">
               <SalesAreaChart
-                :data="{
-                  chartData: chartData.sales_over_time,
-                  title: t('sales_mad'),
-                  subtitle: t('delivered_orders_only'),
-                  growth: summary?.total_sales?.value || 0,
-                }"
+                :data="sanitizeAreaChartData(
+                  chartData.sales_over_time.data,
+                  t('sales_mad'),
+                  t('delivered_orders_only'),
+                  (summary?.total_sales?.value || 0) + ' MAD',
+                  chartData.sales_over_time.growth || '+0%',
+                  'success'
+                )"
                 :loading="loading.charts"
               />
             </div>
 
+            <div v-else-if="hasNoData.charts || error" class="text-center py-8 text-medium-emphasis">
+              <VIcon icon="tabler-chart-line" size="48" class="mb-2 opacity-50" />
+              <p v-if="error">{{ error }}</p>
+              <p v-else>{{ t('no_sales_data') }}</p>
+              <VBtn
+                v-if="error"
+                variant="outlined"
+                size="small"
+                class="mt-2"
+                @click="fetchChartData"
+              >
+                {{ t('retry') }}
+              </VBtn>
+            </div>
+
             <div v-else class="text-center py-8 text-medium-emphasis">
               <VIcon icon="tabler-chart-line" size="48" class="mb-2 opacity-50" />
-              <p>{{ chartData.sales_over_time?.isEmpty ? t('no_sales_data') : t('no_data_available') }}</p>
+              <p>{{ t('no_data_available') }}</p>
             </div>
           </VCardText>
         </VCard>
@@ -720,12 +941,12 @@ onMounted(() => {
             </div>
 
             <SessionAnalyticsDonut
-              v-else-if="chartData.status_breakdown"
-              :data="{
-                chartData: chartData.status_breakdown,
-                title: t('order_distribution'),
-                total: summary?.orders_count?.value || 0,
-              }"
+              v-else-if="chartData.status_breakdown && !chartData.status_breakdown.isEmpty"
+              :data="sanitizeDonutChartData(
+                chartData.status_breakdown.delivered || 0,
+                chartData.status_breakdown.pending || 0,
+                t('delivery_rate')
+              )"
               :loading="loading.charts"
             />
 
@@ -933,3 +1154,163 @@ onMounted(() => {
     </VRow>
   </div>
 </template>
+
+<style scoped>
+/* Filter Grid Layout */
+.filter-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  align-items: end;
+  width: 100%;
+}
+
+.filter-item {
+  display: flex;
+  flex-direction: column;
+  min-width: 250px;
+  width: 100%;
+}
+
+.filter-item-wide {
+  grid-column: span 2;
+  min-width: 500px;
+}
+
+.filter-label {
+  margin-bottom: 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: rgb(var(--v-theme-on-surface));
+  opacity: 0.8;
+  white-space: nowrap;
+}
+
+/* Button Toggle Styles */
+.filter-toggle {
+  width: 100%;
+  display: flex;
+}
+
+.filter-toggle :deep(.v-btn-group) {
+  width: 100%;
+  display: flex;
+}
+
+.filter-toggle :deep(.v-btn) {
+  flex: 1 1 0;
+  min-width: 0;
+  font-size: 0.8rem;
+}
+
+/* Date Range Styles */
+.date-range-container {
+  display: flex;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.date-input {
+  flex: 1;
+  min-width: 0;
+}
+
+.date-input :deep(.v-field__input) {
+  font-size: 0.875rem;
+}
+
+/* Select Styles */
+.filter-select {
+  width: 100%;
+}
+
+.filter-select :deep(.v-field__input) {
+  font-size: 0.875rem;
+}
+
+/* Responsive Breakpoints */
+@media (max-width: 1200px) {
+  .filter-grid {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+  }
+
+  .filter-item {
+    min-width: 220px;
+  }
+
+  .filter-item-wide {
+    min-width: 440px;
+  }
+}
+
+@media (max-width: 960px) {
+  .filter-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+
+  .filter-item {
+    min-width: 200px;
+  }
+
+  .filter-item-wide {
+    grid-column: span 2;
+    min-width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .filter-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .filter-item,
+  .filter-item-wide {
+    grid-column: span 1;
+    min-width: 100%;
+  }
+
+  .date-range-container {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .filter-grid {
+    gap: 0.75rem;
+  }
+
+  .filter-item {
+    min-width: 100%;
+  }
+
+  .filter-toggle :deep(.v-btn) {
+    font-size: 0.75rem;
+    padding: 0.5rem 0.75rem;
+  }
+
+  .filter-label {
+    font-size: 0.8rem;
+    margin-bottom: 0.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .filter-grid {
+    gap: 0.5rem;
+  }
+
+  .date-range-container {
+    gap: 0.5rem;
+  }
+
+  .filter-toggle :deep(.v-btn) {
+    font-size: 0.7rem;
+    padding: 0.4rem 0.6rem;
+    min-height: 32px;
+  }
+}
+</style>

@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { $api } from '@/utils/api'
-import { useAdvancedCharts } from '@/composables/useAdvancedCharts'
+// import { useAdvancedCharts } from '@/composables/useAdvancedCharts'
 import { useSafeApexChart } from '@/composables/useSafeApexChart'
 import {
   SalesAreaChart,
@@ -16,6 +16,8 @@ import {
   sanitizeKPI,
   sanitizeChartData,
   sanitizeTableData,
+  sanitizeAreaChartData,
+  sanitizeDonutChartData,
   formatDisplayNumber,
   getTrendDisplay,
   safeNumber,
@@ -41,6 +43,13 @@ definePage({
   },
 })
 
+// Request cancellation - separate controllers for each request type
+let summaryController: AbortController | null = null
+let chartsController: AbortController | null = null
+let leaderboardController: AbortController | null = null
+let ledgerController: AbortController | null = null
+let segmentsController: AbortController | null = null
+
 // State
 const loading = ref({
   summary: false,
@@ -51,6 +60,13 @@ const loading = ref({
 })
 
 const error = ref<string | null>(null)
+const hasNoData = ref({
+  summary: false,
+  charts: false,
+  leaderboard: false,
+  ledger: false,
+  segments: false,
+})
 const summary = ref<any>(null)
 const chartData = ref<any>({})
 const leaderboard = ref<any[]>([])
@@ -180,32 +196,73 @@ const performanceSegments = computed(() => {
 })
 
 // Methods
+const cancelAllRequests = () => {
+  if (summaryController) {
+    summaryController.abort()
+    summaryController = null
+  }
+  if (chartsController) {
+    chartsController.abort()
+    chartsController = null
+  }
+  if (leaderboardController) {
+    leaderboardController.abort()
+    leaderboardController = null
+  }
+  if (ledgerController) {
+    ledgerController.abort()
+    ledgerController = null
+  }
+  if (segmentsController) {
+    segmentsController.abort()
+    segmentsController = null
+  }
+}
+
 const fetchSummary = async () => {
   loading.value.summary = true
   error.value = null
+  hasNoData.value.summary = false
 
   try {
+    // Cancel previous summary request only
+    if (summaryController) {
+      summaryController.abort()
+    }
+    summaryController = new AbortController()
+
     const response = await $api('/admin/reports/affiliates/summary', {
       method: 'GET',
+      signal: summaryController.signal,
       params: {
         date_start: filters.value.dateRange.start,
         date_end: filters.value.dateRange.end,
-        ...filters.value,
       },
     })
 
     if (response.success) {
-      // Sanitize the summary data before storing
-      summary.value = {}
-      for (const [key, value] of Object.entries(response.data)) {
-        summary.value[key] = sanitizeKPI(value)
+      // Check if data is empty
+      const hasData = response.data && Object.keys(response.data).length > 0
+      hasNoData.value.summary = !hasData
+
+      if (hasData) {
+        // Sanitize the summary data before storing
+        summary.value = {}
+        for (const [key, value] of Object.entries(response.data)) {
+          summary.value[key] = sanitizeKPI(value)
+        }
+      } else {
+        summary.value = null
       }
     } else {
       throw new Error(response.message || 'Failed to fetch summary')
     }
-  } catch (err) {
-    error.value = err instanceof Error ? err.message : 'An error occurred'
-    console.error('Error fetching affiliate summary:', err)
+  } catch (err: any) {
+    // Don't set error if request was aborted
+    if (err.name !== 'AbortError') {
+      error.value = err instanceof Error ? err.message : 'An error occurred'
+      console.error('Error fetching affiliate summary:', err)
+    }
   } finally {
     loading.value.summary = false
   }
@@ -213,27 +270,46 @@ const fetchSummary = async () => {
 
 const fetchChartData = async () => {
   loading.value.charts = true
+  hasNoData.value.charts = false
 
   try {
+    // Cancel previous charts request only
+    if (chartsController) {
+      chartsController.abort()
+    }
+    chartsController = new AbortController()
+
     const response = await $api('/admin/reports/affiliates/series', {
       method: 'GET',
+      signal: chartsController.signal,
       params: {
         date_start: filters.value.dateRange.start,
         date_end: filters.value.dateRange.end,
         period: filters.value.period,
-        ...filters.value,
       },
     })
 
     if (response.success) {
       // Sanitize chart data
       chartData.value = {}
+      let hasAnyData = false
+
       for (const [key, value] of Object.entries(response.data)) {
-        chartData.value[key] = sanitizeChartData(value)
+        const sanitized = sanitizeChartData(value)
+        chartData.value[key] = sanitized
+        if (!sanitized.isEmpty) hasAnyData = true
       }
+
+      hasNoData.value.charts = !hasAnyData
+    } else {
+      hasNoData.value.charts = true
     }
-  } catch (err) {
-    console.error('Error fetching chart data:', err)
+  } catch (err: any) {
+    // Don't set error if request was aborted
+    if (err.name !== 'AbortError') {
+      console.error('Error fetching chart data:', err)
+      hasNoData.value.charts = true
+    }
   } finally {
     loading.value.charts = false
   }
@@ -326,6 +402,25 @@ const refreshAll = async () => {
   ])
 }
 
+const resetFilters = () => {
+  filters.value = {
+    dateRange: {
+      start: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      end: new Date().toISOString().split('T')[0],
+    },
+    period: 'day',
+    affiliate_status: '',
+    country: '',
+    city: '',
+    min_orders: 0,
+    min_commission: 0,
+    sort_by: 'commission',
+    page: 1,
+    per_page: 15,
+  }
+  refreshAll()
+}
+
 const exportData = () => {
   try {
     const exportData = {
@@ -404,14 +499,90 @@ const getCommissionStatusColor = (status: string) => {
   return statusColors[status] || 'default'
 }
 
-// Watchers
-watch(() => filters.value.dateRange, refreshAll, { deep: true })
-watch(() => filters.value.period, fetchChartData)
-watch(() => filters.value.sort_by, fetchLeaderboard)
+// Debounced refresh to prevent recursive calls
+let refreshTimeout: NodeJS.Timeout | null = null
+const debouncedRefresh = () => {
+  if (refreshTimeout) {
+    clearTimeout(refreshTimeout)
+  }
+  refreshTimeout = setTimeout(() => {
+    refreshAll()
+  }, 300)
+}
+
+let chartTimeout: NodeJS.Timeout | null = null
+const debouncedChartRefresh = () => {
+  if (chartTimeout) {
+    clearTimeout(chartTimeout)
+  }
+  chartTimeout = setTimeout(() => {
+    fetchChartData()
+  }, 300)
+}
+
+let leaderboardTimeout: NodeJS.Timeout | null = null
+const debouncedLeaderboardRefresh = () => {
+  if (leaderboardTimeout) {
+    clearTimeout(leaderboardTimeout)
+  }
+  leaderboardTimeout = setTimeout(() => {
+    fetchLeaderboard()
+  }, 300)
+}
+
+// Watchers with debouncing to prevent recursive calls
+watch(() => filters.value.dateRange, debouncedRefresh, { deep: true })
+watch(() => filters.value.period, debouncedChartRefresh)
+watch(() => filters.value.sort_by, debouncedLeaderboardRefresh)
 
 // Lifecycle
 onMounted(() => {
   refreshAll()
+})
+
+onBeforeUnmount(() => {
+  // Cancel any pending requests
+  cancelAllRequests()
+
+  // Clear any pending timeouts
+  if (refreshTimeout) {
+    clearTimeout(refreshTimeout)
+    refreshTimeout = null
+  }
+  if (chartTimeout) {
+    clearTimeout(chartTimeout)
+    chartTimeout = null
+  }
+  if (leaderboardTimeout) {
+    clearTimeout(leaderboardTimeout)
+    leaderboardTimeout = null
+  }
+
+  // Force clear all reactive data to prevent vnode errors
+  summary.value = null
+  chartData.value = {}
+  leaderboard.value = []
+  ledger.value = {}
+  segments.value = {}
+
+  // Reset loading states
+  loading.value = {
+    summary: false,
+    charts: false,
+    leaderboard: false,
+    ledger: false,
+    segments: false,
+  }
+
+  // Reset error states
+  error.value = null
+  hasNoData.value = {
+    summary: false,
+    charts: false,
+    leaderboard: false,
+    ledger: false,
+    segments: false,
+  }
 })
 </script>
 
@@ -487,23 +658,46 @@ onMounted(() => {
 
     <!-- Filters Card -->
     <VCard class="mb-6">
-      <VCardTitle>
-        <VIcon icon="tabler-filter" class="me-2" />
-        {{ t('filters') }}
+      <VCardTitle class="d-flex align-center justify-space-between">
+        <div class="d-flex align-center">
+          <VIcon icon="tabler-filter" class="me-2" />
+          {{ t('filters') }}
+        </div>
+        <div class="d-flex gap-2">
+          <VBtn
+            variant="outlined"
+            size="small"
+            prepend-icon="tabler-refresh"
+            :loading="isLoading"
+            @click="refreshAll"
+          >
+            {{ t('apply') }}
+          </VBtn>
+          <VBtn
+            variant="text"
+            size="small"
+            prepend-icon="tabler-x"
+            @click="resetFilters"
+          >
+            {{ t('reset') }}
+          </VBtn>
+        </div>
       </VCardTitle>
 
       <VCardText>
-        <VRow>
+        <!-- Responsive Filter Grid -->
+        <div class="filter-grid">
           <!-- Date Range -->
-          <VCol cols="12" md="4">
-            <VLabel class="mb-2">{{ t('date_range') }}</VLabel>
-            <div class="d-flex gap-2">
+          <div class="filter-item filter-item-wide">
+            <VLabel class="filter-label">{{ t('date_range') }}</VLabel>
+            <div class="date-range-container">
               <VTextField
                 v-model="filters.dateRange.start"
                 type="date"
                 density="compact"
                 variant="outlined"
                 hide-details
+                class="date-input"
               />
               <VTextField
                 v-model="filters.dateRange.end"
@@ -511,13 +705,30 @@ onMounted(() => {
                 density="compact"
                 variant="outlined"
                 hide-details
+                class="date-input"
               />
             </div>
-          </VCol>
+          </div>
+
+          <!-- Period Toggle -->
+          <div class="filter-item">
+            <VLabel class="filter-label">{{ t('period') }}</VLabel>
+            <VBtnToggle
+              v-model="filters.period"
+              variant="outlined"
+              divided
+              mandatory
+              class="filter-toggle"
+            >
+              <VBtn value="day" size="small" class="flex-1-1-0">{{ t('day') }}</VBtn>
+              <VBtn value="week" size="small" class="flex-1-1-0">{{ t('week') }}</VBtn>
+              <VBtn value="month" size="small" class="flex-1-1-0">{{ t('month') }}</VBtn>
+            </VBtnToggle>
+          </div>
 
           <!-- Sort By -->
-          <VCol cols="12" md="2">
-            <VLabel class="mb-2">{{ t('sort_by') }}</VLabel>
+          <div class="filter-item">
+            <VLabel class="filter-label">{{ t('sort_by') }}</VLabel>
             <VSelect
               v-model="filters.sort_by"
               :items="[
@@ -531,12 +742,13 @@ onMounted(() => {
               density="compact"
               variant="outlined"
               hide-details
+              class="filter-select"
             />
-          </VCol>
+          </div>
 
           <!-- Min Orders -->
-          <VCol cols="12" md="2">
-            <VLabel class="mb-2">{{ t('min_orders') }}</VLabel>
+          <div class="filter-item">
+            <VLabel class="filter-label">{{ t('min_orders') }}</VLabel>
             <VTextField
               v-model.number="filters.min_orders"
               type="number"
@@ -544,12 +756,13 @@ onMounted(() => {
               density="compact"
               variant="outlined"
               hide-details
+              class="filter-select"
             />
-          </VCol>
+          </div>
 
           <!-- Min Commission -->
-          <VCol cols="12" md="2">
-            <VLabel class="mb-2">{{ t('min_commission') }}</VLabel>
+          <div class="filter-item">
+            <VLabel class="filter-label">{{ t('min_commission') }}</VLabel>
             <VTextField
               v-model.number="filters.min_commission"
               type="number"
@@ -558,25 +771,10 @@ onMounted(() => {
               density="compact"
               variant="outlined"
               hide-details
+              class="filter-select"
             />
-          </VCol>
-
-          <!-- Period -->
-          <VCol cols="12" md="2">
-            <VLabel class="mb-2">{{ t('period') }}</VLabel>
-            <VBtnToggle
-              v-model="filters.period"
-              variant="outlined"
-              divided
-              mandatory
-              class="w-100"
-            >
-              <VBtn value="day" size="small">{{ t('day') }}</VBtn>
-              <VBtn value="week" size="small">{{ t('week') }}</VBtn>
-              <VBtn value="month" size="small">{{ t('month') }}</VBtn>
-            </VBtnToggle>
-          </VCol>
-        </VRow>
+          </div>
+        </div>
       </VCardText>
     </VCard>
 
@@ -704,13 +902,15 @@ onMounted(() => {
             </div>
 
             <SalesAreaChart
-              v-else-if="chartData.commissions_over_time"
-              :data="{
-                chartData: chartData.commissions_over_time,
-                title: t('commissions_mad'),
-                subtitle: t('earned_commissions'),
-                growth: summary?.total_commissions?.delta || 0,
-              }"
+              v-else-if="chartData.commissions_over_time && !chartData.commissions_over_time.isEmpty"
+              :data="sanitizeAreaChartData(
+                chartData.commissions_over_time.data,
+                t('commissions_mad'),
+                t('earned_commissions'),
+                (summary?.total_commissions?.value || 0) + ' MAD',
+                summary?.total_commissions?.delta || '+0%',
+                'primary'
+              )"
               :loading="loading.charts"
             />
 
@@ -912,3 +1112,163 @@ onMounted(() => {
     </VRow>
   </div>
 </template>
+
+<style scoped>
+/* Filter Grid Layout */
+.filter-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  align-items: end;
+  width: 100%;
+}
+
+.filter-item {
+  display: flex;
+  flex-direction: column;
+  min-width: 250px;
+  width: 100%;
+}
+
+.filter-item-wide {
+  grid-column: span 2;
+  min-width: 500px;
+}
+
+.filter-label {
+  margin-bottom: 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: rgb(var(--v-theme-on-surface));
+  opacity: 0.8;
+  white-space: nowrap;
+}
+
+/* Button Toggle Styles */
+.filter-toggle {
+  width: 100%;
+  display: flex;
+}
+
+.filter-toggle :deep(.v-btn-group) {
+  width: 100%;
+  display: flex;
+}
+
+.filter-toggle :deep(.v-btn) {
+  flex: 1 1 0;
+  min-width: 0;
+  font-size: 0.8rem;
+}
+
+/* Date Range Styles */
+.date-range-container {
+  display: flex;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.date-input {
+  flex: 1;
+  min-width: 0;
+}
+
+.date-input :deep(.v-field__input) {
+  font-size: 0.875rem;
+}
+
+/* Select Styles */
+.filter-select {
+  width: 100%;
+}
+
+.filter-select :deep(.v-field__input) {
+  font-size: 0.875rem;
+}
+
+/* Responsive Breakpoints */
+@media (max-width: 1200px) {
+  .filter-grid {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+  }
+
+  .filter-item {
+    min-width: 220px;
+  }
+
+  .filter-item-wide {
+    min-width: 440px;
+  }
+}
+
+@media (max-width: 960px) {
+  .filter-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+
+  .filter-item {
+    min-width: 200px;
+  }
+
+  .filter-item-wide {
+    grid-column: span 2;
+    min-width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .filter-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .filter-item,
+  .filter-item-wide {
+    grid-column: span 1;
+    min-width: 100%;
+  }
+
+  .date-range-container {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .filter-grid {
+    gap: 0.75rem;
+  }
+
+  .filter-item {
+    min-width: 100%;
+  }
+
+  .filter-toggle :deep(.v-btn) {
+    font-size: 0.75rem;
+    padding: 0.5rem 0.75rem;
+  }
+
+  .filter-label {
+    font-size: 0.8rem;
+    margin-bottom: 0.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .filter-grid {
+    gap: 0.5rem;
+  }
+
+  .date-range-container {
+    gap: 0.5rem;
+  }
+
+  .filter-toggle :deep(.v-btn) {
+    font-size: 0.7rem;
+    padding: 0.4rem 0.6rem;
+    min-height: 32px;
+  }
+}
+</style>
