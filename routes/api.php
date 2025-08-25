@@ -36,6 +36,7 @@ use App\Http\Controllers\Affiliate\ReferralController as AffiliateReferralContro
 use App\Http\Controllers\Affiliate\PointsController;
 use App\Http\Controllers\PublicController;
 use App\Http\Controllers\Public\ReferralTrackingController;
+use App\Http\Controllers\Public\SettingsController as PublicSettingsController;
 use App\Http\Controllers\Admin\CommissionBackfillController;
 use App\Http\Controllers\Admin\SystemHealthController;
 use App\Http\Controllers\Admin\SettingsController;
@@ -63,6 +64,10 @@ Route::get('/test', function () {
 // Public routes (no authentication required)
 Route::prefix('public')->group(function () {
     Route::get('produits/{slugOrId}', [PublicProduitController::class, 'show']);
+
+    // Settings routes
+    Route::get('settings', [PublicSettingsController::class, 'getPublic']);
+    Route::get('app-config', [PublicSettingsController::class, 'getAppConfig']);
 
     // Affiliate signup routes
     Route::prefix('affiliates')->middleware('throttle:5,1')->group(function () {
@@ -398,6 +403,13 @@ Route::middleware(['auth:sanctum'])->group(function () {
         // Settings Management
         Route::prefix('settings')->group(function () {
             Route::get('/', [SettingsController::class, 'index']);
+
+            // New Settings System
+            Route::get('/new', [SettingsController::class, 'getNewSettings']);
+            Route::get('/{category}', [SettingsController::class, 'getByCategory']);
+            Route::put('/{category}', [SettingsController::class, 'updateByCategory']);
+
+            // Legacy Settings
             Route::get('/commission', [SettingsController::class, 'getCommissionSettings']);
             Route::put('/commission', [SettingsController::class, 'updateCommissionSettings']);
             Route::get('/ozonexpress', [SettingsController::class, 'getOzonExpressSettings']);

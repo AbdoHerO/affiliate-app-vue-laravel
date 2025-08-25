@@ -22,10 +22,27 @@ const emit = defineEmits<{
 const localData = ref({
   app_name: '',
   app_description: '',
+  app_slogan: '',
+  app_keywords: '',
   company_name: '',
   company_email: '',
   company_phone: '',
   company_address: '',
+  company_website: '',
+  company_social_facebook: '',
+  company_social_instagram: '',
+  company_social_twitter: '',
+
+  // Branding & Appearance
+  app_logo: '',
+  app_favicon: '',
+  primary_color: '#6366F1',
+  secondary_color: '#8B5CF6',
+  login_background_image: '',
+  signup_background_image: '',
+  app_theme: 'light',
+
+  // Localization
   default_language: 'fr',
   timezone: 'Africa/Casablanca',
   currency: 'MAD',
@@ -33,7 +50,17 @@ const localData = ref({
   date_format: 'DD/MM/YYYY',
   time_format: '24',
   number_format: 'european',
+
+  // System Settings
   maintenance_mode: false,
+  registration_enabled: true,
+  email_verification_required: true,
+  kyc_verification_required: true,
+  max_file_upload_size: 10,
+  allowed_file_types: 'jpg,jpeg,png,pdf,doc,docx',
+  session_timeout: 120,
+  password_min_length: 8,
+  password_require_special: true,
   app_version: '1.0.0',
   ...props.data
 })
@@ -70,6 +97,28 @@ const numberFormats = [
   { title: 'Arabe (١٢٣٤,٥٦)', value: 'arabic' }
 ]
 
+const themeOptions = [
+  { title: 'Clair', value: 'light' },
+  { title: 'Sombre', value: 'dark' },
+  { title: 'Auto', value: 'auto' }
+]
+
+const colorPresets = [
+  { title: 'Indigo', value: '#6366F1', color: '#6366F1' },
+  { title: 'Violet', value: '#8B5CF6', color: '#8B5CF6' },
+  { title: 'Bleu', value: '#3B82F6', color: '#3B82F6' },
+  { title: 'Vert', value: '#10B981', color: '#10B981' },
+  { title: 'Orange', value: '#F59E0B', color: '#F59E0B' },
+  { title: 'Rouge', value: '#EF4444', color: '#EF4444' }
+]
+
+// Watch for props.data changes and update localData
+watch(() => props.data, (newData) => {
+  if (newData) {
+    Object.assign(localData.value, newData)
+  }
+}, { deep: true, immediate: true })
+
 // Watch for changes and emit
 watch(localData, (newData) => {
   Object.keys(newData).forEach(key => {
@@ -84,16 +133,39 @@ const handleSave = () => {
   emit('save', localData.value)
 }
 
-// Handle logo upload
-const handleLogoUpload = (file: File) => {
-  // Handle logo upload logic here
-  console.log('Logo upload:', file)
+// File upload handlers
+const handleLogoUpload = (event: Event) => {
+  const file = (event.target as HTMLInputElement).files?.[0]
+  if (file) {
+    // Here you would upload the file to your server
+    // For now, we'll just store the file name
+    console.log('Logo uploaded:', file.name)
+    // You can implement actual file upload logic here
+  }
 }
 
-// Handle favicon upload
-const handleFaviconUpload = (file: File) => {
-  // Handle favicon upload logic here
-  console.log('Favicon upload:', file)
+const handleFaviconUpload = (event: Event) => {
+  const file = (event.target as HTMLInputElement).files?.[0]
+  if (file) {
+    console.log('Favicon uploaded:', file.name)
+    // You can implement actual file upload logic here
+  }
+}
+
+const handleLoginBackgroundUpload = (event: Event) => {
+  const file = (event.target as HTMLInputElement).files?.[0]
+  if (file) {
+    console.log('Login background uploaded:', file.name)
+    // You can implement actual file upload logic here
+  }
+}
+
+const handleSignupBackgroundUpload = (event: Event) => {
+  const file = (event.target as HTMLInputElement).files?.[0]
+  if (file) {
+    console.log('Signup background uploaded:', file.name)
+    // You can implement actual file upload logic here
+  }
 }
 </script>
 
@@ -136,6 +208,30 @@ const handleFaviconUpload = (file: File) => {
                 :label="t('app_description')"
                 placeholder="Description of your affiliate application"
                 rows="3"
+              />
+            </VCol>
+
+            <!-- App Slogan -->
+            <VCol
+              cols="12"
+              md="6"
+            >
+              <AppTextField
+                v-model="localData.app_slogan"
+                :label="t('app_slogan')"
+                placeholder="Your catchy slogan"
+              />
+            </VCol>
+
+            <!-- App Keywords -->
+            <VCol
+              cols="12"
+              md="6"
+            >
+              <AppTextField
+                v-model="localData.app_keywords"
+                :label="t('app_keywords')"
+                placeholder="SEO keywords, separated by commas"
               />
             </VCol>
 
@@ -225,6 +321,211 @@ const handleFaviconUpload = (file: File) => {
                 :label="t('company_address')"
                 placeholder="Company address"
                 rows="3"
+              />
+            </VCol>
+
+            <!-- Company Website -->
+            <VCol
+              cols="12"
+              md="6"
+            >
+              <AppTextField
+                v-model="localData.company_website"
+                :label="t('company_website')"
+                placeholder="https://www.company.com"
+                type="url"
+              />
+            </VCol>
+
+            <!-- Social Media Links -->
+            <VCol cols="12">
+              <h6 class="text-h6 mb-3">{{ t('social_media_links') }}</h6>
+            </VCol>
+
+            <VCol
+              cols="12"
+              md="4"
+            >
+              <AppTextField
+                v-model="localData.company_social_facebook"
+                :label="t('facebook_page')"
+                placeholder="https://facebook.com/yourpage"
+                prepend-inner-icon="tabler-brand-facebook"
+              />
+            </VCol>
+
+            <VCol
+              cols="12"
+              md="4"
+            >
+              <AppTextField
+                v-model="localData.company_social_instagram"
+                :label="t('instagram_page')"
+                placeholder="https://instagram.com/yourpage"
+                prepend-inner-icon="tabler-brand-instagram"
+              />
+            </VCol>
+
+            <VCol
+              cols="12"
+              md="4"
+            >
+              <AppTextField
+                v-model="localData.company_social_twitter"
+                :label="t('twitter_page')"
+                placeholder="https://twitter.com/yourpage"
+                prepend-inner-icon="tabler-brand-twitter"
+              />
+            </VCol>
+          </VRow>
+        </VCardText>
+      </VCard>
+    </VCol>
+
+    <!-- Branding & Appearance -->
+    <VCol cols="12">
+      <VCard :title="t('branding_appearance')">
+        <VCardText>
+          <VRow>
+            <!-- App Logo -->
+            <VCol
+              cols="12"
+              md="6"
+            >
+              <VLabel class="mb-2">{{ t('app_logo') }}</VLabel>
+              <VFileInput
+                v-model="localData.app_logo"
+                :label="t('choose_logo_file')"
+                prepend-inner-icon="tabler-photo"
+                variant="outlined"
+                accept="image/*"
+                @change="handleLogoUpload"
+              />
+              <VAlert
+                type="info"
+                variant="tonal"
+                class="mt-2"
+                density="compact"
+              >
+                {{ t('logo_requirements') }}
+              </VAlert>
+            </VCol>
+
+            <!-- App Favicon -->
+            <VCol
+              cols="12"
+              md="6"
+            >
+              <VLabel class="mb-2">{{ t('app_favicon') }}</VLabel>
+              <VFileInput
+                v-model="localData.app_favicon"
+                :label="t('choose_favicon_file')"
+                prepend-inner-icon="tabler-world"
+                variant="outlined"
+                accept="image/*"
+                @change="handleFaviconUpload"
+              />
+              <VAlert
+                type="info"
+                variant="tonal"
+                class="mt-2"
+                density="compact"
+              >
+                {{ t('favicon_requirements') }}
+              </VAlert>
+            </VCol>
+
+            <!-- Primary Color -->
+            <VCol
+              cols="12"
+              md="6"
+            >
+              <VLabel class="mb-2">{{ t('primary_color') }}</VLabel>
+              <div class="d-flex gap-2 mb-2">
+                <VBtn
+                  v-for="preset in colorPresets"
+                  :key="preset.value"
+                  :color="preset.color"
+                  size="small"
+                  icon
+                  @click="localData.primary_color = preset.value"
+                >
+                  <VIcon v-if="localData.primary_color === preset.value" icon="tabler-check" />
+                </VBtn>
+              </div>
+              <AppTextField
+                v-model="localData.primary_color"
+                :label="t('custom_color')"
+                type="color"
+              />
+            </VCol>
+
+            <!-- Secondary Color -->
+            <VCol
+              cols="12"
+              md="6"
+            >
+              <VLabel class="mb-2">{{ t('secondary_color') }}</VLabel>
+              <div class="d-flex gap-2 mb-2">
+                <VBtn
+                  v-for="preset in colorPresets"
+                  :key="preset.value"
+                  :color="preset.color"
+                  size="small"
+                  icon
+                  @click="localData.secondary_color = preset.value"
+                >
+                  <VIcon v-if="localData.secondary_color === preset.value" icon="tabler-check" />
+                </VBtn>
+              </div>
+              <AppTextField
+                v-model="localData.secondary_color"
+                :label="t('custom_color')"
+                type="color"
+              />
+            </VCol>
+
+            <!-- Login Background -->
+            <VCol
+              cols="12"
+              md="6"
+            >
+              <VLabel class="mb-2">{{ t('login_background') }}</VLabel>
+              <VFileInput
+                v-model="localData.login_background_image"
+                :label="t('choose_background_image')"
+                prepend-inner-icon="tabler-photo"
+                variant="outlined"
+                accept="image/*"
+                @change="handleLoginBackgroundUpload"
+              />
+            </VCol>
+
+            <!-- Signup Background -->
+            <VCol
+              cols="12"
+              md="6"
+            >
+              <VLabel class="mb-2">{{ t('signup_background') }}</VLabel>
+              <VFileInput
+                v-model="localData.signup_background_image"
+                :label="t('choose_background_image')"
+                prepend-inner-icon="tabler-photo"
+                variant="outlined"
+                accept="image/*"
+                @change="handleSignupBackgroundUpload"
+              />
+            </VCol>
+
+            <!-- App Theme -->
+            <VCol
+              cols="12"
+              md="6"
+            >
+              <AppSelect
+                v-model="localData.app_theme"
+                :items="themeOptions"
+                :label="t('app_theme')"
               />
             </VCol>
           </VRow>
@@ -352,19 +653,166 @@ const handleFaviconUpload = (file: File) => {
             </VCol>
           </VRow>
         </VCardText>
+      </VCard>
+    </VCol>
 
-        <!-- Save Button -->
+    <!-- App Behavior Settings -->
+    <VCol cols="12">
+      <VCard :title="t('app_behavior_settings')">
         <VCardText>
-          <VBtn
-            color="primary"
-            prepend-icon="tabler-device-floppy"
-            :loading="loading"
-            @click="handleSave"
-          >
-            {{ t('save_general_settings') }}
-          </VBtn>
+          <VRow>
+            <!-- Registration Enabled -->
+            <VCol
+              cols="12"
+              md="6"
+            >
+              <VSwitch
+                v-model="localData.registration_enabled"
+                :label="t('registration_enabled')"
+                color="success"
+                inset
+              />
+              <p class="text-caption text-medium-emphasis">
+                {{ t('registration_enabled_description') }}
+              </p>
+            </VCol>
+
+            <!-- Email Verification Required -->
+            <VCol
+              cols="12"
+              md="6"
+            >
+              <VSwitch
+                v-model="localData.email_verification_required"
+                :label="t('email_verification_required')"
+                color="info"
+                inset
+              />
+              <p class="text-caption text-medium-emphasis">
+                {{ t('email_verification_description') }}
+              </p>
+            </VCol>
+
+            <!-- KYC Verification Required -->
+            <VCol
+              cols="12"
+              md="6"
+            >
+              <VSwitch
+                v-model="localData.kyc_verification_required"
+                :label="t('kyc_verification_required')"
+                color="warning"
+                inset
+              />
+              <p class="text-caption text-medium-emphasis">
+                {{ t('kyc_verification_description') }}
+              </p>
+            </VCol>
+
+            <!-- Session Timeout -->
+            <VCol
+              cols="12"
+              md="6"
+            >
+              <AppTextField
+                v-model.number="localData.session_timeout"
+                :label="t('session_timeout')"
+                type="number"
+                min="30"
+                max="480"
+                suffix="minutes"
+              />
+            </VCol>
+          </VRow>
         </VCardText>
       </VCard>
+    </VCol>
+
+    <!-- File Upload Settings -->
+    <VCol cols="12">
+      <VCard :title="t('file_upload_settings')">
+        <VCardText>
+          <VRow>
+            <!-- Max File Upload Size -->
+            <VCol
+              cols="12"
+              md="6"
+            >
+              <AppTextField
+                v-model.number="localData.max_file_upload_size"
+                :label="t('max_file_upload_size')"
+                type="number"
+                min="1"
+                max="100"
+                suffix="MB"
+              />
+            </VCol>
+
+            <!-- Allowed File Types -->
+            <VCol
+              cols="12"
+              md="6"
+            >
+              <AppTextField
+                v-model="localData.allowed_file_types"
+                :label="t('allowed_file_types')"
+                placeholder="jpg,jpeg,png,pdf,doc,docx"
+              />
+            </VCol>
+          </VRow>
+        </VCardText>
+      </VCard>
+    </VCol>
+
+    <!-- Security Settings -->
+    <VCol cols="12">
+      <VCard :title="t('security_settings')">
+        <VCardText>
+          <VRow>
+            <!-- Password Minimum Length -->
+            <VCol
+              cols="12"
+              md="6"
+            >
+              <AppTextField
+                v-model.number="localData.password_min_length"
+                :label="t('password_min_length')"
+                type="number"
+                min="6"
+                max="20"
+              />
+            </VCol>
+
+            <!-- Password Require Special Characters -->
+            <VCol
+              cols="12"
+              md="6"
+            >
+              <VSwitch
+                v-model="localData.password_require_special"
+                :label="t('password_require_special')"
+                color="error"
+                inset
+              />
+              <p class="text-caption text-medium-emphasis">
+                {{ t('password_require_special_description') }}
+              </p>
+            </VCol>
+          </VRow>
+        </VCardText>
+      </VCard>
+    </VCol>
+
+    <!-- Save Button -->
+    <VCol cols="12">
+      <VBtn
+        color="primary"
+        prepend-icon="tabler-device-floppy"
+        :loading="loading"
+        @click="handleSave"
+      >
+        {{ t('save_general_settings') }}
+      </VBtn>
     </VCol>
   </VRow>
 </template>

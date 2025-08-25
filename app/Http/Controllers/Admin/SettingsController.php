@@ -3,20 +3,28 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Setting;
 use App\Models\AppSetting;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class SettingsController extends Controller
 {
     /**
-     * Get all system settings
+     * Get all system settings (legacy method)
      */
     public function index(): JsonResponse
     {
         try {
+            // Check if we should use new settings system
+            if (request()->query('new_system') === 'true') {
+                return $this->getNewSettings();
+            }
+
+            // Legacy settings
             $settings = [
                 'commission' => $this->getCommissionSettingsArray(),
                 'ozonexpress' => $this->getOzonExpressSettingsArray(),
@@ -36,6 +44,125 @@ class SettingsController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to load system settings'
+            ], 500);
+        }
+    }
+
+    /**
+     * Get all settings grouped by category (new system)
+     */
+    public function getNewSettings(): JsonResponse
+    {
+        try {
+            $categories = ['general', 'business', 'shipping', 'users', 'products', 'communication', 'security', 'system'];
+            $settings = [];
+
+            foreach ($categories as $category) {
+                $settings[$category] = Setting::getByCategory($category);
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => $settings,
+                'message' => 'Settings retrieved successfully'
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to retrieve settings: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to retrieve settings',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get settings by category
+     */
+    public function getByCategory(string $category): JsonResponse
+    {
+        try {
+            $settings = Setting::getByCategory($category);
+
+            return response()->json([
+                'success' => true,
+                'data' => $settings,
+                'message' => "Settings for {$category} retrieved successfully"
+            ]);
+        } catch (\Exception $e) {
+            Log::error("Failed to retrieve {$category} settings: " . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => "Failed to retrieve {$category} settings",
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Update settings by category
+     */
+    public function updateByCategory(Request $request, string $category): JsonResponse
+    {
+        try {
+            $data = $request->all();
+
+            // Validate the category
+            $validCategories = ['general', 'business', 'shipping', 'users', 'products', 'communication', 'security', 'system'];
+            if (!in_array($category, $validCategories)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid category'
+                ], 400);
+            }
+
+            // Get validation rules for this category
+            $rules = $this->getNewValidationRules($category);
+
+            if (!empty($rules)) {
+                $validator = Validator::make($data, $rules);
+                if ($validator->fails()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Validation failed',
+                        'errors' => $validator->errors()
+                    ], 422);
+                }
+            }
+
+            DB::beginTransaction();
+
+            foreach ($data as $key => $value) {
+                $settingKey = "{$category}.{$key}";
+                $settingData = $this->getSettingMetadata($category, $key);
+
+                Setting::set($settingKey, $value, array_merge([
+                    'category' => $category,
+                    'type' => $settingData['type'] ?? 'string',
+                    'is_public' => $settingData['is_public'] ?? false,
+                    'is_encrypted' => $settingData['is_encrypted'] ?? false,
+                    'description' => $settingData['description'] ?? null,
+                ], $settingData));
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => ucfirst($category) . ' settings updated successfully',
+                'data' => Setting::getByCategory($category)
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error("Failed to update {$category} settings: " . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => "Failed to update {$category} settings",
+                'error' => $e->getMessage()
             ], 500);
         }
     }
@@ -388,5 +515,142 @@ class SettingsController extends Controller
             'cache_enabled' => AppSetting::get('system.cache_enabled', true),
             'queue_enabled' => AppSetting::get('system.queue_enabled', true),
         ];
+    }
+
+    /**
+     * Get validation rules for new settings system
+     */
+    private function getNewValidationRules(string $category): array
+    {
+        return match ($category) {
+            'general' => [
+                'app_name' => 'nullable|string|max:255',
+                'app_description' => 'nullable|string|max:1000',
+                'app_tagline' => 'nullable|string|max:255',
+                'app_keywords' => 'nullable|string|max:500',
+                'company_name' => 'nullable|string|max:255',
+                'company_email' => 'nullable|email|max:255',
+                'company_phone' => 'nullable|string|max:50',
+                'company_address' => 'nullable|string|max:500',
+                'company_website' => 'nullable|url|max:255',
+                'company_social_facebook' => 'nullable|url|max:255',
+                'company_social_instagram' => 'nullable|url|max:255',
+                'company_social_twitter' => 'nullable|url|max:255',
+                'app_logo' => 'nullable|string|max:255',
+                'app_favicon' => 'nullable|string|max:255',
+                'primary_color' => 'nullable|string|max:7',
+                'secondary_color' => 'nullable|string|max:7',
+                'login_background_image' => 'nullable|string|max:255',
+                'signup_background_image' => 'nullable|string|max:255',
+                'app_theme' => 'nullable|string|in:light,dark,auto',
+                'default_language' => 'nullable|string|in:fr,ar,en',
+                'timezone' => 'nullable|string|max:100',
+                'currency' => 'nullable|string|max:10',
+                'currency_symbol' => 'nullable|string|max:10',
+                'date_format' => 'nullable|string|max:50',
+                'time_format' => 'nullable|string|in:12,24',
+                'number_format' => 'nullable|string|in:european,american,arabic',
+                'maintenance_mode' => 'nullable|boolean',
+                'registration_enabled' => 'nullable|boolean',
+                'email_verification_required' => 'nullable|boolean',
+                'kyc_verification_required' => 'nullable|boolean',
+                'max_file_upload_size' => 'nullable|integer|min:1|max:100',
+                'allowed_file_types' => 'nullable|string|max:255',
+                'session_timeout' => 'nullable|integer|min:5|max:1440',
+                'password_min_length' => 'nullable|integer|min:6|max:50',
+                'password_require_special' => 'nullable|boolean',
+                'app_version' => 'nullable|string|max:50',
+            ],
+            'business' => [
+                'default_commission_rate' => 'required|numeric|min:0|max:100',
+                'min_commission_threshold' => 'required|numeric|min:0',
+                'commission_calculation_method' => 'required|string|in:per_order,per_product,percentage',
+                'tiered_commissions_enabled' => 'boolean',
+                'tier_1_rate' => 'nullable|numeric|min:0|max:100',
+                'tier_1_threshold' => 'nullable|numeric|min:0',
+                'tier_2_rate' => 'nullable|numeric|min:0|max:100',
+                'tier_2_threshold' => 'nullable|numeric|min:0',
+                'tier_3_rate' => 'nullable|numeric|min:0|max:100',
+                'tier_3_threshold' => 'nullable|numeric|min:0',
+                'auto_confirm_timeout' => 'required|integer|min:1|max:168',
+                'order_number_prefix' => 'required|string|max:10',
+                'order_number_format' => 'required|string|max:50',
+                'return_window_days' => 'required|integer|min:0|max:30',
+                'refund_processing_days' => 'required|integer|min:1|max:14',
+                'min_withdrawal_amount' => 'required|numeric|min:1',
+                'max_withdrawal_amount' => 'required|numeric|min:1',
+                'withdrawal_fee_percentage' => 'required|numeric|min:0|max:10',
+                'withdrawal_fee_fixed' => 'required|numeric|min:0',
+                'withdrawal_processing_days' => 'required|integer|min:1|max:14',
+                'tax_rate' => 'required|numeric|min:0|max:50',
+                'tax_included_in_prices' => 'boolean',
+                'payment_delay_days' => 'required|integer|min:0|max:90',
+                'auto_payout_enabled' => 'boolean',
+                'auto_payout_threshold' => 'nullable|numeric|min:1',
+            ],
+            default => [],
+        };
+    }
+
+    /**
+     * Get setting metadata for proper storage
+     */
+    private function getSettingMetadata(string $category, string $key): array
+    {
+        $metadata = [
+            'general' => [
+                'app_name' => ['type' => 'string', 'is_public' => true, 'description' => 'Application name'],
+                'app_description' => ['type' => 'string', 'is_public' => true, 'description' => 'Application description'],
+                'app_tagline' => ['type' => 'string', 'is_public' => true, 'description' => 'Application tagline'],
+                'app_keywords' => ['type' => 'string', 'is_public' => true, 'description' => 'Application keywords'],
+                'company_name' => ['type' => 'string', 'is_public' => true, 'description' => 'Company name'],
+                'company_email' => ['type' => 'string', 'is_public' => false, 'description' => 'Company email'],
+                'company_phone' => ['type' => 'string', 'is_public' => true, 'description' => 'Company phone'],
+                'company_address' => ['type' => 'string', 'is_public' => true, 'description' => 'Company address'],
+                'company_website' => ['type' => 'string', 'is_public' => true, 'description' => 'Company website'],
+                'company_social_facebook' => ['type' => 'string', 'is_public' => true, 'description' => 'Facebook URL'],
+                'company_social_instagram' => ['type' => 'string', 'is_public' => true, 'description' => 'Instagram URL'],
+                'company_social_twitter' => ['type' => 'string', 'is_public' => true, 'description' => 'Twitter URL'],
+                'app_logo' => ['type' => 'string', 'is_public' => true, 'description' => 'Application logo URL'],
+                'app_favicon' => ['type' => 'string', 'is_public' => true, 'description' => 'Application favicon URL'],
+                'primary_color' => ['type' => 'string', 'is_public' => true, 'description' => 'Primary brand color'],
+                'secondary_color' => ['type' => 'string', 'is_public' => true, 'description' => 'Secondary brand color'],
+                'login_background_image' => ['type' => 'string', 'is_public' => true, 'description' => 'Login background image URL'],
+                'signup_background_image' => ['type' => 'string', 'is_public' => true, 'description' => 'Signup background image URL'],
+                'app_theme' => ['type' => 'string', 'is_public' => true, 'description' => 'Application theme'],
+                'default_language' => ['type' => 'string', 'is_public' => true, 'description' => 'Default language'],
+                'timezone' => ['type' => 'string', 'is_public' => false, 'description' => 'Default timezone'],
+                'currency' => ['type' => 'string', 'is_public' => true, 'description' => 'Default currency'],
+                'currency_symbol' => ['type' => 'string', 'is_public' => true, 'description' => 'Currency symbol'],
+                'date_format' => ['type' => 'string', 'is_public' => true, 'description' => 'Date format'],
+                'time_format' => ['type' => 'string', 'is_public' => true, 'description' => 'Time format'],
+                'number_format' => ['type' => 'string', 'is_public' => true, 'description' => 'Number format'],
+                'maintenance_mode' => ['type' => 'boolean', 'is_public' => true, 'description' => 'Maintenance mode'],
+                'registration_enabled' => ['type' => 'boolean', 'is_public' => true, 'description' => 'Registration enabled'],
+                'email_verification_required' => ['type' => 'boolean', 'is_public' => true, 'description' => 'Email verification required'],
+                'kyc_verification_required' => ['type' => 'boolean', 'is_public' => false, 'description' => 'KYC verification required'],
+                'max_file_upload_size' => ['type' => 'integer', 'is_public' => false, 'description' => 'Max file upload size (MB)'],
+                'allowed_file_types' => ['type' => 'string', 'is_public' => false, 'description' => 'Allowed file types'],
+                'session_timeout' => ['type' => 'integer', 'is_public' => false, 'description' => 'Session timeout (minutes)'],
+                'password_min_length' => ['type' => 'integer', 'is_public' => false, 'description' => 'Minimum password length'],
+                'password_require_special' => ['type' => 'boolean', 'is_public' => false, 'description' => 'Require special characters in password'],
+                'app_version' => ['type' => 'string', 'is_public' => true, 'description' => 'Application version'],
+            ],
+            'business' => [
+                'default_commission_rate' => ['type' => 'float', 'is_public' => false, 'description' => 'Default commission rate'],
+                'min_commission_threshold' => ['type' => 'float', 'is_public' => false, 'description' => 'Minimum commission threshold'],
+                'commission_calculation_method' => ['type' => 'string', 'is_public' => false, 'description' => 'Commission calculation method'],
+                'tiered_commissions_enabled' => ['type' => 'boolean', 'is_public' => false, 'description' => 'Tiered commissions enabled'],
+                'tier_1_rate' => ['type' => 'float', 'is_public' => false, 'description' => 'Tier 1 commission rate'],
+                'tier_1_threshold' => ['type' => 'float', 'is_public' => false, 'description' => 'Tier 1 threshold'],
+                'tier_2_rate' => ['type' => 'float', 'is_public' => false, 'description' => 'Tier 2 commission rate'],
+                'tier_2_threshold' => ['type' => 'float', 'is_public' => false, 'description' => 'Tier 2 threshold'],
+                'tier_3_rate' => ['type' => 'float', 'is_public' => false, 'description' => 'Tier 3 commission rate'],
+                'tier_3_threshold' => ['type' => 'float', 'is_public' => false, 'description' => 'Tier 3 threshold'],
+                // Add more business settings metadata as needed
+            ],
+        ];
+
+        return $metadata[$category][$key] ?? ['type' => 'string', 'is_public' => false];
     }
 }

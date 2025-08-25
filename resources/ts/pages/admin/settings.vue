@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { $api } from '@/utils/api'
 
 // Components
 import GeneralSettings from '@/components/admin/settings/GeneralSettings.vue'
@@ -84,10 +85,107 @@ const onSettingChange = (category: string, key: string, value: any) => {
 
 // Save settings
 const saveSettings = async (category: string, data: any) => {
-  // API call implementation
-  console.log('Saving settings for', category, data)
-  return true
+  try {
+    const response = await $api(`/admin/settings/${category}`, {
+      method: 'PUT',
+      body: data
+    })
+
+    if (response.success) {
+      settings.value[category] = { ...settings.value[category], ...data }
+      // You can add a toast notification here
+      console.log('Settings saved successfully:', response.message)
+    }
+
+    return response.success
+  } catch (error) {
+    console.error('Failed to save settings:', error)
+    return false
+  }
 }
+
+// Load settings on mount
+const loadSettings = async () => {
+  loading.value = true
+  try {
+    const response = await $api('/admin/settings/new', {
+      method: 'GET'
+    })
+
+    if (response.success) {
+      // Merge loaded settings with defaults
+      Object.keys(response.data).forEach(category => {
+        if (settings.value[category]) {
+          settings.value[category] = { ...settings.value[category], ...response.data[category] }
+        } else {
+          settings.value[category] = response.data[category]
+        }
+      })
+    }
+  } catch (error) {
+    console.error('Failed to load settings:', error)
+  } finally {
+    loading.value = false
+  }
+}
+
+// Initialize settings with defaults
+const initializeSettings = () => {
+  // Set default values for all categories
+  settings.value = {
+    general: {
+      app_name: 'Affiliate Platform',
+      app_description: '',
+      app_tagline: '',
+      app_keywords: '',
+      company_name: '',
+      company_email: '',
+      company_phone: '',
+      company_address: '',
+      company_website: '',
+      company_social_facebook: '',
+      company_social_instagram: '',
+      company_social_twitter: '',
+      app_logo: '',
+      app_favicon: '',
+      primary_color: '#6366F1',
+      secondary_color: '#8B5CF6',
+      login_background_image: '',
+      signup_background_image: '',
+      app_theme: 'light',
+      default_language: 'fr',
+      timezone: 'Africa/Casablanca',
+      currency: 'MAD',
+      currency_symbol: 'MAD',
+      date_format: 'DD/MM/YYYY',
+      time_format: '24',
+      number_format: 'european',
+      maintenance_mode: false,
+      registration_enabled: true,
+      email_verification_required: true,
+      kyc_verification_required: true,
+      max_file_upload_size: 10,
+      allowed_file_types: 'jpg,jpeg,png,pdf,doc,docx',
+      session_timeout: 120,
+      password_min_length: 8,
+      password_require_special: true,
+      app_version: '1.0.0'
+    },
+    business: {},
+    shipping: {},
+    users: {},
+    products: {},
+    communication: {},
+    security: {},
+    system: {}
+  }
+}
+
+// Load settings when component mounts
+onMounted(() => {
+  initializeSettings()
+  loadSettings()
+})
 </script>
 
 <template>

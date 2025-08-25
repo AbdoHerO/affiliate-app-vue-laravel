@@ -81,6 +81,7 @@ declare global {
   const getExportErrorMessage: typeof import('./resources/ts/utils/chartExporter')['getExportErrorMessage']
   const getImageUrl: typeof import('./resources/ts/utils/imageUtils')['getImageUrl']
   const getTrendDisplay: typeof import('./resources/ts/utils/reportDataSanitizer')['getTrendDisplay']
+  const globalSettings: typeof import('./resources/ts/composables/useSettings')['globalSettings']
   const h: typeof import('vue')['h']
   const hexToRgb: typeof import('./resources/ts/@core/utils/colorConverter')['hexToRgb']
   const ignorableWatch: typeof import('@vueuse/core')['ignorableWatch']
@@ -370,6 +371,7 @@ declare global {
   const useScroll: typeof import('@vueuse/core')['useScroll']
   const useScrollLock: typeof import('@vueuse/core')['useScrollLock']
   const useSessionStorage: typeof import('@vueuse/core')['useSessionStorage']
+  const useSettings: typeof import('./resources/ts/composables/useSettings')['useSettings']
   const useShare: typeof import('@vueuse/core')['useShare']
   const useSkins: typeof import('./resources/ts/@core/composable/useSkins')['useSkins']
   const useSlots: typeof import('vue')['useSlots']
@@ -525,6 +527,7 @@ declare module 'vue' {
     readonly getExportErrorMessage: UnwrapRef<typeof import('./resources/ts/utils/chartExporter')['getExportErrorMessage']>
     readonly getImageUrl: UnwrapRef<typeof import('./resources/ts/utils/imageUtils')['getImageUrl']>
     readonly getTrendDisplay: UnwrapRef<typeof import('./resources/ts/utils/reportDataSanitizer')['getTrendDisplay']>
+    readonly globalSettings: UnwrapRef<typeof import('./resources/ts/composables/useSettings')['globalSettings']>
     readonly h: UnwrapRef<typeof import('vue')['h']>
     readonly hexToRgb: UnwrapRef<typeof import('./resources/ts/@core/utils/colorConverter')['hexToRgb']>
     readonly ignorableWatch: UnwrapRef<typeof import('@vueuse/core')['ignorableWatch']>
@@ -803,13 +806,14 @@ declare module 'vue' {
     readonly useRoute: UnwrapRef<typeof import('vue-router/auto')['useRoute']>
     readonly useRouter: UnwrapRef<typeof import('vue-router/auto')['useRouter']>
     readonly useSafeApexChart: UnwrapRef<typeof import('./resources/ts/composables/useSafeApexChart')['useSafeApexChart']>
-    readonly useSafeNavigation: UnwrapRef<typeof import('./resources/ts/composables/useSafeNavigation')['useSafeNavigation']>
     readonly useScreenOrientation: UnwrapRef<typeof import('@vueuse/core')['useScreenOrientation']>
     readonly useScreenSafeArea: UnwrapRef<typeof import('@vueuse/core')['useScreenSafeArea']>
     readonly useScriptTag: UnwrapRef<typeof import('@vueuse/core')['useScriptTag']>
     readonly useScroll: UnwrapRef<typeof import('@vueuse/core')['useScroll']>
     readonly useScrollLock: UnwrapRef<typeof import('@vueuse/core')['useScrollLock']>
     readonly useSessionStorage: UnwrapRef<typeof import('@vueuse/core')['useSessionStorage']>
+    readonly useSettings: UnwrapRef<typeof import('./resources/ts/composables/useSettings')['default']>
+    readonly useSettings: UnwrapRef<typeof import('./resources/ts/composables/useSettings')['useSettings']>
     readonly useShare: UnwrapRef<typeof import('@vueuse/core')['useShare']>
     readonly useSkins: UnwrapRef<typeof import('./resources/ts/@core/composable/useSkins')['useSkins']>
     readonly useSlots: UnwrapRef<typeof import('vue')['useSlots']>
