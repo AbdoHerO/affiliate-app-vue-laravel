@@ -89,7 +89,7 @@ export const useAffiliateApplicationsStore = defineStore('affiliateApplications'
         Object.assign(filters.value, newFilters)
       }
 
-      const response = await axios.get('/admin/affiliate-applications', {
+      const response = await axios.get('admin/affiliate-applications', {
         params: filters.value,
       })
 
@@ -174,7 +174,7 @@ export const useAffiliateApplicationsStore = defineStore('affiliateApplications'
     resendingIds.value.add(applicationId)
 
     try {
-      const response = await axios.post(`/admin/affiliate-applications/${applicationId}/resend-verification`)
+      const response = await axios.post(`admin/affiliate-applications/${applicationId}/resend-verification`)
 
       if (response.data.success) {
         return response.data

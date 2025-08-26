@@ -76,7 +76,7 @@ export const useUsersStore = defineStore('users', () => {
         ...params,
       }
 
-      const response = await axios.get('/admin/users', { params: queryParams })
+      const response = await axios.get('admin/users', { params: queryParams })
 
       // The API returns { users: [...], pagination: {...} }
       if (response.data.users) {
@@ -104,7 +104,7 @@ export const useUsersStore = defineStore('users', () => {
 
   const searchUsers = async (query: string) => {
     try {
-      const response = await axios.get('/admin/users', {
+      const response = await axios.get('admin/users', {
         params: {
           search: query,
           per_page: 50, // Get more results for search
@@ -144,7 +144,7 @@ export const useUsersStore = defineStore('users', () => {
       loading.value = true
       error.value = null
 
-      const response = await axios.post('/admin/users', userData)
+      const response = await axios.post('admin/users', userData)
 
       // The API returns { message: '...', user: {...} }
       if (response.data.user) {
@@ -167,7 +167,7 @@ export const useUsersStore = defineStore('users', () => {
       loading.value = true
       error.value = null
 
-      const response = await axios.put(`/admin/users/${id}`, userData)
+      const response = await axios.put(`admin/users/${id}`, userData)
 
       // The API returns { message: '...', user: {...} }
       if (response.data.user) {

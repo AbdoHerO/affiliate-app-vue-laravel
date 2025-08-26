@@ -126,7 +126,7 @@ export const useReservationsStore = defineStore('reservations', () => {
         }
       })
 
-      const response = await axios.get(`/admin/reservations?${params.toString()}`)
+      const response = await axios.get(`admin/reservations?${params.toString()}`)
       
       if (response.data.success) {
         reservations.value = response.data.data
@@ -211,7 +211,7 @@ export const useReservationsStore = defineStore('reservations', () => {
 
   const fetchOptions = async () => {
     try {
-      const response = await axios.get('/admin/reservations/options')
+      const response = await axios.get('admin/reservations/options')
       
       if (response.data.success) {
         options.value = response.data.data
@@ -226,7 +226,7 @@ export const useReservationsStore = defineStore('reservations', () => {
 
   const cleanupExpired = async () => {
     try {
-      const response = await axios.post('/admin/reservations/cleanup')
+      const response = await axios.post('admin/reservations/cleanup')
       
       if (response.data.success) {
         // Refresh the list and stats

@@ -118,7 +118,7 @@ export const useAffiliatesStore = defineStore('affiliates', () => {
         Object.assign(filters.value, newFilters)
       }
 
-      const response = await axios.get('/admin/affiliates', {
+      const response = await axios.get('admin/affiliates', {
         params: filters.value,
       })
 
@@ -141,7 +141,7 @@ export const useAffiliatesStore = defineStore('affiliates', () => {
     error.value = null
 
     try {
-      const response = await axios.get(`/api/admin/affiliates/${id}`)
+      const response = await axios.get(`admin/affiliates/${id}`)
 
       if (response.data.success) {
         currentAffiliate.value = response.data.data
@@ -161,7 +161,7 @@ export const useAffiliatesStore = defineStore('affiliates', () => {
     error.value = null
 
     try {
-      const response = await axios.put(`/api/admin/affiliates/${id}`, data)
+      const response = await axios.put(`admin/affiliates/${id}`, data)
 
       if (response.data.success) {
         currentAffiliate.value = response.data.data
@@ -190,7 +190,7 @@ export const useAffiliatesStore = defineStore('affiliates', () => {
     error.value = null
 
     try {
-      const response = await axios.post(`/api/admin/affiliates/${id}/toggle-block`, {
+      const response = await axios.post(`admin/affiliates/${id}/toggle-block`, {
         action,
         reason,
       })
@@ -222,7 +222,7 @@ export const useAffiliatesStore = defineStore('affiliates', () => {
     error.value = null
 
     try {
-      const response = await axios.post(`/api/admin/affiliates/${id}/change-tier`, {
+      const response = await axios.post(`admin/affiliates/${id}/change-tier`, {
         gamme_id: gammeId,
         reason,
       })
@@ -254,7 +254,7 @@ export const useAffiliatesStore = defineStore('affiliates', () => {
     error.value = null
 
     try {
-      const response = await axios.get(`/api/admin/affiliates/${id}/performance`)
+      const response = await axios.get(`admin/affiliates/${id}/performance`)
 
       if (response.data.success) {
         affiliatePerformance.value = response.data.data
@@ -274,7 +274,7 @@ export const useAffiliatesStore = defineStore('affiliates', () => {
     error.value = null
 
     try {
-      const response = await axios.get('/api/admin/affiliate-tiers')
+      const response = await axios.get('admin/affiliate-tiers')
 
       if (response.data.success) {
         affiliateTiers.value = response.data.data

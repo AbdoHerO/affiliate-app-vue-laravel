@@ -30,7 +30,7 @@ const activeTab = ref('details')
 const breadcrumbs = computed(() => [
   { title: t('dashboard'), to: { name: 'affiliate-dashboard' } },
   { title: t('my_orders'), to: { name: 'affiliate-orders' } },
-  { title: order.value?.numero_commande || t('order_details'), active: true },
+  { title: currentOrder.value?.numero_commande || t('order_details'), active: true },
 ])
 
 const orderTotal = computed(() => {

@@ -144,7 +144,7 @@ export const useShippingStore = defineStore('shipping', () => {
     error.value = null
 
     try {
-      const response = await axios.get(`/api/admin/shipping/orders/${id}`)
+      const response = await axios.get(`admin/shipping/orders/${id}`)
 
       if (response.data.success) {
         currentShippingOrder.value = response.data.data
@@ -164,7 +164,7 @@ export const useShippingStore = defineStore('shipping', () => {
     error.value = null
 
     try {
-      const response = await axios.post('/api/admin/shipping/ozon/parcels', {
+      const response = await axios.post('admin/shipping/ozon/parcels', {
         commande_id: commandeId,
         tracking_number: trackingNumber,
       })
@@ -188,7 +188,7 @@ export const useShippingStore = defineStore('shipping', () => {
     error.value = null
 
     try {
-      const response = await axios.post('/api/admin/shipping/ozon/track', {
+      const response = await axios.post('admin/shipping/ozon/track', {
         tracking_number: trackingNumber,
       })
 
@@ -211,7 +211,7 @@ export const useShippingStore = defineStore('shipping', () => {
     error.value = null
 
     try {
-      const response = await axios.post('/api/admin/shipping/ozon/parcel-info', {
+      const response = await axios.post('admin/shipping/ozon/parcel-info', {
         tracking_number: trackingNumber,
       })
 
@@ -234,7 +234,7 @@ export const useShippingStore = defineStore('shipping', () => {
     error.value = null
 
     try {
-      const response = await axios.post('/api/admin/shipping/ozon/resend', {
+      const response = await axios.post('admin/shipping/ozon/resend', {
         commande_id: commandeId,
         mode
       })
@@ -260,7 +260,7 @@ export const useShippingStore = defineStore('shipping', () => {
     error.value = null
 
     try {
-      const response = await axios.post('/api/admin/shipping/ozon/track', {
+      const response = await axios.post('admin/shipping/ozon/track', {
         tracking_number: trackingNumber,
       })
 
@@ -306,7 +306,7 @@ export const useShippingStore = defineStore('shipping', () => {
     error.value = null
 
     try {
-      const response = await axios.post('/api/admin/shipping/ozon/dn/create')
+      const response = await axios.post('admin/shipping/ozon/dn/create')
 
       if (response.data.success) {
         return response.data.data.ref
@@ -327,7 +327,7 @@ export const useShippingStore = defineStore('shipping', () => {
     error.value = null
 
     try {
-      const response = await axios.post('/api/admin/shipping/ozon/dn/add-parcels', {
+      const response = await axios.post('admin/shipping/ozon/dn/add-parcels', {
         ref,
         codes,
       })
@@ -351,7 +351,7 @@ export const useShippingStore = defineStore('shipping', () => {
     error.value = null
 
     try {
-      const response = await axios.post('/api/admin/shipping/ozon/dn/save', {
+      const response = await axios.post('admin/shipping/ozon/dn/save', {
         ref,
       })
 
@@ -374,7 +374,7 @@ export const useShippingStore = defineStore('shipping', () => {
     error.value = null
 
     try {
-      const response = await axios.get('/api/admin/shipping/ozon/dn/pdf', {
+      const response = await axios.get('admin/shipping/ozon/dn/pdf', {
         params: { ref }
       })
 
@@ -397,7 +397,7 @@ export const useShippingStore = defineStore('shipping', () => {
     error.value = null
 
     try {
-      const response = await axios.get('/api/admin/shipping/ozon/cities', {
+      const response = await axios.get('admin/shipping/ozon/cities', {
         params: { refresh },
       })
 
@@ -432,7 +432,7 @@ export const useShippingStore = defineStore('shipping', () => {
     error.value = null
 
     try {
-      const response = await axios.post(`/api/admin/shipping/orders/${orderId}/status`, data)
+      const response = await axios.post(`admin/shipping/orders/${orderId}/status`, data)
 
       if (response.data.success) {
         return response.data
@@ -442,7 +442,7 @@ export const useShippingStore = defineStore('shipping', () => {
     } catch (err: any) {
       error.value = err.response?.data?.message || err.message || 'Failed to update shipping status'
       console.error('Error updating shipping status:', err)
-      throw new Error(error.value)
+      throw new Error(error.value || 'Failed to update shipping status')
     } finally {
       loading.value = false
     }
@@ -450,7 +450,7 @@ export const useShippingStore = defineStore('shipping', () => {
 
   const refreshTracking = async (trackingNumber: string): Promise<any> => {
     try {
-      const response = await axios.post('/api/admin/shipping/orders/refresh-tracking', {
+      const response = await axios.post('admin/shipping/orders/refresh-tracking', {
         tracking_number: trackingNumber
       })
 
@@ -468,7 +468,7 @@ export const useShippingStore = defineStore('shipping', () => {
 
   const refreshTrackingBulk = async (trackingNumbers: string[]): Promise<any> => {
     try {
-      const response = await axios.post('/api/admin/shipping/orders/refresh-tracking-bulk', {
+      const response = await axios.post('admin/shipping/orders/refresh-tracking-bulk', {
         tracking_numbers: trackingNumbers
       })
 

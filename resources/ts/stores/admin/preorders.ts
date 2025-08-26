@@ -115,7 +115,7 @@ export const usePreordersStore = defineStore('preorders', () => {
         Object.assign(filters.value, newFilters)
       }
 
-      const response = await axios.get('/admin/preorders', {
+      const response = await axios.get('admin/preorders', {
         params: filters.value,
       })
 
@@ -138,7 +138,7 @@ export const usePreordersStore = defineStore('preorders', () => {
     error.value = null
 
     try {
-      const response = await axios.get(`/api/admin/preorders/${id}`)
+      const response = await axios.get(`admin/preorders/${id}`)
 
       if (response.data.success) {
         currentPreorder.value = response.data.data
@@ -158,7 +158,7 @@ export const usePreordersStore = defineStore('preorders', () => {
     error.value = null
 
     try {
-      const response = await axios.put(`/api/admin/preorders/${id}`, data)
+      const response = await axios.put(`admin/preorders/${id}`, data)
 
       if (response.data.success) {
         currentPreorder.value = response.data.data
@@ -187,7 +187,7 @@ export const usePreordersStore = defineStore('preorders', () => {
     error.value = null
 
     try {
-      const response = await axios.post(`/api/admin/preorders/${id}/confirm`)
+      const response = await axios.post(`admin/preorders/${id}/confirm`)
 
       if (response.data.success) {
         currentPreorder.value = response.data.data
@@ -227,7 +227,7 @@ export const usePreordersStore = defineStore('preorders', () => {
   // Bulk actions
   const bulkChangeStatus = async (ids: string[], to: string, note?: string) => {
     try {
-      const response = await axios.post('/api/admin/preorders/bulk/status', {
+      const response = await axios.post('admin/preorders/bulk/status', {
         ids,
         to,
         note
@@ -254,7 +254,7 @@ export const usePreordersStore = defineStore('preorders', () => {
 
   const bulkSendToShipping = async (ids: string[], mode: 'ramassage' | 'stock' = 'ramassage') => {
     try {
-      const response = await axios.post('/api/admin/preorders/bulk/send-to-shipping', {
+      const response = await axios.post('admin/preorders/bulk/send-to-shipping', {
         ids,
         mode
       })
@@ -290,7 +290,7 @@ export const usePreordersStore = defineStore('preorders', () => {
 
   const changeStatus = async (id: string, to: string, note?: string, increment?: boolean) => {
     try {
-      const response = await axios.post(`/api/admin/preorders/${id}/status`, {
+      const response = await axios.post(`admin/preorders/${id}/status`, {
         to,
         note,
         increment
@@ -320,7 +320,7 @@ export const usePreordersStore = defineStore('preorders', () => {
 
   const incrementNoAnswer = async (id: string) => {
     try {
-      const response = await axios.post(`/api/admin/preorders/${id}/no-answer`)
+      const response = await axios.post(`admin/preorders/${id}/no-answer`)
 
       if (response.data.success) {
         // Update local state
@@ -345,7 +345,7 @@ export const usePreordersStore = defineStore('preorders', () => {
 
   const sendToShipping = async (id: string, mode: 'ramassage' | 'stock' = 'ramassage') => {
     try {
-      const response = await axios.post(`/api/admin/preorders/${id}/send-to-shipping`, {
+      const response = await axios.post(`admin/preorders/${id}/send-to-shipping`, {
         mode
       })
 
@@ -364,7 +364,7 @@ export const usePreordersStore = defineStore('preorders', () => {
 
   const moveToShippingLocal = async (id: string, note?: string) => {
     try {
-      const response = await axios.post(`/api/admin/preorders/${id}/move-to-shipping-local`, {
+      const response = await axios.post(`admin/preorders/${id}/move-to-shipping-local`, {
         note
       })
 

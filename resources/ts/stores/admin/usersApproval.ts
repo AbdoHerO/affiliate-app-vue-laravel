@@ -111,7 +111,7 @@ export const useUsersApprovalStore = defineStore('usersApproval', () => {
     error.value = null
 
     try {
-      const response = await axios.get('/api/admin/users/approval-queue/stats')
+      const response = await axios.get('admin/users/approval-queue/stats')
 
       if (response.data.success) {
         stats.value = response.data.data
@@ -131,7 +131,7 @@ export const useUsersApprovalStore = defineStore('usersApproval', () => {
     error.value = null
 
     try {
-      const response = await axios.post(`/api/admin/users/${id}/approve`, {
+      const response = await axios.post(`admin/users/${id}/approve`, {
         reason,
       })
 
@@ -160,7 +160,7 @@ export const useUsersApprovalStore = defineStore('usersApproval', () => {
     error.value = null
 
     try {
-      const response = await axios.post(`/api/admin/users/${id}/refuse`, {
+      const response = await axios.post(`admin/users/${id}/refuse`, {
         reason,
       })
 
@@ -189,7 +189,7 @@ export const useUsersApprovalStore = defineStore('usersApproval', () => {
     error.value = null
 
     try {
-      const response = await axios.post(`/api/admin/users/${id}/resend-verification`)
+      const response = await axios.post(`admin/users/${id}/resend-verification`)
 
       if (response.data.success) {
         return true

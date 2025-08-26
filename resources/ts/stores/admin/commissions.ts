@@ -128,7 +128,7 @@ export const useCommissionsStore = defineStore('commissions', () => {
         Object.assign(filters.value, newFilters)
       }
 
-      const response = await axios.get('/admin/commissions', {
+      const response = await axios.get('admin/commissions', {
         params: filters.value,
       })
 
@@ -161,7 +161,7 @@ export const useCommissionsStore = defineStore('commissions', () => {
 
     try {
       console.log('🌐 Making API call to:', `/api/admin/commissions/${id}`)
-      const response = await axios.get(`/admin/commissions/${id}`)
+      const response = await axios.get(`admin/commissions/${id}`)
       console.log('📡 Raw API response:', response)
 
       if (response.data.success) {
@@ -192,7 +192,7 @@ export const useCommissionsStore = defineStore('commissions', () => {
 
   const approveCommission = async (id: string, note?: string) => {
     try {
-      const response = await axios.post(`/api/admin/commissions/${id}/approve`, {
+      const response = await axios.post(`admin/commissions/${id}/approve`, {
         note,
       })
 
@@ -221,7 +221,7 @@ export const useCommissionsStore = defineStore('commissions', () => {
 
   const rejectCommission = async (id: string, reason: string) => {
     try {
-      const response = await axios.post(`/api/admin/commissions/${id}/reject`, {
+      const response = await axios.post(`admin/commissions/${id}/reject`, {
         reason,
       })
 
@@ -250,7 +250,7 @@ export const useCommissionsStore = defineStore('commissions', () => {
 
   const adjustCommission = async (id: string, amount: number, note: string) => {
     try {
-      const response = await axios.post(`/api/admin/commissions/${id}/adjust`, {
+      const response = await axios.post(`admin/commissions/${id}/adjust`, {
         amount,
         note,
       })
@@ -280,7 +280,7 @@ export const useCommissionsStore = defineStore('commissions', () => {
 
   const markAsPaid = async (id: string) => {
     try {
-      const response = await axios.post(`/api/admin/commissions/${id}/mark-paid`)
+      const response = await axios.post(`admin/commissions/${id}/mark-paid`)
 
       if (response.data.success) {
         // Update the commission in the list
@@ -307,7 +307,7 @@ export const useCommissionsStore = defineStore('commissions', () => {
 
   const bulkApprove = async (ids: string[], note?: string) => {
     try {
-      const response = await axios.post('/api/admin/commissions/bulk/approve', {
+      const response = await axios.post('admin/commissions/bulk/approve', {
         ids,
         note,
       })
@@ -328,7 +328,7 @@ export const useCommissionsStore = defineStore('commissions', () => {
 
   const bulkReject = async (ids: string[], reason: string) => {
     try {
-      const response = await axios.post('/api/admin/commissions/bulk/reject', {
+      const response = await axios.post('admin/commissions/bulk/reject', {
         ids,
         reason,
       })
@@ -349,7 +349,7 @@ export const useCommissionsStore = defineStore('commissions', () => {
 
   const recalculateOrder = async (commandeId: string) => {
     try {
-      const response = await axios.post(`/api/admin/commissions/recalc/${commandeId}`)
+      const response = await axios.post(`admin/commissions/recalc/${commandeId}`)
 
       if (response.data.success) {
         // Refresh the list
@@ -368,7 +368,7 @@ export const useCommissionsStore = defineStore('commissions', () => {
   const exportCommissions = async (currentFilters?: CommissionFilters) => {
     try {
       const params = currentFilters || filters.value
-      const response = await axios.get('/api/admin/commissions/export', {
+      const response = await axios.get('admin/commissions/export', {
         params,
         responseType: 'blob',
       })
@@ -394,7 +394,7 @@ export const useCommissionsStore = defineStore('commissions', () => {
   const fetchSummary = async (currentFilters?: CommissionFilters) => {
     try {
       const params = currentFilters || filters.value
-      const response = await axios.get('/api/admin/commissions/summary', {
+      const response = await axios.get('admin/commissions/summary', {
         params,
       })
 

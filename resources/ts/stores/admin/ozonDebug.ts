@@ -60,7 +60,7 @@ export const useOzonDebugStore = defineStore('ozonDebug', () => {
   const sendParcel = async (payload: SendParcelPayload): Promise<ApiResponse<ParcelResult>> => {
     loading.value.sendParcel = true
     try {
-      const response = await axios.post('/admin/shipping/ozon/debug/send-parcel', payload)
+      const response = await axios.post('admin/shipping/ozon/debug/send-parcel', payload)
       
       if (response.data.success) {
         lastSentParcel.value = response.data.data

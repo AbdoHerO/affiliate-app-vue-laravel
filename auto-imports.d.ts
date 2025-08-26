@@ -223,6 +223,7 @@ declare global {
   const useAffiliateCartUi: typeof import('./resources/ts/composables/useAffiliateCartUi')['useAffiliateCartUi']
   const useAnimate: typeof import('@vueuse/core')['useAnimate']
   const useApi: typeof import('./resources/ts/composables/useApi')['useApi']
+  const useApiErrorHandler: typeof import('./resources/ts/composables/useApiErrorHandler')['useApiErrorHandler']
   const useAppInitialization: typeof import('./resources/ts/composables/useAppInitialization')['useAppInitialization']
   const useArrayDifference: typeof import('@vueuse/core')['useArrayDifference']
   const useArrayEvery: typeof import('@vueuse/core')['useArrayEvery']
@@ -673,6 +674,7 @@ declare module 'vue' {
     readonly useAffiliateCartUi: UnwrapRef<typeof import('./resources/ts/composables/useAffiliateCartUi')['useAffiliateCartUi']>
     readonly useAnimate: UnwrapRef<typeof import('@vueuse/core')['useAnimate']>
     readonly useApi: UnwrapRef<typeof import('./resources/ts/composables/useApi')['useApi']>
+    readonly useApiErrorHandler: UnwrapRef<typeof import('./resources/ts/composables/useApiErrorHandler')['useApiErrorHandler']>
     readonly useAppInitialization: UnwrapRef<typeof import('./resources/ts/composables/useAppInitialization')['useAppInitialization']>
     readonly useArrayDifference: UnwrapRef<typeof import('@vueuse/core')['useArrayDifference']>
     readonly useArrayEvery: UnwrapRef<typeof import('@vueuse/core')['useArrayEvery']>
