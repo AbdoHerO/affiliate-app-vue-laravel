@@ -55,6 +55,13 @@ class UserManagementController extends Controller
             });
         }
 
+        // Exclude specific role
+        if ($request->has('exclude_role')) {
+            $query->whereDoesntHave('roles', function ($q) use ($request) {
+                $q->where('name', $request->exclude_role);
+            });
+        }
+
         // Filter by status
         if ($request->has('statut')) {
             $query->where('statut', $request->statut);

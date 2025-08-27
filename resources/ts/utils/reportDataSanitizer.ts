@@ -278,12 +278,18 @@ export function formatDisplayNumber(
   const safeValue = safeNumber(value).value
 
   if (currency) {
+    if (currency === 'MAD' || currency === 'DH') {
+      return new Intl.NumberFormat('fr-MA', {
+        minimumFractionDigits: decimals,
+        maximumFractionDigits: decimals,
+      }).format(safeValue) + ' DH'
+    }
     return new Intl.NumberFormat(locale, {
       style: 'currency',
-      currency: currency === 'MAD' ? 'USD' : currency, // Fallback for MAD
+      currency: currency,
       minimumFractionDigits: decimals,
       maximumFractionDigits: decimals,
-    }).format(safeValue).replace('$', currency === 'MAD' ? 'MAD ' : '$')
+    }).format(safeValue)
   }
 
   const formatted = new Intl.NumberFormat(locale, {

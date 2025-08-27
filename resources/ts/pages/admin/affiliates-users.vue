@@ -48,29 +48,51 @@ const {
   getStatusColor,
   getStatusText
 } = useUserSoftDelete(
-  () => fetchUsers(pagination.value.current_page), // onSuccess
-  (error) => console.error('Soft delete error:', error) // onError
+  () => fetchUsers(pagination.value.current_page)
 )
 
-type User = {
-  id: string
+// User interface
+interface UserForm {
   nom_complet: string
   email: string
-  telephone?: string
-  adresse?: string
-  photo_profil?: string
+  password: string
+  telephone: string
+  adresse: string
+  photo_profil: string
   statut: 'actif' | 'inactif' | 'bloque'
   email_verifie: boolean
   kyc_statut: 'non_requis' | 'en_attente' | 'valide' | 'refuse'
-  rib?: string
-  bank_type?: string
+  rib: string
+  bank_type: string
   roles: string[]
   permissions?: string[]
   remember_token?: string
   created_at: string
   updated_at?: string
-  deleted_at?: string
 }
+
+// Reactive data
+const showCreateDialog = ref(false)
+const showEditDialog = ref(false)
+const showViewDialog = ref(false)
+const selectedUser = ref<User | null>(null)
+
+const userForm = ref({
+  nom_complet: '',
+  email: '',
+  password: '',
+  telephone: '',
+  adresse: '',
+  photo_profil: '',
+  role: '',
+  statut: 'actif' as User['statut'],
+  kyc_statut: 'non_requis' as User['kyc_statut'],
+  rib: '',
+  bank_type: '',
+})
+
+// Form errors handling
+const { errors: userErrors, set: setUserErrors, clear: clearUserErrors } = useFormErrors<typeof userForm.value>()
 
 // Data
 const users = ref<User[]>([])
@@ -86,7 +108,6 @@ const pagination = ref({
 // Filters
 const filters = ref({
   search: '',
-  role: '',
   statut: '',
 })
 
@@ -106,27 +127,15 @@ const kycStatusOptions = [
   { title: t('rejected'), value: 'refuse' },
 ]
 
-// Dialog states
-const showCreateDialog = ref(false)
-const showEditDialog = ref(false)
-const showViewDialog = ref(false)
-const selectedUser = ref<User | null>(null)
-
-// Form data
-const userForm = ref({
-  nom_complet: '',
-  email: '',
-  password: '',
-  telephone: '',
-  adresse: '',
-  photo_profil: '',
-  role: '',
-  statut: 'actif' as User['statut'],
-  kyc_statut: 'non_requis' as User['kyc_statut'],
+// Watch for soft delete filter changes
+watch(softDeleteFilter, () => {
+  fetchUsers(1)
 })
 
-// Form errors handling
-const { errors: userErrors, set: setUserErrors, clear: clearUserErrors } = useFormErrors<typeof userForm.value>()
+// Watch for filter changes
+watch(filters, () => {
+  fetchUsers(1)
+}, { deep: true })
 
 // -----------------------------
 // API Functions (fixed)
@@ -145,33 +154,24 @@ const fetchUsers = async (page = 1) => {
     if (filters.value.search) params.set('search', filters.value.search)
     if (filters.value.statut) params.set('statut', filters.value.statut)
 
-    // Handle role filtering - exclude affiliate users from this view
-    if (filters.value.role) {
-      // If a specific role is selected, use it (but never allow affiliate)
-      if (filters.value.role !== 'affiliate') {
-        params.set('role', filters.value.role)
-      }
-    } else {
-      // If no role filter, exclude affiliate users
-      params.set('exclude_role', 'affiliate')
-    }
+    // Only show affiliate users in this view
+    params.set('role', 'affiliate')
 
     const url = `/admin/users?${params.toString()}`
     const { data, error: apiError } = await useApi<any>(url)
 
     if (apiError.value) {
-      error.value = apiError.value.message || t('failed_to_load_users')
-      showError(t('failed_to_load_users'))
+      const errorMessage = apiError.value.message || t('failed_to_load_users')
+      error.value = errorMessage
+      showError(errorMessage)
       console.error('Users fetch error:', apiError.value)
-
-      // Handle authentication errors
-      if (apiError.value.status === 401) {
-        showError(t('error_authentication_required'))
-        // Optionally redirect to login
-      }
     } else if (data.value) {
-      users.value = data.value.users.map((user: any): User => ({
-        id: String(user.id),
+      // Handle both data.users and data.data formats
+      const usersData = data.value.data || data.value.users || []
+      const paginationData = data.value.pagination || data.value
+
+      users.value = usersData.map((user: any) => ({
+        id: user.id,
         nom_complet: user.nom_complet,
         email: user.email,
         telephone: user.telephone,
@@ -190,7 +190,14 @@ const fetchUsers = async (page = 1) => {
         remember_token: user.remember_token,
       }))
 
-      pagination.value = data.value.pagination
+      pagination.value = {
+        current_page: paginationData.current_page || 1,
+        last_page: paginationData.last_page || 1,
+        per_page: paginationData.per_page || 15,
+        total: paginationData.total || 0,
+      }
+
+      console.log('✅ Affiliate users loaded successfully:', users.value.length)
     }
   } catch (err: any) {
     error.value = err.message || t('failed_to_load_users')
@@ -208,12 +215,10 @@ const fetchRoles = async () => {
     if (apiError.value) {
       console.error('Roles fetch error:', apiError.value)
     } else if (data.value?.roles) {
-      roles.value = data.value.roles
-        .filter((role: any) => role.name !== 'affiliate') // Exclude affiliate role
-        .map((role: any) => ({
-          title: role.name.charAt(0).toUpperCase() + role.name.slice(1),
-          value: role.name,
-        }))
+      roles.value = data.value.roles.map((role: any) => ({
+        title: role.name.charAt(0).toUpperCase() + role.name.slice(1),
+        value: role.name,
+      }))
     }
   } catch (err) {
     console.error('Roles fetch error:', err)
@@ -222,11 +227,12 @@ const fetchRoles = async () => {
 
 const createUser = async () => {
   // Show confirm dialog before creating
-  const confirmed = await confirmCreate(t('user'))
+  const confirmed = await confirmCreate(t('affiliate_user'))
   if (!confirmed) return
 
   try {
     loading.value = true
+    clearUserErrors()
 
     const { data, error: apiError } = await useApi<any>('/admin/users', {
       method: 'POST',
@@ -234,32 +240,33 @@ const createUser = async () => {
         nom_complet: userForm.value.nom_complet,
         email: userForm.value.email,
         password: userForm.value.password,
-        password_confirmation: userForm.value.password,
         telephone: userForm.value.telephone,
         adresse: userForm.value.adresse,
         photo_profil: userForm.value.photo_profil,
         role: userForm.value.role,
         statut: userForm.value.statut,
         kyc_statut: userForm.value.kyc_statut,
+        rib: userForm.value.rib,
+        bank_type: userForm.value.bank_type,
       }),
       headers: { 'Content-Type': 'application/json' },
     })
 
     if (apiError.value) {
-      setUserErrors(apiError.value.errors)
-      showError(apiError.value.message)
-      console.error('Create user error:', apiError.value)
-    } else if (data.value) {
-      clearUserErrors()
+      if (apiError.value.errors) {
+        setUserErrors(apiError.value.errors)
+      } else {
+        const errorMessage = apiError.value.message || t('failed_to_create_user')
+        showError(errorMessage)
+      }
+    } else {
+      showSuccess(t('user_created_successfully'))
       showCreateDialog.value = false
-      const name = userForm.value.nom_complet
       resetForm()
       await fetchUsers(pagination.value.current_page)
-      showSuccess(t('user_created_successfully', { name }))
     }
   } catch (err: any) {
     showError(err.message || t('failed_to_create_user'))
-    console.error('Create user error:', err)
   } finally {
     loading.value = false
   }
@@ -269,13 +276,14 @@ const updateUser = async () => {
   if (!selectedUser.value) return
 
   // Show confirm dialog before updating
-  const confirmed = await confirmUpdate(t('user'), selectedUser.value.nom_complet)
+  const confirmed = await confirmUpdate(t('affiliate_user'))
   if (!confirmed) return
 
   try {
     loading.value = true
+    clearUserErrors()
 
-    const payload: any = {
+    const payload = {
       nom_complet: userForm.value.nom_complet,
       email: userForm.value.email,
       telephone: userForm.value.telephone,
@@ -284,6 +292,8 @@ const updateUser = async () => {
       role: userForm.value.role,
       statut: userForm.value.statut,
       kyc_statut: userForm.value.kyc_statut,
+      rib: userForm.value.rib,
+      bank_type: userForm.value.bank_type,
     }
     if (userForm.value.password) payload.password = userForm.value.password
 
@@ -294,92 +304,26 @@ const updateUser = async () => {
     })
 
     if (apiError.value) {
-      setUserErrors(apiError.value.errors)
-      showError(apiError.value.message)
-      console.error('Update user error:', apiError.value)
-    } else if (data.value) {
-      clearUserErrors()
+      if (apiError.value.errors) {
+        setUserErrors(apiError.value.errors)
+      } else {
+        const errorMessage = apiError.value.message || t('failed_to_update_user')
+        showError(errorMessage)
+      }
+    } else {
+      showSuccess(t('user_updated_successfully'))
       showEditDialog.value = false
-      const name = userForm.value.nom_complet
       resetForm()
       await fetchUsers(pagination.value.current_page)
-      showSuccess(t('user_updated_successfully', { name }))
     }
   } catch (err: any) {
     showError(err.message || t('failed_to_update_user'))
-    console.error('Update user error:', err)
   } finally {
     loading.value = false
   }
 }
 
-const toggleUserStatus = async (user: User) => {
-  try {
-    const { data, error: apiError } = await useApi<any>(`/admin/users/${user.id}/toggle-status`, {
-      method: 'POST',
-    })
-
-    if (apiError.value) {
-      showError(apiError.value.message || 'Failed to toggle user status')
-      console.error('Toggle status error:', apiError.value)
-    } else if (data.value) {
-      await fetchUsers(pagination.value.current_page)
-      showSuccess(t('user_status_updated_successfully'))
-    }
-  } catch (err: any) {
-    showError(err.message || 'Failed to toggle user status')
-    console.error('Toggle status error:', err)
-  }
-}
-
-const deleteUser = async (user: User) => {
-  // Show confirm dialog before deleting
-  const confirmed = await confirmDelete(t('user'), user.nom_complet)
-  if (!confirmed) return
-
-  try {
-    const { data, error: apiError } = await useApi<any>(`/admin/users/${user.id}`, {
-      method: 'DELETE',
-    })
-
-    if (apiError.value) {
-      // Handle foreign key constraint errors specifically
-      if (apiError.value.message && (
-          apiError.value.message.includes('foreign key constraint') ||
-          apiError.value.message.includes('Integrity constraint violation') ||
-          apiError.value.message.includes('1451')
-        )) {
-        showError(
-          `Impossible de supprimer l'utilisateur "${user.nom_complet}" car il a des données liées (avis, commandes, etc.). ` +
-          `Veuillez d'abord supprimer ou réassigner ses données.`
-        )
-      } else {
-        showError(apiError.value.message || t('failed_to_delete_user'))
-      }
-      console.error('Delete user error:', apiError.value)
-    } else if (data.value) {
-      await fetchUsers(pagination.value.current_page)
-      showSuccess(t('user_deleted_successfully', { name: user.nom_complet }))
-    }
-  } catch (err: any) {
-    // Handle network/unexpected errors
-    if (err.message && (
-        err.message.includes('foreign key') ||
-        err.message.includes('constraint') ||
-        err.message.includes('1451')
-      )) {
-      showError(
-        `Impossible de supprimer l'utilisateur "${user.nom_complet}" en raison de relations de données. ` +
-        `Veuillez contacter un administrateur.`
-      )
-    } else {
-      showError(err.message || t('failed_to_delete_user'))
-    }
-    console.error('Delete user error:', err)
-  }
-}
-
-// Form helpers
+// Helper functions
 const resetForm = () => {
   userForm.value = {
     nom_complet: '',
@@ -391,6 +335,8 @@ const resetForm = () => {
     role: '',
     statut: 'actif',
     kyc_statut: 'non_requis',
+    rib: '',
+    bank_type: '',
   }
   selectedUser.value = null
 }
@@ -407,6 +353,8 @@ const openEditDialog = (user: User) => {
     role: user.roles[0] || '',
     statut: user.statut,
     kyc_statut: user.kyc_statut,
+    rib: user.rib || '',
+    bank_type: user.bank_type || '',
   }
   showEditDialog.value = true
 }
@@ -417,7 +365,7 @@ const openViewDialog = (user: User) => {
 }
 
 const clearFilters = () => {
-  filters.value = { search: '', role: '', statut: '' }
+  filters.value = { search: '', statut: '' }
   fetchUsers(1)
 }
 
@@ -425,80 +373,51 @@ const clearFilters = () => {
 onMounted(async () => {
   await Promise.all([fetchUsers(), fetchRoles()])
 })
-
-// Watch filters for real-time search
-watch(
-  filters,
-  () => {
-    fetchUsers(1)
-  },
-  { deep: true },
-)
-
-// Watch soft delete filter
-watch(
-  softDeleteFilter,
-  () => {
-    fetchUsers(1)
-  }
-)
 </script>
 
 <template>
   <div>
-    <!-- Header -->
-    <VCard class="mb-6">
-      <VCardText>
-        <div class="d-flex justify-space-between align-center">
-          <div>
-            <h2 class="text-h4 mb-2">{{ t('user_management') }}</h2>
-            <p class="text-body-1 mb-0">{{ t('manage_all_users') }}</p>
-          </div>
-          <VBtn
-            color="primary"
-            prepend-icon="tabler-plus"
-            :disabled="!hasPermission('manage users')"
-            @click="showCreateDialog = true"
-          >
-            {{ t('add_user') }}
-          </VBtn>
-        </div>
-      </VCardText>
-    </VCard>
+    <!-- Page Header -->
+    <div class="d-flex justify-space-between align-center mb-6">
+      <div>
+        <h1 class="text-h4 font-weight-bold mb-1">{{ t('affiliate_users_management') }}</h1>
+        <p class="text-body-1 mb-0">{{ t('manage_affiliate_users_description') }}</p>
+      </div>
+      <VBtn
+        color="primary"
+        prepend-icon="tabler-plus"
+        @click="showCreateDialog = true"
+      >
+        {{ t('add_affiliate_user') }}
+      </VBtn>
+    </div>
 
-    <!-- Filters -->
+    <!-- Soft Delete Filter -->
+    <SoftDeleteFilter v-model="softDeleteFilter" class="mb-6" />
+
+    <!-- Filters Card -->
     <VCard class="mb-6">
       <VCardText>
         <VRow>
-          <VCol cols="12" md="3">
+          <VCol cols="12" md="6">
             <VTextField
               v-model="filters.search"
+              :label="t('search')"
               :placeholder="t('search_users')"
               prepend-inner-icon="tabler-search"
               clearable
             />
           </VCol>
-          <VCol cols="12" md="2">
-            <VSelect
-              v-model="filters.role"
-              :items="[{ title: t('admin_users_all_roles'), value: '' }, ...roles]"
-              :placeholder="t('admin_users_filter_by_role')"
-            />
-          </VCol>
-          <VCol cols="12" md="2">
+          <VCol cols="12" md="4">
             <VSelect
               v-model="filters.statut"
+              :label="t('status')"
+              :placeholder="t('all_status')"
               :items="statusOptions"
-              :placeholder="t('filter_by_status')"
+              clearable
             />
           </VCol>
           <VCol cols="12" md="2">
-            <SoftDeleteFilter
-              v-model="softDeleteFilter"
-              @update:model-value="fetchUsers(1)"
-            />
-          </VCol>
-          <VCol cols="12" md="3">
             <VBtn block variant="outlined" @click="clearFilters">
               {{ t('clear') }}
             </VBtn>
@@ -517,6 +436,8 @@ watch(
               <th>{{ t('name') }}</th>
               <th>{{ t('email') }}</th>
               <th>{{ t('phone') }}</th>
+              <th>{{ t('bank_type') }}</th>
+              <th>{{ t('rib') }}</th>
               <th>{{ t('role') }}</th>
               <th>{{ t('status') }}</th>
               <th>{{ t('record_status') }}</th>
@@ -539,6 +460,17 @@ watch(
               <td>{{ user.nom_complet }}</td>
               <td>{{ user.email }}</td>
               <td>{{ user.telephone || '-' }}</td>
+              <td>
+                <div class="d-flex align-center">
+                  <VIcon icon="tabler-building-bank" size="16" class="me-2" />
+                  {{ user.bank_type ? user.bank_type : t('bank_not_provided') }}
+                </div>
+              </td>
+              <td>
+                <div style="font-family: monospace; font-size: 0.875rem;">
+                  {{ user.rib ? user.rib : t('bank_not_provided') }}
+                </div>
+              </td>
               <td>
                 <VChip :color="user.roles[0] === 'admin' ? 'error' : 'primary'" size="small">
                   {{ user.roles[0] || t('no_role') }}
@@ -596,25 +528,44 @@ watch(
         <!-- Empty State -->
         <div v-else class="text-center py-8">
           <VIcon icon="tabler-users" size="64" class="mb-4" color="disabled" />
-          <h6 class="text-h6 mb-2">{{ t('no_users_found') }}</h6>
-          <p class="text-body-2">{{ t('try_adjusting_search') }}</p>
+          <h3 class="text-h6 mb-2">{{ t('no_affiliate_users_found') }}</h3>
+          <p class="text-body-2 mb-4">{{ t('no_affiliate_users_description') }}</p>
+          <VBtn color="primary" @click="showCreateDialog = true">
+            {{ t('add_first_affiliate_user') }}
+          </VBtn>
         </div>
 
-        <!-- Pagination -->
-        <div v-if="pagination.total > pagination.per_page" class="d-flex justify-center mt-4">
-          <VPagination
-            v-model="pagination.current_page"
-            :length="pagination.last_page"
-            @update:model-value="fetchUsers"
-          />
+        <!-- Error State -->
+        <div v-if="error" class="text-center py-8">
+          <VIcon icon="tabler-alert-circle" size="64" class="mb-4" color="error" />
+          <h3 class="text-h6 mb-2">{{ t('error_loading_users') }}</h3>
+          <p class="text-body-2 mb-4">{{ error }}</p>
+          <VBtn color="primary" @click="fetchUsers(1)">
+            {{ t('retry') }}
+          </VBtn>
         </div>
       </VCardText>
+
+      <!-- Pagination -->
+      <VCardActions v-if="!loading && users.length && pagination.last_page > 1">
+        <VSpacer />
+        <VPagination
+          v-model="pagination.current_page"
+          :length="pagination.last_page"
+          :total-visible="7"
+          @update:model-value="fetchUsers"
+        />
+        <VSpacer />
+      </VCardActions>
     </VCard>
 
     <!-- Create User Dialog -->
     <VDialog v-model="showCreateDialog" max-width="600">
       <VCard>
-        <VCardTitle>{{ t('create_new_user') }}</VCardTitle>
+        <VCardTitle class="d-flex align-center">
+          <VIcon icon="tabler-user-plus" class="me-2" />
+          {{ t('add_affiliate_user') }}
+        </VCardTitle>
         <VCardText>
           <VForm @submit.prevent="createUser">
             <VTextField v-model="userForm.nom_complet" :label="t('full_name')" :placeholder="t('enter_full_name')" :error-messages="userErrors.nom_complet" required class="mb-4" />
@@ -623,7 +574,38 @@ watch(
             <VTextField v-model="userForm.telephone" :label="t('phone')" :placeholder="t('enter_phone')" :error-messages="userErrors.telephone" class="mb-4" />
             <VTextarea v-model="userForm.adresse" :label="t('address')" :placeholder="t('enter_address')" :error-messages="userErrors.adresse" rows="3" class="mb-4" />
 
-
+            <!-- Bank Information -->
+            <VRow class="mb-4">
+              <VCol cols="12" md="6">
+                <VSelect
+                  v-model="userForm.bank_type"
+                  :label="t('bank_type')"
+                  :placeholder="t('select_bank')"
+                  :error-messages="userErrors.bank_type"
+                  :items="[
+                    { value: 'attijari', text: t('banks.attijariwafa') },
+                    { value: 'populaire', text: t('banks.banque_populaire') },
+                    { value: 'bmce', text: t('banks.bmce_bank') },
+                    { value: 'bmci', text: t('banks.bmci') },
+                    { value: 'cih', text: t('banks.cih_bank') },
+                    { value: 'credit_agricole', text: t('banks.credit_agricole') },
+                    { value: 'credit_maroc', text: t('banks.credit_du_maroc') },
+                    { value: 'societe_generale', text: t('banks.societe_generale') },
+                    { value: 'autre', text: t('other') }
+                  ]"
+                  clearable
+                />
+              </VCol>
+              <VCol cols="12" md="6">
+                <VTextField
+                  v-model="userForm.rib"
+                  :label="t('rib')"
+                  :placeholder="t('enter_rib')"
+                  :error-messages="userErrors.rib"
+                  style="font-family: monospace;"
+                />
+              </VCol>
+            </VRow>
 
             <ProfileImageUpload
               v-model="userForm.photo_profil"
@@ -647,15 +629,50 @@ watch(
     <!-- Edit User Dialog -->
     <VDialog v-model="showEditDialog" max-width="600">
       <VCard>
-        <VCardTitle>{{ t('edit_user') }}</VCardTitle>
+        <VCardTitle class="d-flex align-center">
+          <VIcon icon="tabler-edit" class="me-2" />
+          {{ t('edit_affiliate_user') }}
+        </VCardTitle>
         <VCardText>
           <VForm @submit.prevent="updateUser">
             <VTextField v-model="userForm.nom_complet" :label="t('full_name')" :placeholder="t('enter_full_name')" :error-messages="userErrors.nom_complet" required class="mb-4" />
             <VTextField v-model="userForm.email" :label="t('email')" :placeholder="t('enter_email')" :error-messages="userErrors.email" type="email" required class="mb-4" />
+            <VTextField v-model="userForm.password" :label="t('password')" :placeholder="t('leave_empty_to_keep_current')" :error-messages="userErrors.password" type="password" class="mb-4" />
             <VTextField v-model="userForm.telephone" :label="t('phone')" :placeholder="t('enter_phone')" :error-messages="userErrors.telephone" class="mb-4" />
             <VTextarea v-model="userForm.adresse" :label="t('address')" :placeholder="t('enter_address')" :error-messages="userErrors.adresse" rows="3" class="mb-4" />
 
-
+            <!-- Bank Information -->
+            <VRow class="mb-4">
+              <VCol cols="12" md="6">
+                <VSelect
+                  v-model="userForm.bank_type"
+                  :label="t('bank_type')"
+                  :placeholder="t('select_bank')"
+                  :error-messages="userErrors.bank_type"
+                  :items="[
+                    { value: 'attijari', text: t('banks.attijariwafa') },
+                    { value: 'populaire', text: t('banks.banque_populaire') },
+                    { value: 'bmce', text: t('banks.bmce_bank') },
+                    { value: 'bmci', text: t('banks.bmci') },
+                    { value: 'cih', text: t('banks.cih_bank') },
+                    { value: 'credit_agricole', text: t('banks.credit_agricole') },
+                    { value: 'credit_maroc', text: t('banks.credit_du_maroc') },
+                    { value: 'societe_generale', text: t('banks.societe_generale') },
+                    { value: 'autre', text: t('other') }
+                  ]"
+                  clearable
+                />
+              </VCol>
+              <VCol cols="12" md="6">
+                <VTextField
+                  v-model="userForm.rib"
+                  :label="t('rib')"
+                  :placeholder="t('enter_rib')"
+                  :error-messages="userErrors.rib"
+                  style="font-family: monospace;"
+                />
+              </VCol>
+            </VRow>
 
             <ProfileImageUpload
               v-model="userForm.photo_profil"
@@ -681,13 +698,13 @@ watch(
       <VCard>
         <VCardTitle class="d-flex align-center">
           <VIcon icon="tabler-eye" class="me-2" />
-          {{ t('view_user') }}
+          {{ t('view_affiliate_user') }}
         </VCardTitle>
         <VCardText>
           <VRow v-if="selectedUser">
             <!-- Profile Image -->
             <VCol cols="12" class="text-center mb-4">
-              <VAvatar size="120">
+              <VAvatar size="80">
                 <VImg
                   :src="getAvatarUrl(selectedUser.photo_profil)"
                   :alt="selectedUser.nom_complet"
@@ -696,7 +713,7 @@ watch(
               </VAvatar>
             </VCol>
 
-            <!-- User Information -->
+            <!-- Basic Information -->
             <VCol cols="12" md="6">
               <div class="mb-3">
                 <strong>{{ t('full_name') }}:</strong>
@@ -717,20 +734,27 @@ watch(
             </VCol>
             <VCol cols="12" md="6">
               <div class="mb-3">
-                <strong>{{ t('role') }}:</strong>
-                <VChip :color="selectedUser.roles[0] === 'admin' ? 'error' : 'primary'" size="small">
-                  {{ selectedUser.roles[0] || t('no_role') }}
-                </VChip>
-              </div>
-            </VCol>
-            <VCol cols="12">
-              <div class="mb-3">
                 <strong>{{ t('address') }}:</strong>
                 <div>{{ selectedUser.adresse || '-' }}</div>
               </div>
             </VCol>
 
-
+            <!-- Bank Information -->
+            <VCol cols="12" md="6">
+              <div class="mb-3">
+                <strong>{{ t('bank_type') }}:</strong>
+                <div class="d-flex align-center">
+                  <VIcon icon="tabler-building-bank" size="16" class="me-2" />
+                  {{ selectedUser.bank_type || t('bank_not_provided') }}
+                </div>
+              </div>
+            </VCol>
+            <VCol cols="12" md="6">
+              <div class="mb-3">
+                <strong>{{ t('rib') }}:</strong>
+                <div style="font-family: monospace;">{{ selectedUser.rib || t('bank_not_provided') }}</div>
+              </div>
+            </VCol>
 
             <!-- Status Information -->
             <VCol cols="12" md="6">
@@ -782,29 +806,18 @@ watch(
       </VCard>
     </VDialog>
 
-    <!-- Success/Error Snackbar -->
-    <VSnackbar
-      v-model="snackbar.show"
-      :color="snackbar.color"
-      :timeout="snackbar.timeout"
-      location="top end"
-    >
-      {{ snackbar.message }}
-    </VSnackbar>
-
-    <!-- Confirm Dialog -->
+    <!-- Confirm Action Dialog -->
     <ConfirmActionDialog
-      :is-dialog-visible="isConfirmDialogVisible"
-      :is-loading="isConfirmLoading"
-      :dialog-title="dialogTitle"
-      :dialog-text="dialogText"
-      :dialog-icon="dialogIcon"
-      :dialog-color="dialogColor"
+      v-model="isConfirmDialogVisible"
+      :title="dialogTitle"
+      :text="dialogText"
+      :icon="dialogIcon"
+      :color="dialogColor"
       :confirm-button-text="confirmButtonText"
       :cancel-button-text="cancelButtonText"
+      :loading="isConfirmLoading"
       @confirm="handleConfirm"
       @cancel="handleCancel"
     />
-
   </div>
 </template>

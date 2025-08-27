@@ -73,7 +73,7 @@ const kpiCards = computed(() => {
     {
       title: t('total_revenue'),
       value: overview.totalRevenue,
-      prefix: '$',
+      prefix: 'DH',
       icon: 'tabler-currency-dollar',
       color: 'success',
       trend: {
@@ -84,7 +84,7 @@ const kpiCards = computed(() => {
     {
       title: t('total_commissions'),
       value: overview.totalCommissions,
-      prefix: '$',
+      prefix: 'DH',
       icon: 'tabler-chart-line',
       color: 'info',
       trend: {
@@ -95,7 +95,7 @@ const kpiCards = computed(() => {
     {
       title: t('pending_payouts'),
       value: payouts.pending.amount,
-      prefix: '$',
+      prefix: 'DH',
       subtitle: `${payouts.pending.count} ${t('requests')}`,
       icon: 'tabler-clock',
       color: 'warning',
@@ -657,7 +657,7 @@ watch(autoRefresh, setupAutoRefresh)
               hide-default-footer
             >
               <template #item.amount="{ item }">
-                ${{ item.amount.toLocaleString() }}
+                {{ item.amount.toLocaleString() }} DH
               </template>
               <template #item.requestedAt="{ item }">
                 {{ new Date(item.requestedAt).toLocaleDateString() }}

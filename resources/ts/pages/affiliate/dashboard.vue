@@ -70,7 +70,7 @@ const kpiCards = computed(() => {
     {
       title: t('total_commissions'),
       value: overview.totalCommissions,
-      prefix: '$',
+      prefix: 'DH',
       icon: 'tabler-currency-dollar',
       color: 'success',
       trend: {
@@ -81,7 +81,7 @@ const kpiCards = computed(() => {
     {
       title: t('this_month'),
       value: overview.totalCommissionsMTD,
-      prefix: '$',
+      prefix: 'DH',
       icon: 'tabler-calendar',
       color: 'info',
       subtitle: t('monthly_earnings'),
@@ -660,10 +660,10 @@ watch(autoRefresh, setupAutoRefresh)
               hide-default-footer
             >
               <template #item.amount="{ item }">
-                ${{ item.amount.toLocaleString() }}
+                {{ item.amount.toLocaleString() }} DH
               </template>
               <template #item.commission="{ item }">
-                ${{ item.commission.toLocaleString() }}
+                {{ item.commission.toLocaleString() }} DH
               </template>
               <template #item.status="{ item }">
                 <VChip

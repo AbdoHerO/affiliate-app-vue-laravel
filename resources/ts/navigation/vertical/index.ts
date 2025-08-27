@@ -17,6 +17,11 @@ const adminNavigation = [
         icon: { icon: 'tabler-user-circle' },
       },
       {
+        title: 'nav_affiliate_users',
+        to: '/admin/affiliates-users',
+        icon: { icon: 'tabler-user-star' },
+      },
+      {
         title: 'nav_roles_permissions',
         to: '/admin/roles',
         icon: { icon: 'tabler-shield-lock' },
@@ -229,11 +234,6 @@ const affiliateNavigation = [
     title: 'nav_support',
     to: '/affiliate/tickets',
     icon: { icon: 'tabler-headset' },
-  },
-  {
-    title: 'nav_marketing_materials',
-    to: '/affiliate/marketing',
-    icon: { icon: 'tabler-photo' },
   },
 ] satisfies VerticalNavItems
 

@@ -230,12 +230,12 @@ export function calculateGrowthRate(chartData: TimeSeriesData | null | undefined
  * Format currency values for display
  */
 export function formatCurrency(value: number): string {
-  return new Intl.NumberFormat('en-US', {
+  return new Intl.NumberFormat('fr-MA', {
     style: 'currency',
-    currency: 'USD',
+    currency: 'MAD',
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
-  }).format(value)
+  }).format(value).replace('MAD', 'DH')
 }
 
 /**

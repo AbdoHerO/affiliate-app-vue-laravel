@@ -38,6 +38,10 @@ export function useNavigation() {
                 to: 'admin-users',
               },
               {
+                title: t('nav_affiliate_users'),
+                to: 'admin-affiliates-users',
+              },
+              {
                 title: t('nav_roles_permissions'),
                 to: 'admin-roles',
               },
@@ -242,11 +246,6 @@ export function useNavigation() {
             title: t('nav_support'),
             to: 'affiliate-tickets',
             icon: { icon: 'tabler-headset' },
-          },
-          {
-            title: t('nav_marketing_materials'),
-            to: 'affiliate-marketing',
-            icon: { icon: 'tabler-photo' },
           },
           {
             title: t('profile'),

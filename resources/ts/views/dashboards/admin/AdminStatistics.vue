@@ -24,7 +24,7 @@ const statistics = [
   },
   {
     title: t('admin.dashboard.revenue'),
-    stats: '$9745',
+    stats: '9745 DH',
     icon: 'tabler-currency-dollar',
     color: 'success',
   },
