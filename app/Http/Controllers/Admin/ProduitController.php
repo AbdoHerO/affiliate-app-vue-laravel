@@ -37,12 +37,13 @@ class ProduitController extends Controller
                 break;
         }
 
-        // Search by title or slug
+        // Search by title, slug, or SKU
         if ($request->filled('q')) {
             $search = $request->get('q');
             $query->where(function ($q) use ($search) {
                 $q->where('titre', 'LIKE', "%{$search}%")
-                  ->orWhere('slug', 'LIKE', "%{$search}%");
+                  ->orWhere('slug', 'LIKE', "%{$search}%")
+                  ->orWhere('sku', 'LIKE', "%{$search}%");
             });
         }
 

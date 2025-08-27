@@ -38,7 +38,8 @@ class CatalogueController extends Controller
                 $searchTerm = $request->input('q');
                 $query->where(function ($q) use ($searchTerm) {
                     $q->where('titre', 'like', "%{$searchTerm}%")
-                      ->orWhere('description', 'like', "%{$searchTerm}%");
+                      ->orWhere('description', 'like', "%{$searchTerm}%")
+                      ->orWhere('sku', 'like', "%{$searchTerm}%");
                 });
             }
 
@@ -108,6 +109,7 @@ class CatalogueController extends Controller
                 return [
                     'id' => $product->id,
                     'titre' => $product->titre,
+                    'sku' => $product->sku,
                     'description' => $product->description,
                     'copywriting' => $product->copywriting,
                     'slug' => $product->slug,
@@ -333,6 +335,7 @@ class CatalogueController extends Controller
             $transformedProduct = [
                 'id' => $product->id,
                 'titre' => $product->titre,
+                'sku' => $product->sku,
                 'description' => $product->description,
                 'copywriting' => $product->copywriting,
                 'slug' => $product->slug,

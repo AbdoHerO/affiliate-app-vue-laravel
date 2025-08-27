@@ -19,6 +19,7 @@ class PublicProduitResource extends JsonResource
             'id' => $this->id,
             'slug' => $this->slug,
             'titre' => $this->titre,
+            'sku' => $this->sku,
             'description' => $this->description,
             'copywriting' => $this->copywriting,
             'prix_vente' => $this->prix_vente,

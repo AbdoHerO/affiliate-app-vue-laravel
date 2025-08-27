@@ -64,6 +64,7 @@ const form = ref<ProduitFormData>({
   boutique_id: '',
   categorie_id: null,
   titre: '',
+  sku: '',
   description: '',
   copywriting: '',
   prix_achat: null,
@@ -235,6 +236,7 @@ const loadProduct = async () => {
           boutique_id: p.boutique_id,
           categorie_id: p.categorie_id,
           titre: p.titre,
+          sku: (p as any).sku || '',
           description: p.description || '',
           copywriting: (p as any).copywriting || '',
           prix_achat: p.prix_achat,
@@ -1548,6 +1550,20 @@ onMounted(async () => {
                   required
                   :error-messages="productErrors.titre"
                 />
+              </VCol>
+              <VCol cols="12" md="6">
+                <VTextField
+                  v-model="form.sku"
+                  label="SKU (Stock Keeping Unit)"
+                  variant="outlined"
+                  placeholder="e.g., PROD-001, SKU-ABC123"
+                  :error-messages="productErrors.sku"
+                  hint="Unique product identifier (optional)"
+                  persistent-hint
+                />
+              </VCol>
+              <VCol cols="12" md="6">
+                <!-- Spacer for layout -->
               </VCol>
               <VCol cols="12">
                 <VTextarea

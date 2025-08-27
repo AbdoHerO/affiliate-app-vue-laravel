@@ -306,6 +306,15 @@ const formatCopywriting = (text: string): string => {
         <!-- KPIs Row -->
         <div class="d-flex gap-3 flex-wrap">
           <VChip
+            v-if="product.sku"
+            color="secondary"
+            variant="tonal"
+            size="small"
+          >
+            <VIcon icon="tabler-barcode" start />
+            SKU: {{ product.sku }}
+          </VChip>
+          <VChip
             color="primary"
             variant="tonal"
             size="small"

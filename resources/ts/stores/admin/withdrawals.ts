@@ -60,6 +60,7 @@ export interface WithdrawalItem {
     produit?: {
       id: string
       titre: string
+      sku?: string | null
     }
   }
 }

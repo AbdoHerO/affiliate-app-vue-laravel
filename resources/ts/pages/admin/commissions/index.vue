@@ -62,6 +62,7 @@ const typeOptions = [
 const headers = [
   { title: t('table_column_affiliate'), key: 'affiliate.nom_complet', sortable: true },
   { title: t('table_column_order'), key: 'commande_id', sortable: true },
+  { title: t('table_column_product'), key: 'product', sortable: false },
   { title: t('table_column_type'), key: 'type', sortable: true },
   { title: t('admin_commissions_base_amount'), key: 'base_amount', sortable: true },
   { title: t('admin_commissions_rate'), key: 'rate', sortable: false },
@@ -532,6 +533,24 @@ onMounted(async () => {
           >
             {{ item.commande_id?.slice(-8) }}
           </VChip>
+        </template>
+
+        <!-- Product Column -->
+        <template #item.product="{ item }">
+          <div v-if="item.commande_article?.produit">
+            <div class="font-weight-medium">{{ item.commande_article.produit.titre }}</div>
+            <div v-if="item.commande_article.produit.sku" class="text-caption text-medium-emphasis">
+              <VChip
+                size="x-small"
+                color="secondary"
+                variant="outlined"
+                class="font-mono"
+              >
+                {{ item.commande_article.produit.sku }}
+              </VChip>
+            </div>
+          </div>
+          <span v-else class="text-medium-emphasis">{{ t('not_available') }}</span>
         </template>
 
         <!-- Base Amount Column -->

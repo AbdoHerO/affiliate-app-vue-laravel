@@ -22,7 +22,7 @@ class WithdrawalService
         $query = CommissionAffilie::where('user_id', $user->id)
             ->whereIn('status', [CommissionAffilie::STATUS_APPROVED, CommissionAffilie::STATUS_ELIGIBLE])
             ->whereNull('paid_withdrawal_id') // Not already reserved/paid
-            ->with(['commande:id,statut,total_ttc,created_at', 'commandeArticle.produit:id,titre']);
+            ->with(['commande:id,statut,total_ttc,created_at', 'commandeArticle.produit:id,titre,sku']);
 
         // Apply filters
         if (!empty($filters['status'])) {

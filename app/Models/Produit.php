@@ -28,6 +28,7 @@ class Produit extends Model
         'boutique_id',
         'categorie_id',
         'titre',
+        'sku',
         'description',
         'copywriting',
         'prix_achat',

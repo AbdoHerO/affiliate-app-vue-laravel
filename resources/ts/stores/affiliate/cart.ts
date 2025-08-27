@@ -14,6 +14,7 @@ export interface CartItem {
   product: {
     id: string
     titre: string
+    sku?: string | null
     prix_vente: number
     prix_achat: number
     prix_affilie: number

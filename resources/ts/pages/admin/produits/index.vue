@@ -74,7 +74,8 @@ const breadcrumbs = computed(() => [
 
 const headers = computed(() => [
   { title: t('admin_produits_photo'), key: 'image', sortable: false, width: 80, align: 'center' as const },
-  { title: t('admin_produits_titre'), key: 'titre', sortable: true, width: 350 },
+  { title: t('admin_produits_titre'), key: 'titre', sortable: true, width: 300 },
+  { title: t('admin_produits_sku'), key: 'sku', sortable: true, width: 120 },
   { title: t('admin_produits_boutique'), key: 'boutique.nom', sortable: true },
   { title: t('admin_produits_categorie'), key: 'categorie.nom', sortable: true },
   { title: t('admin_produits_prix_vente'), key: 'prix_vente', sortable: true, align: 'end' as const },
@@ -424,6 +425,22 @@ onMounted(async () => {
           <div class="product-title-column">
             <div class="font-weight-medium product-title">{{ item.titre }}</div>
             <div class="text-caption text-medium-emphasis">{{ item.slug }}</div>
+          </div>
+        </template>
+
+        <!-- SKU Column -->
+        <template #item.sku="{ item }">
+          <div class="sku-column">
+            <VChip
+              v-if="item.sku"
+              size="small"
+              color="info"
+              variant="outlined"
+              class="font-mono"
+            >
+              {{ item.sku }}
+            </VChip>
+            <span v-else class="text-medium-emphasis text-caption">{{ t('admin_produits_no_sku') }}</span>
           </div>
         </template>
 

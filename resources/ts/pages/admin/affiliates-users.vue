@@ -295,7 +295,7 @@ const updateUser = async () => {
       rib: userForm.value.rib,
       bank_type: userForm.value.bank_type,
     }
-    if (userForm.value.password) payload.password = userForm.value.password
+    if ((userForm.value as any).password) (payload as any).password = (userForm.value as any).password
 
     const { data, error: apiError } = await useApi<any>(`/admin/users/${selectedUser.value.id}`, {
       method: 'PUT',

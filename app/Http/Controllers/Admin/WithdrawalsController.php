@@ -109,7 +109,7 @@ class WithdrawalsController extends Controller
                 'user:id,nom_complet,email,telephone,rib,bank_type',
                 'items.commission:id,amount,status,created_at,commande_id,commande_article_id',
                 'items.commission.commande:id,statut,total_ttc,created_at',
-                'items.commission.commandeArticle.produit:id,titre'
+                'items.commission.commandeArticle.produit:id,titre,sku'
             ])->findOrFail($id);
 
             return response()->json([

@@ -3,6 +3,7 @@ export interface Produit {
   boutique_id: string
   categorie_id: string | null
   titre: string
+  sku?: string | null
   description: string | null
   prix_achat: number
   prix_vente: number

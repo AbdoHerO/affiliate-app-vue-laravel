@@ -187,6 +187,7 @@ const getMethodText = (method: string) => {
                   :headers="[
                     { title: 'Commission', key: 'commission.id', sortable: false },
                     { title: 'Commande', key: 'commission.commande.id', sortable: false },
+                    { title: 'Produit', key: 'commission.produit', sortable: false },
                     { title: 'Montant', key: 'amount', sortable: false },
                     { title: 'Type', key: 'commission.type', sortable: false },
                     { title: 'Date', key: 'commission.created_at', sortable: false },
@@ -204,6 +205,22 @@ const getMethodText = (method: string) => {
                     <span class="text-body-2 font-family-monospace">
                       #{{ item.commission?.commande?.id?.slice(-8) || 'N/A' }}
                     </span>
+                  </template>
+                  <template #item.commission.produit="{ item }">
+                    <div v-if="item.commission?.produit">
+                      <div class="text-body-2 font-weight-medium">{{ item.commission.produit.titre }}</div>
+                      <div v-if="item.commission.produit.sku" class="text-caption text-medium-emphasis">
+                        <VChip
+                          size="x-small"
+                          color="secondary"
+                          variant="outlined"
+                          class="font-mono"
+                        >
+                          {{ item.commission.produit.sku }}
+                        </VChip>
+                      </div>
+                    </div>
+                    <span v-else class="text-medium-emphasis">N/A</span>
                   </template>
                   <template #item.amount="{ item }">
                     <span class="text-body-2 font-weight-medium">

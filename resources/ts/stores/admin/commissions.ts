@@ -59,6 +59,7 @@ export interface Commission {
     produit?: {
       id: string
       titre: string
+      sku?: string | null
       prix_vente: number
     }
   }

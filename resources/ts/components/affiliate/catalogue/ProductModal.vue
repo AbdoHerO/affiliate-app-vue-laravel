@@ -205,10 +205,20 @@ onBeforeRouteLeave(() => {
         <div>
           <h4 class="text-h4 font-weight-bold">{{ product.titre }}</h4>
           <div class="d-flex align-center mt-2">
-            <VChip 
-              v-if="product.categorie" 
-              color="primary" 
-              variant="tonal" 
+            <VChip
+              v-if="product.sku"
+              color="secondary"
+              variant="outlined"
+              size="small"
+              class="me-3 font-mono"
+            >
+              <VIcon icon="tabler-barcode" start size="14" />
+              {{ product.sku }}
+            </VChip>
+            <VChip
+              v-if="product.categorie"
+              color="primary"
+              variant="tonal"
               size="small"
               class="me-3"
             >

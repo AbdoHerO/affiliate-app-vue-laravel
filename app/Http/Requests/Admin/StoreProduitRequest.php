@@ -25,6 +25,7 @@ class StoreProduitRequest extends FormRequest
             'boutique_id' => 'required|uuid|exists:boutiques,id',
             'categorie_id' => 'nullable|uuid|exists:categories,id',
             'titre' => 'required|string|max:190',
+            'sku' => 'nullable|string|max:100|unique:produits,sku',
             'description' => 'nullable|string',
             'copywriting' => 'nullable|string',
             'prix_achat' => 'required|numeric|min:0',

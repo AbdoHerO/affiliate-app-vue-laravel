@@ -556,6 +556,18 @@ const handleImageError = () => {
         {{ product.titre }}
       </h6>
 
+      <!-- SKU -->
+      <div v-if="product.sku" class="mb-1">
+        <VChip
+          size="x-small"
+          color="secondary"
+          variant="outlined"
+          class="font-mono"
+        >
+          {{ product.sku }}
+        </VChip>
+      </div>
+
       <!-- Category and Rating -->
       <div class="d-flex align-center justify-space-between mb-2">
         <div class="text-caption text-medium-emphasis">

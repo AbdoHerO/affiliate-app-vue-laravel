@@ -489,6 +489,7 @@ onMounted(() => {
               <VDataTable
                 :headers="[
                   { title: 'Produit', key: 'produit' },
+                  { title: 'SKU', key: 'produit.sku' },
                   { title: 'Variante', key: 'variante' },
                   { title: t('admin_preorder_table_quantity'), key: 'quantite' },
                   { title: t('admin_preorder_table_recommended_price'), key: 'prix_unitaire' },
@@ -518,8 +519,23 @@ onMounted(() => {
                     </VAvatar>
                     <div>
                       <div class="font-weight-medium">{{ item.produit.titre }}</div>
+                      <div v-if="item.produit.sku" class="text-caption text-medium-emphasis">
+                        SKU: {{ item.produit.sku }}
+                      </div>
                     </div>
                   </div>
+                </template>
+                <template #item.produit.sku="{ item }">
+                  <VChip
+                    v-if="item.produit?.sku"
+                    size="small"
+                    color="secondary"
+                    variant="outlined"
+                    class="font-mono"
+                  >
+                    {{ item.produit.sku }}
+                  </VChip>
+                  <span v-else class="text-medium-emphasis">-</span>
                 </template>
 
                 <template #item.variante="{ item }">

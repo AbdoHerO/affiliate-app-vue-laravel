@@ -59,6 +59,7 @@ const form = ref<ProduitFormData>({
   boutique_id: '',
   categorie_id: null,
   titre: '',
+  sku: '',
   description: '',
   copywriting: '',
   prix_achat: null,

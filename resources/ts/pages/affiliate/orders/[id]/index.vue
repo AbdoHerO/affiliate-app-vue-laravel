@@ -223,6 +223,7 @@ onMounted(() => {
             <VDataTable
               :headers="[
                 { title: t('affiliate.orders.product'), key: 'produit.titre' },
+                { title: 'SKU', key: 'produit.sku' },
                 { title: t('affiliate.orders.variant'), key: 'variante.nom' },
                 { title: t('affiliate.orders.quantity'), key: 'quantite' },
                 { title: t('affiliate.orders.unitPrice'), key: 'prix_unitaire' },
@@ -233,6 +234,18 @@ onMounted(() => {
             >
               <template #item.produit.titre="{ item }">
                 <div class="font-weight-medium">{{ item.produit?.titre || 'N/A' }}</div>
+              </template>
+              <template #item.produit.sku="{ item }">
+                <VChip
+                  v-if="item.produit?.sku"
+                  size="small"
+                  color="secondary"
+                  variant="outlined"
+                  class="font-mono"
+                >
+                  {{ item.produit.sku }}
+                </VChip>
+                <span v-else class="text-medium-emphasis">-</span>
               </template>
               <template #item.variante.nom="{ item }">
                 <VChip

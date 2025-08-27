@@ -28,6 +28,12 @@ class UpdateProduitRequest extends FormRequest
             'boutique_id' => 'required|uuid|exists:boutiques,id',
             'categorie_id' => 'nullable|uuid|exists:categories,id',
             'titre' => 'required|string|max:190',
+            'sku' => [
+                'nullable',
+                'string',
+                'max:100',
+                Rule::unique('produits', 'sku')->ignore($produitId)
+            ],
             'description' => 'nullable|string',
             'copywriting' => 'nullable|string',
             'prix_achat' => 'required|numeric|min:0',

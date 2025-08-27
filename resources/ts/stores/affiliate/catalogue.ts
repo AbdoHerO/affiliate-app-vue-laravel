@@ -8,6 +8,7 @@ export interface CatalogueProduct {
   id: string
   ref?: string
   titre: string
+  sku?: string | null
   description?: string
   copywriting?: string
   prix_achat: number
