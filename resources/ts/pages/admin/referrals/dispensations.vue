@@ -16,10 +16,10 @@ const { t } = useI18n()
 
 const showCreateDialog = ref(false)
 const createForm = ref({
-  affiliate_id: '',
-  points: '',
-  comment: '',
-  reference: '',
+  affiliate_id: '' as string,
+  points: '' as string,
+  comment: '' as string,
+  reference: '' as string,
 })
 
 const affiliates = ref([])
@@ -205,7 +205,6 @@ onMounted(() => {
               <VBtn
                 color="primary"
                 size="small"
-                :disabled="!item.profil_affilie?.points || item.profil_affilie.points === 0"
                 @click="openCreateDialog(item)"
               >
                 <VIcon start icon="tabler-gift" />
