@@ -3098,6 +3098,7 @@
   "change_profile_image": "تغيير صورة الملف الشخصي",
   "remove_profile_image": "إزالة صورة الملف الشخصي",
   "image_upload_success": "تم رفع الصورة بنجاح",
-  "image_upload_failed": "فشل في رفع الصورة"
+  "image_upload_failed": "فشل في رفع الصورة",
+  "leave_empty_to_keep_current": "اتركه فارغاً للاحتفاظ بكلمة المرور الحالية"
 }
 

@@ -75,8 +75,8 @@ const uploadDocument = async () => {
     formData.append('type_doc', uploadForm.value.type_doc)
     formData.append('fichier', uploadForm.value.fichier)
     
-    const baseUrl = import.meta.env.VITE_API_BASE_URL || ''
-    const uploadUrl = `${baseUrl}/api/profile/kyc-documents`
+    const baseUrl = import.meta.env.VITE_API_BASE_URL || '/api'
+    const uploadUrl = `${baseUrl}/profile/kyc-documents`
     
     const response = await fetch(uploadUrl, {
       method: 'POST',
@@ -114,30 +114,18 @@ const uploadDocument = async () => {
 // Download document
 const downloadDocument = async (document: KycDocument) => {
   try {
-    const baseUrl = import.meta.env.VITE_API_BASE_URL || ''
-    const downloadUrl = `${baseUrl}/api/profile/kyc-documents/${document.id}/download`
-    
-    const response = await fetch(downloadUrl, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
-      },
-    })
-    
-    if (!response.ok) {
-      showError(t('download_failed'))
-      return
-    }
-    
-    const blob = await response.blob()
-    const url = window.URL.createObjectURL(blob)
+    // Use direct storage URL instead of API endpoint
+    const storageUrl = `/storage/kyc-documents/${document.chemin_fichier}`
+
+    // Create a temporary link and trigger download
     const a = document.createElement('a')
-    a.href = url
-    a.download = `${getTypeLabel(document.type_doc)}_${document.id}`
+    a.href = storageUrl
+    a.download = `${getTypeLabel(document.type_doc)}_${document.nom_fichier}`
+    a.target = '_blank'
     document.body.appendChild(a)
     a.click()
-    window.URL.revokeObjectURL(url)
     document.body.removeChild(a)
-    
+
   } catch (err: any) {
     showError(err.message || t('download_failed'))
   }

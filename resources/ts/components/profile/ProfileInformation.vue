@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useAuth } from '@/composables/useAuth'
 import { useApi } from '@/composables/useApi'
@@ -194,7 +194,7 @@ const saveProfile = async () => {
 // Computed properties
 const hasChanges = computed(() => {
   if (!user) return false
-  
+
   return (
     form.value.nom_complet !== (user.nom_complet || '') ||
     form.value.email !== (user.email || '') ||
@@ -203,6 +203,20 @@ const hasChanges = computed(() => {
     form.value.cin !== (user.cin || '') ||
     form.value.photo_profil !== (user.photo_profil || '')
   )
+})
+
+// Watch for user data changes and reinitialize form
+watch(() => user, (newUser) => {
+  if (newUser) {
+    console.log('👤 User data changed, reinitializing form:', newUser)
+    initializeForm()
+  }
+}, { immediate: true })
+
+// Initialize on mount
+onMounted(() => {
+  console.log('🔄 Component mounted, initializing form')
+  initializeForm()
 })
 
 const canSave = computed(() => {

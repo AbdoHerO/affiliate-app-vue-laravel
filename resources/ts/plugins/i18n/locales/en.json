@@ -3102,5 +3102,6 @@
   "change_profile_image": "Change Profile Image",
   "remove_profile_image": "Remove Profile Image",
   "image_upload_success": "Image uploaded successfully",
-  "image_upload_failed": "Image upload failed"
+  "image_upload_failed": "Image upload failed",
+  "leave_empty_to_keep_current": "Leave empty to keep current password"
 }

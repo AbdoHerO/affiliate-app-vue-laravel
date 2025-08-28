@@ -83,8 +83,9 @@ const userForm = ref({
   password: '',
   telephone: '',
   adresse: '',
+  cin: '',
   photo_profil: '',
-  role: '',
+  role: 'affiliate', // Default to affiliate role
   statut: 'actif' as User['statut'],
   kyc_statut: 'non_requis' as User['kyc_statut'],
   rib: '',
@@ -242,6 +243,7 @@ const createUser = async () => {
         password: userForm.value.password,
         telephone: userForm.value.telephone,
         adresse: userForm.value.adresse,
+        cin: userForm.value.cin,
         photo_profil: userForm.value.photo_profil,
         role: userForm.value.role,
         statut: userForm.value.statut,
@@ -288,6 +290,7 @@ const updateUser = async () => {
       email: userForm.value.email,
       telephone: userForm.value.telephone,
       adresse: userForm.value.adresse,
+      cin: userForm.value.cin,
       photo_profil: userForm.value.photo_profil,
       role: userForm.value.role,
       statut: userForm.value.statut,
@@ -331,8 +334,9 @@ const resetForm = () => {
     password: '',
     telephone: '',
     adresse: '',
+    cin: '',
     photo_profil: '',
-    role: '',
+    role: 'affiliate', // Default to affiliate role
     statut: 'actif',
     kyc_statut: 'non_requis',
     rib: '',
@@ -349,8 +353,9 @@ const openEditDialog = (user: User) => {
     password: '',
     telephone: user.telephone || '',
     adresse: user.adresse || '',
+    cin: user.cin || '',
     photo_profil: user.photo_profil || '',
-    role: user.roles[0] || '',
+    role: user.roles[0] || 'affiliate',
     statut: user.statut,
     kyc_statut: user.kyc_statut,
     rib: user.rib || '',
@@ -501,7 +506,7 @@ onMounted(async () => {
                   {{ user.kyc_statut }}
                 </VChip>
               </td>
-              <td>{{ new Date(user.created_at).toLocaleDateString() }}</td>
+              <td>{{ user.created_at ? new Date(user.created_at).toLocaleDateString() : t('not_available') }}</td>
               <td>
                 <SoftDeleteActions
                   :item="user"
@@ -573,6 +578,7 @@ onMounted(async () => {
             <VTextField v-model="userForm.password" :label="t('password')" :placeholder="t('enter_password')" :error-messages="userErrors.password" type="password" required class="mb-4" />
             <VTextField v-model="userForm.telephone" :label="t('phone')" :placeholder="t('enter_phone')" :error-messages="userErrors.telephone" class="mb-4" />
             <VTextarea v-model="userForm.adresse" :label="t('address')" :placeholder="t('enter_address')" :error-messages="userErrors.adresse" rows="3" class="mb-4" />
+            <VTextField v-model="userForm.cin" :label="t('cin_number')" :placeholder="t('enter_cin')" :error-messages="userErrors.cin" class="mb-4" />
 
             <!-- Bank Information -->
             <VRow class="mb-4">
@@ -593,6 +599,8 @@ onMounted(async () => {
                     { value: 'societe_generale', text: t('banks.societe_generale') },
                     { value: 'autre', text: t('other') }
                   ]"
+                  item-title="text"
+                  item-value="value"
                   clearable
                 />
               </VCol>
@@ -613,7 +621,7 @@ onMounted(async () => {
               :error-messages="userErrors.photo_profil"
               class="mb-4"
             />
-            <VSelect v-model="userForm.role" :items="roles" :label="t('role')" :placeholder="t('select_role')" :error-messages="userErrors.role" required class="mb-4" />
+            <!-- Role is hidden and set to 'affiliate' by default -->
             <VSelect v-model="userForm.statut" :items="statusOptions.slice(1)" :label="t('status')" :placeholder="t('select_status')" required class="mb-4" />
             <VSelect v-model="userForm.kyc_statut" :items="kycStatusOptions" :label="t('kyc_status')" :placeholder="t('select_kyc_status')" required />
           </VForm>
@@ -640,6 +648,7 @@ onMounted(async () => {
             <VTextField v-model="userForm.password" :label="t('password')" :placeholder="t('leave_empty_to_keep_current')" :error-messages="userErrors.password" type="password" class="mb-4" />
             <VTextField v-model="userForm.telephone" :label="t('phone')" :placeholder="t('enter_phone')" :error-messages="userErrors.telephone" class="mb-4" />
             <VTextarea v-model="userForm.adresse" :label="t('address')" :placeholder="t('enter_address')" :error-messages="userErrors.adresse" rows="3" class="mb-4" />
+            <VTextField v-model="userForm.cin" :label="t('cin_number')" :placeholder="t('enter_cin')" :error-messages="userErrors.cin" class="mb-4" />
 
             <!-- Bank Information -->
             <VRow class="mb-4">
@@ -660,6 +669,8 @@ onMounted(async () => {
                     { value: 'societe_generale', text: t('banks.societe_generale') },
                     { value: 'autre', text: t('other') }
                   ]"
+                  item-title="text"
+                  item-value="value"
                   clearable
                 />
               </VCol>
@@ -680,7 +691,7 @@ onMounted(async () => {
               :error-messages="userErrors.photo_profil"
               class="mb-4"
             />
-            <VSelect v-model="userForm.role" :items="roles" :label="t('role')" :placeholder="t('select_role')" :error-messages="userErrors.role" required class="mb-4" />
+            <!-- Role is hidden and set to 'affiliate' by default -->
             <VSelect v-model="userForm.statut" :items="statusOptions.slice(1)" :label="t('status')" :placeholder="t('select_status')" required class="mb-4" />
             <VSelect v-model="userForm.kyc_statut" :items="kycStatusOptions" :label="t('kyc_status')" :placeholder="t('select_kyc_status')" required />
           </VForm>
@@ -793,7 +804,7 @@ onMounted(async () => {
             <VCol cols="12" md="6">
               <div class="mb-3">
                 <strong>{{ t('created') }}:</strong>
-                <div>{{ new Date(selectedUser.created_at).toLocaleDateString() }}</div>
+                <div>{{ selectedUser.created_at ? new Date(selectedUser.created_at).toLocaleDateString() : t('not_available') }}</div>
               </div>
             </VCol>
           </VRow>
@@ -801,21 +812,21 @@ onMounted(async () => {
         <VCardActions>
           <VSpacer />
           <VBtn variant="outlined" @click="showViewDialog = false">{{ t('close') }}</VBtn>
-          <VBtn color="primary" @click="openEditDialog(selectedUser); showViewDialog = false">{{ t('edit') }}</VBtn>
+          <VBtn color="primary" @click="selectedUser && openEditDialog(selectedUser); showViewDialog = false">{{ t('edit') }}</VBtn>
         </VCardActions>
       </VCard>
     </VDialog>
 
     <!-- Confirm Action Dialog -->
     <ConfirmActionDialog
-      v-model="isConfirmDialogVisible"
-      :title="dialogTitle"
-      :text="dialogText"
-      :icon="dialogIcon"
-      :color="dialogColor"
+      :is-dialog-visible="isConfirmDialogVisible"
+      :is-loading="isConfirmLoading"
+      :dialog-title="dialogTitle"
+      :dialog-text="dialogText"
+      :dialog-icon="dialogIcon"
+      :dialog-color="dialogColor"
       :confirm-button-text="confirmButtonText"
       :cancel-button-text="cancelButtonText"
-      :loading="isConfirmLoading"
       @confirm="handleConfirm"
       @cancel="handleCancel"
     />

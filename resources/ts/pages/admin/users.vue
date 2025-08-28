@@ -119,6 +119,7 @@ const userForm = ref({
   password: '',
   telephone: '',
   adresse: '',
+  cin: '',
   photo_profil: '',
   role: '',
   statut: 'actif' as User['statut'],
@@ -237,6 +238,7 @@ const createUser = async () => {
         password_confirmation: userForm.value.password,
         telephone: userForm.value.telephone,
         adresse: userForm.value.adresse,
+        cin: userForm.value.cin,
         photo_profil: userForm.value.photo_profil,
         role: userForm.value.role,
         statut: userForm.value.statut,
@@ -280,6 +282,7 @@ const updateUser = async () => {
       email: userForm.value.email,
       telephone: userForm.value.telephone,
       adresse: userForm.value.adresse,
+      cin: userForm.value.cin,
       photo_profil: userForm.value.photo_profil,
       role: userForm.value.role,
       statut: userForm.value.statut,
@@ -387,6 +390,7 @@ const resetForm = () => {
     password: '',
     telephone: '',
     adresse: '',
+    cin: '',
     photo_profil: '',
     role: '',
     statut: 'actif',
@@ -403,6 +407,7 @@ const openEditDialog = (user: User) => {
     password: '',
     telephone: user.telephone || '',
     adresse: user.adresse || '',
+    cin: user.cin || '',
     photo_profil: user.photo_profil || '',
     role: user.roles[0] || '',
     statut: user.statut,
@@ -622,6 +627,7 @@ watch(
             <VTextField v-model="userForm.password" :label="t('password')" :placeholder="t('enter_password')" :error-messages="userErrors.password" type="password" required class="mb-4" />
             <VTextField v-model="userForm.telephone" :label="t('phone')" :placeholder="t('enter_phone')" :error-messages="userErrors.telephone" class="mb-4" />
             <VTextarea v-model="userForm.adresse" :label="t('address')" :placeholder="t('enter_address')" :error-messages="userErrors.adresse" rows="3" class="mb-4" />
+            <VTextField v-model="userForm.cin" :label="t('cin_number')" :placeholder="t('enter_cin')" :error-messages="userErrors.cin" class="mb-4" />
 
 
 
@@ -654,6 +660,7 @@ watch(
             <VTextField v-model="userForm.email" :label="t('email')" :placeholder="t('enter_email')" :error-messages="userErrors.email" type="email" required class="mb-4" />
             <VTextField v-model="userForm.telephone" :label="t('phone')" :placeholder="t('enter_phone')" :error-messages="userErrors.telephone" class="mb-4" />
             <VTextarea v-model="userForm.adresse" :label="t('address')" :placeholder="t('enter_address')" :error-messages="userErrors.adresse" rows="3" class="mb-4" />
+            <VTextField v-model="userForm.cin" :label="t('cin_number')" :placeholder="t('enter_cin')" :error-messages="userErrors.cin" class="mb-4" />
 
 
 

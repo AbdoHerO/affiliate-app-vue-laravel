@@ -3097,5 +3097,6 @@
   "change_profile_image": "Modifier la photo de profil",
   "remove_profile_image": "Supprimer la photo de profil",
   "image_upload_success": "Image téléchargée avec succès",
-  "image_upload_failed": "Échec du téléchargement de l'image"
+  "image_upload_failed": "Échec du téléchargement de l'image",
+  "leave_empty_to_keep_current": "Laisser vide pour conserver le mot de passe actuel"
 }
