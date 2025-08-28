@@ -68,6 +68,7 @@ export interface DrawerViewModel {
   id: string
   ref?: string
   titre: string
+  sku?: string | null
   description?: string
   copywriting?: string
   notes_admin?: string
@@ -700,6 +701,7 @@ export const useCatalogueStore = defineStore('affiliate-catalogue', () => {
       id: product.id,
       ref: product.ref,
       titre: product.titre,
+      sku: product.sku,
       description: product.description,
       copywriting: product.copywriting,
       notes_admin: product.notes_admin,
