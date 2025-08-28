@@ -32,6 +32,7 @@ use App\Http\Controllers\Admin\AdminReferralController as AdminReferralStatsCont
 use App\Http\Controllers\Admin\ReferralDispensationController;
 use App\Http\Controllers\Admin\AffiliateReferralController as AdminAffiliateReferralController;
 use App\Http\Controllers\Admin\ReferrersController;
+use App\Http\Controllers\Admin\RewardsController;
 use App\Http\Controllers\Affiliate\ReferralController as AffiliateReferralController;
 use App\Http\Controllers\Affiliate\PointsController;
 use App\Http\Controllers\PublicController;
@@ -522,6 +523,13 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::post('dispensations', [ReferrersController::class, 'createDispensation']);
             Route::get('{affiliateId}/dispensations', [ReferrersController::class, 'getDispensationHistory']);
             Route::get('{affiliateId}/points', [ReferrersController::class, 'getPointsSummary']);
+        });
+
+        // Rewards Management (Bonus Points System)
+        Route::prefix('rewards')->group(function () {
+            Route::get('/', [RewardsController::class, 'index']);
+            Route::post('/', [RewardsController::class, 'createReward']);
+            Route::get('{affiliateId}/history', [RewardsController::class, 'getRewardHistory']);
         });
 
         // Testing & Debug Routes (only in non-production)

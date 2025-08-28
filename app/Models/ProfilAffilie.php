@@ -116,6 +116,14 @@ class ProfilAffilie extends Model
     }
 
     /**
+     * Get the referral rewards received by this affiliate.
+     */
+    public function referralRewards(): HasMany
+    {
+        return $this->hasMany(\App\Models\ReferralReward::class, 'referrer_affiliate_id');
+    }
+
+    /**
      * Get the referral clicks made through this affiliate's codes.
      */
     public function referralClicks()

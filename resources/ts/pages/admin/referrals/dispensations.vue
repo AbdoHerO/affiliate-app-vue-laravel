@@ -12,24 +12,7 @@ definePage({
 
 const { t } = useI18n()
 
-// State
-const loading = ref(false)
-const dispensations = ref([])
-const pagination = ref({
-  current_page: 1,
-  last_page: 1,
-  per_page: 15,
-  total: 0,
-})
-
-const filters = ref({
-  search: '',
-  affiliate_id: '',
-  start_date: '',
-  end_date: '',
-  min_points: '',
-  max_points: '',
-})
+// State (removed unused dispensations state since we only show affiliates now)
 
 const showCreateDialog = ref(false)
 const createForm = ref({
@@ -43,63 +26,36 @@ const affiliates = ref([])
 const affiliateOptions = ref([])
 const loadingAffiliates = ref(false)
 
+// History Modal
+const showHistoryModal = ref(false)
+const selectedAffiliate = ref(null)
+const historyData = ref([])
+const historyLoading = ref(false)
+const historyPagination = ref({
+  current_page: 1,
+  last_page: 1,
+  per_page: 10,
+  total: 0,
+})
+
 // State management
 let abortController: AbortController | null = null
 
-// Headers for the data table
+// Headers for the unified affiliates table
 const headers = computed(() => [
-  { title: t('affiliate'), key: 'referrer_affiliate', sortable: false },
-  { title: t('points'), key: 'points', sortable: true },
-  { title: t('comment'), key: 'comment', sortable: false },
-  { title: t('reference'), key: 'reference', sortable: false },
-  { title: t('created_by'), key: 'created_by_admin', sortable: false },
-  { title: t('date'), key: 'created_at', sortable: true },
-  { title: t('actions'), key: 'actions', sortable: false },
-])
-
-// Headers for affiliates table
-const affiliateHeaders = computed(() => [
-  { title: t('name'), key: 'nom_complet', sortable: true },
-  { title: t('email'), key: 'email', sortable: true },
-  { title: t('current_points'), key: 'profil_affilie.points', sortable: true },
-  { title: t('total_commissions'), key: 'total_commissions', sortable: true },
+  { title: t('affiliate'), key: 'affiliate', sortable: false },
+  { title: t('available_points'), key: 'profil_affilie.points', sortable: true },
+  { title: t('total_signups'), key: 'total_signups', sortable: true },
+  { title: t('verified_signups'), key: 'verified_signups', sortable: true },
   { title: t('actions'), key: 'actions', sortable: false },
 ])
 
 // Methods
-const fetchDispensations = async (page = 1) => {
-  loading.value = true
-  try {
-    const params = {
-      page,
-      per_page: pagination.value.per_page,
-      ...filters.value,
-    }
-
-    // Remove empty filters
-    Object.keys(params).forEach(key => {
-      if (params[key] === '' || params[key] === null) {
-        delete params[key]
-      }
-    })
-
-    const response = await axios.get('/admin/referrals/dispensations', { params })
-
-    if (response.data.success) {
-      dispensations.value = response.data.data
-      pagination.value = response.data.pagination
-    }
-  } catch (error) {
-    console.error('Failed to fetch dispensations:', error)
-  } finally {
-    loading.value = false
-  }
-}
 
 const fetchAffiliates = async () => {
   loadingAffiliates.value = true
   try {
-    const response = await axios.get('/admin/affiliates', {
+    const response = await axios.get('/admin/rewards', {
       params: { per_page: 100 }
     })
 
@@ -108,8 +64,8 @@ const fetchAffiliates = async () => {
       affiliates.value = response.data.data
 
       // Also create dropdown options for the create form
-      affiliateOptions.value = response.data.data.map(affiliate => ({
-        value: affiliate.profil_affilie?.id || affiliate.id,
+      affiliateOptions.value = response.data.data.map((affiliate: any) => ({
+        value: affiliate.profil_affilie?.id,
         title: `${affiliate.nom_complet} (${affiliate.email})`,
       }))
     }
@@ -120,44 +76,57 @@ const fetchAffiliates = async () => {
   }
 }
 
-const onSearch = () => {
-  pagination.value.current_page = 1
-  fetchDispensations()
-}
 
-const clearFilters = () => {
-  filters.value = {
-    search: '',
-    affiliate_id: '',
-    start_date: '',
-    end_date: '',
-    min_points: '',
-    max_points: '',
-  }
-  fetchDispensations()
-}
 
-const openCreateDialog = (affiliate = null) => {
+const openCreateDialog = (affiliate: any = null) => {
   createForm.value = {
     affiliate_id: affiliate?.profil_affilie?.id || '',
-    points: affiliate?.profil_affilie?.points || '100', // Default points
-    comment: affiliate ? `Bonus pour ${affiliate.nom_complet}` : '',
-    reference: `REF-${Date.now()}`,
+    points: '100', // Default points
+    comment: affiliate ? `Récompense pour ${affiliate.nom_complet}` : '',
+    reference: `REWARD-${Date.now()}`,
   }
   showCreateDialog.value = true
 }
 
-const createDispensation = async () => {
+const openHistoryModal = async (affiliate: any) => {
+  selectedAffiliate.value = affiliate
+  showHistoryModal.value = true
+  await fetchAffiliateHistory(affiliate.profil_affilie?.id)
+}
+
+const fetchAffiliateHistory = async (affiliateId: string, page = 1) => {
+  historyLoading.value = true
   try {
-    const response = await axios.post('/admin/referrals/dispensations', createForm.value)
+    const response = await axios.get(`/admin/rewards/${affiliateId}/history`, {
+      params: {
+        page,
+        per_page: historyPagination.value.per_page,
+      }
+    })
+
+    if (response.data.success) {
+      historyData.value = response.data.data.rewards
+      historyPagination.value = response.data.data.pagination
+    }
+  } catch (error) {
+    console.error('Failed to fetch affiliate history:', error)
+  } finally {
+    historyLoading.value = false
+  }
+}
+
+const createReward = async () => {
+  try {
+    const response = await axios.post('/admin/rewards', createForm.value)
 
     if (response.data.success) {
       showCreateDialog.value = false
-      fetchDispensations()
+      fetchAffiliates() // Refresh affiliates list to show updated points
       // Show success message
+      console.log('Reward created successfully:', response.data.data)
     }
   } catch (error) {
-    console.error('Failed to create dispensation:', error)
+    console.error('Failed to create reward:', error)
     // Show error message
   }
 }
@@ -172,7 +141,6 @@ const formatPoints = (points: number) => {
 
 // Lifecycle
 onMounted(() => {
-  fetchDispensations()
   fetchAffiliates()
 })
 </script>
@@ -183,213 +151,91 @@ onMounted(() => {
     <div class="d-flex justify-space-between align-center mb-6">
       <div>
         <h1 class="text-h4 font-weight-bold mb-1">
-          {{ t('dispensations_management') }}
+          {{ t('rewards_management') }}
         </h1>
         <p class="text-body-1 mb-0">
-          {{ t('dispensations_subtitle') }}
+          {{ t('rewards_subtitle') }}
         </p>
       </div>
     </div>
 
-    <!-- Affiliates Table with Create Dispensation Actions -->
-    <VCard class="mb-6">
-      <VCardTitle>{{ t('affiliates_list') }}</VCardTitle>
+    <!-- Unified Affiliates Table -->
+    <VCard>
+      <VCardTitle>{{ t('affiliates_rewards_management') }}</VCardTitle>
       <VCardText>
-        <VDataTableServer
-          :headers="affiliateHeaders"
+        <VDataTable
+          :headers="headers"
           :items="affiliates"
           :loading="loadingAffiliates"
           item-value="id"
           class="text-no-wrap"
         >
+          <template #item.affiliate="{ item }">
+            <div class="d-flex align-center">
+              <VAvatar size="32" class="me-3" color="primary" variant="tonal">
+                <VIcon icon="tabler-user-star" />
+              </VAvatar>
+              <div>
+                <div class="font-weight-medium">{{ item.nom_complet }}</div>
+                <div class="text-body-2 text-medium-emphasis">{{ item.email }}</div>
+              </div>
+            </div>
+          </template>
+
           <template #item.profil_affilie.points="{ item }">
             <VChip color="primary" size="small">
               {{ item.profil_affilie?.points || 0 }} pts
             </VChip>
           </template>
 
-          <template #item.actions="{ item }">
-            <VBtn
-              color="primary"
-              size="small"
-              @click="openCreateDialog(item)"
-            >
-              <VIcon start icon="tabler-plus" />
-              {{ t('create_dispensation') }}
-            </VBtn>
+          <template #item.total_signups="{ item }">
+            <VChip color="info" size="small" variant="outlined">
+              {{ item.total_signups || 0 }}
+            </VChip>
           </template>
-        </VDataTableServer>
-      </VCardText>
-    </VCard>
 
-    <!-- Filters -->
-    <VCard class="mb-6">
-      <VCardTitle>{{ t('filters') }}</VCardTitle>
-      <VCardText>
-        <VRow>
-          <VCol cols="12" md="3">
-            <VTextField
-              v-model="filters.search"
-              :label="t('search')"
-              :placeholder="t('search_comment_reference')"
-              prepend-inner-icon="tabler-search"
-              clearable
-              @keyup.enter="onSearch"
-            />
-          </VCol>
+          <template #item.verified_signups="{ item }">
+            <VChip color="success" size="small" variant="outlined">
+              {{ item.verified_signups || 0 }}
+            </VChip>
+          </template>
 
-          <VCol cols="12" md="3">
-            <VSelect
-              v-model="filters.affiliate_id"
-              :items="affiliateOptions"
-              :label="t('affiliate')"
-              clearable
-              @update:model-value="onSearch"
-            />
-          </VCol>
-
-          <VCol cols="12" md="2">
-            <VTextField
-              v-model="filters.min_points"
-              type="number"
-              :label="t('min_points')"
-              @change="onSearch"
-            />
-          </VCol>
-
-          <VCol cols="12" md="2">
-            <VTextField
-              v-model="filters.max_points"
-              type="number"
-              :label="t('max_points')"
-              @change="onSearch"
-            />
-          </VCol>
-
-          <VCol cols="12" md="2">
+          <template #item.actions="{ item }">
             <div class="d-flex gap-2">
               <VBtn
                 color="primary"
-                @click="onSearch"
+                size="small"
+                :disabled="!item.profil_affilie?.points || item.profil_affilie.points === 0"
+                @click="openCreateDialog(item)"
               >
-                {{ t('search') }}
+                <VIcon start icon="tabler-gift" />
+                {{ t('create_reward') }}
               </VBtn>
+
               <VBtn
+                color="info"
                 variant="outlined"
-                @click="clearFilters"
+                size="small"
+                @click="openHistoryModal(item)"
               >
-                {{ t('clear') }}
+                <VIcon start icon="tabler-history" />
+                {{ t('rewards_history') }}
               </VBtn>
             </div>
-          </VCol>
-        </VRow>
-
-        <!-- Date Range -->
-        <VRow class="mt-2">
-          <VCol cols="12" md="3">
-            <VTextField
-              v-model="filters.start_date"
-              type="date"
-              :label="t('start_date')"
-              @change="onSearch"
-            />
-          </VCol>
-          <VCol cols="12" md="3">
-            <VTextField
-              v-model="filters.end_date"
-              type="date"
-              :label="t('end_date')"
-              @change="onSearch"
-            />
-          </VCol>
-        </VRow>
-      </VCardText>
-    </VCard>
-
-    <!-- Data Table -->
-    <VCard>
-      <VCardText>
-        <VDataTableServer
-          v-model:page="pagination.current_page"
-          :headers="headers"
-          :items="dispensations"
-          :items-length="pagination.total"
-          :items-per-page="pagination.per_page"
-          :loading="loading"
-          class="text-no-wrap"
-          @update:page="fetchDispensations"
-        >
-          <template #item.referrer_affiliate="{ item }">
-            <div class="d-flex align-center">
-              <VAvatar size="32" class="me-3" color="primary" variant="tonal">
-                <VIcon icon="tabler-user-star" />
-              </VAvatar>
-              <div>
-                <div class="font-weight-medium">{{ item.referrer_affiliate.utilisateur.nom_complet }}</div>
-                <div class="text-body-2 text-medium-emphasis">{{ item.referrer_affiliate.utilisateur.email }}</div>
-              </div>
-            </div>
-          </template>
-
-          <template #item.points="{ item }">
-            <VChip
-              color="success"
-              size="small"
-            >
-              {{ formatPoints(item.points) }}
-            </VChip>
-          </template>
-
-          <template #item.comment="{ item }">
-            <div class="text-truncate" style="max-width: 200px;">
-              {{ item.comment }}
-            </div>
-          </template>
-
-          <template #item.reference="{ item }">
-            <VChip
-              v-if="item.reference"
-              color="info"
-              size="small"
-              variant="outlined"
-            >
-              {{ item.reference }}
-            </VChip>
-            <span v-else class="text-medium-emphasis">-</span>
-          </template>
-
-          <template #item.created_by_admin="{ item }">
-            <div class="d-flex align-center">
-              <VAvatar size="24" class="me-2" color="secondary" variant="tonal">
-                <VIcon icon="tabler-shield" size="16" />
-              </VAvatar>
-              <span class="text-body-2">{{ item.created_by_admin.nom_complet }}</span>
-            </div>
-          </template>
-
-          <template #item.created_at="{ item }">
-            {{ formatDate(item.created_at) }}
-          </template>
-
-          <template #item.actions="{ item }">
-            <VBtn
-              icon="tabler-eye"
-              size="small"
-              variant="text"
-              @click="() => $router.push({ name: 'admin-referrals-dispensations-id', params: { id: item.id } })"
-            />
           </template>
 
           <template #no-data>
             <div class="text-center py-8">
-              <VIcon icon="tabler-gift-off" size="64" class="mb-4" color="disabled" />
-              <h6 class="text-h6 mb-2">{{ t('no_dispensations') }}</h6>
-              <p class="text-body-2">{{ t('no_dispensations_description') }}</p>
+              <VIcon icon="tabler-users-off" size="64" class="mb-4" color="disabled" />
+              <h6 class="text-h6 mb-2">{{ t('no_affiliates') }}</h6>
+              <p class="text-body-2">{{ t('no_affiliates_description') }}</p>
             </div>
           </template>
-        </VDataTableServer>
+        </VDataTable>
       </VCardText>
     </VCard>
+
+
 
     <!-- Create Dispensation Dialog -->
     <VDialog
@@ -397,9 +243,9 @@ onMounted(() => {
       max-width="600"
     >
       <VCard>
-        <VCardTitle>{{ t('create_dispensation') }}</VCardTitle>
+        <VCardTitle>{{ t('create_reward') }}</VCardTitle>
         <VCardText>
-          <VForm @submit.prevent="createDispensation">
+          <VForm @submit.prevent="createReward">
             <VRow>
               <VCol cols="12">
                 <VSelect
@@ -458,9 +304,96 @@ onMounted(() => {
           </VBtn>
           <VBtn
             color="primary"
-            @click="createDispensation"
+            @click="createReward"
           >
             {{ t('create') }}
+          </VBtn>
+        </VCardActions>
+      </VCard>
+    </VDialog>
+
+    <!-- History Modal -->
+    <VDialog
+      v-model="showHistoryModal"
+      max-width="900"
+    >
+      <VCard>
+        <VCardTitle>
+          <div class="d-flex align-center">
+            <VIcon icon="tabler-history" class="me-2" />
+            {{ t('rewards_history') }}
+            <span v-if="selectedAffiliate" class="text-body-1 ms-2">
+              - {{ selectedAffiliate.nom_complet }}
+            </span>
+          </div>
+        </VCardTitle>
+        <VCardText>
+          <VDataTable
+            :headers="[
+              { title: t('date'), key: 'created_at' },
+              { title: t('points'), key: 'points' },
+              { title: t('comment'), key: 'comment' },
+              { title: t('reference'), key: 'reference' },
+              { title: t('admin'), key: 'created_by_admin' },
+            ]"
+            :items="historyData"
+            :loading="historyLoading"
+            item-value="id"
+            class="text-no-wrap"
+          >
+            <template #item.created_at="{ item }">
+              {{ formatDate(item.created_at) }}
+            </template>
+
+            <template #item.points="{ item }">
+              <VChip color="warning" size="small">
+                {{ formatPoints(item.points) }}
+              </VChip>
+            </template>
+
+            <template #item.comment="{ item }">
+              <span class="text-truncate" style="max-width: 200px;">
+                {{ item.comment }}
+              </span>
+            </template>
+
+            <template #item.reference="{ item }">
+              <VChip
+                v-if="item.reference"
+                color="info"
+                size="small"
+                variant="outlined"
+              >
+                {{ item.reference }}
+              </VChip>
+              <span v-else class="text-medium-emphasis">-</span>
+            </template>
+
+            <template #item.created_by_admin="{ item }">
+              <div class="d-flex align-center">
+                <VAvatar size="24" class="me-2" color="secondary" variant="tonal">
+                  <VIcon icon="tabler-shield" size="16" />
+                </VAvatar>
+                <span class="text-body-2">{{ item.created_by_admin?.nom_complet || 'System' }}</span>
+              </div>
+            </template>
+
+            <template #no-data>
+              <div class="text-center py-8">
+                <VIcon icon="tabler-history-off" size="64" class="mb-4" color="disabled" />
+                <h6 class="text-h6 mb-2">{{ t('no_rewards_history') }}</h6>
+                <p class="text-body-2">{{ t('no_rewards_history_description') }}</p>
+              </div>
+            </template>
+          </VDataTable>
+        </VCardText>
+        <VCardActions>
+          <VSpacer />
+          <VBtn
+            variant="outlined"
+            @click="showHistoryModal = false"
+          >
+            {{ t('close') }}
           </VBtn>
         </VCardActions>
       </VCard>

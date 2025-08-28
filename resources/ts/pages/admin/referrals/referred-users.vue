@@ -42,7 +42,6 @@ const headers = computed(() => [
   { title: t('signup_date'), key: 'attributed_at', sortable: true },
   { title: t('verification_status'), key: 'verified', sortable: true },
   { title: t('source'), key: 'source', sortable: true },
-  { title: t('actions'), key: 'actions', sortable: false },
 ])
 
 // Methods
@@ -297,14 +296,7 @@ onMounted(() => {
             </VChip>
           </template>
 
-          <template #item.actions="{ item }">
-            <VBtn
-              icon="tabler-eye"
-              size="small"
-              variant="text"
-              @click="() => router.push({ name: 'admin-referrals-referred-users-id', params: { id: item.id } })"
-            />
-          </template>
+
 
           <template #no-data>
             <div class="text-center py-8">
