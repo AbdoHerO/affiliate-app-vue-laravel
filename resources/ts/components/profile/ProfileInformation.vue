@@ -4,9 +4,17 @@ import { useI18n } from 'vue-i18n'
 import { useAuth } from '@/composables/useAuth'
 import { useApi } from '@/composables/useApi'
 import { useNotifications } from '@/composables/useNotifications'
+import type { User } from '@/types/auth'
+
+// Props
+interface Props {
+  user: User
+}
+
+const props = defineProps<Props>()
 
 const { t } = useI18n()
-const { user } = useAuth()
+const { fetchUser } = useAuth()
 const { showSuccess, showError } = useNotifications()
 
 // Form state
@@ -31,17 +39,18 @@ const errors = ref<Record<string, string[]>>({})
 
 // Initialize form with user data
 const initializeForm = () => {
-  if (user) {
+  if (props.user) {
     form.value = {
-      nom_complet: user.nom_complet || '',
-      email: user.email || '',
-      telephone: user.telephone || '',
-      adresse: user.adresse || '',
-      cin: user.cin || '',
-      photo_profil: user.photo_profil || ''
+      nom_complet: props.user.nom_complet || '',
+      email: props.user.email || '',
+      telephone: props.user.telephone || '',
+      adresse: props.user.adresse || '',
+      cin: props.user.cin || '',
+      photo_profil: props.user.photo_profil || ''
     }
     console.log('🔄 Form initialized with user data:', form.value)
-    console.log('👤 Current user data:', user)
+    console.log('👤 Current user data:', props.user)
+    console.log('🖼️ Profile image URL:', props.user.photo_profil)
   } else {
     console.log('⚠️ No user data available to initialize form')
   }
@@ -52,7 +61,6 @@ const profileImage = computed(() => {
   if (form.value.photo_profil) {
     return form.value.photo_profil
   }
-  const initials = form.value.nom_complet.split(' ').map(n => n[0]).join('').toUpperCase()
   return `https://ui-avatars.com/api/?name=${encodeURIComponent(form.value.nom_complet || 'User')}&background=7367f0&color=fff&size=140`
 })
 
@@ -216,8 +224,8 @@ const saveProfile = async () => {
     const data = await response.json()
     if (data.success) {
       showSuccess(data.message || t('profile_updated_successfully'))
-      // Refresh the page to get updated user data
-      window.location.reload()
+      // Refresh user data to get updated information
+      await fetchUser()
       isEditing.value = false
     }
   } catch (err: any) {
@@ -229,19 +237,23 @@ const saveProfile = async () => {
 
 // Computed properties
 const hasChanges = computed(() => {
-  if (!user) return false
+  if (!props.user) return false
 
   return (
-    form.value.nom_complet !== (user.nom_complet || '') ||
-    form.value.telephone !== (user.telephone || '') ||
-    form.value.adresse !== (user.adresse || '') ||
-    form.value.cin !== (user.cin || '') ||
-    form.value.photo_profil !== (user.photo_profil || '')
+    form.value.nom_complet !== (props.user.nom_complet || '') ||
+    form.value.telephone !== (props.user.telephone || '') ||
+    form.value.adresse !== (props.user.adresse || '') ||
+    form.value.cin !== (props.user.cin || '') ||
+    form.value.photo_profil !== (props.user.photo_profil || '')
   )
 })
 
+const canSave = computed(() => {
+  return hasChanges.value && form.value.nom_complet.trim()
+})
+
 // Watch for user data changes and reinitialize form
-watch(() => user, (newUser) => {
+watch(() => props.user, (newUser) => {
   if (newUser) {
     console.log('👤 User data changed, reinitializing form:', newUser)
     initializeForm()
@@ -251,23 +263,9 @@ watch(() => user, (newUser) => {
 // Initialize on mount
 onMounted(() => {
   console.log('🔄 Component mounted, initializing form')
-  initializeForm()
-})
-
-const canSave = computed(() => {
-  return hasChanges.value && form.value.nom_complet.trim()
-})
-
-// Watch for user data changes
-watch(() => user, (newUser) => {
-  if (newUser) {
+  if (props.user) {
     initializeForm()
   }
-}, { immediate: true })
-
-// Lifecycle
-onMounted(() => {
-  initializeForm()
 })
 </script>
 
@@ -352,21 +350,18 @@ onMounted(() => {
           <VRow>
             <!-- Email -->
             <VCol cols="12" md="6">
-              <VTextField
-                v-model="form.email"
-                :label="t('form_email')"
-                :placeholder="t('enter_email')"
-                readonly
-                disabled
-                :error-messages="errors.email"
-                type="email"
-                variant="outlined"
-                class="form-field readonly-field"
-              >
-                <template #prepend-inner>
-                  <VIcon icon="tabler-mail" size="20" class="field-icon" />
-                </template>
-              </VTextField>
+              <div class="readonly-field-container">
+                <span class="readonly-field-label">{{ t('form_email') }}</span>
+                <VTextField
+                  v-model="form.email"
+                  :placeholder="t('email_readonly_notice')"
+                  readonly
+                  disabled
+                  hide-details
+                  variant="plain"
+                  class="readonly-field-input"
+                />
+              </div>
             </VCol>
 
             <!-- Phone -->
@@ -423,9 +418,18 @@ onMounted(() => {
                       :src="form.photo_profil"
                       :alt="t('profile_image')"
                       cover
+                      @error="console.error('Failed to load profile image in form:', form.photo_profil)"
                     />
-                    <VIcon v-else icon="tabler-user" size="48" />
+                    <VImg
+                      v-else
+                      :src="profileImage"
+                      :alt="t('profile_image')"
+                      cover
+                    />
                   </VAvatar>
+                  <p class="text-caption mt-2">
+                    {{ form.photo_profil ? t('current_image') : t('no_image_uploaded') }}
+                  </p>
                 </div>
                 
                 <div class="image-actions">
@@ -465,61 +469,7 @@ onMounted(() => {
           </VRow>
         </div>
 
-        <!-- Banking Information Section (Read-only) -->
-        <div class="form-section readonly-section">
-          <h6 class="section-title">
-            <VIcon icon="tabler-building-bank" size="20" />
-            {{ t('banking_information') }}
-          </h6>
-          
-          <VAlert
-            type="info"
-            variant="tonal"
-            density="compact"
-            class="banking-notice"
-          >
-            <VIcon start icon="tabler-info-circle" />
-            {{ t('banking_info_readonly_notice') }}
-          </VAlert>
-          
-          <VRow>
-            <!-- RIB -->
-            <VCol cols="12" md="6">
-              <VTextField
-                :model-value="user?.rib || t('not_provided')"
-                :label="t('rib_readonly')"
-                readonly
-                variant="outlined"
-                class="form-field readonly-field"
-              >
-                <template #prepend-inner>
-                  <VIcon icon="tabler-credit-card" size="20" class="field-icon" />
-                </template>
-                <template #append-inner>
-                  <VIcon icon="tabler-lock" size="16" class="lock-icon" />
-                </template>
-              </VTextField>
-            </VCol>
-
-            <!-- Bank Type -->
-            <VCol cols="12" md="6">
-              <VTextField
-                :model-value="user?.bank_type || t('not_provided')"
-                :label="t('bank_type')"
-                readonly
-                variant="outlined"
-                class="form-field readonly-field"
-              >
-                <template #prepend-inner>
-                  <VIcon icon="tabler-building-bank" size="20" class="field-icon" />
-                </template>
-                <template #append-inner>
-                  <VIcon icon="tabler-lock" size="16" class="lock-icon" />
-                </template>
-              </VTextField>
-            </VCol>
-          </VRow>
-        </div>
+        <!-- Banking Information Section removed as per requirements -->
 
         <!-- Action Buttons -->
         <VExpandTransition>
@@ -1001,10 +951,42 @@ onMounted(() => {
     
     &.readonly-section {
       background: transparent;
-      
+
       &:hover {
         background: transparent;
       }
+    }
+  }
+}
+
+// New readonly field container styling
+.readonly-field-container {
+  padding: 16px;
+  background: rgba(var(--v-theme-surface-variant), 0.1);
+  border-radius: 12px;
+  border: 1px solid rgba(var(--v-theme-outline), 0.2);
+
+  .readonly-field-label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: rgba(var(--v-theme-on-surface), 0.6);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .readonly-field-input {
+    :deep(.v-field__input) {
+      color: rgba(var(--v-theme-on-surface), 0.8);
+      font-weight: 500;
+      padding: 0;
+      min-height: auto;
+    }
+
+    :deep(.v-field) {
+      background: transparent;
+      box-shadow: none;
     }
   }
 }

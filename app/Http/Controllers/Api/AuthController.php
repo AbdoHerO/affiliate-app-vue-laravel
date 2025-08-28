@@ -33,6 +33,19 @@ class AuthController extends Controller
             ]);
         }
 
+        // Check if user account is active
+        if ($user->statut !== 'actif') {
+            $statusMessage = match($user->statut) {
+                'inactif' => __('messages.account_inactive'),
+                'bloque' => __('messages.account_blocked'),
+                default => __('messages.account_not_active')
+            };
+
+            throw ValidationException::withMessages([
+                'email' => [$statusMessage],
+            ]);
+        }
+
         // Delete existing tokens
         $user->tokens()->delete();
 

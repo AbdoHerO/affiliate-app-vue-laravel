@@ -1,21 +1,26 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useAuth } from '@/composables/useAuth'
+import type { User } from '@/types/auth'
+
+// Props
+interface Props {
+  user: User
+}
+
+const props = defineProps<Props>()
 
 const { t } = useI18n()
-const { user } = useAuth()
 
 // We'll use a CSS gradient instead of an image
 
 // Computed properties for user info
-const userDisplayName = computed(() => user?.nom_complet || 'User')
-const userEmail = computed(() => user?.email || '')
-const userPhone = computed(() => user?.telephone || '')
-const userAddress = computed(() => user?.adresse || '')
+const userDisplayName = computed(() => props.user?.nom_complet || 'User')
+const userEmail = computed(() => props.user?.email || '')
+// Phone and address removed - only show in profile form, not header
 const userJoinDate = computed(() => {
-  if (user?.created_at) {
-    return new Date(user.created_at).toLocaleDateString('fr-FR', {
+  if (props.user?.created_at) {
+    return new Date(props.user.created_at).toLocaleDateString('fr-FR', {
       year: 'numeric',
       month: 'long'
     })
@@ -25,36 +30,45 @@ const userJoinDate = computed(() => {
 
 // User roles
 const userRoles = computed(() => {
-  if (user?.roles && Array.isArray(user.roles)) {
-    return user.roles.join(', ')
+  if (props.user?.roles && Array.isArray(props.user.roles)) {
+    return props.user.roles.join(', ')
   }
   return ''
 })
 
 // User status
 const userStatus = computed(() => {
-  const status = user?.statut
+  const status = props.user?.statut
   return status === 'actif' ? t('active') : status === 'inactif' ? t('inactive') : t('blocked')
 })
 
 const userStatusColor = computed(() => {
-  const status = user?.statut
+  const status = props.user?.statut
   return status === 'actif' ? 'success' : status === 'inactif' ? 'warning' : 'error'
 })
 
 // Profile image with fallback
 const profileImage = computed(() => {
-  if (user?.photo_profil) {
-    return user.photo_profil
+  if (props.user?.photo_profil) {
+    console.log('🖼️ User has profile image:', props.user.photo_profil)
+    return props.user.photo_profil
   }
   // Generate avatar with initials
-  const initials = userDisplayName.value.split(' ').map(n => n[0]).join('').toUpperCase()
-  return `https://ui-avatars.com/api/?name=${encodeURIComponent(userDisplayName.value)}&background=7367f0&color=fff&size=140`
+  const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(userDisplayName.value)}&background=7367f0&color=fff&size=140`
+  console.log('🖼️ Using fallback avatar:', fallbackUrl)
+  return fallbackUrl
+})
+
+// Computed for the actual image to display
+const displayImage = computed(() => {
+  const imageUrl = props.user?.photo_profil || profileImage.value
+  console.log('🖼️ Display image URL:', imageUrl)
+  return imageUrl
 })
 </script>
 
 <template>
-  <VCard v-if="user" class="profile-header-card">
+  <VCard v-if="props.user" class="profile-header-card">
     <!-- Enhanced Cover Background with gradient overlay -->
     <div class="profile-cover">
       <div class="cover-overlay" />
@@ -68,20 +82,14 @@ const profileImage = computed(() => {
           <VAvatar
             rounded
             size="140"
+            :image="displayImage"
             class="user-profile-avatar"
           >
-            <VImg
-              v-if="user?.photo_profil"
-              :src="user.photo_profil"
-              :alt="userDisplayName"
-              cover
-            />
-            <VImg
-              v-else
-              :src="profileImage"
-              :alt="userDisplayName"
-              cover
-            />
+            <template v-if="!props.user?.photo_profil">
+              <span class="text-h3 font-weight-bold">
+                {{ userDisplayName.split(' ').map(n => n[0]).join('').toUpperCase() }}
+              </span>
+            </template>
           </VAvatar>
           
           <!-- Online Status Indicator -->
@@ -104,7 +112,7 @@ const profileImage = computed(() => {
               {{ userDisplayName }}
             </h2>
             <VChip
-              v-if="user?.statut !== 'bloque'"
+              v-if="props.user?.statut !== 'bloque'"
               :color="userStatusColor"
               size="small"
               variant="flat"
@@ -147,33 +155,7 @@ const profileImage = computed(() => {
             </div>
           </div>
 
-          <!-- Phone -->
-          <div v-if="userPhone" class="contact-item">
-            <div class="contact-icon">
-              <VIcon
-                icon="tabler-phone"
-                size="20"
-              />
-            </div>
-            <div class="contact-content">
-              <span class="contact-label">{{ t('phone') }}</span>
-              <span class="contact-value">{{ userPhone }}</span>
-            </div>
-          </div>
-
-          <!-- Address -->
-          <div v-if="userAddress" class="contact-item">
-            <div class="contact-icon">
-              <VIcon
-                icon="tabler-map-pin"
-                size="20"
-              />
-            </div>
-            <div class="contact-content">
-              <span class="contact-label">{{ t('address') }}</span>
-              <span class="contact-value">{{ userAddress }}</span>
-            </div>
-          </div>
+          <!-- Phone and Address removed - only show in profile form -->
 
           <!-- Join Date -->
           <div v-if="userJoinDate" class="contact-item">

@@ -68,6 +68,9 @@ return [
     'api_login_successful' => 'Connexion réussie',
     'api_registration_successful' => 'Inscription réussie',
     'api_invalid_credentials' => 'Les identifiants fournis sont incorrects.',
+    'account_inactive' => 'Votre compte est inactif. Veuillez contacter l\'administrateur.',
+    'account_blocked' => 'Votre compte a été bloqué. Veuillez contacter l\'administrateur.',
+    'account_not_active' => 'Votre compte n\'est pas actif. Veuillez contacter l\'administrateur.',
 
     // Profile management
     'profile_updated_successfully' => 'Profil mis à jour avec succès.',

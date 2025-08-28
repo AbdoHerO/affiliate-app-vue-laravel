@@ -177,6 +177,7 @@ const fetchUsers = async (page = 1) => {
         email: user.email,
         telephone: user.telephone,
         adresse: user.adresse,
+        cin: user.cin,
         photo_profil: user.photo_profil,
         roles: user.roles?.map((r: any) => r.name) ?? [],
         statut: user.statut,

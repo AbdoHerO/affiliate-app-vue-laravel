@@ -94,7 +94,7 @@ onMounted(() => {
     <!-- Profile content with improved layout -->
     <div v-else-if="user" class="profile-content">
       <!-- Enhanced Profile Header -->
-      <UserProfileHeader class="profile-header-enhanced" />
+      <UserProfileHeader v-if="user" :user="user" class="profile-header-enhanced" />
 
       <!-- Navigation Container -->
       <VCard class="navigation-card mb-6" elevation="0" variant="outlined">
@@ -147,7 +147,7 @@ onMounted(() => {
                 order="1"
                 order-lg="2"
               >
-                <ProfileInformation />
+                <ProfileInformation v-if="user" :user="user" />
               </VCol>
             </VRow>
           </VFadeTransition>
