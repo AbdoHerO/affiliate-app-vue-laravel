@@ -8,6 +8,7 @@ export interface User {
   email: string
   telephone?: string
   adresse?: string
+  cin?: string
   statut: string
   email_verifie: boolean
   email_verified_at?: string

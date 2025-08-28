@@ -99,15 +99,26 @@ class AuthController extends Controller
      */
     public function user(Request $request)
     {
-        $user = $request->user();
+        $user = $request->user()->load('roles');
 
         return response()->json([
             'user' => [
                 'id' => $user->id,
                 'nom_complet' => $user->nom_complet,
                 'email' => $user->email,
+                'telephone' => $user->telephone,
+                'adresse' => $user->adresse,
+                'cin' => $user->cin,
+                'rib' => $user->rib,
+                'bank_type' => $user->bank_type,
+                'photo_profil' => $user->photo_profil,
+                'statut' => $user->statut,
+                'email_verifie' => $user->email_verifie,
+                'kyc_statut' => $user->kyc_statut,
                 'roles' => $user->getRoleNames(),
                 'permissions' => $user->getAllPermissions()->pluck('name'),
+                'created_at' => $user->created_at,
+                'updated_at' => $user->updated_at,
             ],
         ]);
     }

@@ -4,9 +4,11 @@ definePage({
     requiresAuth: true,
   },
 })
+import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useAuth } from '@/composables/useAuth'
 import { useRouter } from 'vue-router'
+import { useApi } from '@/composables/useApi'
 import UserProfileHeader from '@/components/profile/UserProfileHeader.vue'
 import ProfileAbout from '@/components/profile/ProfileAbout.vue'
 import ProfileInformation from '@/components/profile/ProfileInformation.vue'
@@ -17,11 +19,22 @@ import KycDocuments from '@/components/profile/KycDocuments.vue'
 // This page requires authentication
 
 const { t } = useI18n()
-const { user, isLoading } = useAuth()
+const { user, isLoading, fetchUser } = useAuth()
 const router = useRouter()
 
 // Tab management
 const activeTab = ref('profile')
+
+// Fetch fresh profile data on mount
+onMounted(async () => {
+  console.log('🔄 Profile page mounted, fetching fresh user data...')
+  try {
+    await fetchUser()
+    console.log('✅ User data refreshed successfully')
+  } catch (error) {
+    console.error('❌ Failed to refresh user data:', error)
+  }
+})
 
 const tabs = computed(() => [
   {
@@ -255,24 +268,58 @@ onMounted(() => {
 
 .profile-tab {
   min-height: 72px;
-  border-radius: 12px;
+  border-radius: 16px;
   margin: 0.5rem;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
-  
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(var(--v-theme-primary), 0.04);
+    border-radius: 16px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
   &:hover {
     background: rgba(var(--v-theme-primary), 0.08);
-    transform: translateY(-2px);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(var(--v-theme-primary), 0.15);
+    border-radius: 18px;
+
+    &::before {
+      opacity: 1;
+    }
+
+    .tab-icon {
+      transform: scale(1.1);
+    }
   }
-  
+
   &.v-tab--selected {
     background: linear-gradient(135deg, rgb(var(--v-theme-primary)), rgba(var(--v-theme-primary), 0.8));
     color: rgb(var(--v-theme-on-primary));
-    box-shadow: 0 4px 16px rgba(var(--v-theme-primary), 0.3);
-    
+    box-shadow: 0 6px 20px rgba(var(--v-theme-primary), 0.35);
+    transform: translateY(-2px);
+    border-radius: 18px;
+
+    &::before {
+      opacity: 1;
+      background: rgba(255, 255, 255, 0.1);
+    }
+
     .tab-icon, .tab-title {
       color: rgb(var(--v-theme-on-primary));
+    }
+
+    .tab-icon {
+      transform: scale(1.05);
     }
   }
 }
@@ -286,7 +333,8 @@ onMounted(() => {
 }
 
 .tab-icon {
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: center;
 }
 
 .tab-title {

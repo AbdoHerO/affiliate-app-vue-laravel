@@ -622,6 +622,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('profile', [ProfileController::class, 'show']);
     Route::put('profile', [ProfileController::class, 'update']);
     Route::put('profile/password', [ProfileController::class, 'updatePassword']);
+    Route::delete('profile/remove-image', [ProfileController::class, 'removeImage']);
 
     // Profile KYC documents routes
     Route::get('profile/kyc-documents', [ProfileController::class, 'getKycDocuments']);

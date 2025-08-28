@@ -98,6 +98,7 @@ class UserManagementController extends Controller
             'password' => 'required|string|min:8|confirmed',
             'telephone' => 'nullable|string|max:20',
             'adresse' => 'nullable|string|max:500',
+            'cin' => 'nullable|string|max:20',
             'photo_profil' => 'nullable|string|max:500',
             'role' => 'required|string|exists:roles,name',
             'statut' => 'required|string|in:actif,inactif,bloque',
@@ -113,6 +114,7 @@ class UserManagementController extends Controller
             'mot_de_passe_hash' => Hash::make($request->password),
             'telephone' => $request->telephone,
             'adresse' => $request->adresse,
+            'cin' => $request->cin,
             'photo_profil' => $request->photo_profil,
             'statut' => $request->statut,
             'email_verifie' => $request->boolean('email_verifie', false),
@@ -156,6 +158,8 @@ class UserManagementController extends Controller
                 'email' => $user->email,
                 'telephone' => $user->telephone,
                 'adresse' => $user->adresse,
+                'cin' => $user->cin,
+                'photo_profil' => $user->photo_profil,
                 'statut' => $user->statut,
                 'kyc_statut' => $user->kyc_statut,
                 'email_verifie' => $user->email_verifie,
@@ -188,6 +192,7 @@ class UserManagementController extends Controller
             'password' => 'sometimes|nullable|string|min:8',
             'telephone' => 'sometimes|nullable|string|max:20',
             'adresse' => 'sometimes|nullable|string|max:500',
+            'cin' => 'sometimes|nullable|string|max:20',
             'photo_profil' => 'sometimes|nullable|string|max:500',
             'role' => 'sometimes|required|string|exists:roles,name',
             'statut' => 'sometimes|required|string|in:actif,inactif,bloque',
@@ -212,6 +217,9 @@ class UserManagementController extends Controller
         }
         if ($request->has('adresse')) {
             $user->adresse = $request->adresse;
+        }
+        if ($request->has('cin')) {
+            $user->cin = $request->cin;
         }
         if ($request->has('photo_profil')) {
             $user->photo_profil = $request->photo_profil;

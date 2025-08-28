@@ -79,9 +79,9 @@ const handleImageUpload = async (event: Event) => {
     uploadingImage.value = true
     
     const formData = new FormData()
-    formData.append('photo_profil', file)
+    formData.append('profile_image', file)
 
-    const response = await fetch('/api/profile/upload-image', {
+    const response = await fetch('/api/upload/profile-image', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
@@ -98,7 +98,9 @@ const handleImageUpload = async (event: Event) => {
 
     const data = await response.json()
     if (data.success) {
-      form.value.photo_profil = data.image_url
+      form.value.photo_profil = data.url
+      // Save the image URL to the database immediately
+      await saveImageToProfile(data.url)
       showSuccess(data.message || t('image_upload_success'))
     }
   } catch (err: any) {
@@ -111,6 +113,31 @@ const handleImageUpload = async (event: Event) => {
 // Trigger file input
 const triggerImageUpload = () => {
   imageInput.value?.click()
+}
+
+// Save image URL to profile
+const saveImageToProfile = async (imageUrl: string) => {
+  try {
+    const updatePayload = {
+      photo_profil: imageUrl
+    }
+
+    const response = await fetch('/api/profile', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+        'Accept': 'application/json',
+      },
+      body: JSON.stringify(updatePayload)
+    })
+
+    if (!response.ok) {
+      throw new Error('Failed to save image to profile')
+    }
+  } catch (err: any) {
+    console.error('Failed to save image to profile:', err)
+  }
 }
 
 // Remove profile image
@@ -157,6 +184,15 @@ const saveProfile = async () => {
     loading.value = true
     errors.value = {}
 
+    // Exclude email from the update payload since it's readonly
+    const updatePayload = {
+      nom_complet: form.value.nom_complet,
+      telephone: form.value.telephone,
+      adresse: form.value.adresse,
+      cin: form.value.cin,
+      photo_profil: form.value.photo_profil
+    }
+
     const response = await fetch('/api/profile', {
       method: 'PUT',
       headers: {
@@ -164,7 +200,7 @@ const saveProfile = async () => {
         'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
         'Accept': 'application/json',
       },
-      body: JSON.stringify(form.value)
+      body: JSON.stringify(updatePayload)
     })
 
     if (!response.ok) {
@@ -197,7 +233,6 @@ const hasChanges = computed(() => {
 
   return (
     form.value.nom_complet !== (user.nom_complet || '') ||
-    form.value.email !== (user.email || '') ||
     form.value.telephone !== (user.telephone || '') ||
     form.value.adresse !== (user.adresse || '') ||
     form.value.cin !== (user.cin || '') ||
@@ -220,7 +255,7 @@ onMounted(() => {
 })
 
 const canSave = computed(() => {
-  return hasChanges.value && form.value.nom_complet.trim() && form.value.email.trim()
+  return hasChanges.value && form.value.nom_complet.trim()
 })
 
 // Watch for user data changes
@@ -321,12 +356,12 @@ onMounted(() => {
                 v-model="form.email"
                 :label="t('form_email')"
                 :placeholder="t('enter_email')"
-                :readonly="!isEditing"
+                readonly
+                disabled
                 :error-messages="errors.email"
                 type="email"
-                required
                 variant="outlined"
-                class="form-field"
+                class="form-field readonly-field"
               >
                 <template #prepend-inner>
                   <VIcon icon="tabler-mail" size="20" class="field-icon" />

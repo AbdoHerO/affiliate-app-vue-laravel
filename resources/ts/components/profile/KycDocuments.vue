@@ -3,11 +3,8 @@ import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useApi } from '@/composables/useApi'
 import { useNotifications } from '@/composables/useNotifications'
-import { useQuickConfirm } from '@/composables/useConfirmAction'
-
 const { t } = useI18n()
 const { showSuccess, showError } = useNotifications()
-const { confirmDelete } = useQuickConfirm()
 
 // Types
 type KycDocument = {
@@ -112,52 +109,55 @@ const uploadDocument = async () => {
 }
 
 // Download document
-const downloadDocument = async (document: KycDocument) => {
+const downloadDocument = async (doc: KycDocument) => {
   try {
-    // Use direct storage URL instead of API endpoint
-    const storageUrl = `/storage/kyc-documents/${document.chemin_fichier}`
+    // Use the profile API endpoint for downloading
+    const baseUrl = import.meta.env.VITE_API_BASE_URL || '/api'
+    const downloadUrl = `${baseUrl}/profile/kyc-documents/${doc.id}/download`
 
-    // Create a temporary link and trigger download
+    const response = await fetch(downloadUrl, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+      },
+    })
+
+    if (!response.ok) {
+      throw new Error('Download failed')
+    }
+
+    const blob = await response.blob()
+
+    // Get filename from Content-Disposition header or create one
+    const contentDisposition = response.headers.get('Content-Disposition')
+    let filename = `${getTypeLabel(doc.type_doc)}_document`
+
+    if (contentDisposition) {
+      const filenameMatch = contentDisposition.match(/filename="([^"]+)"/)
+      if (filenameMatch) {
+        filename = filenameMatch[1]
+      }
+    } else {
+      // Determine extension from file path
+      const fileExtension = doc.url_fichier.split('.').pop() || 'pdf'
+      filename += `.${fileExtension}`
+    }
+
+    // Create download link
+    const url = window.URL.createObjectURL(blob)
     const a = document.createElement('a')
-    a.href = storageUrl
-    a.download = `${getTypeLabel(document.type_doc)}_${document.nom_fichier}`
-    a.target = '_blank'
+    a.href = url
+    a.download = filename
     document.body.appendChild(a)
     a.click()
     document.body.removeChild(a)
+    window.URL.revokeObjectURL(url)
 
   } catch (err: any) {
     showError(err.message || t('download_failed'))
   }
 }
 
-// Delete document
-const deleteDocument = async (document: KycDocument) => {
-  const confirmed = await confirmDelete(t('document'), getTypeLabel(document.type_doc))
-  if (!confirmed) return
-  
-  try {
-    loading.value = true
-    
-    const { data, error } = await useApi(`/profile/kyc-documents/${document.id}`, {
-      method: 'DELETE',
-    })
-    
-    if (error.value) {
-      showError(error.value.message || t('document_deletion_failed'))
-      return
-    }
-    
-    if (data.value?.success) {
-      await fetchDocuments()
-      showSuccess(data.value.message || t('document_deleted_successfully'))
-    }
-  } catch (err: any) {
-    showError(err.message || t('document_deletion_failed'))
-  } finally {
-    loading.value = false
-  }
-}
+// Delete functionality removed as per requirements
 
 // Helper functions
 const getTypeLabel = (type: string) => {
@@ -203,10 +203,7 @@ const handleFileChange = (event: Event) => {
   }
 }
 
-// Computed
-const canDelete = (document: KycDocument) => {
-  return document.statut !== 'valide'
-}
+// Computed properties removed as delete functionality is no longer needed
 
 // Lifecycle
 onMounted(() => {
@@ -280,17 +277,6 @@ onMounted(() => {
                   >
                     <VIcon start icon="tabler-download" />
                     {{ t('download') }}
-                  </VBtn>
-                  
-                  <VBtn
-                    v-if="canDelete(document)"
-                    size="small"
-                    color="error"
-                    variant="outlined"
-                    @click="deleteDocument(document)"
-                  >
-                    <VIcon start icon="tabler-trash" />
-                    {{ t('delete') }}
                   </VBtn>
                 </div>
               </VCardText>

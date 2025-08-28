@@ -68,14 +68,20 @@ const profileImage = computed(() => {
           <VAvatar
             rounded
             size="140"
-            :image="profileImage"
             class="user-profile-avatar"
           >
-            <template v-if="!user.photo_profil">
-              <span class="text-h3 font-weight-bold">
-                {{ userDisplayName.split(' ').map(n => n[0]).join('').toUpperCase() }}
-              </span>
-            </template>
+            <VImg
+              v-if="user?.photo_profil"
+              :src="user.photo_profil"
+              :alt="userDisplayName"
+              cover
+            />
+            <VImg
+              v-else
+              :src="profileImage"
+              :alt="userDisplayName"
+              cover
+            />
           </VAvatar>
           
           <!-- Online Status Indicator -->
@@ -98,6 +104,7 @@ const profileImage = computed(() => {
               {{ userDisplayName }}
             </h2>
             <VChip
+              v-if="user?.statut !== 'bloque'"
               :color="userStatusColor"
               size="small"
               variant="flat"
@@ -183,26 +190,7 @@ const profileImage = computed(() => {
           </div>
         </div>
 
-        <!-- Quick Actions -->
-        <div class="quick-actions">
-          <VBtn
-            variant="outlined"
-            size="small"
-            prepend-icon="tabler-edit"
-            class="action-btn"
-          >
-            {{ t('edit_profile') }}
-          </VBtn>
-          
-          <VBtn
-            variant="outlined"
-            size="small"
-            prepend-icon="tabler-download"
-            class="action-btn"
-          >
-            {{ t('export_data') }}
-          </VBtn>
-        </div>
+        <!-- Quick Actions removed as per requirements -->
       </div>
     </VCardText>
   </VCard>

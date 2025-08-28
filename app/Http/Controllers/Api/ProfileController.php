@@ -119,6 +119,32 @@ class ProfileController extends Controller
     }
 
     /**
+     * Remove profile image
+     */
+    public function removeImage(Request $request)
+    {
+        try {
+            $user = $request->user();
+
+            // Remove the image URL from user profile
+            $user->photo_profil = null;
+            $user->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => __('messages.profile_image_removed_successfully'),
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => __('messages.profile_image_removal_failed'),
+                'error' => $e->getMessage()
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
      * Update user password
      */
     public function updatePassword(Request $request)
