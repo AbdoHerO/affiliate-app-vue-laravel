@@ -147,37 +147,7 @@ class OzonExpressService
                 ];
             }
 
-            // Handle malformed JSON response (OzonExpress sometimes returns duplicate JSON)
-            $responseBody = $response->body();
-            $responseData = null;
-
-            try {
-                $responseData = $response->json();
-            } catch (\Exception $e) {
-                // Try to fix malformed JSON by taking only the first JSON object
-                Log::warning('Malformed JSON response from OzonExpress, attempting to fix', [
-                    'raw_body' => $responseBody,
-                    'error' => $e->getMessage()
-                ]);
-
-                // Find the first complete JSON object
-                $firstJsonEnd = strpos($responseBody, '}}') + 2;
-                if ($firstJsonEnd > 2) {
-                    $firstJsonString = substr($responseBody, 0, $firstJsonEnd);
-                    try {
-                        $responseData = json_decode($firstJsonString, true);
-                        Log::info('Successfully parsed first JSON object from malformed response');
-                    } catch (\Exception $e2) {
-                        Log::error('Failed to parse even the first JSON object', [
-                            'first_json' => $firstJsonString,
-                            'error' => $e2->getMessage()
-                        ]);
-                        throw $e; // Re-throw original exception
-                    }
-                } else {
-                    throw $e; // Re-throw original exception
-                }
-            }
+            $responseData = $response->json();
 
             // Parse response - handle both response formats
             $trackingNumber = null;
@@ -350,37 +320,7 @@ class OzonExpressService
                 ];
             }
 
-            // Handle malformed JSON response (OzonExpress sometimes returns duplicate JSON)
-            $responseBody = $response->body();
-            $responseData = null;
-
-            try {
-                $responseData = $response->json();
-            } catch (\Exception $e) {
-                // Try to fix malformed JSON by taking only the first JSON object
-                Log::warning('Malformed JSON response from OzonExpress debug service, attempting to fix', [
-                    'raw_body' => $responseBody,
-                    'error' => $e->getMessage()
-                ]);
-
-                // Find the first complete JSON object
-                $firstJsonEnd = strpos($responseBody, '}}') + 2;
-                if ($firstJsonEnd > 2) {
-                    $firstJsonString = substr($responseBody, 0, $firstJsonEnd);
-                    try {
-                        $responseData = json_decode($firstJsonString, true);
-                        Log::info('Successfully parsed first JSON object from malformed response in debug service');
-                    } catch (\Exception $e2) {
-                        Log::error('Failed to parse even the first JSON object in debug service', [
-                            'first_json' => $firstJsonString,
-                            'error' => $e2->getMessage()
-                        ]);
-                        throw $e; // Re-throw original exception
-                    }
-                } else {
-                    throw $e; // Re-throw original exception
-                }
-            }
+            $responseData = $response->json();
 
             // Extract tracking number from OzonExpress response structure
             $trackingNumber = $responseData['ADD-PARCEL']['NEW-PARCEL']['TRACKING-NUMBER'] ??
@@ -865,30 +805,16 @@ class OzonExpressService
             try {
                 $responseData = $response->json();
             } catch (\Exception $e) {
-                // Try to fix malformed JSON by taking only the first JSON object
-                Log::warning('Malformed JSON response from OzonExpress test service, attempting to fix', [
-                    'raw_body' => $responseBody,
+                // If JSON parsing fails, try to parse as array
+                Log::warning('Failed to parse JSON response, trying array parsing', [
+                    'body' => $responseBody,
                     'error' => $e->getMessage()
                 ]);
 
-                // Find the first complete JSON object
-                $firstJsonEnd = strpos($responseBody, '}}') + 2;
-                if ($firstJsonEnd > 2) {
-                    $firstJsonString = substr($responseBody, 0, $firstJsonEnd);
-                    try {
-                        $responseData = json_decode($firstJsonString, true);
-                        Log::info('Successfully parsed first JSON object from malformed response in test service');
-                    } catch (\Exception $e2) {
-                        Log::error('Failed to parse even the first JSON object in test service', [
-                            'first_json' => $firstJsonString,
-                            'error' => $e2->getMessage()
-                        ]);
-                        // Fallback to raw response
-                        $responseData = [$responseBody];
-                    }
-                } else {
-                    // Fallback to raw response
-                    $responseData = [$responseBody];
+                // Sometimes the response might be a simple array format
+                $responseData = json_decode($responseBody, true);
+                if (json_last_error() !== JSON_ERROR_NONE) {
+                    $responseData = [$responseBody]; // Fallback to raw response
                 }
             }
 
