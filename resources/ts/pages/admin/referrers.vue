@@ -46,6 +46,7 @@ interface Statistics {
 const loading = ref(false)
 const referrers = ref<Referrer[]>([])
 const allReferrers = ref<Referrer[]>([]) // Store all referrers for filtering
+const preventAutoSort = ref(false) // Flag to prevent auto-sorting after dispensation
 const statistics = ref<Statistics>({
   total_referrers: 0,
   total_points_earned: 0,
@@ -152,29 +153,31 @@ const filteredReferrers = computed(() => {
     filtered = filtered.filter(r => hasDispensations ? r.points_dispensed > 0 : r.points_dispensed === 0)
   }
 
-  // Sorting
-  filtered.sort((a, b) => {
-    const field = filters.value.sort_by
-    const order = filters.value.sort_order === 'desc' ? -1 : 1
+  // Sorting (skip if we want to prevent auto-sort)
+  if (!preventAutoSort.value) {
+    filtered.sort((a, b) => {
+      const field = filters.value.sort_by
+      const order = filters.value.sort_order === 'desc' ? -1 : 1
 
-    let aVal: any
-    let bVal: any
+      let aVal: any
+      let bVal: any
 
-    // Handle nested user fields
-    if (field === 'user_name') {
-      aVal = a.user.nom_complet
-      bVal = b.user.nom_complet
-    } else {
-      aVal = (a as any)[field]
-      bVal = (b as any)[field]
-    }
+      // Handle nested user fields
+      if (field === 'user_name') {
+        aVal = a.user.nom_complet
+        bVal = b.user.nom_complet
+      } else {
+        aVal = (a as any)[field]
+        bVal = (b as any)[field]
+      }
 
-    if (typeof aVal === 'string') {
-      return aVal.localeCompare(bVal) * order
-    }
+      if (typeof aVal === 'string') {
+        return aVal.localeCompare(bVal) * order
+      }
 
-    return (aVal - bVal) * order
-  })
+      return (aVal - bVal) * order
+    })
+  }
 
   return filtered
 })
@@ -239,25 +242,36 @@ const openDispensationModal = (affiliate: Referrer) => {
 
 const createDispensation = async () => {
   dispensationLoading.value = true
+
+  // Prevent auto-sorting to keep the affiliate in the same position
+  preventAutoSort.value = true
+
   try {
     const response = await axios.post('/admin/referrers/dispensations', dispensationForm.value)
-    
+
     if (response.data.success) {
       showDispensationModal.value = false
-      
-      // Update the affiliate's data in the table
+
+      // Update the affiliate's data in the table without changing position
       if (selectedAffiliate.value) {
         const affiliateIndex = referrers.value.findIndex(r => r.id === selectedAffiliate.value!.id)
         if (affiliateIndex !== -1) {
           const updatedSummary = response.data.data.updated_summary
-          referrers.value[affiliateIndex].points_dispensed += dispensationForm.value.points
+          referrers.value[affiliateIndex].points_dispensed = updatedSummary.dispensed
           referrers.value[affiliateIndex].points_balance = updatedSummary.balance
+
+          // Also update in allReferrers to keep data consistent
+          const allAffiliateIndex = allReferrers.value.findIndex(r => r.id === selectedAffiliate.value!.id)
+          if (allAffiliateIndex !== -1) {
+            allReferrers.value[allAffiliateIndex].points_dispensed = updatedSummary.dispensed
+            allReferrers.value[allAffiliateIndex].points_balance = updatedSummary.balance
+          }
         }
       }
-      
+
       // Refresh statistics
       fetchStatistics()
-      
+
       // Show success message
       // TODO: Add toast notification
       console.log('Dispensation created successfully')
@@ -267,6 +281,11 @@ const createDispensation = async () => {
     // TODO: Show error message
   } finally {
     dispensationLoading.value = false
+
+    // Re-enable auto-sorting after a short delay
+    setTimeout(() => {
+      preventAutoSort.value = false
+    }, 100)
   }
 }
 
@@ -308,9 +327,11 @@ const getBalanceColor = (balance: number) => {
   return 'green'
 }
 
-// Watch for filter changes
+// Watch for filter changes (but not when preventing auto-sort)
 watch(filteredReferrers, (newValue) => {
-  referrers.value = newValue
+  if (!preventAutoSort.value) {
+    referrers.value = newValue
+  }
 }, { immediate: true })
 
 // Lifecycle
