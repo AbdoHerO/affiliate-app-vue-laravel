@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { User } from '@/types/auth'
 
@@ -59,6 +59,16 @@ const profileImage = computed(() => {
   return fallbackUrl
 })
 
+// Debug user data on changes
+watch(() => props.user, (newUser) => {
+  if (newUser) {
+    console.log('👤 UserProfileHeader received user data:', newUser)
+    console.log('🖼️ Photo URL:', newUser.photo_profil)
+    console.log('🏠 Address:', newUser.adresse)
+    console.log('🆔 CIN:', newUser.cin)
+  }
+}, { immediate: true })
+
 // Computed for the actual image to display
 const displayImage = computed(() => {
   const imageUrl = props.user?.photo_profil || profileImage.value
@@ -82,14 +92,21 @@ const displayImage = computed(() => {
           <VAvatar
             rounded
             size="140"
-            :image="displayImage"
             class="user-profile-avatar"
           >
-            <template v-if="!props.user?.photo_profil">
-              <span class="text-h3 font-weight-bold">
-                {{ userDisplayName.split(' ').map(n => n[0]).join('').toUpperCase() }}
-              </span>
-            </template>
+            <VImg
+              v-if="props.user?.photo_profil"
+              :src="props.user.photo_profil"
+              :alt="userDisplayName"
+              cover
+              @error="console.error('Failed to load profile image in header:', props.user?.photo_profil)"
+            />
+            <VImg
+              v-else
+              :src="profileImage"
+              :alt="userDisplayName"
+              cover
+            />
           </VAvatar>
           
           <!-- Online Status Indicator -->

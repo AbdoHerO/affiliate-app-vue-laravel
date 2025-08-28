@@ -51,6 +51,8 @@ const initializeForm = () => {
     console.log('🔄 Form initialized with user data:', form.value)
     console.log('👤 Current user data:', props.user)
     console.log('🖼️ Profile image URL:', props.user.photo_profil)
+    console.log('🆔 CIN value:', props.user.cin)
+    console.log('🏠 Address value:', props.user.adresse)
   } else {
     console.log('⚠️ No user data available to initialize form')
   }
@@ -256,15 +258,21 @@ const canSave = computed(() => {
 watch(() => props.user, (newUser) => {
   if (newUser) {
     console.log('👤 User data changed, reinitializing form:', newUser)
+    console.log('🔍 New User CIN:', newUser.cin)
+    console.log('🔍 New User Address:', newUser.adresse)
+    console.log('🔍 New User Photo:', newUser.photo_profil)
     initializeForm()
   }
 }, { immediate: true })
 
 // Initialize on mount
 onMounted(() => {
-  console.log('🔄 Component mounted, initializing form')
+  console.log('🔄 ProfileInformation component mounted')
   if (props.user) {
+    console.log('👤 Initial user data:', props.user)
     initializeForm()
+  } else {
+    console.log('⚠️ No user data available on mount')
   }
 })
 </script>

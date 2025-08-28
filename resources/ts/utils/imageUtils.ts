@@ -33,12 +33,15 @@ export function getImageUrl(imagePath: string | null | undefined): string {
  * Get avatar URL with fallback to default
  */
 export function getAvatarUrl(imagePath: string | null | undefined): string {
-  const url = getImageUrl(imagePath)
+  console.log('🖼️ getAvatarUrl input:', imagePath)
   
-  // If it's still the default avatar path, return it as is
-  if (url === '/images/avatars/avatar-1.png') {
-    return url
+  if (!imagePath) {
+    console.log('🖼️ No image path, returning default avatar')
+    return '/images/avatars/avatar-1.png'
   }
+  
+  const url = getImageUrl(imagePath)
+  console.log('🖼️ getAvatarUrl output:', url)
   
   return url
 }

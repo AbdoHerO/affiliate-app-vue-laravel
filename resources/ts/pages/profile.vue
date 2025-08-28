@@ -30,7 +30,36 @@ onMounted(async () => {
   console.log('🔄 Profile page mounted, fetching fresh user data...')
   try {
     await fetchUser()
-    console.log('✅ User data refreshed successfully')
+    console.log('✅ User data refreshed successfully:', user)
+    if (user) {
+      console.log('🔍 User CIN:', user.cin)
+      console.log('🔍 User Address:', user.adresse)
+      console.log('🔍 User Photo:', user.photo_profil)
+      
+      // Additional API debug - make direct call to /api/auth/user
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '/api'
+      const token = localStorage.getItem('auth_token')
+      if (token) {
+        try {
+          const response = await fetch(`${apiBaseUrl}/auth/user`, {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+            },
+          })
+          const data = await response.json()
+          console.log('🌐 Direct API response:', data)
+          if (data.user) {
+            console.log('🌐 API User CIN:', data.user.cin)
+            console.log('🌐 API User Address:', data.user.adresse)
+            console.log('🌐 API User Photo:', data.user.photo_profil)
+          }
+        } catch (apiError) {
+          console.error('❌ Direct API call failed:', apiError)
+        }
+      }
+    }
   } catch (error) {
     console.error('❌ Failed to refresh user data:', error)
   }
@@ -97,14 +126,16 @@ onMounted(() => {
       <UserProfileHeader v-if="user" :user="user" class="profile-header-enhanced" />
 
       <!-- Navigation Container -->
+      <!-- Enhanced Navigation Tabs -->
       <VCard class="navigation-card mb-6" elevation="0" variant="outlined">
         <VCardText class="pa-0">
           <VTabs
             v-model="activeTab"
             class="profile-tabs"
             color="primary"
-            height="72"
+            height="80"
             show-arrows
+            slider-color="primary"
           >
             <VTab
               v-for="tab in tabs"
@@ -253,26 +284,36 @@ onMounted(() => {
 
 // Navigation styles
 .navigation-card {
-  border-radius: 16px;
-  background: rgba(var(--v-theme-surface), 0.9);
+  border-radius: 20px;
+  background: rgba(var(--v-theme-surface), 0.95);
   backdrop-filter: blur(20px);
-  border: 1px solid rgba(var(--v-theme-outline), 0.12);
-  box-shadow: 0 4px 20px rgba(var(--v-theme-on-surface), 0.05);
+  border: 1px solid rgba(var(--v-theme-outline), 0.1);
+  box-shadow: 0 8px 32px rgba(var(--v-theme-on-surface), 0.08);
+  overflow: hidden;
 }
 
 .profile-tabs {
   .v-tabs-bar {
     background: transparent;
+    padding: 0.5rem;
+  }
+
+  .v-tab-slider {
+    border-radius: 16px;
+    height: 4px;
+    background: linear-gradient(135deg, rgb(var(--v-theme-primary)), rgb(var(--v-theme-secondary)));
   }
 }
 
 .profile-tab {
-  min-height: 72px;
-  border-radius: 16px;
-  margin: 0.5rem;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  min-height: 80px;
+  border-radius: 20px;
+  margin: 0.25rem;
+  padding: 0.75rem 1.5rem;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
+  background: transparent;
 
   &::before {
     content: '';
@@ -281,45 +322,55 @@ onMounted(() => {
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(var(--v-theme-primary), 0.04);
-    border-radius: 16px;
+    background: linear-gradient(135deg, rgba(var(--v-theme-primary), 0.08), rgba(var(--v-theme-secondary), 0.04));
+    border-radius: 20px;
     opacity: 0;
-    transition: opacity 0.3s ease;
+    transition: all 0.4s ease;
+    transform: scale(0.8);
   }
 
   &:hover {
-    background: rgba(var(--v-theme-primary), 0.08);
-    transform: translateY(-3px);
-    box-shadow: 0 8px 24px rgba(var(--v-theme-primary), 0.15);
-    border-radius: 18px;
+    background: rgba(var(--v-theme-primary), 0.05);
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 12px 40px rgba(var(--v-theme-primary), 0.15);
+    border-radius: 22px;
 
     &::before {
       opacity: 1;
+      transform: scale(1);
     }
 
     .tab-icon {
-      transform: scale(1.1);
+      transform: scale(1.15) rotate(5deg);
+      color: rgb(var(--v-theme-primary));
+    }
+
+    .tab-title {
+      transform: translateY(-2px);
+      color: rgb(var(--v-theme-primary));
+      font-weight: 600;
     }
   }
 
   &.v-tab--selected {
-    background: linear-gradient(135deg, rgb(var(--v-theme-primary)), rgba(var(--v-theme-primary), 0.8));
-    color: rgb(var(--v-theme-on-primary));
-    box-shadow: 0 6px 20px rgba(var(--v-theme-primary), 0.35);
+    background: linear-gradient(135deg, rgba(var(--v-theme-primary), 0.12), rgba(var(--v-theme-secondary), 0.08));
+    border-radius: 22px;
+    box-shadow: 0 8px 32px rgba(var(--v-theme-primary), 0.2);
     transform: translateY(-2px);
-    border-radius: 18px;
 
     &::before {
       opacity: 1;
-      background: rgba(255, 255, 255, 0.1);
-    }
-
-    .tab-icon, .tab-title {
-      color: rgb(var(--v-theme-on-primary));
+      transform: scale(1);
     }
 
     .tab-icon {
-      transform: scale(1.05);
+      color: rgb(var(--v-theme-primary));
+      transform: scale(1.1);
+    }
+
+    .tab-title {
+      color: rgb(var(--v-theme-primary));
+      font-weight: 700;
     }
   }
 }
@@ -330,17 +381,22 @@ onMounted(() => {
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem;
+  position: relative;
+  z-index: 1;
 }
 
 .tab-icon {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  transform-origin: center;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  color: rgba(var(--v-theme-on-surface), 0.8);
 }
 
 .tab-title {
   font-size: 0.875rem;
   font-weight: 500;
-  letter-spacing: 0.025em;
+  color: rgba(var(--v-theme-on-surface), 0.8);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  text-align: center;
+  line-height: 1.2;
 }
 
 // Window content styles

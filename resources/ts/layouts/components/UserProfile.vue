@@ -10,8 +10,20 @@ const { t } = useI18n()
 
 // Computed property for user avatar URL
 const userAvatarUrl = computed(() => {
-  if (!user.value) return null
-  return getAvatarUrl(user.value.photo_profil)
+  console.log('🖼️ Computing userAvatarUrl for user:', user)
+  console.log('🖼️ User photo_profil:', user?.photo_profil)
+  
+  if (!user?.photo_profil) {
+    // Generate UI-Avatars fallback with user's name
+    const userName = user?.nom_complet || 'User'
+    const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=7367f0&color=fff&size=40`
+    console.log('🖼️ Using UI-Avatars fallback:', fallbackUrl)
+    return fallbackUrl
+  }
+  
+  const avatarUrl = getAvatarUrl(user.photo_profil)
+  console.log('🖼️ Using profile image:', avatarUrl)
+  return avatarUrl
 })
 
 const handleLogout = async () => {
@@ -31,10 +43,20 @@ const handleLogout = async () => {
   >
     <VAvatar
       class="cursor-pointer"
-      :color="!user?.value?.photo_profil ? 'primary' : undefined"
-      :variant="!user?.value?.photo_profil ? 'tonal' : undefined"
+      :color="!user?.photo_profil ? 'primary' : undefined"
+      :variant="!user?.photo_profil ? 'tonal' : undefined"
     >
-      <VImg :src="userAvatarUrl" />
+      <VImg 
+        v-if="user?.photo_profil"
+        :src="userAvatarUrl" 
+        :alt="user?.nom_complet || 'User'"
+        @error="console.error('Failed to load navbar avatar:', user?.photo_profil)"
+      />
+      <VImg 
+        v-else
+        :src="userAvatarUrl" 
+        :alt="user?.nom_complet || 'User'"
+      />
 
       <!-- SECTION Menu -->
       <VMenu
@@ -56,19 +78,29 @@ const handleLogout = async () => {
                   color="success"
                 >
                   <VAvatar
-                    :color="!user?.value?.photo_profil ? 'primary' : undefined"
-                    :variant="!user?.value?.photo_profil ? 'tonal' : undefined"
+                    :color="!user?.photo_profil ? 'primary' : undefined"
+                    :variant="!user?.photo_profil ? 'tonal' : undefined"
                   >
-                    <VImg :src="userAvatarUrl" />
+                    <VImg 
+                      v-if="user?.photo_profil"
+                      :src="userAvatarUrl" 
+                      :alt="user?.nom_complet || 'User'"
+                      @error="console.error('Failed to load dropdown avatar:', user?.photo_profil)"
+                    />
+                    <VImg 
+                      v-else
+                      :src="userAvatarUrl" 
+                      :alt="user?.nom_complet || 'User'"
+                    />
                   </VAvatar>
                 </VBadge>
               </VListItemAction>
             </template>
 
             <VListItemTitle class="font-weight-semibold">
-              {{ user?.value?.nom_complet || t('common.guest') }}
+              {{ user?.nom_complet || t('common.guest') }}
             </VListItemTitle>
-            <VListItemSubtitle>{{ user?.value?.roles?.join(', ') || t('common.noRole') }}</VListItemSubtitle>
+            <VListItemSubtitle>{{ user?.roles?.join(', ') || t('common.noRole') }}</VListItemSubtitle>
           </VListItem>
 
           <VDivider class="my-2" />
