@@ -623,6 +623,12 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::put('profile', [ProfileController::class, 'update']);
     Route::put('profile/password', [ProfileController::class, 'updatePassword']);
 
+    // Profile KYC documents routes
+    Route::get('profile/kyc-documents', [ProfileController::class, 'getKycDocuments']);
+    Route::post('profile/kyc-documents', [ProfileController::class, 'uploadKycDocument']);
+    Route::get('profile/kyc-documents/{id}/download', [ProfileController::class, 'downloadKycDocument']);
+    Route::delete('profile/kyc-documents/{id}', [ProfileController::class, 'deleteKycDocument']);
+
     // Permission-based routes (more granular than role-based)
     Route::middleware(['permission:manage users'])->get('admin/users/manage', function () {
         return response()->json(['message' => 'Manage Users - Permission Required']);

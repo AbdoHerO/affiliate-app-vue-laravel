@@ -4,6 +4,7 @@ export interface User {
   email: string
   telephone?: string
   adresse?: string
+  cin?: string
   photo_profil?: string
   statut: 'actif' | 'inactif' | 'bloque'
   email_verifie: boolean

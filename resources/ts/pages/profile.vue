@@ -4,339 +4,463 @@ definePage({
     requiresAuth: true,
   },
 })
-import UserProfileHeader from '@/views/pages/user-profile/UserProfileHeader.vue'
-import About from '@/views/pages/user-profile/profile/About.vue'
-import ActivityTimeline from '@/views/pages/user-profile/profile/ActivityTimeline.vue'
-import AffiliateStats from '@/views/pages/user-profile/profile/AffiliateStats.vue'
-import AccountSettingsAccount from '@/views/pages/account-settings/AccountSettingsAccount.vue'
-import AccountSettingsSecurity from '@/views/pages/account-settings/AccountSettingsSecurity.vue'
-import ProfileImageUpload from '@/components/ProfileImageUpload.vue'
+import { useI18n } from 'vue-i18n'
 import { useAuth } from '@/composables/useAuth'
-import { useAuthStore } from '@/stores/auth'
+import { useRouter } from 'vue-router'
+import UserProfileHeader from '@/components/profile/UserProfileHeader.vue'
+import ProfileAbout from '@/components/profile/ProfileAbout.vue'
+import ProfileInformation from '@/components/profile/ProfileInformation.vue'
+import ChangePassword from '@/components/profile/ChangePassword.vue'
+import KycDocuments from '@/components/profile/KycDocuments.vue'
 
 // Route meta (handled by file-based routing)
 // This page requires authentication
 
+const { t } = useI18n()
 const { user, isLoading } = useAuth()
-const authStore = useAuthStore()
+const router = useRouter()
 
 // Tab management
 const activeTab = ref('profile')
 
-const tabs = computed(() => {
-  const baseTabs = [
-    {
-      icon: 'tabler-user-check',
-      title: 'Profile',
-      value: 'profile'
-    },
-    {
-      icon: 'tabler-settings',
-      title: 'Account Settings',
-      value: 'account'
-    },
-    {
-      icon: 'tabler-shield-lock',
-      title: 'Security',
-      value: 'security'
-    }
-  ]
-
-  // Add affiliate stats tab for affiliate users
-  if (user.value?.roles?.includes('affiliate')) {
-    baseTabs.splice(1, 0, {
-      icon: 'tabler-chart-line',
-      title: 'Affiliate Stats',
-      value: 'stats'
-    })
+const tabs = computed(() => [
+  {
+    icon: 'tabler-user-check',
+    title: t('profile_tab'),
+    value: 'profile'
+  },
+  {
+    icon: 'tabler-shield-lock',
+    title: t('password_tab'),
+    value: 'password'
+  },
+  {
+    icon: 'tabler-file-certificate',
+    title: t('documents_tab'),
+    value: 'documents'
   }
+])
 
-  return baseTabs
-})
+// Loading state
+const loading = ref(false)
 
-// Profile editing state
-const isEditingProfile = ref(false)
-const editForm = ref({
-  nom_complet: '',
-  email: '',
-  telephone: '',
-  adresse: '',
-  photo_profil: ''
-})
-
-// Initialize edit form with user data
-watch(user, (newUser) => {
-  if (newUser) {
-    editForm.value = {
-      nom_complet: newUser.nom_complet,
-      email: newUser.email,
-      telephone: newUser.telephone || '',
-      adresse: newUser.adresse || '',
-      photo_profil: newUser.photo_profil || ''
-    }
-  }
-}, { immediate: true })
-
-const saveProfile = async () => {
-  try {
-    // Make API call to update the user profile
-    const response = await fetch('/api/profile', {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${authStore.token}`,
-        'Accept': 'application/json',
-      },
-      body: JSON.stringify(editForm.value)
-    })
-
-    const result = await response.json()
-
-    if (result.success) {
-      // Update the user data in the auth store
-      // You would typically call a method to refresh user data
-      isEditingProfile.value = false
-
-      // Show success message
-      console.log('Profile updated successfully')
-      alert('Profile updated successfully!')
-    } else {
-      throw new Error(result.message || 'Profile update failed')
-    }
-  } catch (error) {
-    console.error('Error saving profile:', error)
-    alert('Error saving profile: ' + (error instanceof Error ? error.message : 'Unknown error'))
-  }
+// Refresh page function
+const refreshPage = () => {
+  window.location.reload()
 }
 
-const cancelEdit = () => {
-  // Reset form to original values
-  if (user.value) {
-    editForm.value = {
-      nom_complet: user.value.nom_complet,
-      email: user.value.email,
-      telephone: user.value.telephone || '',
-      adresse: user.value.adresse || '',
-      photo_profil: user.value.photo_profil || ''
-    }
-  }
-  isEditingProfile.value = false
-}
+onMounted(() => {
+  // Any initialization logic if needed
+})
 </script>
 
 <template>
-  <div>
-    <!-- Loading state -->
-    <div v-if="isLoading" class="d-flex justify-center align-center" style="min-height: 400px;">
-      <VProgressCircular
-        indeterminate
-        color="primary"
-        size="64"
-      />
+  <div class="profile-container">
+    <!-- Loading state with better animation -->
+    <div v-if="isLoading" class="loading-container">
+      <VCard class="loading-card" elevation="0">
+        <VCardText class="text-center py-16">
+          <div class="loading-content">
+            <VProgressCircular
+              indeterminate
+              color="primary"
+              size="56"
+              width="4"
+            />
+            <h5 class="text-h5 mt-4 text-medium-emphasis">
+              {{ t('loading_profile') }}
+            </h5>
+            <p class="text-body-2 text-disabled mt-2">
+              {{ t('please_wait') }}
+            </p>
+          </div>
+        </VCardText>
+      </VCard>
     </div>
 
-    <!-- Profile content -->
-    <div v-else-if="user">
-      <!-- Profile Header -->
-      <UserProfileHeader />
+    <!-- Profile content with improved layout -->
+    <div v-else-if="user" class="profile-content">
+      <!-- Enhanced Profile Header -->
+      <UserProfileHeader class="profile-header-enhanced" />
 
-      <!-- Profile Tabs -->
-      <VTabs
-        v-model="activeTab"
-        class="v-tabs-pill mb-6"
-      >
-        <VTab
-          v-for="tab in tabs"
-          :key="tab.value"
-          :value="tab.value"
-        >
-          <VIcon
-            size="20"
-            start
-            :icon="tab.icon"
-          />
-          {{ tab.title }}
-        </VTab>
-      </VTabs>
-
-      <!-- Tab Content -->
-      <VWindow v-model="activeTab">
-        <!-- Profile Tab -->
-        <VWindowItem value="profile">
-          <VRow>
-            <VCol
-              cols="12"
-              lg="4"
+      <!-- Navigation Container -->
+      <VCard class="navigation-card mb-6" elevation="0" variant="outlined">
+        <VCardText class="pa-0">
+          <VTabs
+            v-model="activeTab"
+            class="profile-tabs"
+            color="primary"
+            height="72"
+            show-arrows
+          >
+            <VTab
+              v-for="tab in tabs"
+              :key="tab.value"
+              :value="tab.value"
+              class="profile-tab"
             >
-              <!-- About Section -->
-              <About />
-            </VCol>
+              <div class="tab-content">
+                <VIcon
+                  size="24"
+                  :icon="tab.icon"
+                  class="tab-icon"
+                />
+                <span class="tab-title">{{ tab.title }}</span>
+              </div>
+            </VTab>
+          </VTabs>
+        </VCardText>
+      </VCard>
 
-            <VCol
-              cols="12"
-              lg="8"
-            >
-              <VRow>
-                <!-- Activity Timeline -->
-                <VCol cols="12">
-                  <ActivityTimeline />
-                </VCol>
-
-                <!-- Edit Profile Form -->
-                <VCol cols="12">
-                  <VCard>
-                    <VCardText>
-                      <div class="d-flex justify-space-between align-center mb-6">
-                        <h5 class="text-h5">
-                          {{ $t('profile_information') }}
-                        </h5>
-                        <VBtn
-                          v-if="!isEditingProfile"
-                          prepend-icon="tabler-edit"
-                          @click="isEditingProfile = true"
-                        >
-                          {{ $t('action_edit') }}
-                        </VBtn>
-                      </div>
-
-                      <VForm v-if="isEditingProfile">
-                        <VRow>
-                          <VCol cols="12">
-                            <ProfileImageUpload
-                              v-model="editForm.photo_profil"
-                              :label="$t('profile_image')"
-                              class="mb-4"
-                            />
-                          </VCol>
-
-                          <VCol cols="12" md="6">
-                            <VTextField
-                              v-model="editForm.nom_complet"
-                              :label="$t('form_full_name')"
-                              :placeholder="$t('placeholder_enter_full_name')"
-                            />
-                          </VCol>
-
-                          <VCol cols="12" md="6">
-                            <VTextField
-                              v-model="editForm.email"
-                              :label="$t('form_email')"
-                              :placeholder="$t('placeholder_enter_email')"
-                              type="email"
-                            />
-                          </VCol>
-
-                          <VCol cols="12" md="6">
-                            <VTextField
-                              v-model="editForm.telephone"
-                              :label="$t('form_phone')"
-                              :placeholder="$t('placeholder_enter_phone')"
-                            />
-                          </VCol>
-
-                          <VCol cols="12" md="6">
-                            <VTextField
-                              v-model="editForm.adresse"
-                              :label="$t('form_address')"
-                              :placeholder="$t('placeholder_enter_address')"
-                            />
-                          </VCol>
-
-                          <VCol cols="12">
-                            <div class="d-flex gap-4">
-                              <VBtn
-                                color="primary"
-                                @click="saveProfile"
-                              >
-                                {{ $t('action_save') }}
-                              </VBtn>
-                              <VBtn
-                                variant="outlined"
-                                @click="cancelEdit"
-                              >
-                                {{ $t('action_cancel') }}
-                              </VBtn>
-                            </div>
-                          </VCol>
-                        </VRow>
-                      </VForm>
-
-                      <!-- Display Mode -->
-                      <div v-else>
-                        <VRow>
-                          <VCol cols="12" md="6">
-                            <div class="mb-4">
-                              <label class="text-body-2 text-disabled">{{ $t('form_full_name') }}</label>
-                              <p class="text-body-1 mb-0">{{ user.nom_complet }}</p>
-                            </div>
-                          </VCol>
-
-                          <VCol cols="12" md="6">
-                            <div class="mb-4">
-                              <label class="text-body-2 text-disabled">{{ $t('form_email') }}</label>
-                              <p class="text-body-1 mb-0">{{ user.email }}</p>
-                            </div>
-                          </VCol>
-
-                          <VCol cols="12" md="6">
-                            <div class="mb-4">
-                              <label class="text-body-2 text-disabled">{{ $t('form_phone') }}</label>
-                              <p class="text-body-1 mb-0">{{ user.telephone || 'Not provided' }}</p>
-                            </div>
-                          </VCol>
-
-                          <VCol cols="12" md="6">
-                            <div class="mb-4">
-                              <label class="text-body-2 text-disabled">{{ $t('form_address') }}</label>
-                              <p class="text-body-1 mb-0">{{ user.adresse || 'Not provided' }}</p>
-                            </div>
-                          </VCol>
-                        </VRow>
-                      </div>
-                    </VCardText>
-                  </VCard>
-                </VCol>
-              </VRow>
-            </VCol>
-          </VRow>
+      <!-- Enhanced Tab Content -->
+      <VWindow v-model="activeTab" class="profile-window">
+        <!-- Profile Information Tab -->
+        <VWindowItem value="profile" class="window-item">
+          <VFadeTransition mode="out-in">
+            <VRow>
+              <VCol
+                cols="12"
+                lg="4"
+                order="2"
+                order-lg="1"
+              >
+                <div class="sticky-sidebar">
+                  <ProfileAbout />
+                </div>
+              </VCol>
+              <VCol
+                cols="12"
+                lg="8"
+                order="1"
+                order-lg="2"
+              >
+                <ProfileInformation />
+              </VCol>
+            </VRow>
+          </VFadeTransition>
         </VWindowItem>
 
-        <!-- Affiliate Stats Tab -->
-        <VWindowItem value="stats">
-          <AffiliateStats />
+        <!-- Change Password Tab -->
+        <VWindowItem value="password" class="window-item">
+          <VFadeTransition mode="out-in">
+            <VRow justify="center">
+              <VCol
+                cols="12"
+                md="10"
+                lg="8"
+                xl="6"
+              >
+                <ChangePassword />
+              </VCol>
+            </VRow>
+          </VFadeTransition>
         </VWindowItem>
 
-        <!-- Account Settings Tab -->
-        <VWindowItem value="account">
-          <AccountSettingsAccount />
-        </VWindowItem>
-
-        <!-- Security Tab -->
-        <VWindowItem value="security">
-          <AccountSettingsSecurity />
+        <!-- KYC Documents Tab -->
+        <VWindowItem value="documents" class="window-item">
+          <VFadeTransition mode="out-in">
+            <KycDocuments />
+          </VFadeTransition>
         </VWindowItem>
       </VWindow>
     </div>
 
-    <!-- Error state -->
-    <div v-else class="text-center py-16">
-      <VIcon
-        icon="tabler-user-x"
-        size="64"
-        class="mb-4 text-disabled"
-      />
-      <h5 class="text-h5 mb-2">{{ $t('error_generic') }}</h5>
-      <p class="text-body-1 text-disabled">
-        Unable to load profile information.
-      </p>
+    <!-- Enhanced Error state -->
+    <div v-else class="error-container">
+      <VCard class="error-card" elevation="0">
+        <VCardText class="text-center py-16">
+          <VIcon
+            icon="tabler-alert-circle"
+            size="64"
+            class="text-error mb-4"
+          />
+          <h4 class="text-h4 mb-2">
+            {{ t('error_loading_profile') }}
+          </h4>
+          <p class="text-body-1 text-medium-emphasis mb-6">
+            {{ t('profile_error_description') }}
+          </p>
+          <VBtn
+            color="primary"
+            variant="outlined"
+            @click="refreshPage"
+          >
+            <VIcon start icon="tabler-refresh" />
+            {{ t('retry') }}
+          </VBtn>
+        </VCardText>
+      </VCard>
     </div>
   </div>
 </template>
 
 <style lang="scss" scoped>
-.v-tabs-pill {
-  .v-tab {
-    border-radius: 0.375rem;
+.profile-container {
+  min-height: 100vh;
+  padding: 0;
+}
+
+// Loading state styles
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 60vh;
+  padding: 2rem;
+}
+
+.loading-card {
+  max-width: 400px;
+  width: 100%;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(var(--v-theme-surface), 0.8) 0%, rgba(var(--v-theme-surface), 1) 100%);
+  backdrop-filter: blur(10px);
+}
+
+.loading-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+// Profile content styles
+.profile-content {
+  position: relative;
+}
+
+.profile-header-enhanced {
+  margin-bottom: 2rem;
+  
+  :deep(.v-card) {
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(var(--v-theme-on-surface), 0.08);
   }
+}
+
+// Navigation styles
+.navigation-card {
+  border-radius: 16px;
+  background: rgba(var(--v-theme-surface), 0.9);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(var(--v-theme-outline), 0.12);
+  box-shadow: 0 4px 20px rgba(var(--v-theme-on-surface), 0.05);
+}
+
+.profile-tabs {
+  .v-tabs-bar {
+    background: transparent;
+  }
+}
+
+.profile-tab {
+  min-height: 72px;
+  border-radius: 12px;
+  margin: 0.5rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  
+  &:hover {
+    background: rgba(var(--v-theme-primary), 0.08);
+    transform: translateY(-2px);
+  }
+  
+  &.v-tab--selected {
+    background: linear-gradient(135deg, rgb(var(--v-theme-primary)), rgba(var(--v-theme-primary), 0.8));
+    color: rgb(var(--v-theme-on-primary));
+    box-shadow: 0 4px 16px rgba(var(--v-theme-primary), 0.3);
+    
+    .tab-icon, .tab-title {
+      color: rgb(var(--v-theme-on-primary));
+    }
+  }
+}
+
+.tab-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+}
+
+.tab-icon {
+  transition: all 0.3s ease;
+}
+
+.tab-title {
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: 0.025em;
+}
+
+// Window content styles
+.profile-window {
+  .window-item {
+    padding-top: 1rem;
+  }
+}
+
+.sticky-sidebar {
+  position: sticky;
+  top: 2rem;
+  z-index: 1;
+}
+
+// Enhanced card styles for components
+:deep(.v-card) {
+  background: white;
+  border-radius: 16px;
+  border: 1px solid rgba(var(--v-theme-outline), 0.08);
+  box-shadow: 0 2px 16px rgba(var(--v-theme-on-surface), 0.04);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  &:hover {
+    box-shadow: 0 8px 32px rgba(var(--v-theme-on-surface), 0.08);
+    transform: translateY(-2px);
+  }
+}
+
+:deep(.v-card-title) {
+  padding: 1.5rem 1.5rem 1rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+}
+
+:deep(.v-card-text) {
+  padding: 0 1.5rem 1.5rem;
+}
+
+// Form enhancements
+:deep(.v-text-field) {
+  .v-field {
+    border-radius: 12px;
+    background: rgba(var(--v-theme-surface), 0.6);
+    backdrop-filter: blur(10px);
+  }
+  
+  &.v-text-field--focused .v-field {
+    box-shadow: 0 0 0 2px rgba(var(--v-theme-primary), 0.2);
+  }
+}
+
+:deep(.v-btn) {
+  border-radius: 12px;
+  font-weight: 500;
+  letter-spacing: 0.025em;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(var(--v-theme-on-surface), 0.12);
+  }
+  
+  &.v-btn--variant-elevated {
+    box-shadow: 0 2px 8px rgba(var(--v-theme-on-surface), 0.12);
+  }
+}
+
+// Error state styles
+.error-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 60vh;
+  padding: 2rem;
+}
+
+.error-card {
+  max-width: 500px;
+  width: 100%;
+  border-radius: 20px;
+  background: linear-gradient(135deg, rgba(var(--v-theme-error-container), 0.1) 0%, rgba(var(--v-theme-surface), 1) 100%);
+  border: 1px solid rgba(var(--v-theme-error), 0.12);
+}
+
+// Responsive improvements
+@media (max-width: 960px) {
+  .profile-container {
+    padding: 1rem;
+  }
+  
+  .sticky-sidebar {
+    position: static;
+  }
+  
+  .tab-content {
+    flex-direction: row;
+    gap: 0.75rem;
+  }
+  
+  .tab-title {
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .profile-container {
+    padding: 0.5rem;
+  }
+  
+  .profile-header-enhanced {
+    margin-bottom: 1rem;
+  }
+  
+  .navigation-card {
+    margin-bottom: 1rem;
+  }
+  
+  .profile-tab {
+    min-height: 64px;
+    margin: 0.25rem;
+  }
+  
+  .tab-content {
+    gap: 0.5rem;
+  }
+  
+  .tab-title {
+    display: none;
+  }
+  
+  :deep(.v-card-title) {
+    padding: 1rem 1rem 0.5rem;
+    font-size: 1.125rem;
+  }
+  
+  :deep(.v-card-text) {
+    padding: 0 1rem 1rem;
+  }
+}
+
+// Dark mode enhancements
+@media (prefers-color-scheme: dark) {
+  .navigation-card {
+    background: white;
+    border-color: rgba(var(--v-theme-outline), 0.16);
+  }
+  
+  :deep(.v-card) {
+    background: white;
+    border-color: rgba(var(--v-theme-outline), 0.12);
+  }
+}
+
+// Animation classes
+.v-enter-active,
+.v-leave-active {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.v-enter-from {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.v-leave-to {
+  opacity: 0;
+  transform: translateY(-20px);
 }
 </style>
