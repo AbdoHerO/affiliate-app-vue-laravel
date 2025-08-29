@@ -571,6 +571,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('withdrawals', [App\Http\Controllers\Affiliate\PaymentsController::class, 'withdrawals']);
         Route::get('withdrawals/{id}', [App\Http\Controllers\Affiliate\PaymentsController::class, 'showWithdrawal']);
         Route::get('withdrawals/{id}/pdf', [App\Http\Controllers\Affiliate\PaymentsController::class, 'downloadPdf'])->name('affiliate.withdrawals.pdf');
+        Route::get('withdrawals/{id}/evidence', [App\Http\Controllers\Affiliate\PaymentsController::class, 'downloadEvidence'])->name('affiliate.withdrawals.evidence');
         Route::post('withdrawals/request', [App\Http\Controllers\Affiliate\PaymentsController::class, 'requestPayout']);
 
         // Support Tickets

@@ -13,6 +13,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 
 class PaymentsController extends Controller
@@ -379,6 +380,90 @@ class PaymentsController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Une erreur est survenue lors de la génération du PDF.',
+            ], 500);
+        }
+    }
+
+    /**
+     * Download payment proof evidence for a withdrawal.
+     */
+    public function downloadEvidence(Request $request, string $id)
+    {
+        try {
+            $user = $request->user();
+
+            // Ensure user is an approved affiliate
+            if (!$user->isApprovedAffiliate()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Access denied. Only approved affiliates can download evidence.',
+                ], 403);
+            }
+
+            $withdrawal = Withdrawal::where('user_id', $user->id) // Ensure ownership
+                ->findOrFail($id);
+
+            // Check if withdrawal has evidence
+            if (!$withdrawal->evidence_path) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Aucune preuve de paiement disponible pour ce retrait.',
+                ], 404);
+            }
+
+            // Only allow evidence download for paid withdrawals
+            if ($withdrawal->status !== 'paid') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'La preuve de paiement n\'est disponible que pour les retraits payés.',
+                ], 422);
+            }
+
+            // Check if file exists in storage
+            if (!Storage::disk('public')->exists($withdrawal->evidence_path)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Le fichier de preuve de paiement est introuvable.',
+                ], 404);
+            }
+
+            $filePath = Storage::disk('public')->path($withdrawal->evidence_path);
+            $fileName = basename($withdrawal->evidence_path);
+
+            // Get file extension to determine MIME type
+            $extension = pathinfo($fileName, PATHINFO_EXTENSION);
+            $mimeType = match(strtolower($extension)) {
+                'pdf' => 'application/pdf',
+                'jpg', 'jpeg' => 'image/jpeg',
+                'png' => 'image/png',
+                default => 'application/octet-stream'
+            };
+
+            // Create a descriptive filename
+            $downloadName = "preuve-paiement-retrait-{$withdrawal->id}.{$extension}";
+
+            return response()->file($filePath, [
+                'Content-Type' => $mimeType,
+                'Content-Disposition' => 'attachment; filename="' . $downloadName . '"'
+            ]);
+
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Retrait non trouvé ou accès non autorisé.',
+            ], 404);
+
+        } catch (\Exception $e) {
+            Log::error('Error downloading affiliate withdrawal evidence', [
+                'user_id' => $request->user()->id,
+                'withdrawal_id' => $id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Une erreur est survenue lors du téléchargement de la preuve.',
             ], 500);
         }
     }

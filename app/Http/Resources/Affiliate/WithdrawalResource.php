@@ -24,6 +24,8 @@ class WithdrawalResource extends JsonResource
             'bank_type' => $this->bank_type,
             'notes' => $this->notes,
             'payment_ref' => $this->payment_ref,
+            'evidence_path' => $this->evidence_path,
+            'evidence_url' => $this->evidence_path ? url('storage/' . $this->evidence_path) : null,
             'approved_at' => $this->approved_at?->format('Y-m-d H:i:s'),
             'paid_at' => $this->paid_at?->format('Y-m-d H:i:s'),
             'created_at' => $this->created_at?->format('Y-m-d H:i:s'),

@@ -60,7 +60,6 @@ const commissionsHeaders = [
   { title: 'Type Commande', key: 'order_type', sortable: false },
   { title: t('table.type'), key: 'type', sortable: true },
   { title: t('affiliate_payments_base_amount'), key: 'base_amount', sortable: true },
-  { title: t('affiliate_payments_rate'), key: 'rate', sortable: true },
   { title: t('table.commission'), key: 'amount', sortable: true },
   { title: t('table.status'), key: 'status', sortable: true },
   { title: t('table.date'), key: 'created_at', sortable: true },
@@ -186,13 +185,7 @@ const formatDate = (date: string) => {
   })
 }
 
-const formatPercentage = (rate: number | null | undefined) => {
-  if (rate === null || rate === undefined || isNaN(Number(rate))) {
-    return 'N/A'
-  }
-  // Rate is stored as decimal (0.0830 = 8.30%), so multiply by 100
-  return `${(Number(rate) * 100).toFixed(2)}%`
-}
+
 
 const getOrderTypeColor = (type: string) => {
   const colors: Record<string, string> = {
@@ -222,101 +215,83 @@ const viewWithdrawalDetails = async (withdrawalId: string) => {
   }
 }
 
-const canDownloadPdf = (withdrawal: any) => {
-  // Only allow PDF download for approved/paid withdrawals
-  return ['approved', 'in_payment', 'paid'].includes(withdrawal.status)
+const canDownloadEvidence = (withdrawal: any) => {
+  // Only allow evidence download for paid withdrawals with evidence
+  return withdrawal.status === 'paid' && withdrawal.evidence_path
 }
 
-  const downloadPdf = (withdrawalId: string): void => {
-    console.log('Starting PDF download for withdrawal:', withdrawalId)
-    
-    const token = authStore.token
-    const apiBaseUrl = 'http://localhost:8000/api'
-    const url = `${apiBaseUrl}/affiliate/withdrawals/${withdrawalId}/pdf`
-    
-    console.log('PDF download details:', {
-      token: token ? `${token.substring(0, 10)}...` : 'NO TOKEN',
-      url,
-      apiBaseUrl
-    })
-    
-    if (!token) {
-      console.error('No auth token available')
-      showError(t('affiliate_payments_session_expired'))
-      return
-    }
 
-    // Set downloading state
-    downloadingPdf.value = withdrawalId
 
-    // Use XMLHttpRequest for better error handling and proper authentication
-    const xhr = new XMLHttpRequest()
-    xhr.open('GET', url, true)
-    xhr.setRequestHeader('Authorization', `Bearer ${token}`)
-    xhr.setRequestHeader('Accept', 'application/pdf')
-    xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest')
-    xhr.responseType = 'blob'
-    
-    // Add progress tracking
-    xhr.onloadstart = function() {
-      console.log('PDF download started...')
-    }
-    
-    xhr.onprogress = function(event) {
-      if (event.lengthComputable) {
-        const percentComplete = (event.loaded / event.total) * 100
-        console.log(`PDF download progress: ${percentComplete.toFixed(1)}%`)
-      }
-    }
-    
-    xhr.onload = function() {
-      console.log(`PDF download completed with status: ${xhr.status}`)
-      downloadingPdf.value = null
-      
-      if (xhr.status === 200) {
-        const blob = xhr.response
-        console.log(`Received blob: ${blob.size} bytes, type: ${blob.type}`)
-        
-        // Validate blob type and size
-        if (blob.type === 'application/pdf' || blob.type.includes('pdf') || blob.size > 1000) {
-          const url = window.URL.createObjectURL(blob)
-          const link = document.createElement('a')
-          link.href = url
-          link.download = `facture-retrait-${withdrawalId}.pdf`
-          document.body.appendChild(link)
-          link.click()
-          document.body.removeChild(link)
-          window.URL.revokeObjectURL(url)
-          showSuccess(t('affiliate_payments_pdf_download_success'))
-        } else {
-          console.error('Invalid PDF blob:', { type: blob.type, size: blob.size })
-          showError(t('affiliate_payments_pdf_invalid'))
-        }
-      } else {
-        console.error(`PDF download failed with status: ${xhr.status}`)
-        console.error('Response:', xhr.response)
-        showError(`Erreur lors du téléchargement: ${xhr.status}`)
-      }
-    }
-    
-    xhr.onerror = function() {
-      console.error('PDF download network error')
-      downloadingPdf.value = null
-      showError(t('affiliate_payments_network_error'))
-    }
-    
-    xhr.ontimeout = function() {
-      console.error('PDF download timeout')
-      downloadingPdf.value = null
-      showError(t('affiliate_payments_timeout_error'))
-    }
-    
-    // Set timeout to 60 seconds for PDF generation
-    xhr.timeout = 60000
-    
-    console.log('Sending PDF download request...')
-    xhr.send()
+const downloadEvidence = (withdrawalId: string): void => {
+  console.log('Starting evidence download for withdrawal:', withdrawalId)
+
+  const token = authStore.token
+  const apiBaseUrl = 'http://localhost:8000/api'
+  const url = `${apiBaseUrl}/affiliate/withdrawals/${withdrawalId}/evidence`
+
+  console.log('Evidence download details:', {
+    token: token ? `${token.substring(0, 10)}...` : 'NO TOKEN',
+    url,
+    apiBaseUrl
+  })
+
+  if (!token) {
+    console.error('No auth token available')
+    showError(t('affiliate_payments_session_expired'))
+    return
   }
+
+  // Set downloading state
+  downloadingPdf.value = withdrawalId
+
+  // Use XMLHttpRequest for better error handling and proper authentication
+  const xhr = new XMLHttpRequest()
+  xhr.open('GET', url, true)
+  xhr.setRequestHeader('Authorization', `Bearer ${token}`)
+  xhr.setRequestHeader('Accept', '*/*')
+  xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest')
+  xhr.responseType = 'blob'
+
+  xhr.onload = function() {
+    downloadingPdf.value = null
+
+    if (xhr.status === 200) {
+      const blob = xhr.response
+      console.log(`Received evidence blob: ${blob.size} bytes, type: ${blob.type}`)
+
+      // Create download link
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `preuve-paiement-retrait-${withdrawalId}`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(url)
+      showSuccess('Preuve de paiement téléchargée avec succès')
+    } else {
+      console.error(`Evidence download failed with status: ${xhr.status}`)
+      showError(`Erreur lors du téléchargement: ${xhr.status}`)
+    }
+  }
+
+  xhr.onerror = function() {
+    console.error('Evidence download network error')
+    downloadingPdf.value = null
+    showError('Erreur réseau lors du téléchargement')
+  }
+
+  xhr.ontimeout = function() {
+    console.error('Evidence download timeout')
+    downloadingPdf.value = null
+    showError('Timeout lors du téléchargement')
+  }
+
+  xhr.timeout = 30000 // 30 seconds timeout
+
+  console.log('Sending evidence download request...')
+  xhr.send()
+}
 
 // Watchers
 watch(activeTab, (newTab) => {
@@ -459,10 +434,7 @@ onMounted(() => {
               {{ formatCurrency(item.base_amount) }}
             </template>
 
-            <!-- Rate Column -->
-            <template #item.rate="{ item }">
-              {{ formatPercentage(item.rate) }}
-            </template>
+
 
             <!-- Amount Column -->
             <template #item.amount="{ item }">
@@ -584,18 +556,19 @@ onMounted(() => {
                   </VTooltip>
                 </VBtn>
 
+                <!-- Download Evidence (Payment Proof) -->
                 <VBtn
-                  v-if="canDownloadPdf(item)"
-                  icon="tabler-download"
+                  v-if="canDownloadEvidence(item)"
+                  icon="tabler-file-download"
                   size="small"
                   variant="text"
                   color="success"
                   :loading="downloadingPdf === item.id"
-                  @click="downloadPdf(item.id)"
+                  @click="downloadEvidence(item.id)"
                 >
-                  <VIcon icon="tabler-download" />
+                  <VIcon icon="tabler-file-download" />
                   <VTooltip activator="parent" location="top">
-                    {{ $t('payments.actions.download_pdf') }}
+                    Télécharger la preuve de paiement
                   </VTooltip>
                 </VBtn>
               </div>
