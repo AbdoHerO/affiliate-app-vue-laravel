@@ -314,7 +314,7 @@ watch(autoRefresh, setupAutoRefresh)
             </p>
           </div>
 
-          <div class="d-flex align-center gap-3 flex-wrap">
+          <div class="d-flex align-center gap-3 flex-wrap dashboard-header-actions">
             <!-- Action Buttons Group -->
             <div class="d-flex align-center gap-2">
               <!-- Refresh Charts Button -->
@@ -336,18 +336,32 @@ watch(autoRefresh, setupAutoRefresh)
                 color="primary"
                 variant="outlined"
                 divided
+                mandatory
                 class="d-none d-md-flex"
+                style="border-radius: 6px;"
                 @update:model-value="changePeriod"
               >
-                <VBtn value="month" size="small">
+                <VBtn 
+                  value="month" 
+                  size="small"
+                  style="min-width: 80px;"
+                >
                   <VIcon icon="tabler-calendar-month" class="me-1" size="16" />
                   {{ t('dashboard.filters.period.month') }}
                 </VBtn>
-                <VBtn value="quarter" size="small">
+                <VBtn 
+                  value="quarter" 
+                  size="small"
+                  style="min-width: 80px;"
+                >
                   <VIcon icon="tabler-calendar-stats" class="me-1" size="16" />
                   {{ t('dashboard.filters.period.quarter') }}
                 </VBtn>
-                <VBtn value="year" size="small">
+                <VBtn 
+                  value="year" 
+                  size="small"
+                  style="min-width: 80px;"
+                >
                   <VIcon icon="tabler-calendar-year" class="me-1" size="16" />
                   {{ t('dashboard.filters.period.year') }}
                 </VBtn>
@@ -518,7 +532,48 @@ watch(autoRefresh, setupAutoRefresh)
 
 <style lang="scss" scoped>
 .dashboard-header-actions {
+  gap: 1rem !important;
+  
   .period-selector-wrapper {
+    // Fix for VBtnToggle spacing
+    :deep(.v-btn-toggle) {
+      border-radius: 6px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      
+      .v-btn {
+        border-radius: 0 !important;
+        border-right: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+        min-width: auto;
+        padding: 8px 16px;
+        font-size: 0.875rem;
+        
+        &:first-child {
+          border-top-left-radius: 6px !important;
+          border-bottom-left-radius: 6px !important;
+        }
+        
+        &:last-child {
+          border-top-right-radius: 6px !important;
+          border-bottom-right-radius: 6px !important;
+          border-right: none;
+        }
+        
+        .v-icon {
+          margin-right: 6px;
+        }
+        
+        // Ensure proper spacing and no overlap
+        &:not(.v-btn--selected) {
+          background-color: transparent;
+        }
+        
+        &.v-btn--selected {
+          z-index: 1;
+        }
+      }
+    }
+    
     .period-select-mobile {
       .v-input__control {
         min-height: 32px;
@@ -538,10 +593,8 @@ watch(autoRefresh, setupAutoRefresh)
 // Admin-specific responsive adjustments
 @media (max-width: 768px) {
   .dashboard-header-actions {
-    .d-flex {
-      gap: 0.5rem !important;
-      flex-wrap: wrap;
-    }
+    gap: 0.5rem !important;
+    flex-wrap: wrap;
     
     .period-selector-wrapper {
       flex: 1;
