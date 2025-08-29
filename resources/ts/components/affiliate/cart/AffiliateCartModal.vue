@@ -27,7 +27,6 @@ const cartStore = useAffiliateCartStore()
 // Cities state
 const cities = ref<Array<{ city_id: string; name: string; prices?: { delivered?: number } }>>([])
 const citiesLoading = ref(false)
-const citySearchInput = ref('')
 
 // State
 const step = ref<'cart' | 'success'>('cart') // Remove checkout step
@@ -61,8 +60,39 @@ const subtotal = computed(() => {
 })
 
 const adjustedCommission = computed(() => {
-  const originalCommission = cartStore.estimatedCommission
-  return Math.max(0, originalCommission - deliveryFee.value)
+  // Calculate commission based on command types
+  let totalCommission = 0
+
+  // Go through each cart item and calculate commission based on type
+  cartStore.items.forEach(item => {
+    if (item.type_command === 'exchange') {
+      // For exchange orders, commission is 0
+      totalCommission += 0
+    } else {
+      // For order_sample, use the item commission or calculate it
+      const itemCommission = item.item_commission ||
+        Math.max(0, (item.sell_price || item.product.prix_vente) - item.product.prix_achat)
+      totalCommission += itemCommission * item.qty
+    }
+  })
+
+  // Subtract delivery fee from total commission (can go negative)
+  const finalCommission = totalCommission - deliveryFee.value
+
+  console.log('💰 Commission calculation:', {
+    items: cartStore.items.map(item => ({
+      title: item.product.titre,
+      type: item.type_command,
+      qty: item.qty,
+      commission: item.type_command === 'exchange' ? 0 :
+        (item.item_commission || Math.max(0, (item.sell_price || item.product.prix_vente) - item.product.prix_achat))
+    })),
+    totalCommission,
+    deliveryFee: deliveryFee.value,
+    finalCommission
+  })
+
+  return finalCommission
 })
 
 const finalTotal = computed(() => {
@@ -156,7 +186,12 @@ const handleSubmitOrder = async () => {
   submitting.value = true
 
   try {
-    const response = await cartStore.checkout(clientForm.value)
+    // Pass the calculated delivery fee and adjusted commission to backend
+    const response = await cartStore.checkout(
+      clientForm.value,
+      deliveryFee.value,
+      adjustedCommission.value
+    )
 
     if (response.success) {
       orderRef.value = response.data.commande.id
@@ -292,7 +327,7 @@ onMounted(() => {
                     />
                   </VCol>
                   <VCol cols="12" md="6">
-                    <VSelect
+                    <VAutocomplete
                       v-model="clientForm.city_id"
                       label="Ville *"
                       variant="outlined"
@@ -303,10 +338,11 @@ onMounted(() => {
                       :loading="citiesLoading"
                       :rules="rules.city_id"
                       required
-                      filterable
-                      :search-input.sync="citySearchInput"
+                      clearable
                       no-data-text="Aucune ville trouvée"
+                      placeholder="Tapez pour rechercher une ville..."
                       :menu-props="{ maxHeight: '300px' }"
+                      hide-details="auto"
                     />
                   </VCol>
                   <VCol cols="12" md="6">
@@ -410,9 +446,11 @@ onMounted(() => {
                   <span>{{ selectedCity.name }} (livraison):</span>
                   <span class="font-weight-medium">+{{ deliveryFee.toFixed(2) }} MAD</span>
                 </div>
-                <div class="d-flex justify-space-between mb-2 text-success">
+                <div class="d-flex justify-space-between mb-2" :class="adjustedCommission >= 0 ? 'text-success' : 'text-error'">
                   <span>Commission estimée:</span>
-                  <span class="font-weight-medium">+{{ adjustedCommission.toFixed(2) }} MAD</span>
+                  <span class="font-weight-medium">
+                    {{ adjustedCommission >= 0 ? '+' : '' }}{{ adjustedCommission.toFixed(2) }} MAD
+                  </span>
                 </div>
                 <VDivider class="my-2" />
                 <div class="d-flex justify-space-between text-h6">

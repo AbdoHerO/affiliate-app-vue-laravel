@@ -262,14 +262,22 @@ class CartController extends Controller
                 $sellPrice = $cartItem->sell_price ?? $product->prix_vente;
                 $itemTotal = $sellPrice * $cartItem->qty;
 
-                // Calculate commission: (sell_price - cost_price) * quantity
-                // If prix_affilie is set, use it; otherwise calculate from margin
-                if ($product->prix_affilie > 0) {
-                    $itemCommission = $product->prix_affilie * $cartItem->qty;
+                // Calculate commission based on command type
+                $commandType = $cartItem->type_command ?? 'order_sample';
+
+                if ($commandType === 'exchange') {
+                    // For exchange orders, commission is always 0
+                    $itemCommission = 0;
                 } else {
-                    // Calculate commission as margin: (sell_price - cost_price) * qty
-                    $margin = max(0, $sellPrice - $product->prix_achat);
-                    $itemCommission = $margin * $cartItem->qty;
+                    // For order_sample, calculate commission: (sell_price - cost_price) * quantity
+                    // If prix_affilie is set, use it; otherwise calculate from margin
+                    if ($product->prix_affilie > 0) {
+                        $itemCommission = $product->prix_affilie * $cartItem->qty;
+                    } else {
+                        // Calculate commission as margin: (sell_price - cost_price) * qty
+                        $margin = max(0, $sellPrice - $product->prix_achat);
+                        $itemCommission = $margin * $cartItem->qty;
+                    }
                 }
 
                 $itemsCount += $cartItem->qty;
@@ -282,6 +290,7 @@ class CartController extends Controller
                     'variante_id' => $cartItem->variante_id,
                     'qty' => $cartItem->qty,
                     'sell_price' => $sellPrice,
+                    'type_command' => $cartItem->type_command ?? 'order_sample',
                     'item_commission' => $itemCommission,
                     'product' => [
                         'id' => $product->id,
@@ -532,7 +541,9 @@ class CartController extends Controller
                 'receiver_phone' => 'required|string|min:10|max:20',
                 'city_id' => 'required|string|exists:shipping_cities,city_id',
                 'address_line' => 'required|string|min:10|max:500',
-                'note' => 'nullable|string|max:1000'
+                'note' => 'nullable|string|max:1000',
+                'delivery_fee' => 'nullable|numeric|min:0',
+                'adjusted_commission' => 'nullable|numeric'
             ]);
 
             $user = Auth::user();
@@ -593,6 +604,9 @@ class CartController extends Controller
                 $orderItems = [];
                 $boutique_id = null;
 
+                // Get delivery fee from request
+                $deliveryFee = $validated['delivery_fee'] ?? 0;
+
                 foreach ($cartItems as $cartItem) {
                     $product = $cartItem->produit;
                     if (!$product) continue;
@@ -617,6 +631,7 @@ class CartController extends Controller
                         'prix_unitaire' => $unitPrice,
                         'sell_price' => $sellPrice,
                         'prix_achat' => $product->prix_achat,
+                        'type_command' => $cartItem->type_command ?? 'order_sample',
                         'total' => $lineTotal
                     ];
                 }
@@ -628,6 +643,10 @@ class CartController extends Controller
                         'success' => false
                     ], 400);
                 }
+
+                // Add delivery fee to totals
+                $totalHT += $deliveryFee;
+                $totalTTC += $deliveryFee;
 
                 // Create order
                 $commande = Commande::create([
@@ -645,10 +664,17 @@ class CartController extends Controller
                     'notes' => $validated['note']
                 ]);
 
-                // Add order items with dynamic pricing
+                // Add order items with dynamic pricing and correct commission calculation
                 foreach ($orderItems as $item) {
                     $sellPrice = $item['sell_price'] ?? $item['prix_unitaire'];
-                    $commissionAmount = max(0, ($sellPrice - $item['prix_achat']) * $item['quantite']);
+                    $commandType = $item['type_command'] ?? 'order_sample';
+
+                    // Calculate commission based on command type
+                    if ($commandType === 'exchange') {
+                        $commissionAmount = 0; // No commission for exchange orders
+                    } else {
+                        $commissionAmount = max(0, ($sellPrice - $item['prix_achat']) * $item['quantite']);
+                    }
 
                     CommandeArticle::create([
                         'commande_id' => $commande->id,
@@ -659,6 +685,7 @@ class CartController extends Controller
                         'sell_price' => $sellPrice,
                         'commission_amount' => $commissionAmount,
                         'commission_rule_code' => 'default',
+                        'type_command' => $commandType,
                         'remise' => 0, // No discount for now
                         'total_ligne' => $item['total']
                     ]);

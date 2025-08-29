@@ -127,8 +127,20 @@ export const useAffiliateCartStore = defineStore('affiliate-cart', () => {
         console.log('✅ [Cart Store] Cart updated:', {
           itemsCount: items.value.length,
           summaryCount: summary.value.items_count,
-          totalAmount: summary.value.total_amount
+          totalAmount: summary.value.total_amount,
+          estimatedCommission: summary.value.estimated_commission
         })
+
+        // Log items with their command types for debugging
+        console.log('🛒 [Cart Store] Items with command types:',
+          items.value.map(item => ({
+            title: item.product.titre,
+            type_command: item.type_command,
+            qty: item.qty,
+            sell_price: item.sell_price,
+            item_commission: item.item_commission
+          }))
+        )
       }
     } catch (err: any) {
       error.value = err.message || 'Erreur lors du chargement du panier'
@@ -313,7 +325,7 @@ export const useAffiliateCartStore = defineStore('affiliate-cart', () => {
     }
   }
 
-  const checkout = async (clientData: ClientFinalForm): Promise<CheckoutResponse> => {
+  const checkout = async (clientData: ClientFinalForm, deliveryFee: number = 0, adjustedCommission: number = 0): Promise<CheckoutResponse> => {
     loading.value = true
     error.value = null
 
@@ -325,7 +337,9 @@ export const useAffiliateCartStore = defineStore('affiliate-cart', () => {
           receiver_phone: clientData.telephone,
           city_id: clientData.city_id,
           address_line: clientData.adresse,
-          note: clientData.note || ''
+          note: clientData.note || '',
+          delivery_fee: deliveryFee,
+          adjusted_commission: adjustedCommission
         }),
         headers: {
           'Content-Type': 'application/json'
@@ -364,7 +378,7 @@ export const useAffiliateCartStore = defineStore('affiliate-cart', () => {
       if (searchQuery) {
         params.append('q', searchQuery)
       }
-      params.append('per_page', '1000') // Increase to get all cities
+      // Remove per_page parameter - API now returns all cities
 
       const { data, error: apiError } = await useApi(`affiliate/ozon/cities?${params.toString()}`, {
         method: 'GET'

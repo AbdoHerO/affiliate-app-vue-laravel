@@ -26,18 +26,15 @@ class OzonCitiesController extends Controller
                 $query->where('name', 'LIKE', "%{$searchTerm}%");
             }
 
-            // Pagination
-            $perPage = min($request->get('per_page', 50), 100); // Max 100 items
-            $cities = $query->paginate($perPage);
+            // For affiliate dropdown, return ALL cities without pagination
+            // Frontend will handle filtering with VAutocomplete
+            $cities = $query->get();
 
             return response()->json([
                 'success' => true,
-                'data' => $cities->items(),
+                'data' => $cities->toArray(),
                 'meta' => [
-                    'current_page' => $cities->currentPage(),
-                    'last_page' => $cities->lastPage(),
-                    'per_page' => $cities->perPage(),
-                    'total' => $cities->total(),
+                    'total' => $cities->count(),
                 ]
             ]);
 
