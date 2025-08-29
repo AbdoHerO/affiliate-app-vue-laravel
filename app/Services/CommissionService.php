@@ -32,29 +32,43 @@ class CommissionService
         }
 
         $results = [];
-        $totalCommission = 0;
+        $totalProductCommission = 0;
 
-        DB::transaction(function () use ($order, $affiliate, &$results, &$totalCommission) {
-            // Calculate commission per order item
+        DB::transaction(function () use ($order, $affiliate, &$results, &$totalProductCommission) {
+            // First, calculate commission per order item (without delivery fees)
             foreach ($order->articles as $article) {
                 $commission = $this->calculateForOrderItem($order, $article, $affiliate);
                 if ($commission) {
                     $results[] = $commission;
-                    $totalCommission += $commission->amount;
+                    $totalProductCommission += $commission->amount;
                 }
+            }
+
+            // Calculate delivery fee (total_ttc - sum of article totals)
+            $totalArticles = $order->articles->sum('total_ligne');
+            $deliveryFee = $order->total_ttc - $totalArticles;
+
+            // Apply delivery fee deduction to commissions
+            if ($deliveryFee > 0 && count($results) > 0) {
+                $this->applyDeliveryFeeDeduction($results, $deliveryFee, $order);
             }
         });
 
+        // Recalculate total after delivery fee deduction
+        $finalTotalCommission = collect($results)->sum('amount');
+
         Log::info('Commission calculation completed', [
             'order_id' => $order->id,
-            'total_commission' => $totalCommission,
+            'product_commission' => $totalProductCommission,
+            'delivery_fee' => $deliveryFee ?? 0,
+            'final_commission' => $finalTotalCommission,
             'items_count' => count($results)
         ]);
 
         return [
             'success' => true,
             'commissions' => $results,
-            'total_amount' => $totalCommission
+            'total_amount' => $finalTotalCommission
         ];
     }
 
@@ -110,6 +124,45 @@ class CommissionService
     }
 
     /**
+     * Apply delivery fee deduction to commissions
+     */
+    protected function applyDeliveryFeeDeduction(array &$commissions, float $deliveryFee, Commande $order): void
+    {
+        if (empty($commissions)) {
+            return;
+        }
+
+        // For exchange orders, the delivery fee should make the commission negative
+        if ($order->type_command === 'exchange') {
+            // For exchange orders, set commission to negative delivery fee
+            foreach ($commissions as $commission) {
+                $commission->amount = -$deliveryFee;
+                $commission->notes = "Exchange order: commission = -delivery fee ({$deliveryFee} MAD)";
+                $commission->rule_code = 'EXCHANGE_NEGATIVE_DELIVERY';
+                $commission->save();
+            }
+        } else {
+            // For normal orders, distribute the delivery fee deduction proportionally
+            $totalCommission = collect($commissions)->sum('amount');
+
+            if ($totalCommission > 0) {
+                foreach ($commissions as $commission) {
+                    $proportion = $commission->amount / $totalCommission;
+                    $deduction = $deliveryFee * $proportion;
+                    $commission->amount = $commission->amount - $deduction;
+                    $commission->notes = ($commission->notes ?? '') . " | Delivery fee deduction: -{$deduction} MAD";
+                    $commission->save();
+                }
+            } else {
+                // If no positive commission, apply full delivery fee to first commission
+                $commissions[0]->amount = -$deliveryFee;
+                $commissions[0]->notes = "No product commission, full delivery fee deduction: -{$deliveryFee} MAD";
+                $commissions[0]->save();
+            }
+        }
+    }
+
+    /**
      * Calculate commission amount using margin-based logic
      */
     protected function calculateCommissionAmount($article, Produit $product, User $affiliate): array
@@ -148,7 +201,8 @@ class CommissionService
      */
     protected function calculateMarginBasedCommission($article, Produit $product, User $affiliate): array
     {
-        $salePrice = $article->prix_unitaire;
+        // Use sell_price if available, otherwise fall back to prix_unitaire
+        $salePrice = $article->sell_price ?? $article->prix_unitaire;
         $costPrice = $product->prix_achat;
         $recommendedPrice = $product->prix_vente;
         $fixedCommission = $product->prix_affilie;

@@ -60,34 +60,56 @@ const subtotal = computed(() => {
 })
 
 const adjustedCommission = computed(() => {
-  // Calculate commission based on command types
-  let totalCommission = 0
+  // Check if this is an exchange-only order
+  const hasOnlyExchanges = cartStore.items.every(item => item.type_command === 'exchange')
+  const hasExchanges = cartStore.items.some(item => item.type_command === 'exchange')
 
-  // Go through each cart item and calculate commission based on type
+  if (hasOnlyExchanges) {
+    // For exchange-only orders, commission = -delivery fee
+    const finalCommission = -deliveryFee.value
+
+    console.log('💰 Commission calculation (Exchange only):', {
+      type: 'exchange_only',
+      deliveryFee: deliveryFee.value,
+      finalCommission
+    })
+
+    return finalCommission
+  }
+
+  // For normal orders or mixed orders, calculate product commission then subtract delivery
+  let totalProductCommission = 0
+
   cartStore.items.forEach(item => {
     if (item.type_command === 'exchange') {
-      // For exchange orders, commission is 0
-      totalCommission += 0
+      // Exchange items contribute 0 to product commission
+      totalProductCommission += 0
     } else {
-      // For order_sample, use the item commission or calculate it
-      const itemCommission = item.item_commission ||
-        Math.max(0, (item.sell_price || item.product.prix_vente) - item.product.prix_achat)
-      totalCommission += itemCommission * item.qty
+      // Calculate commission for order_sample items
+      const sellPrice = item.sell_price || item.product.prix_vente
+      const costPrice = item.product.prix_achat
+      const margin = Math.max(0, sellPrice - costPrice)
+      totalProductCommission += margin * item.qty
     }
   })
 
-  // Subtract delivery fee from total commission (can go negative)
-  const finalCommission = totalCommission - deliveryFee.value
+  // Subtract delivery fee from product commission
+  const finalCommission = totalProductCommission - deliveryFee.value
 
-  console.log('💰 Commission calculation:', {
+  console.log('💰 Commission calculation (Normal/Mixed):', {
+    type: hasExchanges ? 'mixed' : 'normal',
     items: cartStore.items.map(item => ({
       title: item.product.titre,
       type: item.type_command,
       qty: item.qty,
+      sellPrice: item.sell_price || item.product.prix_vente,
+      costPrice: item.product.prix_achat,
+      margin: item.type_command === 'exchange' ? 0 :
+        Math.max(0, (item.sell_price || item.product.prix_vente) - item.product.prix_achat),
       commission: item.type_command === 'exchange' ? 0 :
-        (item.item_commission || Math.max(0, (item.sell_price || item.product.prix_vente) - item.product.prix_achat))
+        Math.max(0, (item.sell_price || item.product.prix_vente) - item.product.prix_achat) * item.qty
     })),
-    totalCommission,
+    totalProductCommission,
     deliveryFee: deliveryFee.value,
     finalCommission
   })
