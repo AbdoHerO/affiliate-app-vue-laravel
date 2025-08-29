@@ -605,7 +605,12 @@ const formatCopywriting = (text: string): string => {
                   class="mt-2"
                 >
                   <VIcon icon="tabler-info-circle" start />
-                  Prix minimum requis : {{ minimumPrice }} MAD (Prix d'achat + 50 MAD livraison)
+                  <div>
+                    Prix minimum requis : {{ minimumPrice }} MAD (Prix d'achat + 50 MAD livraison)
+                    <div v-if="maxQuantity > 0" class="mt-1">
+                      <strong>Stock maximum disponible : {{ maxQuantity }} unités</strong>
+                    </div>
+                  </div>
                 </VAlert>
               </div>
 
