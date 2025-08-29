@@ -428,20 +428,16 @@ onMounted(() => {
 
           <!-- SKU -->
           <template #item.commission.sku="{ item }">
-            <div v-if="item.commission?.commandeArticle?.produit">
-              <div class="font-weight-medium mb-1">{{ item.commission.commandeArticle.produit.titre }}</div>
-              <VChip
-                v-if="item.commission.commandeArticle.produit.sku"
-                size="small"
-                color="secondary"
-                variant="outlined"
-                class="font-mono"
-              >
-                {{ item.commission.commandeArticle.produit.sku }}
-              </VChip>
-              <span v-else class="text-caption text-medium-emphasis">No SKU</span>
-            </div>
-            <span v-else class="text-medium-emphasis">N/A</span>
+            <VChip
+              v-if="item.commission?.produit?.sku"
+              size="small"
+              color="secondary"
+              variant="outlined"
+              class="font-mono"
+            >
+              {{ item.commission.produit.sku }}
+            </VChip>
+            <span v-else class="text-medium-emphasis">—</span>
           </template>
 
           <!-- Order Type -->
