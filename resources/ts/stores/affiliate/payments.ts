@@ -29,10 +29,16 @@ export interface AffiliateCommission {
     created_at: string
   }
   commandeArticle?: {
+    id: string
+    quantite: number
+    prix_unitaire: number
+    total_ligne: number
+    type_command: string
     produit?: {
       id: string
       titre: string
       sku?: string | null
+      prix_vente: number
     }
   }
 }

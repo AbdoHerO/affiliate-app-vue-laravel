@@ -57,6 +57,19 @@ export interface WithdrawalItem {
       total_ttc: number
       created_at: string
     }
+    commande_article?: {
+      id: string
+      quantite: number
+      prix_unitaire: number
+      total_ligne: number
+      type_command: string
+      produit?: {
+        id: string
+        titre: string
+        sku?: string | null
+        prix_vente: number
+      }
+    }
     produit?: {
       id: string
       titre: string

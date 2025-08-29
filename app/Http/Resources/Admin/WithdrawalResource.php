@@ -73,6 +73,23 @@ class WithdrawalResource extends JsonResource
                                         'created_at' => $item->commission->commande->created_at?->toISOString(),
                                     ];
                                 }),
+                                'commande_article' => $this->when($item->commission->relationLoaded('commandeArticle'), function () use ($item) {
+                                    return [
+                                        'id' => $item->commission->commandeArticle->id,
+                                        'quantite' => $item->commission->commandeArticle->quantite,
+                                        'prix_unitaire' => $item->commission->commandeArticle->prix_unitaire,
+                                        'total_ligne' => $item->commission->commandeArticle->total_ligne,
+                                        'type_command' => $item->commission->commandeArticle->type_command,
+                                        'produit' => $this->when($item->commission->commandeArticle->relationLoaded('produit'), function () use ($item) {
+                                            return [
+                                                'id' => $item->commission->commandeArticle->produit->id,
+                                                'titre' => $item->commission->commandeArticle->produit->titre,
+                                                'sku' => $item->commission->commandeArticle->produit->sku,
+                                                'prix_vente' => $item->commission->commandeArticle->produit->prix_vente,
+                                            ];
+                                        }),
+                                    ];
+                                }),
                                 'produit' => $this->when(
                                     $item->commission->relationLoaded('commandeArticle') && 
                                     $item->commission->commandeArticle?->relationLoaded('produit'), 

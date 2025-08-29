@@ -429,13 +429,13 @@ onMounted(() => {
           <!-- SKU -->
           <template #item.commission.sku="{ item }">
             <VChip
-              v-if="item.commission?.produit?.sku"
+              v-if="item.commission?.commande_article?.produit?.sku"
               size="small"
               color="secondary"
               variant="outlined"
               class="font-mono"
             >
-              {{ item.commission.produit.sku }}
+              {{ item.commission.commande_article.produit.sku }}
             </VChip>
             <span v-else class="text-medium-emphasis">—</span>
           </template>
