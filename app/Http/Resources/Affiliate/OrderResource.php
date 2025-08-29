@@ -83,6 +83,7 @@ class OrderResource extends JsonResource
                         'prix_unitaire' => $article->prix_unitaire,
                         'remise' => $article->remise,
                         'total_ligne' => $article->total_ligne,
+                        'type_command' => $article->type_command ?? 'order_sample',
                         'produit' => $article->produit ? [
                             'id' => $article->produit->id,
                             'titre' => $article->produit->titre,

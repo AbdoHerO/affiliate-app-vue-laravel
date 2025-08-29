@@ -49,6 +49,7 @@ const headers = [
   { title: t('client'), key: 'client', sortable: false },
   { title: t('city'), key: 'city', sortable: false },
   { title: 'SKU', key: 'sku_list', sortable: false, width: '150px' },
+  { title: 'Type Commande', key: 'type_command', sortable: false },
   { title: t('status'), key: 'status', sortable: true },
   { title: t('total'), key: 'total_ttc', sortable: true },
   { title: t('updated'), key: 'updated_at', sortable: true },
@@ -381,6 +382,22 @@ const formatCurrency = (amount: number) => {
   }).format(amount)
 }
 
+const getOrderTypeColor = (type: string) => {
+  const colors: Record<string, string> = {
+    'order_sample': 'primary',
+    'exchange': 'warning'
+  }
+  return colors[type] || 'secondary'
+}
+
+const getOrderTypeLabel = (type: string) => {
+  const labels: Record<string, string> = {
+    'order_sample': 'Échantillon',
+    'exchange': 'Échange'
+  }
+  return labels[type] || type || 'N/A'
+}
+
 const formatDate = (date: string) => {
   return new Date(date).toLocaleDateString('fr-FR', {
     day: '2-digit',
@@ -615,6 +632,17 @@ onMounted(() => {
               {{ article.produit.sku || 'N/A' }}
             </VChip>
           </div>
+        </template>
+
+        <!-- Type Command Column -->
+        <template #item.type_command="{ item }">
+          <VChip
+            size="small"
+            :color="getOrderTypeColor(item.type_command)"
+            variant="tonal"
+          >
+            {{ getOrderTypeLabel(item.type_command) }}
+          </VChip>
         </template>
 
         <!-- Status Column -->

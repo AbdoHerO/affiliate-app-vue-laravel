@@ -554,20 +554,16 @@ onMounted(async () => {
 
         <!-- SKU Column -->
         <template #item.sku="{ item }">
-          <div v-if="item.commande_article?.produit">
-            <div class="font-weight-medium mb-1">{{ item.commande_article.produit.titre }}</div>
-            <VChip
-              v-if="item.commande_article.produit.sku"
-              size="small"
-              color="secondary"
-              variant="outlined"
-              class="font-mono"
-            >
-              {{ item.commande_article.produit.sku }}
-            </VChip>
-            <span v-else class="text-caption text-medium-emphasis">No SKU</span>
-          </div>
-          <span v-else class="text-medium-emphasis">{{ t('not_available') }}</span>
+          <VChip
+            v-if="item.commande_article?.produit?.sku"
+            size="small"
+            color="secondary"
+            variant="outlined"
+            class="font-mono"
+          >
+            {{ item.commande_article.produit.sku }}
+          </VChip>
+          <span v-else class="text-medium-emphasis">—</span>
         </template>
 
         <!-- Order Type Column -->

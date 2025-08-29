@@ -52,8 +52,9 @@ class CommissionResource extends JsonResource
                     'quantite' => $this->commandeArticle->quantite ?? 1,
                     'prix_unitaire' => $this->commandeArticle->prix_unitaire ?? 0,
                     'total_ligne' => $this->commandeArticle->total_ligne ?? 0,
+                    'type_command' => $this->commandeArticle->type_command ?? 'order_sample',
                     'produit' => $this->when(
-                        $this->commandeArticle->relationLoaded('produit'),
+                        $this->commandeArticle->relationLoaded('produit') && $this->commandeArticle->produit,
                         function () {
                             return [
                                 'id' => $this->commandeArticle->produit->id,

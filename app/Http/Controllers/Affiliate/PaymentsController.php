@@ -40,9 +40,11 @@ class PaymentsController extends Controller
 
             $query = CommissionAffilie::with([
                 'commande:id,statut,total_ttc,created_at',
+                'commandeArticle:id,commande_id,produit_id,quantite,prix_unitaire,total_ligne,type_command',
                 'commandeArticle.produit:id,titre,sku'
             ])
-            ->where('user_id', $user->id); // Scope to current affiliate only
+            ->where('user_id', $user->id) // Scope to current affiliate only
+            ->whereNotNull('commande_article_id'); // Only commissions with order articles
 
             // Apply filters
             if ($request->filled('q')) {
@@ -211,6 +213,7 @@ class PaymentsController extends Controller
             $withdrawal = Withdrawal::with([
                 'items.commission:id,amount,status,type,created_at,commande_id,commande_article_id',
                 'items.commission.commande:id,statut,total_ttc,created_at',
+                'items.commission.commandeArticle:id,commande_id,produit_id,quantite,prix_unitaire,total_ligne,type_command',
                 'items.commission.commandeArticle.produit:id,titre,sku'
             ])
                 ->where('user_id', $user->id) // Ensure ownership

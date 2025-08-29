@@ -33,7 +33,8 @@ class CommissionsController extends Controller
             'commande:id,statut,total_ttc,created_at',
             'commandeArticle:id,quantite,prix_unitaire,total_ligne,type_command',
             'commandeArticle.produit:id,titre,sku'
-        ]);
+        ])
+        ->whereNotNull('commande_article_id'); // Only commissions with order articles
 
         // Apply filters
         if ($request->filled('q')) {
@@ -119,8 +120,8 @@ class CommissionsController extends Controller
             $commission = CommissionAffilie::with([
                 'affiliate:id,nom_complet,email,telephone',
                 'commande:id,statut,total_ttc,devise,created_at,notes',
-                'commandeArticle:id,quantite,prix_unitaire,total_ligne',
-                'commandeArticle.produit:id,titre,prix_vente'
+                'commandeArticle:id,quantite,prix_unitaire,total_ligne,type_command',
+                'commandeArticle.produit:id,titre,sku,prix_vente'
             ])->find($id);
 
             if (!$commission) {
