@@ -61,6 +61,7 @@ const commissionHeaders = [
   { title: t('admin_commissions_title'), key: 'commission.id', sortable: false },
   { title: t('table_order_id'), key: 'commission.commande.id', sortable: false },
   { title: t('table_product'), key: 'commission.produit.titre', sortable: false },
+  { title: 'Type Commande', key: 'commission.order_type', sortable: false },
   { title: t('admin_withdrawals_amount'), key: 'amount', sortable: false },
   { title: t('table_status'), key: 'commission.status', sortable: false },
   { title: t('table_created'), key: 'commission.created_at', sortable: false },
@@ -68,9 +69,26 @@ const commissionHeaders = [
 ]
 
 const canManageCommissions = computed(() => {
-  return currentWithdrawal.value?.status === 'pending' || 
+  return currentWithdrawal.value?.status === 'pending' ||
          currentWithdrawal.value?.status === 'approved'
 })
+
+// Helper functions
+const getOrderTypeColor = (type: string) => {
+  const colors: Record<string, string> = {
+    'order_sample': 'primary',
+    'exchange': 'warning'
+  }
+  return colors[type] || 'secondary'
+}
+
+const getOrderTypeLabel = (type: string) => {
+  const labels: Record<string, string> = {
+    'order_sample': 'Échantillon',
+    'exchange': 'Échange'
+  }
+  return labels[type] || type || 'N/A'
+}
 
 // Methods
 const fetchWithdrawal = async () => {
@@ -413,6 +431,17 @@ onMounted(() => {
             <div class="text-body-2">
               {{ item.commission?.produit?.titre || 'N/A' }}
             </div>
+          </template>
+
+          <!-- Order Type -->
+          <template #item.commission.order_type="{ item }">
+            <VChip
+              size="small"
+              :color="getOrderTypeColor(item.commission?.commande_article?.type_command)"
+              variant="tonal"
+            >
+              {{ getOrderTypeLabel(item.commission?.commande_article?.type_command) }}
+            </VChip>
           </template>
 
           <!-- Amount -->

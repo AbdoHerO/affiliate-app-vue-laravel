@@ -35,7 +35,7 @@ class PreordersController extends Controller
         ])
         ->select([
             'id', 'boutique_id', 'user_id', 'client_id', 'client_final_id', 'adresse_id', 'adresse_livraison_id', 'statut',
-            'confirmation_cc', 'mode_paiement', 'total_ht', 'total_ttc', 'devise',
+            'confirmation_cc', 'mode_paiement', 'type_command', 'total_ht', 'total_ttc', 'devise',
             'notes', 'no_answer_count', 'client_final_snapshot', 'created_at', 'updated_at'
         ])
         ->whereIn('statut', ['en_attente', 'confirmee', 'injoignable', 'refusee', 'annulee'])

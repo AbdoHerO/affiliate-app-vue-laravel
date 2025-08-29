@@ -63,6 +63,7 @@ const headers = [
   { title: t('table_column_affiliate'), key: 'affiliate.nom_complet', sortable: true },
   { title: t('table_column_order'), key: 'commande_id', sortable: true },
   { title: t('table_column_product'), key: 'product', sortable: false },
+  { title: 'Type Commande', key: 'order_type', sortable: false },
   { title: t('table_column_type'), key: 'type', sortable: true },
   { title: t('admin_commissions_base_amount'), key: 'base_amount', sortable: true },
   { title: t('admin_commissions_rate'), key: 'rate', sortable: false },
@@ -303,6 +304,22 @@ const getStatusColor = (status: string) => {
     canceled: 'secondary',
   }
   return colors[status as keyof typeof colors] || 'secondary'
+}
+
+const getOrderTypeColor = (type: string) => {
+  const colors: Record<string, string> = {
+    'order_sample': 'primary',
+    'exchange': 'warning'
+  }
+  return colors[type] || 'secondary'
+}
+
+const getOrderTypeLabel = (type: string) => {
+  const labels: Record<string, string> = {
+    'order_sample': 'Échantillon',
+    'exchange': 'Échange'
+  }
+  return labels[type] || type || 'N/A'
 }
 
 const getStatusText = (status: string) => {
@@ -551,6 +568,17 @@ onMounted(async () => {
             </div>
           </div>
           <span v-else class="text-medium-emphasis">{{ t('not_available') }}</span>
+        </template>
+
+        <!-- Order Type Column -->
+        <template #item.order_type="{ item }">
+          <VChip
+            size="small"
+            :color="getOrderTypeColor(item.commande_article?.type_command)"
+            variant="tonal"
+          >
+            {{ getOrderTypeLabel(item.commande_article?.type_command) }}
+          </VChip>
         </template>
 
         <!-- Base Amount Column -->

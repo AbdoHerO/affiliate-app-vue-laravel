@@ -114,6 +114,24 @@ class CommissionService
      */
     protected function calculateCommissionAmount($article, Produit $product, User $affiliate): array
     {
+        // Check if this is an exchange order - no commission for exchanges
+        $commandType = $article->type_command ?? 'order_sample';
+
+        if ($commandType === 'exchange') {
+            return [
+                'base_amount' => 0,
+                'rate' => 0,
+                'amount' => 0,
+                'rule_code' => 'EXCHANGE_NO_COMMISSION',
+                'notes' => 'No commission for exchange orders',
+                'calculation_details' => [
+                    'command_type' => $commandType,
+                    'rule_applied' => 'EXCHANGE_NO_COMMISSION',
+                    'reason' => 'Exchange orders do not generate commission'
+                ]
+            ];
+        }
+
         // Check feature flag for commission strategy
         $strategy = AppSetting::get('commission.strategy', 'margin');
 

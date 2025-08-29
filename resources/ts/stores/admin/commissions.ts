@@ -56,6 +56,7 @@ export interface Commission {
     quantite: number
     prix_unitaire: number
     total_ligne: number
+    type_command: string
     produit?: {
       id: string
       titre: string

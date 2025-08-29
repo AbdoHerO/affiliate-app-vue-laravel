@@ -11,6 +11,7 @@ export interface AffiliateOrder {
   statut: string
   confirmation_cc: string
   mode_paiement: string
+  type_command: string
   total_ht: number
   total_ttc: number
   devise: string

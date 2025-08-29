@@ -96,7 +96,32 @@ const adjustedCommission = computed(() => {
 })
 
 const finalTotal = computed(() => {
-  return subtotal.value + deliveryFee.value
+  // For exchange orders, client only pays delivery fee
+  // For order_sample, client pays products + delivery
+
+  let exchangeTotal = 0
+  let orderSampleTotal = 0
+
+  cartStore.items.forEach(item => {
+    const itemTotal = (item.sell_price || item.product.prix_vente) * item.qty
+
+    if (item.type_command === 'exchange') {
+      exchangeTotal += 0 // Exchange items are free for client
+    } else {
+      orderSampleTotal += itemTotal // Order sample items are paid
+    }
+  })
+
+  const clientPayableTotal = orderSampleTotal + deliveryFee.value
+
+  console.log('💰 Final total calculation:', {
+    exchangeTotal: exchangeTotal,
+    orderSampleTotal: orderSampleTotal,
+    deliveryFee: deliveryFee.value,
+    clientPayableTotal: clientPayableTotal
+  })
+
+  return clientPayableTotal
 })
 
 // Client form
@@ -438,9 +463,28 @@ onMounted(() => {
             <!-- New Totals Calculation -->
             <VCard variant="outlined" class="mb-6">
               <VCardText>
+                <!-- Show breakdown by command type -->
+                <div v-if="cartStore.items.some(item => item.type_command === 'exchange')" class="mb-3">
+                  <div class="text-caption text-medium-emphasis mb-2">Détail par type de commande:</div>
+
+                  <!-- Order Sample Items -->
+                  <div v-if="cartStore.items.some(item => item.type_command !== 'exchange')" class="d-flex justify-space-between mb-1">
+                    <span class="text-body-2">Articles normaux:</span>
+                    <span class="text-body-2">{{ cartStore.items.filter(item => item.type_command !== 'exchange').reduce((sum, item) => sum + ((item.sell_price || item.product.prix_vente) * item.qty), 0).toFixed(2) }} MAD</span>
+                  </div>
+
+                  <!-- Exchange Items -->
+                  <div v-if="cartStore.items.some(item => item.type_command === 'exchange')" class="d-flex justify-space-between mb-1">
+                    <span class="text-body-2">Articles d'échange:</span>
+                    <span class="text-body-2 text-warning">Gratuit (échange)</span>
+                  </div>
+
+                  <VDivider class="my-2" />
+                </div>
+
                 <div class="d-flex justify-space-between mb-2">
-                  <span>Sous-total:</span>
-                  <span class="font-weight-medium">{{ subtotal.toFixed(2) }} MAD</span>
+                  <span>Sous-total payable:</span>
+                  <span class="font-weight-medium">{{ (finalTotal - deliveryFee).toFixed(2) }} MAD</span>
                 </div>
                 <div v-if="selectedCity" class="d-flex justify-space-between mb-2 text-info">
                   <span>{{ selectedCity.name }} (livraison):</span>
@@ -454,7 +498,7 @@ onMounted(() => {
                 </div>
                 <VDivider class="my-2" />
                 <div class="d-flex justify-space-between text-h6">
-                  <span>Total:</span>
+                  <span>Total à payer par le client:</span>
                   <span class="font-weight-bold text-primary">{{ finalTotal.toFixed(2) }} MAD</span>
                 </div>
               </VCardText>

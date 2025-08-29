@@ -57,6 +57,7 @@ const breadcrumbs = computed(() => [
 const commissionsHeaders = [
   { title: t('table.order'), key: 'commande.id', sortable: false },
   { title: t('table.product'), key: 'commandeArticle.produit.titre', sortable: false },
+  { title: 'Type Commande', key: 'order_type', sortable: false },
   { title: t('table.type'), key: 'type', sortable: true },
   { title: t('affiliate_payments_base_amount'), key: 'base_amount', sortable: true },
   { title: t('affiliate_payments_rate'), key: 'rate', sortable: true },
@@ -191,6 +192,22 @@ const formatPercentage = (rate: number | null | undefined) => {
   }
   // Rate is stored as decimal (0.0830 = 8.30%), so multiply by 100
   return `${(Number(rate) * 100).toFixed(2)}%`
+}
+
+const getOrderTypeColor = (type: string) => {
+  const colors: Record<string, string> = {
+    'order_sample': 'primary',
+    'exchange': 'warning'
+  }
+  return colors[type] || 'secondary'
+}
+
+const getOrderTypeLabel = (type: string) => {
+  const labels: Record<string, string> = {
+    'order_sample': 'Échantillon',
+    'exchange': 'Échange'
+  }
+  return labels[type] || type || 'N/A'
 }
 
 const viewWithdrawalDetails = async (withdrawalId: string) => {
@@ -424,6 +441,17 @@ onMounted(() => {
               <span class="font-weight-medium">
                 {{ item.commandeArticle?.produit?.titre || 'N/A' }}
               </span>
+            </template>
+
+            <!-- Order Type Column -->
+            <template #item.order_type="{ item }">
+              <VChip
+                size="small"
+                :color="getOrderTypeColor(item.commandeArticle?.type_command)"
+                variant="tonal"
+              >
+                {{ getOrderTypeLabel(item.commandeArticle?.type_command) }}
+              </VChip>
             </template>
 
             <!-- Base Amount Column -->

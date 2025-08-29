@@ -619,7 +619,15 @@ class CartController extends Controller
                     // Use sell_price from cart item or fallback to product prix_vente
                     $sellPrice = $cartItem->sell_price ?? $product->prix_vente;
                     $unitPrice = $product->prix_vente; // Keep original for reference
-                    $lineTotal = $sellPrice * $cartItem->qty;
+                    $commandType = $cartItem->type_command ?? 'order_sample';
+
+                    // For exchange orders, client doesn't pay for the product (only delivery)
+                    // For order_sample, client pays the full price
+                    if ($commandType === 'exchange') {
+                        $lineTotal = 0; // Exchange items are free for client
+                    } else {
+                        $lineTotal = $sellPrice * $cartItem->qty; // Normal pricing
+                    }
 
                     $totalHT += $lineTotal;
                     $totalTTC += $lineTotal; // No tax for now
@@ -629,10 +637,11 @@ class CartController extends Controller
                         'variante_id' => $cartItem->variante_id,
                         'quantite' => $cartItem->qty,
                         'prix_unitaire' => $unitPrice,
-                        'sell_price' => $sellPrice,
+                        'sell_price' => $sellPrice, // Original sell price (for reference)
+                        'client_paid_price' => $commandType === 'exchange' ? 0 : $sellPrice, // What client actually pays
                         'prix_achat' => $product->prix_achat,
-                        'type_command' => $cartItem->type_command ?? 'order_sample',
-                        'total' => $lineTotal
+                        'type_command' => $commandType,
+                        'total' => $lineTotal // What client pays for this line
                     ];
                 }
 
@@ -648,6 +657,21 @@ class CartController extends Controller
                 $totalHT += $deliveryFee;
                 $totalTTC += $deliveryFee;
 
+                // Determine order type based on cart items
+                $hasOrderSample = false;
+                $hasExchange = false;
+                foreach ($cartItems as $cartItem) {
+                    $commandType = $cartItem->type_command ?? 'order_sample';
+                    if ($commandType === 'order_sample') {
+                        $hasOrderSample = true;
+                    } elseif ($commandType === 'exchange') {
+                        $hasExchange = true;
+                    }
+                }
+
+                // Set order type: if mixed, prioritize order_sample; if only exchange, set exchange
+                $orderType = $hasOrderSample ? 'order_sample' : ($hasExchange ? 'exchange' : 'order_sample');
+
                 // Create order
                 $commande = Commande::create([
                     'boutique_id' => $boutique_id,
@@ -658,6 +682,7 @@ class CartController extends Controller
                     'statut' => 'en_attente', // Pre-order status
                     'confirmation_cc' => 'non_contacte',
                     'mode_paiement' => 'cod',
+                    'type_command' => $orderType,
                     'total_ht' => $totalHT,
                     'total_ttc' => $totalTTC,
                     'devise' => 'MAD',

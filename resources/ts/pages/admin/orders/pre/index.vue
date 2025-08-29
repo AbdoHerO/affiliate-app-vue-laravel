@@ -69,9 +69,10 @@ const headers = [
   { title: '', key: 'select', sortable: false, width: '50px' },
   { title: t('table_order_code'), key: 'id', sortable: true },
   { title: t('table_client'), key: 'client', sortable: false },
-  { title: t('table_city'), key: 'city', sortable: false },  
+  { title: t('table_city'), key: 'city', sortable: false },
   { title: t('table_affiliate'), key: 'affilie', sortable: false },
   { title: t('table_boutique'), key: 'boutique', sortable: false },
+  { title: 'Type', key: 'type_command', sortable: true, width: '100px' },
   { title: t('table_total'), key: 'total_ttc', sortable: true },
   { title: t('table_no_answer'), key: 'no_answer_count', sortable: true, width: '100px' },
   { title: t('table_status'), key: 'statut', sortable: true },
@@ -152,6 +153,22 @@ const getStatusColor = (status: string) => {
     default:
       return 'default'
   }
+}
+
+const getCommandTypeColor = (type: string) => {
+  const colors: Record<string, string> = {
+    'order_sample': 'primary',
+    'exchange': 'warning'
+  }
+  return colors[type] || 'secondary'
+}
+
+const getCommandTypeLabel = (type: string) => {
+  const labels: Record<string, string> = {
+    'order_sample': 'Échantillon',
+    'exchange': 'Échange'
+  }
+  return labels[type] || type
 }
 
 const getStatusText = (status: string) => {
@@ -588,6 +605,17 @@ onMounted(() => {
             variant="tonal"
           >
             {{ item.boutique.nom }}
+          </VChip>
+        </template>
+
+        <!-- Type Command Column -->
+        <template #item.type_command="{ item }">
+          <VChip
+            size="small"
+            :color="getCommandTypeColor(item.type_command)"
+            variant="tonal"
+          >
+            {{ getCommandTypeLabel(item.type_command) }}
           </VChip>
         </template>
 

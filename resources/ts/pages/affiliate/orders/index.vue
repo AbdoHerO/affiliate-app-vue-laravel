@@ -52,6 +52,7 @@ const headers = [
   { title: t('table.reference'), key: 'id', sortable: true },
   { title: t('table.client'), key: 'client.nom_complet', sortable: false },
   { title: t('table.boutique'), key: 'boutique.nom', sortable: false },
+  { title: 'Type', key: 'type_command', sortable: true },
   { title: t('table.status'), key: 'statut', sortable: true },
   { title: t('table.total_ttc'), key: 'total_ttc', sortable: true },
   { title: t('table.date'), key: 'created_at', sortable: true },
@@ -127,6 +128,22 @@ const formatDate = (date: string) => {
     hour: '2-digit',
     minute: '2-digit',
   })
+}
+
+const getOrderTypeColor = (type: string) => {
+  const colors: Record<string, string> = {
+    'order_sample': 'primary',
+    'exchange': 'warning'
+  }
+  return colors[type] || 'secondary'
+}
+
+const getOrderTypeLabel = (type: string) => {
+  const labels: Record<string, string> = {
+    'order_sample': 'Échantillon',
+    'exchange': 'Échange'
+  }
+  return labels[type] || type || 'N/A'
 }
 
 // Watchers
@@ -266,6 +283,17 @@ onMounted(() => {
             color="info"
           >
             {{ item.boutique?.nom || 'N/A' }}
+          </VChip>
+        </template>
+
+        <!-- Type Command Column -->
+        <template #item.type_command="{ item }">
+          <VChip
+            size="small"
+            :color="getOrderTypeColor(item.type_command)"
+            variant="tonal"
+          >
+            {{ getOrderTypeLabel(item.type_command) }}
           </VChip>
         </template>
 
