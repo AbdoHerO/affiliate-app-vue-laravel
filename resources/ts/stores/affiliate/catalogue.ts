@@ -77,6 +77,7 @@ export interface DrawerViewModel {
   prix_vente: number
   prix_affilie: number
   stock_total: number
+  stock_fake?: number | null
   quantite_min: number
   rating_value?: number | null
   categorie?: { id: string; nom: string } | null
@@ -100,6 +101,7 @@ export interface DrawerViewModel {
   }>
   images: Array<{ id?: string; url: string; ordre: number }>
   videos: Array<{ id?: string; url: string; title?: string }>
+  variantes?: CatalogueVariant[]
 }
 
 export interface CatalogueFilters {
@@ -711,6 +713,7 @@ export const useCatalogueStore = defineStore('affiliate-catalogue', () => {
       prix_vente: product.prix_vente,
       prix_affilie: product.prix_affilie,
       stock_total: product.stock_total,
+      stock_fake: product.stock_fake,
       quantite_min: product.quantite_min || 1,
       rating_value: product.rating_value,
       categorie: product.categorie,
@@ -726,7 +729,8 @@ export const useCatalogueStore = defineStore('affiliate-catalogue', () => {
         id: v.id,
         url: v.url,
         title: v.titre || v.title
-      })) || []
+      })) || [],
+      variantes: product.variantes
     }
   }
 

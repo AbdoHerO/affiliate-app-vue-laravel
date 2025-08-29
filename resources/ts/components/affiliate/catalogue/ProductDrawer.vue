@@ -185,9 +185,6 @@ const handleSizeSelect = (sizeValue: string) => {
 
 const downloadFile = async (url: string, filename: string) => {
   try {
-    // Show loading state
-    const { showNotification } = useNotifications()
-
     // Fetch the file as blob to ensure proper download
     const response = await fetch(url, {
       method: 'GET',
@@ -222,18 +219,11 @@ const downloadFile = async (url: string, filename: string) => {
     // Clean up blob URL
     window.URL.revokeObjectURL(blobUrl)
 
-    showNotification({
-      type: 'success',
-      message: `Téléchargement de "${filename}" démarré avec succès`
-    })
+    showSuccess(`Téléchargement de "${filename}" démarré avec succès`)
 
   } catch (error) {
     console.error('Download error:', error)
-    const { showNotification } = useNotifications()
-    showNotification({
-      type: 'error',
-      message: `Erreur lors du téléchargement: ${error instanceof Error ? error.message : 'Fichier introuvable'}`
-    })
+    showError(`Erreur lors du téléchargement: ${error instanceof Error ? error.message : 'Fichier introuvable'}`)
   }
 }
 
@@ -243,6 +233,32 @@ const openZoomModal = (imageIndex?: number) => {
   }
   isZoomModalOpen.value = true
 }
+
+// Get selected variant stock
+const selectedVariantStock = computed(() => {
+  if (!product.value) return null
+
+  let stock = null
+
+  // Check selected color stock
+  if (selectedColor.value && product.value.colors) {
+    const selectedColorVariant = product.value.colors.find(color => color.name === selectedColor.value)
+    if (selectedColorVariant) {
+      stock = selectedColorVariant.stock
+    }
+  }
+
+  // Check selected size stock
+  if (selectedSize.value && product.value.sizes) {
+    const selectedSizeVariant = product.value.sizes.find(size => size.value === selectedSize.value)
+    if (selectedSizeVariant) {
+      // If we already have color stock, take the minimum (most restrictive)
+      stock = stock !== null ? Math.min(stock, selectedSizeVariant.stock) : selectedSizeVariant.stock
+    }
+  }
+
+  return stock
+})
 
 const copyToClipboard = async (text: string) => {
   try {
@@ -475,7 +491,7 @@ const formatCopywriting = (text: string): string => {
                   <div
                     v-for="(image, index) in product.gallery.thumbnails"
                     :key="index"
-                    class="position-relative thumbnail-container"
+                    class="thumbnail-container"
                   >
                     <VImg
                       :src="image.url"
@@ -486,14 +502,6 @@ const formatCopywriting = (text: string): string => {
                       class="rounded cursor-pointer thumbnail"
                       :class="{ 'thumbnail--active': selectedImageIndex === index }"
                       @click="handleImageSelect(index)"
-                    />
-                    <VBtn
-                      icon="tabler-download"
-                      size="x-small"
-                      variant="elevated"
-                      color="primary"
-                      class="download-btn-fixed"
-                      @click.stop="downloadFile(image.url, `${product.titre}_image_${index + 1}.jpg`)"
                     />
                   </div>
                 </div>
@@ -621,26 +629,43 @@ const formatCopywriting = (text: string): string => {
                   </div>
 
                   <!-- Variant Stock Information -->
-                  <div v-if="product.variantes && product.variantes.length > 0" class="mb-4">
+                  <div v-if="(product.colors && product.colors.length > 0) || (product.sizes && product.sizes.length > 0)" class="mb-4">
                     <div class="d-flex align-center mb-3">
                       <VIcon icon="tabler-package" class="me-2" color="primary" size="20" />
                       <span class="text-subtitle-1 font-weight-bold text-primary">Stock par Variante</span>
                     </div>
                     <div class="d-flex gap-2 flex-wrap">
+                      <!-- Color variants -->
                       <VChip
-                        v-for="variant in product.variantes"
-                        :key="variant.id"
-                        :color="variant.stock > 0 ? 'success' : 'error'"
+                        v-for="color in product.colors"
+                        :key="'color-' + color.name"
+                        :color="color.stock > 0 ? 'success' : 'error'"
                         variant="flat"
                         size="default"
                         class="font-weight-medium"
                       >
                         <VIcon
-                          :icon="variant.stock > 0 ? 'tabler-check' : 'tabler-x'"
+                          :icon="color.stock > 0 ? 'tabler-check' : 'tabler-x'"
                           start
                           size="16"
                         />
-                        {{ variant.valeur }}: {{ variant.stock }} unités
+                        {{ color.name }}: {{ color.stock }} unités
+                      </VChip>
+                      <!-- Size variants -->
+                      <VChip
+                        v-for="size in product.sizes"
+                        :key="'size-' + size.value"
+                        :color="size.stock > 0 ? 'success' : 'error'"
+                        variant="flat"
+                        size="default"
+                        class="font-weight-medium"
+                      >
+                        <VIcon
+                          :icon="size.stock > 0 ? 'tabler-check' : 'tabler-x'"
+                          start
+                          size="16"
+                        />
+                        {{ size.value }}: {{ size.stock }} unités
                       </VChip>
                     </div>
                   </div>
@@ -666,6 +691,26 @@ const formatCopywriting = (text: string): string => {
               <!-- Quantity Selector -->
               <div class="mb-4">
                 <h4 class="text-subtitle-1 mb-3">{{ t('catalogue.detail.quantity') }}</h4>
+
+                <!-- Selected Variant Stock Alert -->
+                <VAlert
+                  v-if="selectedVariantStock !== null"
+                  :type="selectedVariantStock > 0 ? 'info' : 'warning'"
+                  variant="tonal"
+                  density="compact"
+                  class="mb-3"
+                >
+                  <VIcon
+                    :icon="selectedVariantStock > 0 ? 'tabler-package' : 'tabler-alert-triangle'"
+                    start
+                  />
+                  <span v-if="selectedVariantStock > 0">
+                    <strong>Stock disponible:</strong> {{ selectedVariantStock }} unités pour cette variante
+                  </span>
+                  <span v-else>
+                    <strong>Rupture de stock</strong> pour cette variante
+                  </span>
+                </VAlert>
                 <div class="d-flex align-center gap-3">
                   <VBtn
                     icon="tabler-minus"
@@ -799,34 +844,47 @@ const formatCopywriting = (text: string): string => {
           <!-- Images Grid -->
           <div v-if="product.images.length" class="mb-6">
             <h3 class="text-h6 mb-3">{{ t('catalogue.assets.images') }}</h3>
-            <div class="d-flex gap-3 flex-wrap">
-              <div
+            <div class="d-flex gap-4 flex-wrap">
+              <VCard
                 v-for="(image, index) in product.images"
                 :key="index"
-                class="position-relative image-asset"
+                variant="elevated"
+                width="140"
+                class="image-asset-card"
+                hover
               >
-                <VImg
-                  :src="image.url"
-                  width="100"
-                  height="100"
-                  cover
-                  class="rounded"
-                />
-                <VTooltip
-                  activator="parent"
-                  location="top"
-                >
-                  {{ t('catalogue.actions.download') }}
-                </VTooltip>
-                <VBtn
-                  icon="tabler-download"
-                  size="small"
-                  variant="elevated"
-                  color="primary"
-                  class="download-overlay-fixed"
-                  @click.stop="downloadFile(image.url, `${product.titre}_image_${index + 1}.jpg`)"
-                />
-              </div>
+                <VCardText class="pa-3">
+                  <VImg
+                    :src="image.url"
+                    width="100"
+                    height="100"
+                    cover
+                    class="rounded mb-2"
+                  />
+                  <div class="d-flex gap-1 flex-column">
+                    <VBtn
+                      size="small"
+                      variant="flat"
+                      color="primary"
+                      prepend-icon="tabler-eye"
+                      block
+                      @click="openZoomModal(index)"
+                    >
+                      Voir
+                    </VBtn>
+                    <VBtn
+                      size="small"
+                      variant="outlined"
+                      color="primary"
+                      prepend-icon="tabler-download"
+                      block
+                      @click.stop="downloadFile(image.url, `${product.titre}_image_${index + 1}.jpg`)"
+                    >
+                      Télécharger
+                    </VBtn>
+                  </div>
+                </VCardText>
+              </VCard>
             </div>
           </div>
 
@@ -1014,6 +1072,8 @@ const formatCopywriting = (text: string): string => {
   display: inline-block;
 }
 
+/* Removed unused thumbnail-container-new class */
+
 .color-chip {
   transition: all 0.2s ease;
 }
@@ -1054,6 +1114,15 @@ const formatCopywriting = (text: string): string => {
 }
 
 .video-asset:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.image-asset-card {
+  transition: all 0.2s ease;
+}
+
+.image-asset-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
