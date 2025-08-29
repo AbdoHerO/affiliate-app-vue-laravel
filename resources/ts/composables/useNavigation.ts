@@ -11,9 +11,12 @@ export function useNavigation() {
   const { pendingCount } = useTicketBadge()
 
   // Computed badge content
-  const ticketBadgeContent = computed(() =>
-    pendingCount.value > 0 ? pendingCount.value.toString() : undefined
-  )
+  const ticketBadgeContent = computed(() => {
+    const count = pendingCount.value
+    const badge = count > 0 ? count.toString() : undefined
+    console.log('🔔 Badge computed:', { count, badge })
+    return badge
+  })
 
   const navItems = computed<VerticalNavItems>(() => {
     // Return empty array if not ready to prevent errors

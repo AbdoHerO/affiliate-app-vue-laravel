@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { $api } from '@/utils/api'
+import { useTicketBadge } from '@/composables/useTicketBadge'
 
 export interface AffiliateTicket {
   id: string
@@ -93,6 +94,9 @@ export interface TicketsPagination {
 }
 
 export const useAffiliateTicketsStore = defineStore('affiliateTickets', () => {
+  // Initialize badge composable
+  const { refresh: refreshTicketBadge } = useTicketBadge()
+
   // State
   const tickets = ref<AffiliateTicket[]>([])
   const currentTicket = ref<AffiliateTicket | null>(null)
@@ -221,6 +225,8 @@ export const useAffiliateTicketsStore = defineStore('affiliateTickets', () => {
       if (response.success) {
         // Refresh tickets list
         await fetchTickets()
+        // Refresh badge count since a new ticket was created
+        refreshTicketBadge()
         return response.data
       } else {
         throw new Error(response.message || 'Failed to create ticket')
@@ -303,6 +309,9 @@ export const useAffiliateTicketsStore = defineStore('affiliateTickets', () => {
             updated_at: response.data.updated_at,
           }
         }
+
+        // Refresh badge count since ticket status changed
+        refreshTicketBadge()
 
         return response.data
       } else {

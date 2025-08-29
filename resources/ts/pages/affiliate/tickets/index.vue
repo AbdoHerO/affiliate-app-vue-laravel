@@ -5,6 +5,7 @@ import { useI18n } from 'vue-i18n'
 import { storeToRefs } from 'pinia'
 import { useAffiliateTicketsStore } from '@/stores/affiliate/tickets'
 import { useNotifications } from '@/composables/useNotifications'
+import { useTicketBadge } from '@/composables/useTicketBadge'
 import Breadcrumbs from '@/components/common/Breadcrumbs.vue'
 
 definePage({
@@ -17,6 +18,7 @@ definePage({
 const { t } = useI18n()
 const router = useRouter()
 const { showSuccess, showError } = useNotifications()
+const { refresh: refreshTicketBadge } = useTicketBadge()
 
 // Store
 const ticketsStore = useAffiliateTicketsStore()
@@ -42,7 +44,7 @@ const createForm = ref({
 
 // Computed
 const breadcrumbs = computed(() => [
-  { title: t('nav.dashboard'), to: { name: 'affiliate-dashboard' } },
+  { title: t('nav.dashboard'), to: '/affiliate/dashboard' },
   { title: t('affiliate_tickets_title'), active: true },
 ])
 
@@ -108,6 +110,8 @@ const resetFilters = () => {
 const fetchTickets = async (page = 1) => {
   try {
     await ticketsStore.fetchTickets(page)
+    // Refresh badge count when tickets are loaded
+    refreshTicketBadge()
   } catch (err) {
     showError(t('affiliate_tickets_error_loading'))
   }
@@ -161,6 +165,7 @@ const createTicket = async () => {
     showSuccess(t('affiliate_tickets_created_success'))
     showCreateDialog.value = false
     fetchTickets()
+    // Badge refresh is already handled in the store
   } catch (err: any) {
     showError(err.message || t('affiliate_tickets_error_creating'))
   }

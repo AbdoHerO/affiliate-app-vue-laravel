@@ -6,6 +6,7 @@ import { storeToRefs } from 'pinia'
 import { useAffiliateTicketsStore } from '@/stores/affiliate/tickets'
 import { useNotifications } from '@/composables/useNotifications'
 import { useQuickConfirm } from '@/composables/useConfirmAction'
+import { useTicketBadge } from '@/composables/useTicketBadge'
 import Breadcrumbs from '@/components/common/Breadcrumbs.vue'
 import ConfirmActionDialog from '@/components/common/ConfirmActionDialog.vue'
 
@@ -22,6 +23,7 @@ const router = useRouter()
 const { showSuccess, showError } = useNotifications()
 const confirmComposable = useQuickConfirm()
 const { confirm } = confirmComposable
+const { refresh: refreshTicketBadge } = useTicketBadge()
 
 // Store
 const ticketsStore = useAffiliateTicketsStore()
@@ -88,6 +90,9 @@ const addMessage = async () => {
     newMessage.value = ''
     attachments.value = []
     showSuccess(t('affiliate_tickets_message_success'))
+    
+    // Refresh badge count in case message affects pending status
+    refreshTicketBadge()
     
     await nextTick()
     scrollToBottom()

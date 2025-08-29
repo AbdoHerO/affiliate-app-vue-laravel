@@ -36,9 +36,11 @@ export function useTicketBadge() {
       
       if (response.success) {
         pendingCount.value = response.count || 0
+        console.log('✅ Ticket badge updated:', pendingCount.value)
       } else {
         error.value = response.message || 'Failed to fetch ticket count'
         pendingCount.value = 0
+        console.log('❌ Ticket badge error:', error.value)
       }
     } catch (err: any) {
       console.error('Error fetching ticket count:', err)
@@ -84,9 +86,18 @@ export function useTicketBadge() {
 
   // Lifecycle
   onMounted(() => {
+    console.log('🚀 useTicketBadge mounted:', {
+      hasUser: !!user?.value,
+      isAdmin: hasRole('admin'),
+      isAffiliate: hasRole('affiliate')
+    })
+
     if (user && user.value && (hasRole('admin') || hasRole('affiliate'))) {
+      console.log('✅ Starting ticket badge polling')
       fetchPendingCount()
       startPolling()
+    } else {
+      console.log('❌ Not starting ticket badge - user not authenticated or no role')
     }
   })
 
