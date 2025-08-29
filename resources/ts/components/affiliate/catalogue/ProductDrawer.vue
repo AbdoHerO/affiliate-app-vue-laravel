@@ -183,14 +183,58 @@ const handleSizeSelect = (sizeValue: string) => {
   store.selectSize(sizeValue)
 }
 
-const downloadFile = (url: string, filename: string) => {
-  const link = document.createElement('a')
-  link.href = url
-  link.download = filename
-  link.target = '_blank'
-  document.body.appendChild(link)
-  link.click()
-  document.body.removeChild(link)
+const downloadFile = async (url: string, filename: string) => {
+  try {
+    // Show loading state
+    const { showNotification } = useNotifications()
+
+    // Fetch the file as blob to ensure proper download
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Accept': '*/*',
+      },
+      // Include credentials if needed for auth
+      credentials: 'same-origin'
+    })
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+
+    // Get the blob
+    const blob = await response.blob()
+
+    // Create blob URL
+    const blobUrl = window.URL.createObjectURL(blob)
+
+    // Create download link
+    const link = document.createElement('a')
+    link.href = blobUrl
+    link.download = filename
+    link.style.display = 'none'
+
+    // Append to body, click, and remove
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+
+    // Clean up blob URL
+    window.URL.revokeObjectURL(blobUrl)
+
+    showNotification({
+      type: 'success',
+      message: `Téléchargement de "${filename}" démarré avec succès`
+    })
+
+  } catch (error) {
+    console.error('Download error:', error)
+    const { showNotification } = useNotifications()
+    showNotification({
+      type: 'error',
+      message: `Erreur lors du téléchargement: ${error instanceof Error ? error.message : 'Fichier introuvable'}`
+    })
+  }
 }
 
 const openZoomModal = (imageIndex?: number) => {
@@ -396,7 +440,7 @@ const formatCopywriting = (text: string): string => {
       </div>
 
       <!-- Scrollable Content -->
-      <div class="drawer-content" style="height: calc(100vh - 140px); overflow-y: auto;">
+      <div class="drawer-content" style="height: calc(100vh - 140px); overflow-y: auto; padding-bottom: 80px;">
 
         <!-- Zone 1: Media + Variant Selectors -->
         <div class="pa-6 border-b">
@@ -448,7 +492,7 @@ const formatCopywriting = (text: string): string => {
                       size="x-small"
                       variant="elevated"
                       color="primary"
-                      class="download-btn"
+                      class="download-btn-fixed"
                       @click.stop="downloadFile(image.url, `${product.titre}_image_${index + 1}.jpg`)"
                     />
                   </div>
@@ -576,6 +620,31 @@ const formatCopywriting = (text: string): string => {
                     </div>
                   </div>
 
+                  <!-- Variant Stock Information -->
+                  <div v-if="product.variantes && product.variantes.length > 0" class="mb-4">
+                    <div class="d-flex align-center mb-3">
+                      <VIcon icon="tabler-package" class="me-2" color="primary" size="20" />
+                      <span class="text-subtitle-1 font-weight-bold text-primary">Stock par Variante</span>
+                    </div>
+                    <div class="d-flex gap-2 flex-wrap">
+                      <VChip
+                        v-for="variant in product.variantes"
+                        :key="variant.id"
+                        :color="variant.stock > 0 ? 'success' : 'error'"
+                        variant="flat"
+                        size="default"
+                        class="font-weight-medium"
+                      >
+                        <VIcon
+                          :icon="variant.stock > 0 ? 'tabler-check' : 'tabler-x'"
+                          start
+                          size="16"
+                        />
+                        {{ variant.valeur }}: {{ variant.stock }} unités
+                      </VChip>
+                    </div>
+                  </div>
+
                   <!-- Custom Sell Price Input -->
                   <VTextField
                     v-model.number="customSellPrice"
@@ -694,38 +763,7 @@ const formatCopywriting = (text: string): string => {
           </div>
         </div>
 
-        <!-- Zone 2.5: Variant Stock Information -->
-        <div v-if="product.variantes && product.variantes.length > 0" class="pa-6 border-b">
-          <h3 class="text-h6 mb-4">
-            <VIcon icon="tabler-package" start />
-            Stock par Variante
-          </h3>
-          <VRow>
-            <VCol
-              v-for="variant in product.variantes"
-              :key="variant.id"
-              cols="12"
-              sm="6"
-              md="4"
-            >
-              <VCard variant="outlined" class="pa-3">
-                <div class="d-flex align-center justify-space-between">
-                  <div>
-                    <div class="text-subtitle-2">{{ variant.attribut_principal }}</div>
-                    <div class="text-body-2 text-medium-emphasis">{{ variant.valeur }}</div>
-                  </div>
-                  <VChip
-                    :color="variant.stock > 0 ? 'success' : 'error'"
-                    variant="tonal"
-                    size="small"
-                  >
-                    {{ variant.stock }} unités
-                  </VChip>
-                </div>
-              </VCard>
-            </VCol>
-          </VRow>
-        </div>
+
 
         <!-- Zone 3: Assets & Variants Tables -->
         <div class="pa-6">
@@ -785,34 +823,54 @@ const formatCopywriting = (text: string): string => {
                   size="small"
                   variant="elevated"
                   color="primary"
-                  class="download-overlay"
-                  @click="downloadFile(image.url, `${product.titre}_image_${index + 1}.jpg`)"
+                  class="download-overlay-fixed"
+                  @click.stop="downloadFile(image.url, `${product.titre}_image_${index + 1}.jpg`)"
                 />
               </div>
             </div>
           </div>
 
           <!-- Videos List -->
-          <div v-if="product.videos.length" class="mb-6">
-            <h3 class="text-h6 mb-3">{{ t('catalogue.assets.videos') }}</h3>
-            <div class="d-flex gap-3 flex-wrap">
+          <div v-if="product.videos.length" class="mb-8">
+            <div class="d-flex align-center mb-4">
+              <VIcon icon="tabler-video" class="me-2" color="primary" />
+              <h3 class="text-h6 font-weight-bold text-primary">{{ t('catalogue.assets.videos') }}</h3>
+            </div>
+            <VAlert
+              type="info"
+              variant="tonal"
+              class="mb-4"
+              density="compact"
+            >
+              <VIcon icon="tabler-info-circle" start />
+              Cliquez sur "Voir" pour ouvrir la vidéo ou "Télécharger" pour la sauvegarder
+            </VAlert>
+            <div class="d-flex gap-4 flex-wrap video-list">
               <VCard
                 v-for="(video, index) in product.videos"
                 :key="index"
-                variant="outlined"
-                width="200"
+                variant="elevated"
+                width="240"
                 class="video-asset"
+                hover
               >
-                <VCardText class="pa-3">
-                  <div class="d-flex align-center mb-2">
-                    <VIcon icon="tabler-video" class="me-2" />
-                    <span class="text-body-2 font-weight-medium">{{ video.title || `Video ${index + 1}` }}</span>
+                <VCardText class="pa-4">
+                  <div class="d-flex align-center mb-3">
+                    <VAvatar color="primary" variant="tonal" size="32" class="me-3">
+                      <VIcon icon="tabler-video" size="18" />
+                    </VAvatar>
+                    <div class="flex-grow-1">
+                      <div class="text-subtitle-2 font-weight-medium">{{ video.title || `Vidéo ${index + 1}` }}</div>
+                      <div class="text-caption text-medium-emphasis">Format: MP4</div>
+                    </div>
                   </div>
-                  <div class="d-flex gap-2">
+                  <div class="d-flex gap-2 flex-column">
                     <VBtn
                       size="small"
-                      variant="outlined"
+                      variant="flat"
+                      color="primary"
                       prepend-icon="tabler-eye"
+                      block
                       @click="openVideo(video.url)"
                     >
                       {{ t('actions.view') }}
@@ -820,7 +878,9 @@ const formatCopywriting = (text: string): string => {
                     <VBtn
                       size="small"
                       variant="outlined"
+                      color="primary"
                       prepend-icon="tabler-download"
+                      block
                       @click="downloadFile(video.url, `${product.titre}_video_${index + 1}.mp4`)"
                     >
                       {{ t('catalogue.actions.download') }}
@@ -935,16 +995,23 @@ const formatCopywriting = (text: string): string => {
   box-shadow: 0 0 0 1px rgb(var(--v-theme-primary));
 }
 
-.download-btn {
+.download-btn-fixed {
   position: absolute;
-  top: 2px;
-  right: 2px;
+  top: 4px;
+  right: 4px;
   opacity: 0;
   transition: opacity 0.2s ease;
+  z-index: 2;
+  pointer-events: auto;
 }
 
-.thumbnail-container:hover .download-btn {
+.thumbnail-container:hover .download-btn-fixed {
   opacity: 1;
+}
+
+.thumbnail-container {
+  position: relative;
+  display: inline-block;
 }
 
 .color-chip {
@@ -962,17 +1029,24 @@ const formatCopywriting = (text: string): string => {
   border-radius: 8px;
 }
 
-.download-overlay {
+.download-overlay-fixed {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   opacity: 0;
   transition: opacity 0.2s ease;
+  z-index: 2;
+  pointer-events: auto;
 }
 
-.image-asset:hover .download-overlay {
+.image-asset:hover .download-overlay-fixed {
   opacity: 1;
+}
+
+.image-asset {
+  position: relative;
+  display: inline-block;
 }
 
 .video-asset {
@@ -1059,14 +1133,7 @@ const formatCopywriting = (text: string): string => {
   color: rgb(var(--v-theme-secondary));
 }
 
-.download-btn {
-  opacity: 0;
-  transition: opacity 0.2s ease;
-}
-
-.thumbnail:hover .download-btn {
-  opacity: 1;
-}
+/* Removed duplicate download-btn rules - using download-btn-fixed instead */
 
 .zoom-btn {
   position: absolute;
@@ -1086,6 +1153,60 @@ const formatCopywriting = (text: string): string => {
 
 .main-image:hover {
   transform: scale(1.02);
+}
+
+/* Variant Stock Cards */
+.variant-stock-card {
+  transition: all 0.2s ease;
+  border: 2px solid transparent;
+}
+
+.variant-stock-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.variant-stock-card--out-of-stock {
+  border-color: rgb(var(--v-theme-error));
+  background-color: rgba(var(--v-theme-error), 0.05);
+}
+
+/* Video List */
+.video-list {
+  max-height: none;
+  overflow: visible;
+}
+
+.video-asset {
+  transition: all 0.2s ease;
+}
+
+.video-asset:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Drawer Content Scrolling */
+.drawer-content {
+  scroll-behavior: smooth;
+}
+
+.drawer-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.drawer-content::-webkit-scrollbar-track {
+  background: rgba(var(--v-theme-surface-variant), 0.3);
+  border-radius: 3px;
+}
+
+.drawer-content::-webkit-scrollbar-thumb {
+  background: rgba(var(--v-theme-primary), 0.5);
+  border-radius: 3px;
+}
+
+.drawer-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(var(--v-theme-primary), 0.7);
 }
 
 .video-card {
