@@ -18,6 +18,7 @@ class AffiliateCartItem extends Model
         'variante_id',
         'qty',
         'sell_price',
+        'type_command',
         'added_at',
     ];
 

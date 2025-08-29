@@ -10,6 +10,7 @@ export interface CartItem {
   variante_id?: string
   qty: number
   sell_price?: number
+  type_command?: string
   item_commission?: number
   product: {
     id: string
@@ -138,13 +139,16 @@ export const useAffiliateCartStore = defineStore('affiliate-cart', () => {
     }
   }
 
-  const addItem = async (item: { produit_id: string; variante_id?: string; qty: number }) => {
+  const addItem = async (item: { produit_id: string; variante_id?: string; qty: number; sell_price?: number; type_command?: string }) => {
     console.log('🔄 [Cart Store] Adding item:', item)
     
     try {
       const { data, error: apiError } = await useApi('affiliate/cart/add', {
         method: 'POST',
-        body: JSON.stringify(item),
+        body: JSON.stringify({
+          ...item,
+          type_command: item.type_command || 'order_sample'
+        }),
         headers: {
           'Content-Type': 'application/json'
         }
@@ -360,7 +364,7 @@ export const useAffiliateCartStore = defineStore('affiliate-cart', () => {
       if (searchQuery) {
         params.append('q', searchQuery)
       }
-      params.append('per_page', '100')
+      params.append('per_page', '1000') // Increase to get all cities
 
       const { data, error: apiError } = await useApi(`affiliate/ozon/cities?${params.toString()}`, {
         method: 'GET'
@@ -372,11 +376,19 @@ export const useAffiliateCartStore = defineStore('affiliate-cart', () => {
 
       const citiesData = (data.value as any)?.data || []
 
-      // Ensure each city has proper city_id and name
+      // Ensure each city has proper city_id, name, and prices
       const validatedCities = citiesData.map((city: any) => ({
         city_id: city.city_id,  // Should be the OzonExpress city ID
-        name: city.name         // Should be string
+        name: city.name,        // Should be string
+        prices: city.prices || {} // Include prices data for delivery calculation
       }))
+
+      console.log('🏙️ [Cart Store] Cities loaded:', validatedCities.length, 'cities')
+      console.log('🏙️ [Cart Store] Sample city with prices:', validatedCities[0])
+
+      // Log a few cities with their prices for debugging
+      const sampleCities = validatedCities.slice(0, 3)
+      console.log('🏙️ [Cart Store] Sample cities for debugging:', sampleCities)
 
       return validatedCities
     } catch (err: any) {

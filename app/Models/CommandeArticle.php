@@ -31,6 +31,7 @@ class CommandeArticle extends Model
         'sell_price',
         'commission_amount',
         'commission_rule_code',
+        'type_command',
         'remise',
         'total_ligne',
     ];

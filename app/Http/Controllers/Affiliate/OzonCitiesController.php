@@ -11,13 +11,13 @@ class OzonCitiesController extends Controller
 {
     /**
      * Get cities list for affiliates (read-only)
-     * Returns only id and name fields for dropdown usage
+     * Returns id, name and prices fields for dropdown usage and delivery calculation
      */
     public function index(Request $request): JsonResponse
     {
         try {
             $query = ShippingCity::where('active', true)
-                ->select('city_id', 'name')
+                ->select('city_id', 'name', 'prices')
                 ->orderBy('name');
 
             // Search functionality

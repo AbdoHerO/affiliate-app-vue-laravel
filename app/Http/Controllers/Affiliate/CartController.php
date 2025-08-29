@@ -31,7 +31,8 @@ class CartController extends Controller
                 'produit_id' => 'required|uuid|exists:produits,id',
                 'variante_id' => 'nullable|uuid|exists:produit_variantes,id',
                 'qty' => 'required|integer|min:1|max:100',
-                'sell_price' => 'nullable|numeric|min:0'
+                'sell_price' => 'nullable|numeric|min:0',
+                'type_command' => 'nullable|string|in:order_sample,exchange'
             ]);
 
             $userId = Auth::id();
@@ -48,13 +49,28 @@ class CartController extends Controller
                 ], 404);
             }
 
-            // Validate sell_price if provided
+            // Set default type_command if not provided
+            $typeCommand = $validated['type_command'] ?? 'order_sample';
+
+            // Validate sell_price based on command type
             if (isset($validated['sell_price'])) {
-                if ($validated['sell_price'] < $product->prix_achat) {
-                    return response()->json([
-                        'message' => 'Le prix de vente ne peut pas être inférieur au prix d\'achat (' . $product->prix_achat . ' MAD)',
-                        'success' => false
-                    ], 422);
+                if ($typeCommand === 'order_sample') {
+                    // For order_sample, minimum price is prix_achat + 50 (delivery estimation)
+                    $minimumPrice = $product->prix_achat + 50;
+                    if ($validated['sell_price'] < $minimumPrice) {
+                        return response()->json([
+                            'message' => 'Le prix de vente minimum pour un échantillon est de ' . $minimumPrice . ' MAD (Prix d\'achat + 50 MAD livraison)',
+                            'success' => false
+                        ], 422);
+                    }
+                } else {
+                    // For exchange, sell_price should not be set (will be ignored)
+                    if ($validated['sell_price'] < $product->prix_achat) {
+                        return response()->json([
+                            'message' => 'Le prix de vente ne peut pas être inférieur au prix d\'achat (' . $product->prix_achat . ' MAD)',
+                            'success' => false
+                        ], 422);
+                    }
                 }
             }
 
@@ -138,13 +154,14 @@ class CartController extends Controller
             $sellPrice = $validated['sell_price'] ?? $product->prix_vente;
 
             if ($cartItem) {
-                // Update existing item quantity and sell price
+                // Update existing item quantity, sell price, and command type
                 $cartItem->qty += $validated['qty'];
                 $cartItem->sell_price = $sellPrice;
+                $cartItem->type_command = $typeCommand;
                 $cartItem->added_at = now();
                 $cartItem->save();
 
-                Log::info('✅ UPDATED EXISTING CART ITEM - New qty: ' . $cartItem->qty . ', Sell price: ' . $sellPrice);
+                Log::info('✅ UPDATED EXISTING CART ITEM - New qty: ' . $cartItem->qty . ', Sell price: ' . $sellPrice . ', Type: ' . $typeCommand);
             } else {
                 // Create new cart item using direct assignment to avoid mass assignment issues
                 $cartItem = new AffiliateCartItem();
@@ -153,10 +170,11 @@ class CartController extends Controller
                 $cartItem->variante_id = $validated['variante_id'] ?? null;
                 $cartItem->qty = $validated['qty'];
                 $cartItem->sell_price = $sellPrice;
+                $cartItem->type_command = $typeCommand;
                 $cartItem->added_at = now();
                 $cartItem->save();
 
-                Log::info('✅ CREATED NEW CART ITEM - ID: ' . $cartItem->id . ', Sell price: ' . $sellPrice);
+                Log::info('✅ CREATED NEW CART ITEM - ID: ' . $cartItem->id . ', Sell price: ' . $sellPrice . ', Type: ' . $typeCommand);
             }
 
             return response()->json([

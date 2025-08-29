@@ -25,13 +25,49 @@ const { showSuccess, showError } = useNotifications()
 const cartStore = useAffiliateCartStore()
 
 // Cities state
-const cities = ref<Array<{ city_id: string; name: string }>>([])
+const cities = ref<Array<{ city_id: string; name: string; prices?: { delivered?: number } }>>([])
 const citiesLoading = ref(false)
+const citySearchInput = ref('')
 
 // State
-const step = ref<'cart' | 'checkout' | 'success'>('cart')
+const step = ref<'cart' | 'success'>('cart') // Remove checkout step
 const submitting = ref(false)
 const orderRef = ref('')
+
+// Delivery calculation
+const selectedCity = computed(() => {
+  return cities.value.find(city => city.city_id === clientForm.value.city_id)
+})
+
+const deliveryFee = computed(() => {
+  if (!selectedCity.value?.prices) return 0
+
+  // Try different possible keys for delivery price
+  const prices = selectedCity.value.prices
+  const deliveryPrice = prices.delivered || prices.delivery || prices['delivered'] || prices['delivery'] || 0
+
+  console.log('🚚 Delivery fee calculation:', {
+    cityName: selectedCity.value.name,
+    prices: prices,
+    deliveryPrice: deliveryPrice
+  })
+
+  return Number(deliveryPrice) || 0
+})
+
+// New totals calculation
+const subtotal = computed(() => {
+  return cartStore.subtotal
+})
+
+const adjustedCommission = computed(() => {
+  const originalCommission = cartStore.estimatedCommission
+  return Math.max(0, originalCommission - deliveryFee.value)
+})
+
+const finalTotal = computed(() => {
+  return subtotal.value + deliveryFee.value
+})
 
 // Client form
 const clientForm = ref<ClientFinalForm>({
@@ -67,12 +103,9 @@ const isOpen = computed({
   set: (value) => emit('update:modelValue', value)
 })
 
-const canProceedToCheckout = computed(() => {
-  return cartStore.hasItems
-})
-
 const canSubmitOrder = computed(() => {
-  return clientForm.value.nom_complet.length >= 3 &&
+  return cartStore.hasItems &&
+         clientForm.value.nom_complet.length >= 3 &&
          clientForm.value.telephone.length > 0 &&
          clientForm.value.city_id.length > 0 &&
          clientForm.value.adresse.length >= 10 &&
@@ -89,13 +122,7 @@ const handleClose = () => {
   emit('close')
 }
 
-const handleBackToCart = () => {
-  step.value = 'cart'
-}
-
-const handleProceedToCheckout = () => {
-  step.value = 'checkout'
-}
+// Removed separate checkout step methods
 
 const handleUpdateQty = async (itemKey: string, newQty: number) => {
   try {
@@ -184,6 +211,17 @@ watch(isOpen, (newValue) => {
   }
 })
 
+// Watch for city changes to recalculate totals
+watch(() => clientForm.value.city_id, (newCityId) => {
+  if (newCityId) {
+    console.log('🔄 City changed, recalculating totals...', {
+      cityId: newCityId,
+      deliveryFee: deliveryFee.value,
+      adjustedCommission: adjustedCommission.value
+    })
+  }
+})
+
 // Load cities on mount
 onMounted(() => {
   loadCities()
@@ -201,14 +239,8 @@ onMounted(() => {
       <!-- Header -->
       <VCardTitle class="d-flex align-center justify-space-between">
         <div class="d-flex align-center gap-3">
-          <VIcon 
-            v-if="step === 'checkout'" 
-            icon="tabler-arrow-left" 
-            @click="handleBackToCart"
-            class="cursor-pointer"
-          />
           <span>
-            {{ step === 'cart' ? 'Mon Panier' : step === 'checkout' ? 'Informations Client' : 'Commande Confirmée' }}
+            {{ step === 'cart' ? 'Mon Panier & Commande' : 'Commande Confirmée' }}
           </span>
         </div>
         <VBtn
@@ -232,10 +264,81 @@ onMounted(() => {
             <p class="text-body-2 text-medium-emphasis">Ajoutez des produits depuis le catalogue</p>
           </div>
 
-          <!-- Cart Items -->
+          <!-- Unified Interface: Client Form + Cart Items -->
           <div v-else>
+            <!-- Client Form Section (TOP) -->
+            <div class="mb-6">
+              <h4 class="text-h6 mb-4">Informations du client final</h4>
+              <VForm>
+                <VRow>
+                  <VCol cols="12" md="6">
+                    <VTextField
+                      v-model="clientForm.nom_complet"
+                      label="Nom complet *"
+                      variant="outlined"
+                      density="compact"
+                      :rules="rules.nom_complet"
+                      required
+                    />
+                  </VCol>
+                  <VCol cols="12" md="6">
+                    <VTextField
+                      v-model="clientForm.telephone"
+                      label="Téléphone *"
+                      variant="outlined"
+                      density="compact"
+                      :rules="rules.telephone"
+                      required
+                    />
+                  </VCol>
+                  <VCol cols="12" md="6">
+                    <VSelect
+                      v-model="clientForm.city_id"
+                      label="Ville *"
+                      variant="outlined"
+                      density="compact"
+                      :items="cities"
+                      item-title="name"
+                      item-value="city_id"
+                      :loading="citiesLoading"
+                      :rules="rules.city_id"
+                      required
+                      filterable
+                      :search-input.sync="citySearchInput"
+                      no-data-text="Aucune ville trouvée"
+                      :menu-props="{ maxHeight: '300px' }"
+                    />
+                  </VCol>
+                  <VCol cols="12" md="6">
+                    <VTextField
+                      v-model="clientForm.adresse"
+                      label="Adresse *"
+                      variant="outlined"
+                      density="compact"
+                      :rules="rules.adresse"
+                      required
+                    />
+                  </VCol>
+                  <VCol cols="12">
+                    <VTextarea
+                      v-model="clientForm.note"
+                      label="Note (optionnel)"
+                      variant="outlined"
+                      density="compact"
+                      rows="2"
+                    />
+                  </VCol>
+                </VRow>
+              </VForm>
+            </div>
+
+            <VDivider class="my-6" />
+
+            <!-- Cart Items Section (BOTTOM) -->
+
             <!-- Items List -->
             <div class="mb-6">
+              <h4 class="text-h6 mb-4">Articles dans le panier</h4>
               <div
                 v-for="item in cartStore.items"
                 :key="item.key"
@@ -296,77 +399,32 @@ onMounted(() => {
               </div>
             </div>
 
-            <!-- Summary -->
+            <!-- New Totals Calculation -->
             <VCard variant="outlined" class="mb-6">
               <VCardText>
                 <div class="d-flex justify-space-between mb-2">
                   <span>Sous-total:</span>
-                  <span class="font-weight-medium">{{ cartStore.subtotal }} MAD</span>
+                  <span class="font-weight-medium">{{ subtotal.toFixed(2) }} MAD</span>
                 </div>
-                <div class="d-flex justify-space-between mb-2">
+                <div v-if="selectedCity" class="d-flex justify-space-between mb-2 text-info">
+                  <span>{{ selectedCity.name }} (livraison):</span>
+                  <span class="font-weight-medium">+{{ deliveryFee.toFixed(2) }} MAD</span>
+                </div>
+                <div class="d-flex justify-space-between mb-2 text-success">
                   <span>Commission estimée:</span>
-                  <span class="text-success font-weight-medium">+{{ cartStore.estimatedCommission }} MAD</span>
+                  <span class="font-weight-medium">+{{ adjustedCommission.toFixed(2) }} MAD</span>
                 </div>
-                <VDivider class="my-3" />
-                <div class="d-flex justify-space-between">
-                  <span class="text-h6">{{ t('labels.totalArticles') }}:</span>
-                  <span class="text-h6">{{ cartStore.totalQty }}</span>
+                <VDivider class="my-2" />
+                <div class="d-flex justify-space-between text-h6">
+                  <span>Total:</span>
+                  <span class="font-weight-bold text-primary">{{ finalTotal.toFixed(2) }} MAD</span>
                 </div>
               </VCardText>
             </VCard>
           </div>
         </div>
 
-        <!-- Checkout Step -->
-        <div v-else-if="step === 'checkout'">
-          <VForm @submit.prevent="handleSubmitOrder">
-            <VRow>
-              <VCol cols="12" md="6">
-                <VTextField
-                  v-model="clientForm.nom_complet"
-                  label="Nom complet *"
-                  :rules="rules.nom_complet"
-                  required
-                />
-              </VCol>
-              <VCol cols="12" md="6">
-                <VTextField
-                  v-model="clientForm.telephone"
-                  label="Téléphone *"
-                  :rules="rules.telephone"
-                  required
-                />
-              </VCol>
-              <VCol cols="12">
-                <VSelect
-                  v-model="clientForm.city_id"
-                  :items="activeCities"
-                  item-title="name"
-                  item-value="city_id"
-                  label="Ville *"
-                  :rules="rules.city_id"
-                  required
-                />
-              </VCol>
-              <VCol cols="12">
-                <VTextarea
-                  v-model="clientForm.adresse"
-                  label="Adresse complète *"
-                  :rules="rules.adresse"
-                  rows="3"
-                  required
-                />
-              </VCol>
-              <VCol cols="12">
-                <VTextarea
-                  v-model="clientForm.note"
-                  label="Note (optionnel)"
-                  rows="2"
-                />
-              </VCol>
-            </VRow>
-          </VForm>
-        </div>
+        <!-- Checkout step removed - now integrated above -->
 
         <!-- Success Step -->
         <div v-else-if="step === 'success'" class="text-center py-8">
@@ -382,7 +440,7 @@ onMounted(() => {
       <!-- Actions -->
       <VCardActions v-if="step !== 'success'" class="pa-6 pt-0">
         <div class="d-flex w-100 gap-3">
-          <!-- Cart Step Actions -->
+          <!-- Unified Actions -->
           <template v-if="step === 'cart'">
             <VBtn
               v-if="cartStore.hasItems"
@@ -394,29 +452,11 @@ onMounted(() => {
             <VSpacer />
             <VBtn
               color="primary"
-              :disabled="!canProceedToCheckout"
-              @click="handleProceedToCheckout"
-            >
-              Valider la commande
-            </VBtn>
-          </template>
-
-          <!-- Checkout Step Actions -->
-          <template v-else-if="step === 'checkout'">
-            <VBtn
-              variant="outlined"
-              @click="handleBackToCart"
-            >
-              {{ t('actions.backToCart') }}
-            </VBtn>
-            <VSpacer />
-            <VBtn
-              color="primary"
               :disabled="!canSubmitOrder"
               :loading="submitting"
               @click="handleSubmitOrder"
             >
-              Envoyer la commande
+              Valider la commande
             </VBtn>
           </template>
         </div>

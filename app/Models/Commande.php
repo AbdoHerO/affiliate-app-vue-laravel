@@ -36,6 +36,7 @@ class Commande extends Model
         'statut',
         'confirmation_cc',
         'mode_paiement',
+        'type_command',
         'total_ht',
         'total_ttc',
         'devise',

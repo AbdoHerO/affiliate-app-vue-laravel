@@ -34,6 +34,9 @@ const customSellPrice = ref<number | null>(null)
 const selectedColor = ref('')
 const selectedSize = ref('')
 
+// Command type
+const selectedCommandType = ref<'order_sample' | 'exchange'>('order_sample')
+
 // Computed
 const isOpen = computed({
   get: () => props.modelValue,
@@ -58,6 +61,11 @@ const maxQuantity = computed(() => {
 const canAddToCart = computed(() => {
   const minQty = product.value?.quantite_min || 1
   if (!product.value || store.selectedQty < minQty || store.selectedQty > maxQuantity.value) {
+    return false
+  }
+
+  // Check price validation
+  if (!isPriceValid.value) {
     return false
   }
 
@@ -98,8 +106,29 @@ const currentSellPrice = computed(() => {
   return customSellPrice.value || product.value?.prix_vente || 0
 })
 
+// Minimum price calculation: ashaPrice + 50 (delivery estimation)
+const minimumPrice = computed(() => {
+  if (!product.value) return 0
+  return (product.value.prix_achat || 0) + 50
+})
+
+// Price validation for command type
+const isPriceValid = computed(() => {
+  if (selectedCommandType.value === 'exchange') {
+    return true // No price validation for exchange
+  }
+  // For order_sample, price must be >= minimumPrice
+  return currentSellPrice.value >= minimumPrice.value
+})
+
 const computedCommission = computed(() => {
   if (!product.value) return 0
+
+  // For exchange orders, commission is always 0
+  if (selectedCommandType.value === 'exchange') {
+    return 0
+  }
+
   return Math.max(0, currentSellPrice.value - (product.value.prix_achat || 0))
 })
 
@@ -175,7 +204,8 @@ const handleAddToCart = async () => {
       produit_id: product.value.id,
       variante_id: store.selectedVariantId || undefined,
       qty: store.selectedQty,
-      sell_price: customSellPrice.value || undefined
+      sell_price: customSellPrice.value || undefined,
+      type_command: selectedCommandType.value
     })
 
     // If we get here, the add was successful
@@ -456,6 +486,49 @@ const formatCopywriting = (text: string): string => {
                 </div>
               </div>
 
+              <!-- Command Type Selector -->
+              <div class="mb-4">
+                <h4 class="text-subtitle-1 mb-3">Type de commande</h4>
+                <VRadioGroup
+                  v-model="selectedCommandType"
+                  inline
+                  density="compact"
+                >
+                  <VRadio
+                    value="order_sample"
+                    label="Échantillon de commande"
+                    color="primary"
+                  />
+                  <VRadio
+                    value="exchange"
+                    label="Échange"
+                    color="warning"
+                  />
+                </VRadioGroup>
+
+                <!-- Command Type Info -->
+                <VAlert
+                  v-if="selectedCommandType === 'exchange'"
+                  type="warning"
+                  variant="tonal"
+                  density="compact"
+                  class="mt-2"
+                >
+                  <VIcon icon="tabler-info-circle" start />
+                  Échange : Commission = 0 MAD, prix de vente désactivé
+                </VAlert>
+                <VAlert
+                  v-else
+                  type="info"
+                  variant="tonal"
+                  density="compact"
+                  class="mt-2"
+                >
+                  <VIcon icon="tabler-info-circle" start />
+                  Prix minimum requis : {{ minimumPrice }} MAD (Prix d'achat + 50 MAD livraison)
+                </VAlert>
+              </div>
+
               <!-- Custom Pricing Section -->
               <div class="mb-4">
                 <h4 class="text-subtitle-1 mb-3">Prix et Commission</h4>
@@ -483,9 +556,10 @@ const formatCopywriting = (text: string): string => {
                     variant="outlined"
                     density="compact"
                     suffix="MAD"
-                    :min="product?.prix_achat || 0"
+                    :min="selectedCommandType === 'order_sample' ? minimumPrice : (product?.prix_achat || 0)"
                     :placeholder="product?.prix_vente?.toString() || '0'"
-                    hint="Laissez vide pour utiliser le prix recommandé"
+                    :hint="selectedCommandType === 'exchange' ? 'Prix désactivé pour les échanges' : `Prix minimum: ${minimumPrice} MAD`"
+                    :disabled="selectedCommandType === 'exchange'"
                     persistent-hint
                     clearable
                   />
