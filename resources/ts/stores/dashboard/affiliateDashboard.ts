@@ -84,27 +84,36 @@ export const useAffiliateDashboardStore = defineStore('affiliateDashboard', () =
     }
   }
 
-  const fetchChartData = async (period: string = 'month', customFilters?: Partial<FilterOptions>) => {
+  const fetchChartData = async (chartType?: string, customFilters?: Partial<FilterOptions>) => {
     loading.value.charts = true
     error.value = null
 
     try {
-      const params = { ...filters.value, ...customFilters, period }
-      const response = await $api<DashboardApiResponse<Record<string, any>>>('/affiliate/dashboard/charts', {
-        method: 'GET',
-        params,
-      })
-
-      if (response.success) {
-        chartData.value = response.data
+      // If no specific chart type, fetch all charts
+      if (!chartType) {
+        await fetchSingleChart('top_products_sold')
       } else {
-        throw new Error(response.message || 'Failed to fetch chart data')
+        await fetchSingleChart(chartType, customFilters)
       }
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'An error occurred'
       console.error('Error fetching affiliate dashboard charts:', err)
     } finally {
       loading.value.charts = false
+    }
+  }
+
+  const fetchSingleChart = async (type: string, customFilters?: Partial<FilterOptions>) => {
+    const params = { ...filters.value, ...customFilters, type }
+    const response = await $api<DashboardApiResponse<DashboardChartData>>('/affiliate/dashboard/charts', {
+      method: 'GET',
+      params,
+    })
+
+    if (response.success) {
+      chartData.value[type] = response.data
+    } else {
+      throw new Error(response.message || `Failed to fetch ${type} chart data`)
     }
   }
 

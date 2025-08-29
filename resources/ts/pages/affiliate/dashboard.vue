@@ -1,26 +1,12 @@
 <script setup lang="ts">
-import { onMounted, ref, computed, watch } from 'vue'
+import { onMounted, ref, computed, watch, onBeforeUnmount } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useAuth } from '@/composables/useAuth'
 import { useAffiliateDashboardStore } from '@/stores/dashboard/affiliateDashboard'
 import { useNotifications } from '@/composables/useNotifications'
-import { useAffiliateAdvancedCharts } from '@/composables/useAdvancedCharts'
 import StatisticsCard from '@/components/dashboard/StatisticsCard.vue'
 import DashboardChart from '@/components/charts/DashboardChart.vue'
 import Breadcrumbs from '@/components/common/Breadcrumbs.vue'
-
-// Import advanced chart components
-import {
-  SessionAnalyticsDonut,
-  RevenueGrowthChart,
-  ExpensesRadialChart,
-  SalesOverviewCard,
-  EarningReportsWeekly,
-  SalesAreaChart,
-  ProfitLineChart,
-  AdvancedStatsCard,
-  MixedChart,
-} from '@/components/charts/advanced'
 
 definePage({
   meta: {
@@ -33,7 +19,6 @@ const { t } = useI18n()
 const { user } = useAuth()
 const dashboardStore = useAffiliateDashboardStore()
 const { showSuccess, showError } = useNotifications()
-const { chartConfigs: advancedChartConfigs } = useAffiliateAdvancedCharts(dashboardStore)
 
 // Local state
 const selectedPeriod = ref('month')
@@ -53,96 +38,60 @@ const breadcrumbs = computed(() => [
   { title: t('dashboard'), disabled: true, href: '/affiliate/dashboard' },
 ])
 
-// Computed properties
+// Computed properties for KPI cards using new unified format
 const kpiCards = computed(() => {
-  if (!dashboardStore.stats) return []
+  if (!dashboardStore.stats?.cards) return []
 
-  const { overview, performance, commissions, orders } = dashboardStore.stats
-
-  return [
-    {
-      title: t('current_points'),
-      value: overview.currentPoints,
-      icon: 'tabler-star',
-      color: 'warning',
-      subtitle: t('available_points'),
-    },
-    {
-      title: t('total_commissions'),
-      value: overview.totalCommissions,
-      prefix: 'DH',
-      icon: 'tabler-currency-dollar',
-      color: 'success',
-      trend: {
-        value: commissions.growth,
-        label: t('vs_last_month'),
-      },
-    },
-    {
-      title: t('this_month'),
-      value: overview.totalCommissionsMTD,
-      prefix: 'DH',
-      icon: 'tabler-calendar',
-      color: 'info',
-      subtitle: t('monthly_earnings'),
-    },
-    {
-      title: t('verified_signups'),
-      value: overview.verifiedSignups,
-      icon: 'tabler-user-check',
-      color: 'primary',
-      subtitle: `${overview.conversionRate.toFixed(1)}% ${t('conversion_rate')}`,
-    },
-    {
-      title: t('total_orders'),
-      value: overview.totalOrders,
-      icon: 'tabler-shopping-cart',
-      color: 'secondary',
-      trend: {
-        value: orders.growth,
-        label: t('vs_last_month'),
-      },
-    },
-    {
-      title: t('click_rate'),
-      value: `${overview.clickThroughRate.toFixed(1)}%`,
-      icon: 'tabler-click',
-      color: 'purple',
-      subtitle: t('click_through_rate'),
-    },
-  ]
+  return dashboardStore.stats.cards.map(card => ({
+    title: t(card.labelKey),
+    value: typeof card.value === 'object' ? JSON.stringify(card.value) : card.value,
+    icon: getCardIcon(card.key),
+    color: getCardColor(card.key),
+    prefix: ['total_commissions', 'monthly_earnings'].includes(card.key) ? 'DH' : undefined,
+  }))
 })
 
-// Keep legacy chart configs for fallback
-const legacyChartConfigs = computed(() => [
+// Helper functions for card styling
+const getCardIcon = (key: string) => {
+  const icons: Record<string, string> = {
+    total_orders: 'tabler-shopping-cart',
+    total_commissions: 'tabler-currency-dollar',
+    monthly_earnings: 'tabler-calendar',
+    payments_status: 'tabler-clock',
+    pending_tickets: 'tabler-ticket',
+  }
+  return icons[key] || 'tabler-chart-bar'
+}
+
+const getCardColor = (key: string) => {
+  const colors: Record<string, string> = {
+    total_orders: 'primary',
+    total_commissions: 'success',
+    monthly_earnings: 'info',
+    payments_status: 'warning',
+    pending_tickets: 'error',
+  }
+  return colors[key] || 'primary'
+}
+
+// Chart configurations for the 1 specified chart
+const chartConfigs = computed(() => [
   {
-    title: t('my_signups_over_time'),
-    type: 'line' as const,
-    data: dashboardStore.signupsChartData,
-    cols: { cols: 12, md: 6 },
-  },
-  {
-    title: t('my_commission_over_time'),
-    type: 'area' as const,
-    data: dashboardStore.commissionsChartData,
-    cols: { cols: 12, md: 6 },
-  },
-  {
-    title: t('top_performing_products'),
-    type: 'bar' as const,
-    data: dashboardStore.topProductsChart,
-    cols: { cols: 12, md: 6 },
-  },
-  {
-    title: t('referral_performance'),
+    id: 'top_products_sold',
+    title: t('dashboard.affiliate.charts.top_products_sold'),
     type: 'doughnut' as const,
-    data: dashboardStore.referralPerformanceChart,
-    cols: { cols: 12, md: 6 },
+    data: dashboardStore.topProductsSoldChart,
+    cols: { cols: 12 },
+    description: t('dashboard.affiliate.charts.top_products_sold.description'),
   },
 ])
 
-// Use advanced charts by default
-const useAdvancedCharts = ref(true)
+// Period filter options
+const periodOptions = [
+  { value: 'month', label: t('dashboard.filters.period.month'), icon: 'tabler-calendar-month' },
+  { value: 'quarter', label: t('dashboard.filters.period.quarter'), icon: 'tabler-calendar-stats' },
+  { value: 'year', label: t('dashboard.filters.period.year'), icon: 'tabler-calendar-year' },
+]
 
 // Methods
 const refreshData = async () => {

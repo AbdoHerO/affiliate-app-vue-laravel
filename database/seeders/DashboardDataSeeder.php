@@ -18,7 +18,7 @@ class DashboardDataSeeder extends Seeder
     {
         $this->faker = Faker::create('fr_FR');
         $this->startDate = Carbon::now()->subYear(); // 1 year ago
-        $this->endDate = Carbon::now()->subDay(); // Yesterday to avoid future dates
+        $this->endDate = Carbon::now(); // Now to avoid future dates
     }
 
     /**
@@ -162,8 +162,8 @@ class DashboardDataSeeder extends Seeder
                     'ip_address' => $this->faker->ipv4,
                     'user_agent' => $this->faker->userAgent,
                     'source' => $this->faker->randomElement(['google', 'facebook', 'instagram', 'direct', 'email']),
-                    'created_at' => $this->faker->dateTimeBetween($affiliateCreatedAt, $this->endDate),
-                    'updated_at' => $this->faker->dateTimeBetween($affiliateCreatedAt, $this->endDate),
+                    'created_at' => $this->faker->dateTimeBetween($affiliateCreatedAt, min($this->endDate, Carbon::now())),
+                    'updated_at' => $this->faker->dateTimeBetween($affiliateCreatedAt, min($this->endDate, Carbon::now())),
                 ];
             }
             $counter++;
@@ -197,7 +197,9 @@ class DashboardDataSeeder extends Seeder
             $orderCount = $this->faker->numberBetween(1, $ordersPerAffiliate);
 
             for ($i = 0; $i < $orderCount; $i++) {
-                $orderDate = $this->faker->dateTimeBetween(max($affiliate->created_at, $this->startDate), $this->endDate);
+                $startOrderDate = max($affiliate->created_at, $this->startDate);
+                $endOrderDate = min($this->endDate, Carbon::now());
+                $orderDate = $this->faker->dateTimeBetween($startOrderDate, $endOrderDate);
                 $total = $this->faker->randomFloat(2, 50, 500);
 
                 // Get existing boutiques, clients, and addresses
@@ -320,7 +322,7 @@ class DashboardDataSeeder extends Seeder
                         'iban_rib' => $this->faker->iban('MA'),
                         'bank_type' => $this->faker->randomElement(['Attijariwafa Bank', 'BMCE Bank', 'Banque Populaire']),
                         'notes' => $this->faker->optional()->sentence,
-                        'created_at' => $this->faker->dateTimeBetween(max($affiliate->created_at, $this->startDate), $this->endDate),
+                        'created_at' => $this->faker->dateTimeBetween(max($affiliate->created_at, $this->startDate), min($this->endDate, Carbon::now())),
                         'updated_at' => now(),
                     ];
                 }
@@ -361,8 +363,8 @@ class DashboardDataSeeder extends Seeder
                         'priority' => $this->faker->randomElement(['low', 'normal', 'high', 'urgent']),
                         'status' => $this->faker->randomElement(['open', 'pending', 'resolved', 'closed']),
                         'category' => $this->faker->randomElement(['general', 'orders', 'payments', 'commissions']),
-                        'last_activity_at' => $this->faker->dateTimeBetween(max($affiliate->created_at, $this->startDate), $this->endDate),
-                        'created_at' => $this->faker->dateTimeBetween(max($affiliate->created_at, $this->startDate), $this->endDate),
+                        'last_activity_at' => $this->faker->dateTimeBetween(max($affiliate->created_at, $this->startDate), min($this->endDate, Carbon::now())),
+                        'created_at' => $this->faker->dateTimeBetween(max($affiliate->created_at, $this->startDate), min($this->endDate, Carbon::now())),
                         'updated_at' => now(),
                     ];
                 }
@@ -396,7 +398,7 @@ class DashboardDataSeeder extends Seeder
                     'new_user_id' => $this->faker->randomElement($existingUsers), // Use existing user IDs
                     'verified' => $this->faker->boolean(70), // 70% verified
                     'source' => $this->faker->randomElement(['google', 'facebook', 'instagram', 'direct']),
-                    'created_at' => $this->faker->dateTimeBetween(max($affiliate->created_at, $this->startDate), $this->endDate),
+                    'created_at' => $this->faker->dateTimeBetween(max($affiliate->created_at, $this->startDate), min($this->endDate, Carbon::now())),
                     'updated_at' => now(),
                 ];
             }

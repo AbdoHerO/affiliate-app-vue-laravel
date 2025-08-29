@@ -3183,6 +3183,14 @@
   "dashboard.affiliate.tables.columns.email": "Email",
   "dashboard.affiliate.tables.columns.signup_date": "Signup Date",
 
+  "dashboard.affiliate.charts.top_products_sold.description": "Ranking of my best-selling products",
+  "dashboard.affiliate.title": "Affiliate Dashboard",
+  "dashboard.affiliate.welcome": "Welcome {name}",
+  "dashboard.affiliate.refresh": "Refresh",
+  "dashboard.affiliate.export": "Export",
+  "dashboard.affiliate.period_filter": "Filter by period",
+  "dashboard.affiliate.charts.title": "My Performance",
+
   "dashboard.admin.charts.orders_by_period.description": "Monthly evolution of orders over the last 12 months",
   "dashboard.admin.charts.monthly_revenue.description": "Monthly revenue evolution over the last 12 months",
   "dashboard.admin.charts.top_affiliates.title": "Top 5 Affiliates",

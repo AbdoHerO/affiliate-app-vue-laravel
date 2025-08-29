@@ -3179,6 +3179,14 @@
   "dashboard.affiliate.tables.columns.email": "البريد الإلكتروني",
   "dashboard.affiliate.tables.columns.signup_date": "تاريخ التسجيل",
 
+  "dashboard.affiliate.charts.top_products_sold.description": "ترتيب أكثر منتجاتي مبيعاً",
+  "dashboard.affiliate.title": "لوحة تحكم الشريك",
+  "dashboard.affiliate.welcome": "مرحباً {name}",
+  "dashboard.affiliate.refresh": "تحديث",
+  "dashboard.affiliate.export": "تصدير",
+  "dashboard.affiliate.period_filter": "تصفية حسب الفترة",
+  "dashboard.affiliate.charts.title": "أدائي",
+
   "dashboard.admin.charts.orders_by_period.description": "تطور عدد الطلبات الشهري خلال آخر 12 شهراً",
   "dashboard.admin.charts.monthly_revenue.description": "تطور الإيرادات الشهرية خلال آخر 12 شهراً",
   "dashboard.admin.charts.top_affiliates.title": "أفضل 5 شركاء",

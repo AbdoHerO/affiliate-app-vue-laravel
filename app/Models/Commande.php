@@ -75,6 +75,14 @@ class Commande extends Model
     }
 
     /**
+     * Get the user (affiliate) for this order.
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    /**
      * Get the affiliate profile for this order (legacy).
      * @deprecated Use affiliate() instead
      */

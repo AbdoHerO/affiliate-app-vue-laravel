@@ -705,3 +705,59 @@ Route::prefix('public')->group(function () {
     // Public statistics
     Route::get('stats', [PublicController::class, 'getPublicStats']);
 });
+
+// Test route for dashboard data (no auth required for testing)
+Route::get('test/dashboard-data', function() {
+    try {
+        return response()->json([
+            'message' => 'Dashboard test data',
+            'orders_count' => \App\Models\Commande::count(),
+            'commissions_count' => \App\Models\CommissionAffilie::count(),
+            'users_count' => \App\Models\User::count(),
+            'affiliates_count' => \App\Models\User::role('affiliate')->count(),
+            'sample_orders' => \App\Models\Commande::with('user')->latest()->take(5)->get(),
+        ]);
+    } catch (Exception $e) {
+        return response()->json(['error' => $e->getMessage()], 500);
+    }
+});
+
+// Test route for chart data (no auth required for testing)
+Route::get('test/chart-data/{type}', function($type) {
+    try {
+        $controller = new \App\Http\Controllers\Api\AdminDashboardController();
+        $reflection = new ReflectionClass($controller);
+
+        switch($type) {
+            case 'orders':
+                $method = $reflection->getMethod('getOrdersByPeriodChart');
+                $method->setAccessible(true);
+                $data = $method->invoke($controller, []);
+                break;
+            case 'revenue':
+                $method = $reflection->getMethod('getMonthlyRevenueChart');
+                $method->setAccessible(true);
+                $data = $method->invoke($controller, []);
+                break;
+            case 'affiliates':
+                $method = $reflection->getMethod('getTopAffiliatesChart');
+                $method->setAccessible(true);
+                $data = $method->invoke($controller, []);
+                break;
+            case 'products':
+                $method = $reflection->getMethod('getTopProductsChart');
+                $method->setAccessible(true);
+                $data = $method->invoke($controller, []);
+                break;
+            default:
+                return response()->json(['error' => 'Invalid chart type'], 400);
+        }
+
+        return response()->json([
+            'type' => $type,
+            'data' => $data
+        ]);
+    } catch (Exception $e) {
+        return response()->json(['error' => $e->getMessage()], 500);
+    }
+});

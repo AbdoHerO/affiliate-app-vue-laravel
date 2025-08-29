@@ -3184,6 +3184,14 @@
   "dashboard.affiliate.tables.columns.email": "Email",
   "dashboard.affiliate.tables.columns.signup_date": "Date d'inscription",
 
+  "dashboard.affiliate.charts.top_products_sold.description": "Classement de mes produits les plus vendus",
+  "dashboard.affiliate.title": "Tableau de bord affilié",
+  "dashboard.affiliate.welcome": "Bienvenue {name}",
+  "dashboard.affiliate.refresh": "Actualiser",
+  "dashboard.affiliate.export": "Exporter",
+  "dashboard.affiliate.period_filter": "Filtrer par période",
+  "dashboard.affiliate.charts.title": "Mes performances",
+
   "dashboard.admin.charts.orders_by_period.description": "Évolution mensuelle du nombre de commandes sur les 12 derniers mois",
   "dashboard.admin.charts.monthly_revenue.description": "Évolution mensuelle du chiffre d'affaires sur les 12 derniers mois",
   "dashboard.admin.charts.top_affiliates.title": "Top 5 des affiliés",

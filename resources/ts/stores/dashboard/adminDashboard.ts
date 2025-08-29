@@ -79,28 +79,41 @@ export const useAdminDashboardStore = defineStore('adminDashboard', () => {
     }
   }
 
-  const fetchChartData = async (period: string = 'month', customFilters?: Partial<FilterOptions>) => {
+  const fetchChartData = async (chartType?: string, customFilters?: Partial<FilterOptions>) => {
     loading.value.charts = true
     error.value = null
 
     try {
-      const params = { ...filters.value, ...customFilters, period }
-      const response = await $api<DashboardApiResponse<Record<string, any>>>('/admin/dashboard/charts', {
-        method: 'GET',
-        params,
-      })
-
-      if (response.success) {
-        chartData.value = response.data
-
+      // If no specific chart type, fetch all charts
+      if (!chartType) {
+        await Promise.all([
+          fetchSingleChart('orders_by_period'),
+          fetchSingleChart('monthly_revenue'),
+          fetchSingleChart('top_affiliates'),
+          fetchSingleChart('top_products'),
+        ])
       } else {
-        throw new Error(response.message || 'Failed to fetch chart data')
+        await fetchSingleChart(chartType, customFilters)
       }
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'An error occurred'
       console.error('Error fetching admin dashboard charts:', err)
     } finally {
       loading.value.charts = false
+    }
+  }
+
+  const fetchSingleChart = async (type: string, customFilters?: Partial<FilterOptions>) => {
+    const params = { ...filters.value, ...customFilters, type }
+    const response = await $api<DashboardApiResponse<DashboardChartData>>('/admin/dashboard/charts', {
+      method: 'GET',
+      params,
+    })
+
+    if (response.success) {
+      chartData.value[type] = response.data
+    } else {
+      throw new Error(response.message || `Failed to fetch ${type} chart data`)
     }
   }
 
