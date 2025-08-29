@@ -43,6 +43,7 @@ class Produit extends Model
         'rating_updated_by',
         'rating_updated_at',
         'stock_total',
+        'stock_fake',
     ];
 
     /**
@@ -57,6 +58,7 @@ class Produit extends Model
         'actif' => 'boolean',
         'quantite_min' => 'integer',
         'stock_total' => 'integer',
+        'stock_fake' => 'integer',
         'rating_value' => 'float',
         'rating_max' => 'integer',
         'rating_updated_at' => 'datetime',

@@ -36,6 +36,7 @@ class StoreProduitRequest extends FormRequest
             'quantite_min' => 'nullable|integer|min:1',
             'notes_admin' => 'nullable|string',
             'stock_total' => 'nullable|integer|min:0',
+            'stock_fake' => 'nullable|integer|min:0',
             'rating_value' => 'nullable|numeric|min:0|max:5',
         ];
     }

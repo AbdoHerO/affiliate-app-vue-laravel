@@ -50,6 +50,7 @@ class UpdateProduitRequest extends FormRequest
             'notes_admin' => 'nullable|string',
             'rating_value' => 'nullable|numeric|min:0|max:5',
             'stock_total' => 'nullable|integer|min:0',
+            'stock_fake' => 'nullable|integer|min:0',
         ];
     }
 

@@ -116,7 +116,7 @@ class CatalogueController extends Controller
                     'prix_achat' => (float) $product->prix_achat,
                     'prix_vente' => (float) $product->prix_vente,
                     'prix_affilie' => (float) $product->prix_affilie,
-                    'stock_total' => (int) $totalStock,
+                    'stock_total' => (int) ($product->stock_fake ?? $totalStock), // Use stock_fake if available, fallback to real stock
                     'quantite_min' => (int) ($product->quantite_min ?? 1),
                     'rating_value' => $product->rating_value ? (float) $product->rating_value : null,
                     'categorie' => $product->categorie ? [
@@ -342,7 +342,7 @@ class CatalogueController extends Controller
                 'prix_achat' => (float) $product->prix_achat,
                 'prix_vente' => (float) $product->prix_vente,
                 'prix_affilie' => (float) $product->prix_affilie,
-                'stock_total' => (int) $stockTotal,
+                'stock_total' => (int) ($product->stock_fake ?? $stockTotal), // Use stock_fake if available, fallback to real stock
                 'rating_value' => $product->rating_value ? (float) $product->rating_value : null,
                 'categorie' => $product->categorie ? [
                     'id' => $product->categorie->id,

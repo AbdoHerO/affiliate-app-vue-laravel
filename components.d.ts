@@ -80,6 +80,7 @@ declare module 'vue' {
     GlobalConfirmProvider: typeof import('./resources/ts/components/common/GlobalConfirmProvider.vue')['default']
     GlobalSnackbar: typeof import('./resources/ts/components/common/GlobalSnackbar.vue')['default']
     I18n: typeof import('./resources/ts/@core/components/I18n.vue')['default']
+    ImageZoomModal: typeof import('./resources/ts/components/common/ImageZoomModal.vue')['default']
     KycDocuments: typeof import('./resources/ts/components/profile/KycDocuments.vue')['default']
     LanguageSwitcher: typeof import('./resources/ts/components/LanguageSwitcher.vue')['default']
     MessageComposer: typeof import('./resources/ts/components/admin/tickets/MessageComposer.vue')['default']

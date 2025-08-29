@@ -15,6 +15,7 @@ export interface CatalogueProduct {
   prix_vente: number
   prix_affilie: number
   stock_total: number
+  stock_fake?: number | null
   quantite_min: number
   notes_admin?: string
   rating_value?: number | null
@@ -145,6 +146,7 @@ export interface NormalizedProduct {
   prix_vente: number
   prix_affilie: number
   stock_total: number
+  stock_fake?: number | null
   quantite_min: number
   rating_value: number
   variants: {

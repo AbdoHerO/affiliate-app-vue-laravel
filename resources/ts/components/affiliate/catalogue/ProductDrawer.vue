@@ -6,6 +6,7 @@ import { useCatalogueStore } from '@/stores/affiliate/catalogue'
 import { useAffiliateCartStore } from '@/stores/affiliate/cart'
 import { useNotifications } from '@/composables/useNotifications'
 import { useAffiliateCartUi } from '@/composables/useAffiliateCartUi'
+import ImageZoomModal from '@/components/common/ImageZoomModal.vue'
 
 interface Props {
   modelValue: boolean
@@ -28,6 +29,16 @@ const { openCartDrawer } = useAffiliateCartUi()
 // Local state
 const selectedImageIndex = ref(0)
 const activeImageUrl = ref('')
+
+// Image zoom modal state
+const isZoomModalOpen = ref(false)
+const zoomModalImages = computed(() => {
+  if (!product.value?.gallery.thumbnails) return []
+  return product.value.gallery.thumbnails.map(img => ({
+    url: img.url,
+    alt: `${product.value?.titre} - Image`
+  }))
+})
 
 // Custom pricing
 const customSellPrice = ref<number | null>(null)
@@ -180,6 +191,13 @@ const downloadFile = (url: string, filename: string) => {
   document.body.appendChild(link)
   link.click()
   document.body.removeChild(link)
+}
+
+const openZoomModal = (imageIndex?: number) => {
+  if (imageIndex !== undefined) {
+    selectedImageIndex.value = imageIndex
+  }
+  isZoomModalOpen.value = true
 }
 
 const copyToClipboard = async (text: string) => {
@@ -350,7 +368,7 @@ const formatCopywriting = (text: string): string => {
             size="small"
           >
             <VIcon icon="tabler-package" start />
-            {{ t('catalogue.kpis.stock') }}: {{ product.stock_total }}
+            {{ t('catalogue.kpis.stock') }}: {{ product.stock_fake ?? product.stock_total }}
           </VChip>
           <VChip
             color="success"
@@ -386,14 +404,24 @@ const formatCopywriting = (text: string): string => {
             <!-- Left: Main Image + Thumbnails -->
             <VCol cols="6">
               <!-- Main Image -->
-              <div class="main-image-container mb-4">
+              <div class="main-image-container mb-4 position-relative">
                 <VImg
                   :src="currentImage"
                   :alt="product.titre"
                   aspect-ratio="1"
                   cover
-                  class="rounded-lg main-image"
+                  class="rounded-lg main-image cursor-pointer"
                   style="max-height: 350px;"
+                  @click="openZoomModal(selectedImageIndex)"
+                />
+                <!-- Zoom indicator -->
+                <VBtn
+                  icon="tabler-zoom-in"
+                  size="small"
+                  variant="elevated"
+                  color="primary"
+                  class="zoom-btn"
+                  @click="openZoomModal(selectedImageIndex)"
                 />
               </div>
 
@@ -666,6 +694,39 @@ const formatCopywriting = (text: string): string => {
           </div>
         </div>
 
+        <!-- Zone 2.5: Variant Stock Information -->
+        <div v-if="product.variantes && product.variantes.length > 0" class="pa-6 border-b">
+          <h3 class="text-h6 mb-4">
+            <VIcon icon="tabler-package" start />
+            Stock par Variante
+          </h3>
+          <VRow>
+            <VCol
+              v-for="variant in product.variantes"
+              :key="variant.id"
+              cols="12"
+              sm="6"
+              md="4"
+            >
+              <VCard variant="outlined" class="pa-3">
+                <div class="d-flex align-center justify-space-between">
+                  <div>
+                    <div class="text-subtitle-2">{{ variant.attribut_principal }}</div>
+                    <div class="text-body-2 text-medium-emphasis">{{ variant.valeur }}</div>
+                  </div>
+                  <VChip
+                    :color="variant.stock > 0 ? 'success' : 'error'"
+                    variant="tonal"
+                    size="small"
+                  >
+                    {{ variant.stock }} unités
+                  </VChip>
+                </div>
+              </VCard>
+            </VCol>
+          </VRow>
+        </div>
+
         <!-- Zone 3: Assets & Variants Tables -->
         <div class="pa-6">
           <!-- Size × Color Matrix Table -->
@@ -807,6 +868,13 @@ const formatCopywriting = (text: string): string => {
       <VProgressCircular indeterminate color="primary" />
     </div>
   </VNavigationDrawer>
+
+  <!-- Image Zoom Modal -->
+  <ImageZoomModal
+    v-model="isZoomModalOpen"
+    :images="zoomModalImages"
+    :initial-index="selectedImageIndex"
+  />
 </template>
 
 
@@ -998,6 +1066,26 @@ const formatCopywriting = (text: string): string => {
 
 .thumbnail:hover .download-btn {
   opacity: 1;
+}
+
+.zoom-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.main-image-container:hover .zoom-btn {
+  opacity: 1;
+}
+
+.main-image {
+  transition: transform 0.2s ease;
+}
+
+.main-image:hover {
+  transform: scale(1.02);
 }
 
 .video-card {

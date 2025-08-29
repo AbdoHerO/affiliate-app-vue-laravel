@@ -12,6 +12,7 @@ export interface Produit {
   actif: boolean
   quantite_min?: number
   stock_total?: number | null
+  stock_fake?: number | null
   notes_admin?: string | null
   rating_value?: number | null
   rating?: {

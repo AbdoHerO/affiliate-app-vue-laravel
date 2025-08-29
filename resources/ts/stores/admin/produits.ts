@@ -16,6 +16,7 @@ export interface Produit {
   actif: boolean
   quantite_min?: number
   stock_total?: number | null
+  stock_fake?: number | null
   notes_admin?: string | null
   rating_value?: number | null
   rating?: {
@@ -117,6 +118,7 @@ export interface ProduitFormData {
   actif: boolean
   rating_value?: number | null
   stock_total?: number | null
+  stock_fake?: number | null
 }
 
 export interface ProduitFilters {

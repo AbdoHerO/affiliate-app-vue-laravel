@@ -74,6 +74,7 @@ const form = ref<ProduitFormData>({
   actif: true,
   rating_value: null,
   stock_total: null,
+  stock_fake: null,
 })
 
 // Form errors handling
@@ -246,6 +247,7 @@ const loadProduct = async () => {
           actif: p.actif,
           rating_value: (p as any).rating_value || null,
           stock_total: (p as any).stock_total || null,
+          stock_fake: (p as any).stock_fake || null,
         }
 
         console.log('[ProductForm] Form data after loading:', {
@@ -1702,6 +1704,19 @@ onMounted(async () => {
                   variant="outlined"
                   min="1"
                   :error-messages="productErrors.quantite_min"
+                />
+              </VCol>
+              <VCol cols="12" md="6">
+                <VTextField
+                  v-model.number="form.stock_fake"
+                  label="Stock Fictif (Affiché aux Affiliés)"
+                  type="number"
+                  variant="outlined"
+                  min="0"
+                  suffix="unités"
+                  :error-messages="productErrors.stock_fake"
+                  hint="Stock affiché aux affiliés au lieu du stock réel"
+                  persistent-hint
                 />
               </VCol>
               <VCol cols="12" md="6">
