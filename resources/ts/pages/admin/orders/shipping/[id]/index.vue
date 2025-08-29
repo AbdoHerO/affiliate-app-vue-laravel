@@ -5,6 +5,7 @@ import { useI18n } from 'vue-i18n'
 import { useShippingStore } from '@/stores/admin/shipping'
 import { useConfirmAction } from '@/composables/useConfirmAction'
 import { useNotifications } from '@/composables/useNotifications'
+import OrderStatusTimeline from '@/components/orders/OrderStatusTimeline.vue'
 
 definePage({
   meta: {
@@ -991,6 +992,16 @@ onMounted(() => {
           </VCard>
         </VWindowItem>
       </VWindow>
+
+      <!-- Order Status Timeline -->
+      <div class="mt-6">
+        <OrderStatusTimeline
+          v-if="shippingOrder?.id"
+          :order-id="shippingOrder.id"
+          endpoint="admin"
+          order-type="shipping"
+        />
+      </div>
     </div>
 
     <!-- Error State -->

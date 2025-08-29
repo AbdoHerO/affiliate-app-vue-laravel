@@ -86,6 +86,7 @@ declare module 'vue' {
     MixedChart: typeof import('./resources/ts/components/charts/premium/MixedChart.vue')['default']
     MoreBtn: typeof import('./resources/ts/@core/components/MoreBtn.vue')['default']
     Notifications: typeof import('./resources/ts/@core/components/Notifications.vue')['default']
+    OrderStatusTimeline: typeof import('./resources/ts/components/orders/OrderStatusTimeline.vue')['default']
     OzonExpressConfirmDialog: typeof import('./resources/ts/components/dialogs/OzonExpressConfirmDialog.vue')['default']
     PaymentProvidersDialog: typeof import('./resources/ts/components/dialogs/PaymentProvidersDialog.vue')['default']
     PricingPlanDialog: typeof import('./resources/ts/components/dialogs/PricingPlanDialog.vue')['default']

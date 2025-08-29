@@ -8,6 +8,7 @@ use App\Models\ShippingParcel;
 use App\Models\AuditLog;
 use App\Events\OrderDelivered;
 use App\Services\OrderService;
+use App\Services\OrderStatusHistoryService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
@@ -611,6 +612,20 @@ class ShippingOrdersController extends Controller
                     ])
                 ]);
 
+                // Log shipping status change in order history
+                $historyService = app(\App\Services\OrderStatusHistoryService::class);
+                $historyService->logAdminChange(
+                    $order,
+                    $oldStatus,
+                    $newStatus,
+                    $note,
+                    [
+                        'type' => 'shipping_status_update',
+                        'parcel_id' => $order->shippingParcel->id,
+                        'manual_update' => true,
+                    ]
+                );
+
                 // Update order status if needed
                 if ($newStatus === 'livree') {
                     $order->update(['statut' => 'livree']);
@@ -671,6 +686,48 @@ class ShippingOrdersController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Erreur lors de la mise à jour du statut: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get order status timeline.
+     */
+    public function timeline(string $id): JsonResponse
+    {
+        try {
+            $order = Commande::with(['statusHistory.changedBy:id,nom_complet,email'])
+                ->findOrFail($id);
+
+            $historyService = app(OrderStatusHistoryService::class);
+            $timeline = $historyService->getOrderTimeline($order->id);
+
+            return response()->json([
+                'success' => true,
+                'data' => $timeline->map(function ($entry) {
+                    return [
+                        'id' => $entry->id,
+                        'from_status' => $entry->from_status,
+                        'to_status' => $entry->to_status,
+                        'source' => $entry->source,
+                        'source_label' => $entry->getSourceLabel(),
+                        'status_label' => $entry->getStatusLabel(),
+                        'note' => $entry->note,
+                        'meta' => $entry->meta,
+                        'created_at' => $entry->created_at,
+                        'changed_by' => $entry->changedBy ? [
+                            'id' => $entry->changedBy->id,
+                            'name' => $entry->changedBy->nom_complet,
+                            'email' => $entry->changedBy->email,
+                        ] : null,
+                    ];
+                })
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de la récupération de l\'historique: ' . $e->getMessage()
             ], 500);
         }
     }

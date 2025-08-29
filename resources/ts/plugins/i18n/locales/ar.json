@@ -3108,6 +3108,39 @@
   "remove_profile_image": "إزالة صورة الملف الشخصي",
   "image_upload_success": "تم رفع الصورة بنجاح",
   "image_upload_failed": "فشل في رفع الصورة",
-  "leave_empty_to_keep_current": "اتركه فارغاً للاحتفاظ بكلمة المرور الحالية"
+  "leave_empty_to_keep_current": "اتركه فارغاً للاحتفاظ بكلمة المرور الحالية",
+
+  "order_status_timeline": "تاريخ حالة الطلب",
+  "no_status_history": "لا يوجد تاريخ للحالة مسجل",
+  "additional_details": "تفاصيل إضافية",
+  "retry": "إعادة المحاولة",
+
+  "order_status_en_attente": "في الانتظار",
+  "order_status_confirmee": "مؤكد",
+  "order_status_expediee": "تم الشحن",
+  "order_status_livree": "تم التسليم",
+  "order_status_annulee": "ملغي",
+  "order_status_retournee": "مرتجع",
+  "order_status_refusee": "مرفوض",
+  "order_status_injoignable": "غير قابل للوصول",
+  "order_status_echec_livraison": "فشل التسليم",
+  "order_status_pending": "في الانتظار",
+  "order_status_received": "تم الاستلام",
+  "order_status_in_transit": "في الطريق",
+  "order_status_shipped": "تم الشحن",
+  "order_status_at_facility": "في المرفق",
+  "order_status_ready_for_delivery": "جاهز للتسليم",
+  "order_status_out_for_delivery": "خارج للتسليم",
+  "order_status_delivery_attempted": "محاولة تسليم",
+  "order_status_delivered": "تم التسليم",
+  "order_status_returned": "مرتجع",
+  "order_status_refused": "مرفوض",
+  "order_status_cancelled": "ملغي",
+  "order_status_unknown": "غير معروف",
+
+  "status_source_admin": "المدير",
+  "status_source_affiliate": "الشريك",
+  "status_source_ozon_express": "أوزون إكسبريس",
+  "status_source_system": "النظام"
 }
 

@@ -1105,6 +1105,23 @@ class OzonExpressService
                     ])
                 ]);
 
+                // Log status change in order history if status changed and order exists
+                if ($oldStatus !== $status && $parcel->commande) {
+                    $historyService = app(\App\Services\OrderStatusHistoryService::class);
+                    $historyService->logOzonExpressChange(
+                        $parcel->commande,
+                        $oldStatus,
+                        $status,
+                        $lastStatusComment,
+                        [
+                            'tracking_number' => $trackingNumber,
+                            'carrier_status_text' => $lastStatusText,
+                            'status_time' => $lastStatusTime,
+                            'parcel_id' => $parcel->id,
+                        ]
+                    );
+                }
+
                 // Fire OrderDelivered event if status changed to delivered and parcel has an order
                 if ($status === 'delivered' && $oldStatus !== 'delivered' && $parcel->commande) {
                     OrderDelivered::dispatch($parcel->commande, 'carrier_webhook', [

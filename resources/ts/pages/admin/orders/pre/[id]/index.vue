@@ -7,6 +7,7 @@ import { useQuickConfirm } from '@/composables/useConfirmAction'
 import { useNotifications } from '@/composables/useNotifications'
 import ConfirmActionDialog from '@/components/common/ConfirmActionDialog.vue'
 import OzonExpressConfirmDialog from '@/components/dialogs/OzonExpressConfirmDialog.vue'
+import OrderStatusTimeline from '@/components/orders/OrderStatusTimeline.vue'
 
 definePage({
   meta: {
@@ -676,6 +677,16 @@ onMounted(() => {
           </VRow>
         </VWindowItem>
       </VWindow>
+
+      <!-- Order Status Timeline -->
+      <div class="mt-6">
+        <OrderStatusTimeline
+          v-if="preorder?.id"
+          :order-id="preorder.id"
+          endpoint="admin"
+          order-type="preorder"
+        />
+      </div>
     </div>
 
     <!-- Error State -->

@@ -194,4 +194,12 @@ class Commande extends Model
     {
         return $this->hasMany(CommissionAffilie::class, 'commande_id');
     }
+
+    /**
+     * Get the status history for this order.
+     */
+    public function statusHistory(): HasMany
+    {
+        return $this->hasMany(OrderStatusHistory::class, 'order_id')->latest();
+    }
 }

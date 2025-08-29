@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Models\Commande;
+use App\Observers\CommandeObserver;
 use App\Services\OzonSettingsService;
 use Illuminate\Support\ServiceProvider;
 
@@ -23,6 +25,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Register model observers
+        Commande::observe(CommandeObserver::class);
     }
 }

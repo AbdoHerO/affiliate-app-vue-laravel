@@ -521,4 +521,39 @@ class TicketsController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Get pending tickets count for affiliate badge.
+     */
+    public function getPendingCount(Request $request): JsonResponse
+    {
+        try {
+            $user = $request->user();
+
+            // Ensure user is an approved affiliate
+            if (!$user->isApprovedAffiliate()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Access denied. Only approved affiliates can view ticket count.',
+                    'count' => 0,
+                ], 403);
+            }
+
+            $count = Ticket::where('requester_id', $user->id)
+                ->whereIn('status', ['open', 'pending', 'waiting_user', 'waiting_third_party'])
+                ->count();
+
+            return response()->json([
+                'success' => true,
+                'count' => $count,
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de la récupération du compteur de tickets',
+                'count' => 0,
+            ], 500);
+        }
+    }
 }

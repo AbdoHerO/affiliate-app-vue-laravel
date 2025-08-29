@@ -6,6 +6,7 @@ import { storeToRefs } from 'pinia'
 import { useAffiliateOrdersStore } from '@/stores/affiliate/orders'
 import { useNotifications } from '@/composables/useNotifications'
 import Breadcrumbs from '@/components/common/Breadcrumbs.vue'
+import OrderStatusTimeline from '@/components/orders/OrderStatusTimeline.vue'
 
 definePage({
   meta: {
@@ -343,6 +344,15 @@ onMounted(() => {
           </VCard>
         </VWindowItem>
       </VWindow>
+
+      <!-- Order Status Timeline -->
+      <div class="mt-6">
+        <OrderStatusTimeline
+          v-if="currentOrder?.id"
+          :order-id="currentOrder.id"
+          endpoint="affiliate"
+        />
+      </div>
     </div>
 
     <!-- Error State -->

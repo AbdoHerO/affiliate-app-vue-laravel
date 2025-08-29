@@ -293,6 +293,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         // Pre-Orders Management (internal orders not yet shipped)
         Route::get('preorders', [PreordersController::class, 'index']);
         Route::get('preorders/{id}', [PreordersController::class, 'show']);
+        Route::get('preorders/{id}/timeline', [PreordersController::class, 'timeline']);
         Route::put('preorders/{id}', [PreordersController::class, 'update']);
         Route::post('preorders/{id}/confirm', [PreordersController::class, 'confirm']);
 
@@ -324,6 +325,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         // Shipping Orders Management (orders with parcels)
         Route::get('shipping/orders', [ShippingOrdersController::class, 'index']);
         Route::get('shipping/orders/{id}', [ShippingOrdersController::class, 'show']);
+        Route::get('shipping/orders/{id}/timeline', [ShippingOrdersController::class, 'timeline']);
         Route::post('shipping/orders/{id}/status', [ShippingOrdersController::class, 'updateShippingStatus']);
 
         // Tracking refresh endpoints
@@ -462,6 +464,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::prefix('support/tickets')->group(function () {
             Route::get('/', [\App\Http\Controllers\Admin\TicketsController::class, 'index']);
             Route::get('/statistics', [\App\Http\Controllers\Admin\TicketsController::class, 'statistics']);
+            Route::get('/pending-count', [\App\Http\Controllers\Admin\TicketsController::class, 'getPendingCount']);
             Route::post('/', [\App\Http\Controllers\Admin\TicketsController::class, 'store']);
             Route::get('/{ticket}', [\App\Http\Controllers\Admin\TicketsController::class, 'show']);
             Route::post('/{ticket}', [\App\Http\Controllers\Admin\TicketsController::class, 'update']);
@@ -565,6 +568,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         // Orders History
         Route::get('orders', [App\Http\Controllers\Affiliate\OrdersController::class, 'index']);
         Route::get('orders/{id}', [App\Http\Controllers\Affiliate\OrdersController::class, 'show']);
+        Route::get('orders/{id}/timeline', [App\Http\Controllers\Affiliate\OrdersController::class, 'timeline']);
 
         // Payments (Commissions & Withdrawals)
         Route::get('commissions', [App\Http\Controllers\Affiliate\PaymentsController::class, 'commissions']);
@@ -576,6 +580,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
         // Support Tickets
         Route::get('tickets', [App\Http\Controllers\Affiliate\TicketsController::class, 'index']);
+        Route::get('tickets/pending-count', [App\Http\Controllers\Affiliate\TicketsController::class, 'getPendingCount']);
         Route::post('tickets', [App\Http\Controllers\Affiliate\TicketsController::class, 'store']);
         Route::get('tickets/{id}', [App\Http\Controllers\Affiliate\TicketsController::class, 'show']);
         Route::post('tickets/{id}/messages', [App\Http\Controllers\Affiliate\TicketsController::class, 'addMessage']);

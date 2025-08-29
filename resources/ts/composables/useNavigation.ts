@@ -1,12 +1,19 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useAuth } from '@/composables/useAuth'
+import { useTicketBadge } from '@/composables/useTicketBadge'
 import adminNavigation, { affiliateNavigation } from '@/navigation/vertical'
 import type { VerticalNavItems } from '@layouts/types'
 
 export function useNavigation() {
   const { hasRole, isAuthenticated, user, isLoading } = useAuth()
   const { t } = useI18n()
+  const { pendingCount } = useTicketBadge()
+
+  // Computed badge content
+  const ticketBadgeContent = computed(() =>
+    pendingCount.value > 0 ? pendingCount.value.toString() : undefined
+  )
 
   const navItems = computed<VerticalNavItems>(() => {
     // Return empty array if not ready to prevent errors
@@ -192,6 +199,8 @@ export function useNavigation() {
                 title: t('nav_support_tickets'),
                 to: 'admin-support-tickets',
                 icon: { icon: 'tabler-ticket' },
+                badgeContent: ticketBadgeContent.value,
+                badgeClass: 'bg-error',
               },
             ],
           },
@@ -246,6 +255,8 @@ export function useNavigation() {
             title: t('nav_support'),
             to: 'affiliate-tickets',
             icon: { icon: 'tabler-headset' },
+            badgeContent: ticketBadgeContent.value,
+            badgeClass: 'bg-error',
           },
           {
             title: t('profile'),

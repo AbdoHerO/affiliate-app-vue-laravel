@@ -280,4 +280,27 @@ class TicketsController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Get pending tickets count for admin badge.
+     */
+    public function getPendingCount(): JsonResponse
+    {
+        try {
+            $count = Ticket::whereIn('status', ['open', 'pending', 'waiting_user', 'waiting_third_party'])
+                ->count();
+
+            return response()->json([
+                'success' => true,
+                'count' => $count,
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de la récupération du compteur de tickets',
+                'count' => 0,
+            ], 500);
+        }
+    }
 }

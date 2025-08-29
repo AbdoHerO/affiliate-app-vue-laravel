@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\Affiliate\OrderResource;
 use App\Models\Commande;
 use App\Services\OrderService;
+use App\Services\OrderStatusHistoryService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -172,6 +173,71 @@ class OrdersController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Une erreur est survenue lors de la récupération de la commande.',
+            ], 500);
+        }
+    }
+
+    /**
+     * Get order status timeline for the authenticated affiliate.
+     */
+    public function timeline(Request $request, string $id): JsonResponse
+    {
+        try {
+            $user = $request->user();
+
+            // Ensure user is an approved affiliate
+            if (!$user->isApprovedAffiliate()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Access denied. Only approved affiliates can view order timeline.',
+                ], 403);
+            }
+
+            // Verify order ownership
+            $order = Commande::where('user_id', $user->id)
+                ->findOrFail($id);
+
+            $historyService = app(OrderStatusHistoryService::class);
+            $timeline = $historyService->getOrderTimeline($order->id);
+
+            return response()->json([
+                'success' => true,
+                'data' => $timeline->map(function ($entry) {
+                    return [
+                        'id' => $entry->id,
+                        'from_status' => $entry->from_status,
+                        'to_status' => $entry->to_status,
+                        'source' => $entry->source,
+                        'source_label' => $entry->getSourceLabel(),
+                        'status_label' => $entry->getStatusLabel(),
+                        'note' => $entry->note,
+                        'meta' => $entry->meta,
+                        'created_at' => $entry->created_at,
+                        'changed_by' => $entry->changedBy ? [
+                            'id' => $entry->changedBy->id,
+                            'name' => $entry->changedBy->nom_complet,
+                            'email' => $entry->changedBy->email,
+                        ] : null,
+                    ];
+                })
+            ]);
+
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Commande non trouvée ou accès non autorisé.',
+            ], 404);
+
+        } catch (\Exception $e) {
+            Log::error('Error fetching affiliate order timeline', [
+                'error' => $e->getMessage(),
+                'user_id' => $request->user()->id,
+                'order_id' => $id
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Une erreur est survenue lors de la récupération de l\'historique.',
             ], 500);
         }
     }
