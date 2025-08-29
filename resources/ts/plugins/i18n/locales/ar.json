@@ -3177,6 +3177,32 @@
   "dashboard.affiliate.tables.columns.date": "التاريخ",
   "dashboard.affiliate.tables.columns.name": "الاسم",
   "dashboard.affiliate.tables.columns.email": "البريد الإلكتروني",
-  "dashboard.affiliate.tables.columns.signup_date": "تاريخ التسجيل"
+  "dashboard.affiliate.tables.columns.signup_date": "تاريخ التسجيل",
+
+  "dashboard.admin.charts.orders_by_period.description": "تطور عدد الطلبات الشهري خلال آخر 12 شهراً",
+  "dashboard.admin.charts.monthly_revenue.description": "تطور الإيرادات الشهرية خلال آخر 12 شهراً",
+  "dashboard.admin.charts.top_affiliates.title": "أفضل 5 شركاء",
+  "dashboard.admin.charts.top_affiliates.description": "ترتيب أفضل 5 شركاء حسب العمولات المحققة",
+  "dashboard.admin.charts.top_products.title": "أفضل 5 منتجات",
+  "dashboard.admin.charts.top_products.description": "ترتيب أفضل 5 منتجات مبيعاً",
+
+  "dashboard.filters.period.month": "شهر",
+  "dashboard.filters.period.quarter": "ربع سنة",
+  "dashboard.filters.period.year": "سنة",
+
+  "dashboard.export.success": "تم تصدير البيانات بنجاح",
+  "dashboard.export.error": "خطأ في تصدير البيانات",
+  "dashboard.charts.load_error": "خطأ في تحميل الرسم البياني",
+  "dashboard.charts.no_data": "لا توجد بيانات متاحة",
+  "dashboard.charts.explanation": "انقر على العناصر لمزيد من التفاصيل",
+  "dashboard.charts.refresh_success": "تم تحديث الرسوم البيانية بنجاح",
+  "dashboard.charts.refresh_error": "خطأ في تحديث الرسوم البيانية",
+
+  "dashboard.admin.title": "لوحة تحكم المدير",
+  "dashboard.admin.welcome": "مرحباً {name}",
+  "dashboard.admin.refresh": "تحديث",
+  "dashboard.admin.export": "تصدير",
+  "dashboard.admin.period_filter": "تصفية حسب الفترة",
+  "dashboard.admin.charts.title": "الرسوم البيانية والتحليلات"
 }
 

@@ -3182,5 +3182,31 @@
   "dashboard.affiliate.tables.columns.date": "Date",
   "dashboard.affiliate.tables.columns.name": "Nom",
   "dashboard.affiliate.tables.columns.email": "Email",
-  "dashboard.affiliate.tables.columns.signup_date": "Date d'inscription"
+  "dashboard.affiliate.tables.columns.signup_date": "Date d'inscription",
+
+  "dashboard.admin.charts.orders_by_period.description": "Évolution mensuelle du nombre de commandes sur les 12 derniers mois",
+  "dashboard.admin.charts.monthly_revenue.description": "Évolution mensuelle du chiffre d'affaires sur les 12 derniers mois",
+  "dashboard.admin.charts.top_affiliates.title": "Top 5 des affiliés",
+  "dashboard.admin.charts.top_affiliates.description": "Classement des 5 meilleurs affiliés par commissions générées",
+  "dashboard.admin.charts.top_products.title": "Top 5 des produits",
+  "dashboard.admin.charts.top_products.description": "Classement des 5 produits les plus vendus",
+
+  "dashboard.filters.period.month": "Mois",
+  "dashboard.filters.period.quarter": "Trimestre",
+  "dashboard.filters.period.year": "Année",
+
+  "dashboard.export.success": "Données exportées avec succès",
+  "dashboard.export.error": "Erreur lors de l'export des données",
+  "dashboard.charts.load_error": "Erreur lors du chargement du graphique",
+  "dashboard.charts.no_data": "Aucune donnée disponible",
+  "dashboard.charts.explanation": "Cliquez sur les éléments pour plus de détails",
+  "dashboard.charts.refresh_success": "Graphiques actualisés avec succès",
+  "dashboard.charts.refresh_error": "Erreur lors de l'actualisation des graphiques",
+
+  "dashboard.admin.title": "Tableau de bord administrateur",
+  "dashboard.admin.welcome": "Bienvenue {name}",
+  "dashboard.admin.refresh": "Actualiser",
+  "dashboard.admin.export": "Exporter",
+  "dashboard.admin.period_filter": "Filtrer par période",
+  "dashboard.admin.charts.title": "Graphiques et analyses"
 }

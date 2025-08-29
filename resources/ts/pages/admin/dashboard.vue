@@ -1,28 +1,11 @@
 <script setup lang="ts">
-import { onMounted, ref, computed, watch } from 'vue'
+import { onMounted, ref, computed, watch, onBeforeUnmount } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useAuth } from '@/composables/useAuth'
 import { useAdminDashboardStore } from '@/stores/dashboard/adminDashboard'
 import { useNotifications } from '@/composables/useNotifications'
-import { useAdminAdvancedCharts } from '@/composables/useAdvancedCharts'
 import StatisticsCard from '@/components/dashboard/StatisticsCard.vue'
-import DashboardChart from '@/components/charts/DashboardChart.vue'
 import Breadcrumbs from '@/components/common/Breadcrumbs.vue'
-
-// Import advanced chart components
-import {
-  WebsiteAnalyticsCarousel,
-  TotalEarningChart,
-  RevenueGrowthChart,
-  SessionAnalyticsDonut,
-  SalesOverviewCard,
-  EarningReportsWeekly,
-  SalesAreaChart,
-  ProfitLineChart,
-  AdvancedStatsCard,
-  MixedChart,
-  ExpensesRadialChart,
-} from '@/components/charts/advanced'
 
 definePage({
   meta: {
@@ -35,18 +18,13 @@ const { t } = useI18n()
 const { user } = useAuth()
 const dashboardStore = useAdminDashboardStore()
 const { showSuccess, showError } = useNotifications()
-const { chartConfigs: advancedChartConfigs } = useAdminAdvancedCharts(dashboardStore)
 
 // Local state
 const selectedPeriod = ref('month')
 const refreshInterval = ref<NodeJS.Timeout | null>(null)
 const autoRefresh = ref(true)
 
-// Date range picker
-const dateRange = ref([
-  new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-  new Date().toISOString().split('T')[0],
-])
+// Remove unused date range picker
 
 // Breadcrumbs
 const breadcrumbs = computed(() => [
@@ -54,98 +32,86 @@ const breadcrumbs = computed(() => [
   { title: t('dashboard'), disabled: true, href: '/admin/dashboard' },
 ])
 
-// Computed properties
+// Computed properties for KPI cards using new unified format
 const kpiCards = computed(() => {
-  if (!dashboardStore.stats) return []
-  const { overview, revenue, commissions, payouts } = dashboardStore.stats
+  if (!dashboardStore.stats?.cards) return []
 
-  return [
-    {
-      title: t('total_affiliates'),
-      value: overview.totalAffiliates,
-      icon: 'tabler-users',
-      color: 'primary',
-      trend: {
-        value: dashboardStore.signupsGrowth,
-        label: t('vs_last_month'),
-      },
-    },
-    {
-      title: t('total_revenue'),
-      value: overview.totalRevenue,
-      prefix: 'DH',
-      icon: 'tabler-currency-dollar',
-      color: 'success',
-      trend: {
-        value: revenue.growth,
-        label: t('vs_last_month'),
-      },
-    },
-    {
-      title: t('total_commissions'),
-      value: overview.totalCommissions,
-      prefix: 'DH',
-      icon: 'tabler-chart-line',
-      color: 'info',
-      trend: {
-        value: commissions.growth,
-        label: t('vs_last_month'),
-      },
-    },
-    {
-      title: t('pending_payouts'),
-      value: payouts.pending.amount,
-      prefix: 'DH',
-      subtitle: `${payouts.pending.count} ${t('requests')}`,
-      icon: 'tabler-clock',
-      color: 'warning',
-    },
-    {
-      title: t('verified_signups'),
-      value: overview.verifiedSignups,
-      subtitle: `${overview.verificationRate.toFixed(1)}% ${t('conversion_rate')}`,
-      icon: 'tabler-user-check',
-      color: 'success',
-    },
-    {
-      title: t('total_orders'),
-      value: overview.totalOrders,
-      icon: 'tabler-shopping-cart',
-      color: 'secondary',
-    },
-  ]
+  return dashboardStore.stats.cards.map(card => ({
+    title: t(card.labelKey),
+    value: typeof card.value === 'object' ? JSON.stringify(card.value) : card.value,
+    icon: getCardIcon(card.key),
+    color: getCardColor(card.key),
+    prefix: ['total_revenue', 'total_commissions', 'pending_payments'].includes(card.key) ? 'DH' : undefined,
+  }))
 })
 
-// Keep old chart configs for fallback
-const legacyChartConfigs = computed(() => [
+// Helper functions for card styling
+const getCardIcon = (key: string) => {
+  const icons: Record<string, string> = {
+    active_affiliates: 'tabler-users',
+    total_orders: 'tabler-shopping-cart',
+    total_revenue: 'tabler-currency-dollar',
+    total_commissions: 'tabler-chart-line',
+    pending_payments: 'tabler-clock',
+    pending_tickets: 'tabler-ticket',
+  }
+  return icons[key] || 'tabler-chart-bar'
+}
+
+const getCardColor = (key: string) => {
+  const colors: Record<string, string> = {
+    active_affiliates: 'primary',
+    total_orders: 'secondary',
+    total_revenue: 'success',
+    total_commissions: 'info',
+    pending_payments: 'warning',
+    pending_tickets: 'error',
+  }
+  return colors[key] || 'primary'
+}
+
+// Chart configurations for the 4 specified charts
+const chartConfigs = computed(() => [
   {
-    title: t('signups_over_time'),
+    id: 'orders_by_period',
+    title: t('dashboard.admin.charts.orders_by_period.series.orders'),
+    type: 'bar' as const,
+    data: dashboardStore.ordersByPeriodChart,
+    cols: { cols: 12, md: 6 },
+    description: t('dashboard.admin.charts.orders_by_period.description'),
+  },
+  {
+    id: 'monthly_revenue',
+    title: t('dashboard.admin.charts.monthly_revenue.series.revenue'),
     type: 'line' as const,
-    data: dashboardStore.signupsChartData,
+    data: dashboardStore.monthlyRevenueChart,
     cols: { cols: 12, md: 6 },
+    description: t('dashboard.admin.charts.monthly_revenue.description'),
   },
   {
-    title: t('revenue_commissions'),
-    type: 'area' as const,
-    data: dashboardStore.revenueChartData,
-    cols: { cols: 12, md: 6 },
-  },
-  {
-    title: t('top_affiliates_by_commissions'),
+    id: 'top_affiliates',
+    title: t('dashboard.admin.charts.top_affiliates.title'),
     type: 'bar' as const,
     data: dashboardStore.topAffiliatesChart,
     cols: { cols: 12, md: 6 },
+    description: t('dashboard.admin.charts.top_affiliates.description'),
   },
   {
-    title: t('orders_by_status'),
+    id: 'top_products',
+    title: t('dashboard.admin.charts.top_products.title'),
     type: 'doughnut' as const,
-    data: dashboardStore.ordersByStatusChart,
+    data: dashboardStore.topProductsChart,
     cols: { cols: 12, md: 6 },
+    description: t('dashboard.admin.charts.top_products.description'),
   },
 ])
 
-// Use advanced charts by default
-const useAdvancedCharts = ref(true)
+// Period filter options
+const periodOptions = [
+  { value: 'month', label: t('dashboard.filters.period.month'), icon: 'tabler-calendar-month' },
+  { value: 'quarter', label: t('dashboard.filters.period.quarter'), icon: 'tabler-calendar-stats' },
+  { value: 'year', label: t('dashboard.filters.period.year'), icon: 'tabler-calendar-year' },
+]
 
 // Methods
 const refreshData = async () => {
@@ -159,19 +125,23 @@ const refreshData = async () => {
   }
 }
 
-const updateDateRange = () => {
-  dashboardStore.updateFilters({
-    dateRange: {
-      start: dateRange.value[0],
-      end: dateRange.value[1],
-    },
-  })
-  refreshData()
-}
-
 const changePeriod = (period: string) => {
   selectedPeriod.value = period
   dashboardStore.fetchChartData(period)
+}
+
+const refreshCharts = async () => {
+  try {
+    await Promise.all([
+      dashboardStore.fetchChartData('orders_by_period'),
+      dashboardStore.fetchChartData('monthly_revenue'),
+      dashboardStore.fetchChartData('top_affiliates'),
+      dashboardStore.fetchChartData('top_products'),
+    ])
+    showSuccess(t('dashboard.charts.refresh_success'))
+  } catch (error) {
+    showError(t('dashboard.charts.refresh_error'))
+  }
 }
 
 const exportDashboard = () => {
@@ -181,7 +151,7 @@ const exportDashboard = () => {
       timestamp: new Date().toISOString(),
       period: selectedPeriod.value,
       stats: dashboardStore.stats,
-      charts: useAdvancedCharts.value ? 'advanced' : 'basic',
+      charts: 'standard',
     }
 
     // Create and download file
@@ -195,10 +165,19 @@ const exportDashboard = () => {
     document.body.removeChild(link)
     URL.revokeObjectURL(url)
 
-    showSuccess(t('admin_dashboard_export_success'))
+    showSuccess(t('dashboard.export.success'))
   } catch (error) {
     console.error('Error exporting dashboard:', error)
-    showError(t('admin_dashboard_export_error'))
+    showError(t('dashboard.export.error'))
+  }
+}
+
+// Load chart data for specific chart type
+const loadChartData = async (chartId: string) => {
+  try {
+    await dashboardStore.fetchChartData(chartId)
+  } catch (error) {
+    showError(t('dashboard.charts.load_error'))
   }
 }
 
@@ -239,29 +218,14 @@ watch(autoRefresh, setupAutoRefresh)
     <div class="d-flex align-center justify-space-between mb-6">
       <div>
         <h1 class="text-h4 font-weight-bold mb-1">
-          {{ t('admin_dashboard_title') }}
+          {{ t('dashboard.admin.title') }}
         </h1>
         <p class="text-body-1 text-medium-emphasis">
-          {{ t('admin_dashboard_welcome', { name: user?.nom_complet }) }}
+          {{ t('dashboard.admin.welcome', { name: user?.nom_complet }) }}
         </p>
       </div>
 
       <div class="d-flex align-center gap-3">
-        <!-- Auto Refresh Toggle -->
-        <VTooltip :text="t('admin_dashboard_auto_refresh_tooltip')">
-          <template #activator="{ props }">
-            <VBtn
-              v-bind="props"
-              :color="autoRefresh ? 'success' : 'default'"
-              :variant="autoRefresh ? 'tonal' : 'outlined'"
-              icon
-              @click="autoRefresh = !autoRefresh"
-            >
-              <VIcon :icon="autoRefresh ? 'tabler-refresh' : 'tabler-refresh-off'" />
-            </VBtn>
-          </template>
-        </VTooltip>
-
         <!-- Refresh Button -->
         <VBtn
           color="primary"
@@ -270,49 +234,35 @@ watch(autoRefresh, setupAutoRefresh)
           @click="refreshData"
         >
           <VIcon start icon="tabler-refresh" />
-          {{ t('admin_dashboard_refresh') }}
+          {{ t('dashboard.admin.refresh') }}
         </VBtn>
 
-        <!-- Date Range Picker -->
-        <VMenu>
-          <template #activator="{ props }">
-            <VBtn
-              v-bind="props"
-              variant="outlined"
-              prepend-icon="tabler-calendar"
-            >
-              {{ dateRange[0] }} - {{ dateRange[1] }}
-            </VBtn>
-          </template>
+        <!-- Export Button -->
+        <VBtn
+          color="secondary"
+          variant="outlined"
+          @click="exportDashboard"
+        >
+          <VIcon start icon="tabler-download" />
+          {{ t('dashboard.admin.export') }}
+        </VBtn>
 
-          <VCard min-width="300">
-            <VCardText>
-              <VTextField
-                v-model="dateRange[0]"
-                :label="t('admin_dashboard_start_date')"
-                type="date"
-                variant="outlined"
-                density="compact"
-                class="mb-3"
-              />
-              <VTextField
-                v-model="dateRange[1]"
-                :label="t('admin_dashboard_end_date')"
-                type="date"
-                variant="outlined"
-                density="compact"
-                class="mb-3"
-              />
-              <VBtn
-                color="primary"
-                block
-                @click="updateDateRange"
-              >
-                {{ t('admin_dashboard_apply') }}
-              </VBtn>
-            </VCardText>
-          </VCard>
-        </VMenu>
+        <!-- Period Filter -->
+        <VSelect
+          v-model="selectedPeriod"
+          :items="periodOptions"
+          item-title="label"
+          item-value="value"
+          :label="t('dashboard.admin.period_filter')"
+          variant="outlined"
+          density="compact"
+          style="min-width: 150px;"
+          @update:model-value="changePeriod"
+        >
+          <template #prepend-inner>
+            <VIcon icon="tabler-calendar" size="16" />
+          </template>
+        </VSelect>
       </div>
     </div>
 
@@ -328,7 +278,7 @@ watch(autoRefresh, setupAutoRefresh)
       {{ dashboardStore.error }}
     </VAlert>
 
-    <!-- KPI Cards -->
+    <!-- KPI Cards - 6 indicators as specified -->
     <VRow class="mb-6">
       <VCol
         v-for="(card, index) in kpiCards"
@@ -341,10 +291,8 @@ watch(autoRefresh, setupAutoRefresh)
         <StatisticsCard
           :title="card.title"
           :value="card.value"
-          :subtitle="card.subtitle"
           :icon="card.icon"
           :color="card.color"
-          :trend="card.trend"
           :prefix="card.prefix"
           :loading="dashboardStore.loading.stats"
           :error="dashboardStore.error || undefined"
@@ -359,64 +307,25 @@ watch(autoRefresh, setupAutoRefresh)
         <div class="d-flex align-center justify-space-between mb-4 flex-wrap gap-4">
           <div>
             <h2 class="text-h5 font-weight-bold">
-              {{ t('dashboard_analytics') }}
+              {{ t('dashboard.admin.charts.title') }}
             </h2>
             <p class="text-body-2 text-disabled mb-0">
-              {{ t('admin_dashboard_analytics_subtitle') }}
+              {{ t('dashboard.charts.explanation') }}
             </p>
           </div>
 
           <div class="d-flex align-center gap-3 flex-wrap">
             <!-- Action Buttons Group -->
             <div class="d-flex align-center gap-2">
-              <!-- Refresh Button -->
-              <VTooltip :text="t('admin_dashboard_refresh_data_tooltip')">
-                <template #activator="{ props: tooltipProps }">
-                  <VBtn
-                    v-bind="tooltipProps"
-                    icon="tabler-refresh"
-                    variant="outlined"
-                    size="small"
-                    :loading="dashboardStore.loading.stats"
-                    @click="refreshData"
-                  />
-                </template>
-              </VTooltip>
+              <!-- Refresh Charts Button -->
+              <VBtn
+                icon="tabler-refresh"
+                variant="outlined"
+                size="small"
+                :loading="dashboardStore.loading.charts"
+                @click="refreshCharts"
+              />
 
-              <!-- Export Button -->
-              <VTooltip :text="t('admin_dashboard_export_tooltip')">
-                <template #activator="{ props: tooltipProps }">
-                  <VBtn
-                    v-bind="tooltipProps"
-                    icon="tabler-download"
-                    variant="outlined"
-                    size="small"
-                    @click="exportDashboard"
-                  />
-                </template>
-              </VTooltip>
-
-              <!-- Chart Style Toggle -->
-              <VTooltip :text="useAdvancedCharts ? t('admin_dashboard_switch_to_basic') : t('admin_dashboard_switch_to_advanced')">
-                <template #activator="{ props: tooltipProps }">
-                  <VBtn
-                    v-bind="tooltipProps"
-                    :icon="useAdvancedCharts ? 'tabler-chart-dots-3' : 'tabler-chart-line'"
-                    :color="useAdvancedCharts ? 'primary' : 'default'"
-                    variant="outlined"
-                    size="small"
-                    @click="useAdvancedCharts = !useAdvancedCharts"
-                  >
-                    <VIcon :icon="useAdvancedCharts ? 'tabler-chart-dots-3' : 'tabler-chart-line'" />
-                    <VTooltip
-                      activator="parent"
-                      location="bottom"
-                    >
-                      {{ useAdvancedCharts ? t('admin_dashboard_advanced_charts') : t('admin_dashboard_basic_charts') }}
-                    </VTooltip>
-                  </VBtn>
-                </template>
-              </VTooltip>
             </div>
 
             <!-- Period Selector - Responsive -->
@@ -430,33 +339,26 @@ watch(autoRefresh, setupAutoRefresh)
                 class="d-none d-md-flex"
                 @update:model-value="changePeriod"
               >
-                <VBtn value="day" size="small">
-                  <VIcon icon="tabler-calendar-day" class="me-1" size="16" />
-                  {{ t('admin_dashboard_period_day') }}
-                </VBtn>
-                <VBtn value="week" size="small">
-                  <VIcon icon="tabler-calendar-week" class="me-1" size="16" />
-                  {{ t('admin_dashboard_period_week') }}
-                </VBtn>
                 <VBtn value="month" size="small">
                   <VIcon icon="tabler-calendar-month" class="me-1" size="16" />
-                  {{ t('admin_dashboard_period_month') }}
+                  {{ t('dashboard.filters.period.month') }}
+                </VBtn>
+                <VBtn value="quarter" size="small">
+                  <VIcon icon="tabler-calendar-stats" class="me-1" size="16" />
+                  {{ t('dashboard.filters.period.quarter') }}
                 </VBtn>
                 <VBtn value="year" size="small">
                   <VIcon icon="tabler-calendar-year" class="me-1" size="16" />
-                  {{ t('admin_dashboard_period_year') }}
+                  {{ t('dashboard.filters.period.year') }}
                 </VBtn>
               </VBtnToggle>
 
               <!-- Mobile/Tablet View (below 768px) -->
               <VSelect
                 v-model="selectedPeriod"
-                :items="[
-                  { title: t('admin_dashboard_period_day'), value: 'day', prepend: 'tabler-calendar-day' },
-                  { title: t('admin_dashboard_period_week'), value: 'week', prepend: 'tabler-calendar-week' },
-                  { title: t('admin_dashboard_period_month'), value: 'month', prepend: 'tabler-calendar-month' },
-                  { title: t('admin_dashboard_period_year'), value: 'year', prepend: 'tabler-calendar-year' }
-                ]"
+                :items="periodOptions"
+                item-title="label"
+                item-value="value"
                 variant="outlined"
                 density="compact"
                 class="d-flex d-md-none period-select-mobile"
@@ -466,9 +368,9 @@ watch(autoRefresh, setupAutoRefresh)
               >
                 <template #prepend-inner>
                   <VIcon size="16" class="me-1">
-                    {{ selectedPeriod === 'day' ? 'tabler-calendar-day' : 
-                        selectedPeriod === 'week' ? 'tabler-calendar-week' :
-                        selectedPeriod === 'month' ? 'tabler-calendar-month' : 'tabler-calendar-year' }}
+                    {{ selectedPeriod === 'month' ? 'tabler-calendar-month' :
+                        selectedPeriod === 'quarter' ? 'tabler-calendar-stats' :
+                        'tabler-calendar-year' }}
                   </VIcon>
                 </template>
               </VSelect>
@@ -477,118 +379,64 @@ watch(autoRefresh, setupAutoRefresh)
         </div>
       </VCol>
 
-      <!-- Advanced Charts -->
-      <template v-if="useAdvancedCharts">
-        <VCol
-          v-for="(chart, index) in advancedChartConfigs"
-          :key="`advanced-${index}`"
-          v-bind="chart.cols"
-        >
-          <!-- Advanced Stats Card -->
-          <AdvancedStatsCard
-            v-if="chart.component === 'AdvancedStatsCard'"
-            :data="chart.data"
-            :loading="chart.loading"
-            :size="chart.size"
-          />
+      <!-- Charts - 4 specified charts -->
+      <VCol
+        v-for="chart in chartConfigs"
+        :key="chart.id"
+        v-bind="chart.cols"
+      >
+        <VCard>
+          <VCardItem>
+            <VCardTitle class="d-flex align-center justify-space-between">
+              <span>{{ chart.title }}</span>
+              <VTooltip :text="chart.description">
+                <template #activator="{ props }">
+                  <VIcon
+                    v-bind="props"
+                    icon="tabler-info-circle"
+                    size="16"
+                    class="text-medium-emphasis"
+                  />
+                </template>
+              </VTooltip>
+            </VCardTitle>
+            <VCardSubtitle class="text-body-2 text-medium-emphasis">
+              {{ chart.description }}
+            </VCardSubtitle>
+          </VCardItem>
 
-          <!-- Sales Overview Card -->
-          <SalesOverviewCard
-            v-else-if="chart.component === 'SalesOverviewCard'"
-            :data="chart.data"
-            :loading="chart.loading"
-          />
+          <VCardText>
+            <DashboardChart
+              :type="chart.type"
+              :data="chart.data as any"
+              :loading="dashboardStore.loading.charts"
+              :error="dashboardStore.error || undefined"
+              @load="loadChartData(chart.id)"
+            />
 
-          <!-- Earning Reports Weekly -->
-          <EarningReportsWeekly
-            v-else-if="chart.component === 'EarningReportsWeekly'"
-            :data="chart.data"
-            :loading="chart.loading"
-          />
-
-          <!-- Website Analytics Carousel -->
-          <WebsiteAnalyticsCarousel
-            v-else-if="chart.component === 'WebsiteAnalyticsCarousel'"
-            :data="chart.data"
-            :loading="chart.loading"
-          />
-
-          <!-- Mixed Chart -->
-          <MixedChart
-            v-else-if="chart.component === 'MixedChart'"
-            :data="chart.data"
-            :loading="chart.loading"
-          />
-
-          <!-- Sales Area Chart -->
-          <SalesAreaChart
-            v-else-if="chart.component === 'SalesAreaChart'"
-            :data="chart.data"
-            :loading="chart.loading"
-          />
-
-          <!-- Profit Line Chart -->
-          <ProfitLineChart
-            v-else-if="chart.component === 'ProfitLineChart'"
-            :data="chart.data"
-            :loading="chart.loading"
-          />
-
-          <!-- Total Earning Chart -->
-          <TotalEarningChart
-            v-else-if="chart.component === 'TotalEarningChart'"
-            :data="chart.data"
-            :loading="chart.loading"
-          />
-
-          <!-- Revenue Growth Chart -->
-          <RevenueGrowthChart
-            v-else-if="chart.component === 'RevenueGrowthChart'"
-            :data="chart.data"
-            :loading="chart.loading"
-          />
-
-          <!-- Session Analytics Donut -->
-          <SessionAnalyticsDonut
-            v-else-if="chart.component === 'SessionAnalyticsDonut'"
-            :data="chart.data"
-            :loading="chart.loading"
-          />
-
-          <!-- Expenses Radial Chart -->
-          <ExpensesRadialChart
-            v-else-if="chart.component === 'ExpensesRadialChart'"
-            :data="chart.data"
-            :loading="chart.loading"
-          />
-        </VCol>
-      </template>
-
-      <!-- Legacy Charts (fallback) -->
-      <template v-else>
-        <VCol
-          v-for="(chart, index) in legacyChartConfigs"
-          :key="`legacy-${index}`"
-          v-bind="chart.cols"
-        >
-          <DashboardChart
-            :type="chart.type"
-            :data="chart.data"
-            :title="chart.title"
-            :loading="dashboardStore.loading.charts"
-            :error="dashboardStore.error || undefined"
-            :height="350"
-          />
-        </VCol>
-      </template>
+            <!-- Chart explanation for beginners -->
+            <VAlert
+              v-if="!chart.data || (chart.data.series?.length === 0 && chart.data.items?.length === 0)"
+              type="info"
+              variant="tonal"
+              class="mt-3"
+            >
+              <template #prepend>
+                <VIcon icon="tabler-lightbulb" />
+              </template>
+              {{ t('dashboard.charts.explanation') }}
+            </VAlert>
+          </VCardText>
+        </VCard>
+      </VCol>
     </VRow>
 
-    <!-- Recent Data Tables -->
+    <!-- Tables Section - 2 tables as specified -->
     <VRow>
       <VCol cols="12" md="6">
         <VCard>
           <VCardTitle class="d-flex align-center justify-space-between">
-            <span>{{ t('admin_dashboard_recent_payments') }}</span>
+            <span>{{ t('dashboard.admin.tables.recent_payments') }}</span>
             <VBtn
               variant="text"
               size="small"
@@ -601,24 +449,24 @@ watch(autoRefresh, setupAutoRefresh)
             <VDataTable
               :items="dashboardStore.recentPayments"
               :headers="[
-                { title: t('admin_dashboard_table_affiliate'), key: 'affiliate' },
-                { title: t('admin_dashboard_table_amount'), key: 'amount' },
-                { title: t('admin_dashboard_table_status'), key: 'status' },
-                { title: t('admin_dashboard_table_date'), key: 'date' },
+                { title: t('dashboard.admin.tables.columns.affiliate'), key: 'affiliate' },
+                { title: t('dashboard.admin.tables.columns.amount'), key: 'amount' },
+                { title: t('dashboard.admin.tables.columns.status'), key: 'status' },
+                { title: t('dashboard.admin.tables.columns.date'), key: 'date' },
               ]"
               :loading="dashboardStore.loading.tables"
               density="compact"
               hide-default-footer
             >
-              <template #item.joinedAt="{ item }">
-                {{ new Date(item.joinedAt).toLocaleDateString() }}
+              <template #item.amount="{ item }">
+                {{ item.amount.toLocaleString() }} DH
               </template>
-              <template #item.totalCommissions="{ item }">
-                ${{ item.totalCommissions.toLocaleString() }}
+              <template #item.date="{ item }">
+                {{ new Date(item.date).toLocaleDateString() }}
               </template>
               <template #item.status="{ item }">
                 <VChip
-                  :color="item.status === 'actif' ? 'success' : 'warning'"
+                  :color="item.status === 'paid' ? 'success' : item.status === 'pending' ? 'warning' : 'error'"
                   size="small"
                   variant="tonal"
                 >
@@ -633,7 +481,7 @@ watch(autoRefresh, setupAutoRefresh)
       <VCol cols="12" md="6">
         <VCard>
           <VCardTitle class="d-flex align-center justify-space-between">
-            <span>{{ t('admin_dashboard_monthly_paid_commissions') }}</span>
+            <span>{{ t('dashboard.admin.tables.monthly_paid_commissions') }}</span>
             <VBtn
               variant="text"
               size="small"
@@ -646,9 +494,9 @@ watch(autoRefresh, setupAutoRefresh)
             <VDataTable
               :items="dashboardStore.monthlyPaidCommissions"
               :headers="[
-                { title: t('admin_dashboard_table_affiliate'), key: 'affiliate' },
-                { title: t('admin_dashboard_table_amount'), key: 'amount' },
-                { title: t('admin_dashboard_table_date'), key: 'date' },
+                { title: t('dashboard.admin.tables.columns.affiliate'), key: 'affiliate' },
+                { title: t('dashboard.admin.tables.columns.amount'), key: 'amount' },
+                { title: t('dashboard.admin.tables.columns.date'), key: 'date' },
               ]"
               :loading="dashboardStore.loading.tables"
               density="compact"
@@ -657,17 +505,8 @@ watch(autoRefresh, setupAutoRefresh)
               <template #item.amount="{ item }">
                 {{ item.amount.toLocaleString() }} DH
               </template>
-              <template #item.requestedAt="{ item }">
-                {{ new Date(item.requestedAt).toLocaleDateString() }}
-              </template>
-              <template #item.status="{ item }">
-                <VChip
-                  :color="item.status === 'pending' ? 'warning' : item.status === 'paid' ? 'success' : 'error'"
-                  size="small"
-                  variant="tonal"
-                >
-                  {{ item.status }}
-                </VChip>
+              <template #item.date="{ item }">
+                {{ new Date(item.date).toLocaleDateString() }}
               </template>
             </VDataTable>
           </VCardText>

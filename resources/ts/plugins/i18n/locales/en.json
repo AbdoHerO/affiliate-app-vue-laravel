@@ -3181,5 +3181,31 @@
   "dashboard.affiliate.tables.columns.date": "Date",
   "dashboard.affiliate.tables.columns.name": "Name",
   "dashboard.affiliate.tables.columns.email": "Email",
-  "dashboard.affiliate.tables.columns.signup_date": "Signup Date"
+  "dashboard.affiliate.tables.columns.signup_date": "Signup Date",
+
+  "dashboard.admin.charts.orders_by_period.description": "Monthly evolution of orders over the last 12 months",
+  "dashboard.admin.charts.monthly_revenue.description": "Monthly revenue evolution over the last 12 months",
+  "dashboard.admin.charts.top_affiliates.title": "Top 5 Affiliates",
+  "dashboard.admin.charts.top_affiliates.description": "Ranking of top 5 affiliates by commissions generated",
+  "dashboard.admin.charts.top_products.title": "Top 5 Products",
+  "dashboard.admin.charts.top_products.description": "Ranking of top 5 best-selling products",
+
+  "dashboard.filters.period.month": "Month",
+  "dashboard.filters.period.quarter": "Quarter",
+  "dashboard.filters.period.year": "Year",
+
+  "dashboard.export.success": "Data exported successfully",
+  "dashboard.export.error": "Error exporting data",
+  "dashboard.charts.load_error": "Error loading chart",
+  "dashboard.charts.no_data": "No data available",
+  "dashboard.charts.explanation": "Click on elements for more details",
+  "dashboard.charts.refresh_success": "Charts refreshed successfully",
+  "dashboard.charts.refresh_error": "Error refreshing charts",
+
+  "dashboard.admin.title": "Admin Dashboard",
+  "dashboard.admin.welcome": "Welcome {name}",
+  "dashboard.admin.refresh": "Refresh",
+  "dashboard.admin.export": "Export",
+  "dashboard.admin.period_filter": "Filter by period",
+  "dashboard.admin.charts.title": "Charts and Analytics"
 }
