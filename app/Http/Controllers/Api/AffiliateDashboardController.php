@@ -4,13 +4,12 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use App\Models\ProfilAffilie;
 use App\Models\Commande;
 use App\Models\CommissionAffilie;
 use App\Models\Withdrawal;
 use App\Models\ReferralAttribution;
-use App\Models\ReferralClick;
 use App\Models\ReferralCode;
+use App\Models\Ticket;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
@@ -34,20 +33,13 @@ class AffiliateDashboardController extends Controller
         $filters = $this->parseFilters($request);
         $cacheKey = 'affiliate_dashboard_stats_' . $user->id . '_' . md5(serialize($filters));
 
-        $stats = Cache::remember($cacheKey, 300, function () use ($user, $filters) {
-            return [
-                'overview' => $this->getOverviewStats($user, $filters),
-                'performance' => $this->getPerformanceStats($user, $filters),
-                'referrals' => $this->getReferralStats($user, $filters),
-                'commissions' => $this->getCommissionStats($user, $filters),
-                'orders' => $this->getOrderStats($user, $filters),
-                'points' => $this->getPointsStats($user, $filters),
-            ];
+        $cards = Cache::remember($cacheKey, 300, function () use ($user, $filters) {
+            return $this->getKpiCards($user, $filters);
         });
 
         return response()->json([
             'success' => true,
-            'data' => $stats,
+            'data' => ['cards' => $cards],
         ]);
     }
 
@@ -65,13 +57,17 @@ class AffiliateDashboardController extends Controller
         $filters = $this->parseFilters($request);
         $period = $request->get('period', 'month'); // day, week, month, year
 
-        $chartData = [
-            'signups_over_time' => $this->getMySignupsChartData($user, $period, $filters),
-            'commissions_over_time' => $this->getMyCommissionsChartData($user, $period, $filters),
-            'points_over_time' => $this->getMyPointsChartData($user, $period, $filters),
-            'top_products' => $this->getMyTopProductsChart($user, $filters),
-            'referral_performance' => $this->getReferralPerformanceChart($user, $filters),
-        ];
+        $chartType = $request->get('type');
+        $cacheKey = 'affiliate_dashboard_chart_' . $chartType . '_' . $user->id . '_' . md5(serialize($filters));
+
+        $chartData = Cache::remember($cacheKey, 300, function () use ($chartType, $user, $filters) {
+            switch ($chartType) {
+                case 'top_products_sold':
+                    return $this->getMyTopProductsChart($user, $filters);
+                default:
+                    return ['error' => 'Invalid chart type'];
+            }
+        });
 
         return response()->json([
             'success' => true,
@@ -94,17 +90,14 @@ class AffiliateDashboardController extends Controller
         $filters = $this->parseFilters($request);
 
         switch ($type) {
-            case 'my_leads':
-                $data = $this->getMyLeads($user, $filters);
+            case 'my_recent_orders':
+                $data = $this->getMyRecentOrders($user, $filters);
                 break;
-            case 'my_orders':
-                $data = $this->getMyOrders($user, $filters);
+            case 'my_recent_payments':
+                $data = $this->getMyRecentPayments($user, $filters);
                 break;
-            case 'my_commissions':
-                $data = $this->getMyCommissions($user, $filters);
-                break;
-            case 'referral_clicks':
-                $data = $this->getReferralClicks($user, $filters);
+            case 'my_active_referrals':
+                $data = $this->getMyActiveReferrals($user, $filters);
                 break;
             default:
                 return response()->json(['message' => 'Invalid table type'], Response::HTTP_BAD_REQUEST);
@@ -185,52 +178,50 @@ class AffiliateDashboardController extends Controller
     }
 
     /**
-     * Get overview statistics for affiliate
+     * Get KPI cards data for affiliate (5 indicators) - Unified response format
      */
-    private function getOverviewStats(User $user, array $filters): array
+    private function getKpiCards(User $user, array $filters): array
     {
-        $affiliateProfile = $user->profilAffilie;
-        $currentPoints = $affiliateProfile ? $affiliateProfile->points : 0;
-
-        // Total commissions
-        $totalCommissions = CommissionAffilie::where('user_id', $user->id)->sum('amount') ?? 0;
-        
-        // This month commissions
         $thisMonth = Carbon::now()->startOfMonth();
-        $totalCommissionsMTD = CommissionAffilie::where('user_id', $user->id)
-            ->where('created_at', '>=', $thisMonth)
+
+        $receivedPayments = Withdrawal::where('user_id', $user->id)
+            ->where('status', 'paid')
+            ->sum('amount') ?? 0;
+        $pendingPayments = Withdrawal::where('user_id', $user->id)
+            ->where('status', 'pending')
             ->sum('amount') ?? 0;
 
-        // Verified signups (referrals)
-        $verifiedSignups = ReferralAttribution::where('referrer_affiliate_id', $affiliateProfile?->id)
-            ->where('verified', true)
-            ->count();
-
-        // Total orders
-        $totalOrders = Commande::where('user_id', $user->id)->count();
-
-        // Conversion rates
-        $referralCode = $affiliateProfile?->referralCode;
-        $totalClicks = $referralCode ? ReferralClick::where('referral_code', $referralCode->code)->count() : 0;
-        $totalSignups = ReferralAttribution::where('referrer_affiliate_id', $affiliateProfile?->id)->count();
-        
-        $conversionRate = $totalClicks > 0 ? ($totalSignups / $totalClicks) * 100 : 0;
-        $clickThroughRate = $totalClicks > 0 ? ($verifiedSignups / $totalClicks) * 100 : 0;
-
-        // Average order value
-        $averageOrderValue = Commande::where('user_id', $user->id)->avg('total_ttc') ?? 0;
-
         return [
-            'currentPoints' => $currentPoints,
-            'totalCommissions' => $totalCommissions,
-            'totalCommissionsMTD' => $totalCommissionsMTD,
-            'verifiedSignups' => $verifiedSignups,
-            'totalOrders' => $totalOrders,
-            'conversionRate' => round($conversionRate, 2),
-            'clickThroughRate' => round($clickThroughRate, 2),
-            'averageOrderValue' => round($averageOrderValue, 2),
-            'rank' => $this->getAffiliateRank($user),
-            'tier' => $affiliateProfile?->gamme?->nom ?? 'Standard',
+            [
+                'key' => 'total_orders',
+                'labelKey' => 'dashboard.affiliate.cards.total_orders',
+                'value' => Commande::where('user_id', $user->id)->count()
+            ],
+            [
+                'key' => 'total_commissions',
+                'labelKey' => 'dashboard.affiliate.cards.total_commissions',
+                'value' => (float) (CommissionAffilie::where('user_id', $user->id)->sum('amount') ?? 0)
+            ],
+            [
+                'key' => 'monthly_earnings',
+                'labelKey' => 'dashboard.affiliate.cards.monthly_earnings',
+                'value' => (float) (CommissionAffilie::where('user_id', $user->id)
+                    ->where('created_at', '>=', $thisMonth)
+                    ->sum('amount') ?? 0)
+            ],
+            [
+                'key' => 'payments_status',
+                'labelKey' => 'dashboard.affiliate.cards.payments_status',
+                'value' => [
+                    'received' => (float) $receivedPayments,
+                    'pending' => (float) $pendingPayments
+                ]
+            ],
+            [
+                'key' => 'pending_tickets',
+                'labelKey' => 'dashboard.affiliate.cards.pending_tickets',
+                'value' => Ticket::where('requester_id', $user->id)->where('status', 'open')->count()
+            ]
         ];
     }
 
@@ -658,6 +649,9 @@ class AffiliateDashboardController extends Controller
         ];
     }
 
+    /**
+     * Get my top products chart (pie/doughnut)
+     */
     private function getMyTopProductsChart(User $user, array $filters): array
     {
         $topProducts = DB::table('commandes')
@@ -675,16 +669,13 @@ class AffiliateDashboardController extends Controller
             ->get();
 
         return [
-            'labels' => $topProducts->pluck('name')->toArray(),
-            'datasets' => [
-                [
-                    'label' => 'Commissions',
-                    'data' => $topProducts->pluck('commissions')->map(fn($val) => (float) ($val ?? 0))->toArray(),
-                    'backgroundColor' => [
-                        '#7367F0', '#28C76F', '#FF9F43', '#EA5455', '#00CFE8',
-                    ],
-                ],
-            ],
+            'items' => $topProducts->map(function ($product) {
+                return [
+                    'label' => $product->name,
+                    'labelKey' => null,
+                    'value' => (float) ($product->commissions ?? 0)
+                ];
+            })->toArray()
         ];
     }
 
@@ -712,87 +703,110 @@ class AffiliateDashboardController extends Controller
     }
 
     /**
-     * Table data methods
+     * Get my recent orders table data
      */
-    private function getMyLeads(User $user, array $filters): array
+    private function getMyRecentOrders(User $user, array $filters): array
     {
+        $perPage = $filters['per_page'] ?? 15;
+        $page = $filters['page'] ?? 1;
+
+        $query = Commande::where('user_id', $user->id)
+            ->with(['client:id,nom_complet', 'articles.produit:id,titre'])
+            ->orderBy('created_at', 'desc');
+
+        $total = $query->count();
+        $orders = $query->skip(($page - 1) * $perPage)
+            ->take($perPage)
+            ->get()
+            ->map(function ($order) {
+                $productTitle = $order->articles->first()?->produit?->titre ?? 'Unknown Product';
+
+                return [
+                    'product' => $productTitle,
+                    'amount' => (float) $order->total_ttc,
+                    'status' => $order->statut,
+                    'date' => $order->created_at->toISOString(),
+                ];
+            });
+
+        return [
+            'rows' => $orders->toArray(),
+            'pagination' => [
+                'page' => $page,
+                'perPage' => $perPage,
+                'total' => $total
+            ]
+        ];
+    }
+
+    /**
+     * Get my recent payments table data
+     */
+    private function getMyRecentPayments(User $user, array $filters): array
+    {
+        $perPage = $filters['per_page'] ?? 15;
+        $page = $filters['page'] ?? 1;
+
+        $query = Withdrawal::where('user_id', $user->id)
+            ->orderBy('created_at', 'desc');
+
+        $total = $query->count();
+        $payments = $query->skip(($page - 1) * $perPage)
+            ->take($perPage)
+            ->get()
+            ->map(function ($payment) {
+                return [
+                    'amount' => (float) $payment->amount,
+                    'status' => $payment->status,
+                    'date' => $payment->created_at->toISOString(),
+                ];
+            });
+
+        return [
+            'rows' => $payments->toArray(),
+            'pagination' => [
+                'page' => $page,
+                'perPage' => $perPage,
+                'total' => $total
+            ]
+        ];
+    }
+
+    /**
+     * Get my active referrals table data
+     */
+    private function getMyActiveReferrals(User $user, array $filters): array
+    {
+        $perPage = $filters['per_page'] ?? 15;
+        $page = $filters['page'] ?? 1;
         $affiliateProfile = $user->profilAffilie;
 
-        $leads = ReferralAttribution::where('referrer_affiliate_id', $affiliateProfile?->id)
+        $query = ReferralAttribution::where('referrer_affiliate_id', $affiliateProfile?->id)
             ->with('newUser:id,nom_complet,email,created_at')
-            ->orderBy('created_at', 'desc')
-            ->limit($filters['per_page'])
+            ->orderBy('created_at', 'desc');
+
+        $total = $query->count();
+        $referrals = $query->skip(($page - 1) * $perPage)
+            ->take($perPage)
             ->get()
             ->map(function ($attribution) {
                 $newUser = $attribution->newUser;
                 return [
-                    'id' => $attribution->id,
                     'name' => $newUser->nom_complet ?? 'Unknown',
                     'email' => $newUser->email ?? 'Unknown',
-                    'signupDate' => $attribution->created_at,
+                    'signup_date' => $attribution->created_at->toISOString(),
                     'status' => $attribution->verified ? 'verified' : 'pending',
-                    'source' => $attribution->source ?? 'direct',
-                    'orders' => 0, // Would need to count orders from this user
-                    'totalSpent' => 0, // Would need to sum order totals
-                    'commissionEarned' => 0, // Would need to sum commissions from this referral
                 ];
-            })
-            ->toArray();
+            });
 
-        return $leads; // now an array
-    }
-
-    private function getMyOrders(User $user, array $filters): array
-    {
-        $orders = Commande::where('user_id', $user->id)
-            // Use primary 'articles' relationship (alias 'commandeArticles' may not be loaded in some cached contexts)
-            ->with(['client:id,nom_complet', 'articles.produit:id,titre'])
-            ->orderBy('created_at', 'desc')
-            ->limit($filters['per_page'])
-            ->get()
-            ->map(function ($order) {
-                $commission = CommissionAffilie::where('commande_id', $order->id)->first();
-                $productTitle = $order->articles->first()?->produit?->titre ?? 'Unknown Product';
-
-                return [
-                    'id' => $order->id,
-                    'productTitle' => $productTitle,
-                    'customerName' => $order->client?->nom_complet ?? 'Unknown Customer',
-                    'orderDate' => $order->created_at,
-                    'status' => $order->statut,
-                    'amount' => (float) $order->total_ttc,
-                    'commission' => (float) ($commission?->amount ?? 0),
-                    'commissionStatus' => $commission?->status ?? 'pending',
-                ];
-            })
-            ->toArray();
-
-        return $orders; // now an array
-    }
-
-    private function getMyCommissions(User $user, array $filters): array
-    {
-        $commissions = CommissionAffilie::where('user_id', $user->id)
-            ->with(['commande:id,total_ttc', 'commandeArticle.produit:id,titre'])
-            ->orderBy('created_at', 'desc')
-            ->limit($filters['per_page'])
-            ->get()
-            ->map(function ($commission) {
-                return [
-                    'id' => $commission->id,
-                    'orderId' => $commission->commande_id,
-                    'productTitle' => $commission->commandeArticle?->produit?->titre ?? 'Unknown Product',
-                    'amount' => (float) $commission->amount,
-                    'rate' => (float) ($commission->rate ?? 0),
-                    'status' => $commission->status,
-                    'earnedDate' => $commission->created_at,
-                    'paidDate' => $commission->paid_at,
-                    'withdrawalId' => $commission->paid_withdrawal_id,
-                ];
-            })
-            ->toArray();
-
-        return $commissions; // now an array
+        return [
+            'rows' => $referrals->toArray(),
+            'pagination' => [
+                'page' => $page,
+                'perPage' => $perPage,
+                'total' => $total
+            ]
+        ];
     }
 
     private function getReferralClicks(User $user, array $filters): array

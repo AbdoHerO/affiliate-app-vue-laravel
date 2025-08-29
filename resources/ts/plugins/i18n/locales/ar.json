@@ -3141,6 +3141,42 @@
   "status_source_admin": "المدير",
   "status_source_affiliate": "الشريك",
   "status_source_ozon_express": "أوزون إكسبريس",
-  "status_source_system": "النظام"
+  "status_source_system": "النظام",
+
+  "dashboard.admin.cards.active_affiliates": "الشركاء النشطون",
+  "dashboard.admin.cards.total_orders": "إجمالي الطلبات",
+  "dashboard.admin.cards.total_revenue": "إجمالي الإيرادات",
+  "dashboard.admin.cards.total_commissions": "إجمالي العمولات",
+  "dashboard.admin.cards.pending_payments": "المدفوعات المعلقة",
+  "dashboard.admin.cards.pending_tickets": "التذاكر المعلقة",
+
+  "dashboard.admin.charts.orders_by_period.series.orders": "الطلبات",
+  "dashboard.admin.charts.monthly_revenue.series.revenue": "الإيرادات",
+
+  "dashboard.admin.tables.recent_payments": "المدفوعات الأخيرة",
+  "dashboard.admin.tables.monthly_paid_commissions": "العمولات المدفوعة هذا الشهر",
+  "dashboard.admin.tables.columns.affiliate": "الشريك",
+  "dashboard.admin.tables.columns.amount": "المبلغ",
+  "dashboard.admin.tables.columns.status": "الحالة",
+  "dashboard.admin.tables.columns.date": "التاريخ",
+
+  "dashboard.affiliate.cards.total_orders": "إجمالي طلباتي",
+  "dashboard.affiliate.cards.total_commissions": "إجمالي عمولاتي",
+  "dashboard.affiliate.cards.monthly_earnings": "أرباح الشهر",
+  "dashboard.affiliate.cards.payments_status": "المدفوعات المستلمة / المعلقة",
+  "dashboard.affiliate.cards.pending_tickets": "التذاكر المعلقة",
+
+  "dashboard.affiliate.charts.top_products_sold": "أكثر المنتجات مبيعاً من خلالي",
+
+  "dashboard.affiliate.tables.my_recent_orders": "طلباتي الأخيرة",
+  "dashboard.affiliate.tables.my_recent_payments": "مدفوعاتي الأخيرة",
+  "dashboard.affiliate.tables.my_active_referrals": "إحالاتي النشطة",
+  "dashboard.affiliate.tables.columns.product": "المنتج",
+  "dashboard.affiliate.tables.columns.amount": "المبلغ",
+  "dashboard.affiliate.tables.columns.status": "الحالة",
+  "dashboard.affiliate.tables.columns.date": "التاريخ",
+  "dashboard.affiliate.tables.columns.name": "الاسم",
+  "dashboard.affiliate.tables.columns.email": "البريد الإلكتروني",
+  "dashboard.affiliate.tables.columns.signup_date": "تاريخ التسجيل"
 }
 

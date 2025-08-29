@@ -115,6 +115,14 @@ class CommissionAffilie extends Model
     }
 
     /**
+     * Get the user for this commission (alias for affiliate).
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    /**
      * Get the affiliate profile for this commission (legacy).
      * @deprecated Use affiliate() instead
      */

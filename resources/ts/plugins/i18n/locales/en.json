@@ -3145,5 +3145,41 @@
   "status_source_admin": "Administrator",
   "status_source_affiliate": "Affiliate",
   "status_source_ozon_express": "OzonExpress",
-  "status_source_system": "System"
+  "status_source_system": "System",
+
+  "dashboard.admin.cards.active_affiliates": "Active Affiliates",
+  "dashboard.admin.cards.total_orders": "Total Orders",
+  "dashboard.admin.cards.total_revenue": "Total Revenue",
+  "dashboard.admin.cards.total_commissions": "Total Commissions",
+  "dashboard.admin.cards.pending_payments": "Pending Payments",
+  "dashboard.admin.cards.pending_tickets": "Pending Tickets",
+
+  "dashboard.admin.charts.orders_by_period.series.orders": "Orders",
+  "dashboard.admin.charts.monthly_revenue.series.revenue": "Revenue",
+
+  "dashboard.admin.tables.recent_payments": "Recent Payments",
+  "dashboard.admin.tables.monthly_paid_commissions": "Monthly Paid Commissions",
+  "dashboard.admin.tables.columns.affiliate": "Affiliate",
+  "dashboard.admin.tables.columns.amount": "Amount",
+  "dashboard.admin.tables.columns.status": "Status",
+  "dashboard.admin.tables.columns.date": "Date",
+
+  "dashboard.affiliate.cards.total_orders": "My Total Orders",
+  "dashboard.affiliate.cards.total_commissions": "My Total Commissions",
+  "dashboard.affiliate.cards.monthly_earnings": "Monthly Earnings",
+  "dashboard.affiliate.cards.payments_status": "Received / Pending Payments",
+  "dashboard.affiliate.cards.pending_tickets": "Pending Tickets",
+
+  "dashboard.affiliate.charts.top_products_sold": "Top Products Sold by Me",
+
+  "dashboard.affiliate.tables.my_recent_orders": "My Recent Orders",
+  "dashboard.affiliate.tables.my_recent_payments": "My Recent Payments",
+  "dashboard.affiliate.tables.my_active_referrals": "My Active Referrals",
+  "dashboard.affiliate.tables.columns.product": "Product",
+  "dashboard.affiliate.tables.columns.amount": "Amount",
+  "dashboard.affiliate.tables.columns.status": "Status",
+  "dashboard.affiliate.tables.columns.date": "Date",
+  "dashboard.affiliate.tables.columns.name": "Name",
+  "dashboard.affiliate.tables.columns.email": "Email",
+  "dashboard.affiliate.tables.columns.signup_date": "Signup Date"
 }

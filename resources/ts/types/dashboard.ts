@@ -14,16 +14,43 @@ export interface FilterOptions {
   perPage?: number
 }
 
+// Unified Dashboard Response Types
+export interface DashboardCard {
+  key: string
+  labelKey: string
+  value: number | object
+}
+
+export interface DashboardChartSeries {
+  nameKey: string
+  data: number[]
+  categories: string[]
+  period: string
+}
+
+export interface DashboardChartData {
+  series?: DashboardChartSeries[]
+  items?: DashboardChartItem[]
+}
+
+export interface DashboardChartItem {
+  label: string
+  labelKey: string | null
+  value: number
+}
+
+export interface DashboardTableData {
+  rows: any[]
+  pagination: {
+    page: number
+    perPage: number
+    total: number
+  }
+}
+
 // Admin Dashboard Types
 export interface AdminDashboardStats {
-  overview: OverviewStats
-  affiliates: AffiliateStats
-  orders: OrderStats
-  revenue: RevenueStats
-  commissions: CommissionStats
-  payouts: PayoutStats
-  points: PointsStats
-  tickets: TicketStats
+  cards: DashboardCard[]
 }
 
 export interface OverviewStats {
@@ -229,24 +256,59 @@ export interface RecentTicket {
   lastActivity: string
 }
 
-export interface RecentActivity {
+// Admin Table Types
+export interface RecentPayment {
   id: string
-  type: 'signup' | 'order' | 'commission' | 'payout' | 'ticket'
-  description: string
-  affiliateName?: string
-  amount?: number
-  timestamp: string
-  metadata?: Record<string, any>
+  affiliate: string
+  amount: number
+  status: string
+  date: string
+}
+
+export interface MonthlyPaidCommission {
+  id: string
+  affiliate: string
+  amount: number
+  date: string
+}
+
+// Affiliate Table Types
+export interface MyRecentOrder {
+  id: string
+  product: string
+  amount: number
+  status: string
+  date: string
+}
+
+export interface MyRecentPayment {
+  id: string
+  amount: number
+  status: string
+  date: string
+}
+
+export interface MyActiveReferral {
+  id: string
+  name: string
+  email: string
+  signup_date: string
+  status: string
+}
+
+// Admin KPI Cards
+export interface AdminKpiCards {
+  active_affiliates: number
+  total_orders: number
+  total_revenue: number
+  total_commissions: number
+  pending_payments: number
+  pending_tickets: number
 }
 
 // Affiliate Dashboard Types
 export interface AffiliateDashboardStats {
-  overview: AffiliateOverviewStats
-  performance: AffiliatePerformanceStats
-  referrals: AffiliateReferralStats
-  commissions: AffiliateCommissionStats
-  orders: AffiliateOrderStats
-  points: AffiliatePointsStats
+  cards: DashboardCard[]
 }
 
 export interface AffiliateOverviewStats {

@@ -24,7 +24,7 @@ use Carbon\Carbon;
 class AdminDashboardController extends Controller
 {
     /**
-     * Get comprehensive admin dashboard statistics
+     * Get admin dashboard KPI cards
      */
     public function getStats(Request $request)
     {
@@ -33,29 +33,16 @@ class AdminDashboardController extends Controller
             return response()->json(['message' => 'Access denied'], Response::HTTP_FORBIDDEN);
         }
 
-
-
         $filters = $this->parseFilters($request);
-        $cacheKey = 'admin_dashboard_stats_' . md5(serialize($filters));
+        $cacheKey = 'admin_dashboard_cards_' . md5(serialize($filters));
 
-        $stats = Cache::remember($cacheKey, 300, function () use ($filters) {
-            return [
-                'overview' => $this->getOverviewStats($filters),
-                'affiliates' => $this->getAffiliateStats($filters),
-                'orders' => $this->getOrderStats($filters),
-                'revenue' => $this->getRevenueStats($filters),
-                'commissions' => $this->getCommissionStats($filters),
-                'payouts' => $this->getPayoutStats($filters),
-                'points' => $this->getPointsStats($filters),
-                'tickets' => $this->getTicketStats($filters),
-            ];
+        $cards = Cache::remember($cacheKey, 300, function () use ($filters) {
+            return $this->getKpiCards($filters);
         });
-
-
 
         return response()->json([
             'success' => true,
-            'data' => $stats,
+            'data' => ['cards' => $cards],
         ]);
     }
 
@@ -68,18 +55,24 @@ class AdminDashboardController extends Controller
             return response()->json(['message' => 'Access denied'], Response::HTTP_FORBIDDEN);
         }
 
+        $chartType = $request->get('type');
         $filters = $this->parseFilters($request);
-        $period = $request->get('period', 'month'); // day, week, month, year
+        $cacheKey = 'admin_dashboard_chart_' . $chartType . '_' . md5(serialize($filters));
 
-        $chartData = [
-            'signups_over_time' => $this->getSignupsChartData($period, $filters),
-            'revenue_over_time' => $this->getRevenueChartData($period, $filters),
-            'commissions_over_time' => $this->getCommissionsChartData($period, $filters),
-            'top_affiliates_commissions' => $this->getTopAffiliatesChart($filters),
-            'top_affiliates_signups' => $this->getTopAffiliatesSignupsChart($filters),
-            'orders_by_status' => $this->getOrdersByStatusChart($filters),
-            'conversion_funnel' => $this->getConversionFunnelData($filters),
-        ];
+        $chartData = Cache::remember($cacheKey, 300, function () use ($chartType, $filters) {
+            switch ($chartType) {
+                case 'orders_by_period':
+                    return $this->getOrdersByPeriodChart($filters);
+                case 'monthly_revenue':
+                    return $this->getMonthlyRevenueChart($filters);
+                case 'top_affiliates':
+                    return $this->getTopAffiliatesChart($filters);
+                case 'top_products':
+                    return $this->getTopProductsChart($filters);
+                default:
+                    return ['error' => 'Invalid chart type'];
+            }
+        });
 
         return response()->json([
             'success' => true,
@@ -100,17 +93,11 @@ class AdminDashboardController extends Controller
         $filters = $this->parseFilters($request);
 
         switch ($type) {
-            case 'recent_affiliates':
-                $data = $this->getRecentAffiliates($filters);
+            case 'recent_payments':
+                $data = $this->getRecentPayments($filters);
                 break;
-            case 'recent_payouts':
-                $data = $this->getRecentPayouts($filters);
-                break;
-            case 'recent_tickets':
-                $data = $this->getRecentTickets($filters);
-                break;
-            case 'recent_activities':
-                $data = $this->getRecentActivities($filters);
+            case 'monthly_paid_commissions':
+                $data = $this->getMonthlyPaidCommissions($filters);
                 break;
             default:
                 return response()->json(['message' => 'Invalid table type'], Response::HTTP_BAD_REQUEST);
@@ -161,58 +148,41 @@ class AdminDashboardController extends Controller
     }
 
     /**
-     * Get overview statistics
+     * Get KPI cards data (6 indicators) - Unified response format
      */
-    private function getOverviewStats(array $filters): array
+    private function getKpiCards(array $filters): array
     {
-        $now = Carbon::now();
-        $thisMonth = $now->startOfMonth();
-        $last24h = $now->subDay();
-        $last7d = $now->subDays(7);
-
-        // Total affiliates
-        $totalAffiliates = User::role('affiliate')->count();
-
-        // Signups (new affiliate registrations)
-        $totalSignups = User::role('affiliate')->count();
-        $signupsLast24h = User::role('affiliate')
-            ->where('created_at', '>=', $last24h)
-            ->count();
-        $signupsLast7d = User::role('affiliate')
-            ->where('created_at', '>=', $last7d)
-            ->count();
-        $signupsMTD = User::role('affiliate')
-            ->where('created_at', '>=', $thisMonth)
-            ->count();
-
-        // Verified signups
-        $verifiedSignups = User::role('affiliate')
-            ->where('email_verifie', true)
-            ->count();
-        $verificationRate = $totalSignups > 0 ? ($verifiedSignups / $totalSignups) * 100 : 0;
-
-        // Orders and revenue
-        $totalOrders = Commande::count();
-        $totalRevenue = Commande::sum('total_ttc') ?? 0;
-
-        // Commissions
-        $totalCommissions = CommissionAffilie::sum('amount') ?? 0;
-
-        // Pending payouts
-        $pendingPayouts = Withdrawal::where('status', 'pending')->sum('amount') ?? 0;
-
         return [
-            'totalAffiliates' => $totalAffiliates,
-            'totalSignups' => $totalSignups,
-            'signupsLast24h' => $signupsLast24h,
-            'signupsLast7d' => $signupsLast7d,
-            'signupsMTD' => $signupsMTD,
-            'verifiedSignups' => $verifiedSignups,
-            'verificationRate' => round($verificationRate, 2),
-            'totalOrders' => $totalOrders,
-            'totalRevenue' => $totalRevenue,
-            'totalCommissions' => $totalCommissions,
-            'pendingPayouts' => $pendingPayouts,
+            [
+                'key' => 'active_affiliates',
+                'labelKey' => 'dashboard.admin.cards.active_affiliates',
+                'value' => User::role('affiliate')->where('statut', 'actif')->count()
+            ],
+            [
+                'key' => 'total_orders',
+                'labelKey' => 'dashboard.admin.cards.total_orders',
+                'value' => Commande::count()
+            ],
+            [
+                'key' => 'total_revenue',
+                'labelKey' => 'dashboard.admin.cards.total_revenue',
+                'value' => (float) (Commande::sum('total_ttc') ?? 0)
+            ],
+            [
+                'key' => 'total_commissions',
+                'labelKey' => 'dashboard.admin.cards.total_commissions',
+                'value' => (float) (CommissionAffilie::sum('amount') ?? 0)
+            ],
+            [
+                'key' => 'pending_payments',
+                'labelKey' => 'dashboard.admin.cards.pending_payments',
+                'value' => (float) (Withdrawal::where('status', 'pending')->sum('amount') ?? 0)
+            ],
+            [
+                'key' => 'pending_tickets',
+                'labelKey' => 'dashboard.admin.cards.pending_tickets',
+                'value' => Ticket::where('status', 'open')->count()
+            ]
         ];
     }
 
@@ -509,95 +479,62 @@ class AdminDashboardController extends Controller
     }
 
     /**
-     * Get signups chart data
+     * Get orders by period chart data (monthly bars)
      */
-    private function getSignupsChartData(string $period, array $filters): array
+    private function getOrdersByPeriodChart(array $filters): array
     {
-        $dateFormat = $this->getDateFormat($period);
-        $dateRange = $this->getDateRange($period);
+        // Get last 12 months of data
+        $months = collect();
+        for ($i = 11; $i >= 0; $i--) {
+            $months->push(Carbon::now()->subMonths($i)->format('Y-m'));
+        }
 
-        $signupsData = User::role('affiliate')
-            ->whereBetween('created_at', $dateRange)
-            ->selectRaw("DATE_FORMAT(created_at, '{$dateFormat}') as date, COUNT(*) as count")
-            ->groupBy('date')
-            ->orderBy('date')
-            ->pluck('count', 'date')
+        $ordersData = Commande::selectRaw("DATE_FORMAT(created_at, '%Y-%m') as month, COUNT(*) as count")
+            ->whereRaw("DATE_FORMAT(created_at, '%Y-%m') IN ('" . $months->implode("','") . "')")
+            ->groupBy('month')
+            ->orderBy('month')
+            ->pluck('count', 'month')
             ->toArray();
-
-        $verifiedSignupsData = User::role('affiliate')
-            ->where('email_verifie', true)
-            ->whereBetween('created_at', $dateRange)
-            ->selectRaw("DATE_FORMAT(created_at, '{$dateFormat}') as date, COUNT(*) as count")
-            ->groupBy('date')
-            ->orderBy('date')
-            ->pluck('count', 'date')
-            ->toArray();
-
-        $labels = $this->generateDateLabels($period, $dateRange);
 
         return [
-            'labels' => $labels,
-            'datasets' => [
+            'series' => [
                 [
-                    'label' => 'Total Signups',
-                    'data' => array_map(fn($label) => $signupsData[$label] ?? 0, $labels),
-                    'borderColor' => '#7367F0',
-                    'backgroundColor' => 'rgba(115, 103, 240, 0.1)',
-                    'fill' => true,
-                ],
-                [
-                    'label' => 'Verified Signups',
-                    'data' => array_map(fn($label) => $verifiedSignupsData[$label] ?? 0, $labels),
-                    'borderColor' => '#28C76F',
-                    'backgroundColor' => 'rgba(40, 199, 111, 0.1)',
-                    'fill' => true,
-                ],
-            ],
+                    'nameKey' => 'dashboard.admin.charts.orders_by_period.series.orders',
+                    'data' => $months->map(fn($month) => (int) ($ordersData[$month] ?? 0))->values()->toArray(),
+                    'categories' => $months->toArray(),
+                    'period' => 'monthly'
+                ]
+            ]
         ];
     }
 
     /**
-     * Get revenue chart data
+     * Get monthly revenue chart data (line or bars)
      */
-    private function getRevenueChartData(string $period, array $filters): array
+    private function getMonthlyRevenueChart(array $filters): array
     {
-        $dateFormat = $this->getDateFormat($period);
-        $dateRange = $this->getDateRange($period);
+        // Get last 12 months of data
+        $months = collect();
+        for ($i = 11; $i >= 0; $i--) {
+            $months->push(Carbon::now()->subMonths($i)->format('Y-m'));
+        }
 
-        $revenueData = Commande::whereBetween('created_at', $dateRange)
-            ->selectRaw("DATE_FORMAT(created_at, '{$dateFormat}') as date, COALESCE(SUM(total_ttc), 0) as total")
-            ->groupBy('date')
-            ->orderBy('date')
-            ->pluck('total', 'date')
+        $revenueData = Commande::selectRaw("DATE_FORMAT(created_at, '%Y-%m') as month, COALESCE(SUM(total_ttc), 0) as total")
+            ->whereRaw("DATE_FORMAT(created_at, '%Y-%m') IN ('" . $months->implode("','") . "')")
+            ->groupBy('month')
+            ->orderBy('month')
+            ->pluck('total', 'month')
             ->toArray();
-
-        $commissionsData = CommissionAffilie::whereBetween('created_at', $dateRange)
-            ->selectRaw("DATE_FORMAT(created_at, '{$dateFormat}') as date, COALESCE(SUM(amount), 0) as total")
-            ->groupBy('date')
-            ->orderBy('date')
-            ->pluck('total', 'date')
-            ->toArray();
-
-        $labels = $this->generateDateLabels($period, $dateRange);
 
         return [
-            'labels' => $labels,
-            'datasets' => [
+            'series' => [
                 [
-                    'label' => 'Revenue',
-                    'data' => array_map(fn($label) => (float) ($revenueData[$label] ?? 0), $labels),
-                    'borderColor' => '#FF9F43',
-                    'backgroundColor' => 'rgba(255, 159, 67, 0.1)',
-                    'fill' => true,
-                ],
-                [
-                    'label' => 'Commissions',
-                    'data' => array_map(fn($label) => (float) ($commissionsData[$label] ?? 0), $labels),
-                    'borderColor' => '#EA5455',
-                    'backgroundColor' => 'rgba(234, 84, 85, 0.1)',
-                    'fill' => true,
-                ],
-            ],
+                    'nameKey' => 'dashboard.admin.charts.monthly_revenue.series.revenue',
+                    'data' => $months->map(fn($month) => (float) ($revenueData[$month] ?? 0))->values()->toArray(),
+                    'categories' => $months->toArray(),
+                    'period' => 'monthly'
+                ]
+            ]
         ];
     }
 
@@ -633,7 +570,7 @@ class AdminDashboardController extends Controller
     }
 
     /**
-     * Get top affiliates by commissions chart
+     * Get top affiliates chart (horizontal bars)
      */
     private function getTopAffiliatesChart(array $filters): array
     {
@@ -645,21 +582,45 @@ class AdminDashboardController extends Controller
             ->leftJoin('commissions_affilies', 'users.id', '=', 'commissions_affilies.user_id')
             ->groupBy('users.id', 'users.nom_complet')
             ->orderBy('total_commissions', 'desc')
-            ->limit(10)
+            ->limit(5)
             ->get();
 
         return [
-            'labels' => $topAffiliates->pluck('name')->toArray(),
-            'datasets' => [
-                [
-                    'label' => 'Total Commissions',
-                    'data' => $topAffiliates->pluck('total_commissions')->map(fn($val) => (float) $val)->toArray(),
-                    'backgroundColor' => [
-                        '#7367F0', '#28C76F', '#FF9F43', '#EA5455', '#00CFE8',
-                        '#9F87FF', '#FFC107', '#FF6B6B', '#4ECDC4', '#45B7D1',
-                    ],
-                ],
-            ],
+            'items' => $topAffiliates->map(function ($affiliate) {
+                return [
+                    'label' => $affiliate->name,
+                    'labelKey' => null,
+                    'value' => (float) $affiliate->total_commissions
+                ];
+            })->toArray()
+        ];
+    }
+
+    /**
+     * Get top products chart (pie/doughnut)
+     */
+    private function getTopProductsChart(array $filters): array
+    {
+        $topProducts = DB::table('commande_articles')
+            ->join('produits', 'commande_articles.produit_id', '=', 'produits.id')
+            ->select([
+                'produits.titre as name',
+                DB::raw('COUNT(commande_articles.id) as orders_count'),
+                DB::raw('SUM(commande_articles.total_ligne) as revenue'),
+            ])
+            ->groupBy('produits.id', 'produits.titre')
+            ->orderBy('orders_count', 'desc')
+            ->limit(5)
+            ->get();
+
+        return [
+            'items' => $topProducts->map(function ($product) {
+                return [
+                    'label' => $product->name,
+                    'labelKey' => null,
+                    'value' => (int) $product->orders_count
+                ];
+            })->toArray()
         ];
     }
 
@@ -796,40 +757,75 @@ class AdminDashboardController extends Controller
     }
 
     /**
-     * Get recent payouts
+     * Get recent payments table data
      */
-    private function getRecentPayouts(array $filters): array
+    private function getRecentPayments(array $filters): array
     {
-        $payouts = Withdrawal::with('user:id,nom_complet')
-            ->select([
-                'id',
-                'user_id',
-                'amount',
-                'status',
-                'method',
-                'created_at as requestedAt',
-                'paid_at as processedAt',
-                'notes',
-            ])
-            ->orderBy('created_at', 'desc')
-            ->limit($filters['per_page'])
-            ->get()
-            ->map(function ($payout) {
-                return [
-                    'id' => $payout->id,
-                    'affiliateId' => $payout->user_id,
-                    'affiliateName' => $payout->user->nom_complet ?? 'Unknown',
-                    'amount' => (float) $payout->amount,
-                    'status' => $payout->status,
-                    'method' => $payout->method,
-                    'requestedAt' => $payout->requestedAt,
-                    'processedAt' => $payout->processedAt,
-                    'notes' => $payout->notes,
-                ];
-            })
-            ->toArray();
+        $perPage = $filters['per_page'] ?? 15;
+        $page = $filters['page'] ?? 1;
 
-        return $payouts; // now an array
+        $query = Withdrawal::with('user:id,nom_complet')
+            ->select(['id', 'user_id', 'amount', 'status', 'created_at'])
+            ->orderBy('created_at', 'desc');
+
+        $total = $query->count();
+        $payments = $query->skip(($page - 1) * $perPage)
+            ->take($perPage)
+            ->get()
+            ->map(function ($payment) {
+                return [
+                    'affiliate' => $payment->user->nom_complet ?? 'Unknown',
+                    'amount' => (float) $payment->amount,
+                    'status' => $payment->status,
+                    'date' => $payment->created_at->toISOString(),
+                ];
+            });
+
+        return [
+            'rows' => $payments->toArray(),
+            'pagination' => [
+                'page' => $page,
+                'perPage' => $perPage,
+                'total' => $total
+            ]
+        ];
+    }
+
+    /**
+     * Get monthly paid commissions table data
+     */
+    private function getMonthlyPaidCommissions(array $filters): array
+    {
+        $perPage = $filters['per_page'] ?? 15;
+        $page = $filters['page'] ?? 1;
+        $thisMonth = Carbon::now()->startOfMonth();
+
+        $query = CommissionAffilie::with('user:id,nom_complet')
+            ->where('status', 'paid')
+            ->where('paid_at', '>=', $thisMonth)
+            ->select(['id', 'user_id', 'amount', 'paid_at'])
+            ->orderBy('paid_at', 'desc');
+
+        $total = $query->count();
+        $commissions = $query->skip(($page - 1) * $perPage)
+            ->take($perPage)
+            ->get()
+            ->map(function ($commission) {
+                return [
+                    'affiliate' => $commission->user->nom_complet ?? 'Unknown',
+                    'amount' => (float) $commission->amount,
+                    'date' => $commission->paid_at->toISOString(),
+                ];
+            });
+
+        return [
+            'rows' => $commissions->toArray(),
+            'pagination' => [
+                'page' => $page,
+                'perPage' => $perPage,
+                'total' => $total
+            ]
+        ];
     }
 
     /**

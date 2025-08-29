@@ -3,21 +3,18 @@ import { ref, computed } from 'vue'
 import type {
   AdminDashboardStats,
   FilterOptions,
-  TimeSeriesData,
-  RecentAffiliate,
-  RecentPayoutRequest,
-  RecentTicket,
-  RecentActivity,
+  DashboardCard,
+  DashboardChartData,
+  DashboardTableData,
   DashboardApiResponse,
-  PaginatedResponse,
 } from '@/types/dashboard'
 import { $api } from '@/utils/api'
 
 export const useAdminDashboardStore = defineStore('adminDashboard', () => {
   // State
   const stats = ref<AdminDashboardStats | null>(null)
-  const chartData = ref<Record<string, TimeSeriesData | any>>({})
-  const tableData = ref<Record<string, any[]>>({})
+  const chartData = ref<Record<string, DashboardChartData>>({})
+  const tableData = ref<Record<string, DashboardTableData>>({})
   const loading = ref({
     stats: false,
     charts: false,
@@ -43,19 +40,17 @@ export const useAdminDashboardStore = defineStore('adminDashboard', () => {
 
   const hasData = computed(() => stats.value !== null)
 
-  const totalAffiliates = computed(() => stats.value?.overview.totalAffiliates ?? 0)
-  const totalRevenue = computed(() => stats.value?.overview.totalRevenue ?? 0)
-  const totalCommissions = computed(() => stats.value?.overview.totalCommissions ?? 0)
-  const pendingPayouts = computed(() => stats.value?.overview.pendingPayouts ?? 0)
-
-  const signupsGrowth = computed(() => {
-    if (!stats.value) return 0
-    const { signupsLast7d, signupsMTD } = stats.value.overview
-    return signupsMTD > 0 ? ((signupsLast7d / signupsMTD) * 100) : 0
-  })
-
-  const revenueGrowth = computed(() => stats.value?.revenue.growth ?? 0)
-  const commissionGrowth = computed(() => stats.value?.commissions.growth ?? 0)
+  const cards = computed(() => stats.value?.cards ?? [])
+  const getCardValue = (key: string) => {
+    const card = cards.value.find(c => c.key === key)
+    return card?.value ?? 0
+  }
+  const activeAffiliates = computed(() => getCardValue('active_affiliates'))
+  const totalOrders = computed(() => getCardValue('total_orders'))
+  const totalRevenue = computed(() => getCardValue('total_revenue'))
+  const totalCommissions = computed(() => getCardValue('total_commissions'))
+  const pendingPayments = computed(() => getCardValue('pending_payments'))
+  const pendingTickets = computed(() => getCardValue('pending_tickets'))
 
   // Actions
   const fetchStats = async (customFilters?: Partial<FilterOptions>) => {
@@ -141,10 +136,8 @@ export const useAdminDashboardStore = defineStore('adminDashboard', () => {
     await Promise.all([
       fetchStats(),
       fetchChartData(),
-      fetchTableData('recent_affiliates'),
-      fetchTableData('recent_payouts'),
-      fetchTableData('recent_tickets'),
-      fetchTableData('recent_activities'),
+      fetchTableData('recent_payments'),
+      fetchTableData('monthly_paid_commissions'),
     ])
   }
 
@@ -157,19 +150,14 @@ export const useAdminDashboardStore = defineStore('adminDashboard', () => {
   }
 
   // Specific getters for chart data
-  const signupsChartData = computed(() => chartData.value.signups_over_time as TimeSeriesData)
-  const revenueChartData = computed(() => chartData.value.revenue_over_time as TimeSeriesData)
-  const commissionsChartData = computed(() => chartData.value.commissions_over_time as TimeSeriesData)
-  const topAffiliatesChart = computed(() => chartData.value.top_affiliates_commissions)
-  const topAffiliatesSignupsChart = computed(() => chartData.value.top_affiliates_signups)
-  const ordersByStatusChart = computed(() => chartData.value.orders_by_status)
-  const conversionFunnelData = computed(() => chartData.value.conversion_funnel)
+  const ordersByPeriodChart = computed(() => chartData.value.orders_by_period)
+  const monthlyRevenueChart = computed(() => chartData.value.monthly_revenue)
+  const topAffiliatesChart = computed(() => chartData.value.top_affiliates)
+  const topProductsChart = computed(() => chartData.value.top_products)
 
   // Specific getters for table data
-  const recentAffiliates = computed(() => tableData.value.recent_affiliates as RecentAffiliate[] || [])
-  const recentPayouts = computed(() => tableData.value.recent_payouts as RecentPayoutRequest[] || [])
-  const recentTickets = computed(() => tableData.value.recent_tickets as RecentTicket[] || [])
-  const recentActivities = computed(() => tableData.value.recent_activities as RecentActivity[] || [])
+  const recentPayments = computed(() => tableData.value.recent_payments?.rows || [])
+  const monthlyPaidCommissions = computed(() => tableData.value.monthly_paid_commissions?.rows || [])
 
   return {
     // State
@@ -184,28 +172,22 @@ export const useAdminDashboardStore = defineStore('adminDashboard', () => {
     // Getters
     isLoading,
     hasData,
-    totalAffiliates,
+    activeAffiliates,
+    totalOrders,
     totalRevenue,
     totalCommissions,
-    pendingPayouts,
-    signupsGrowth,
-    revenueGrowth,
-    commissionGrowth,
+    pendingPayments,
+    pendingTickets,
 
     // Chart data getters
-    signupsChartData,
-    revenueChartData,
-    commissionsChartData,
+    ordersByPeriodChart,
+    monthlyRevenueChart,
     topAffiliatesChart,
-    topAffiliatesSignupsChart,
-    ordersByStatusChart,
-    conversionFunnelData,
+    topProductsChart,
 
     // Table data getters
-    recentAffiliates,
-    recentPayouts,
-    recentTickets,
-    recentActivities,
+    recentPayments,
+    monthlyPaidCommissions,
 
     // Actions
     fetchStats,

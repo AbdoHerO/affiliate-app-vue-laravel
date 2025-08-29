@@ -588,24 +588,23 @@ watch(autoRefresh, setupAutoRefresh)
       <VCol cols="12" md="6">
         <VCard>
           <VCardTitle class="d-flex align-center justify-space-between">
-            <span>{{ t('admin_dashboard_recent_affiliates') }}</span>
+            <span>{{ t('admin_dashboard_recent_payments') }}</span>
             <VBtn
               variant="text"
               size="small"
-              @click="dashboardStore.fetchTableData('recent_affiliates')"
+              @click="dashboardStore.fetchTableData('recent_payments')"
             >
               <VIcon icon="tabler-refresh" />
             </VBtn>
           </VCardTitle>
           <VCardText>
             <VDataTable
-              :items="dashboardStore.recentAffiliates"
+              :items="dashboardStore.recentPayments"
               :headers="[
-                { title: t('admin_dashboard_table_name'), key: 'name' },
-                { title: t('admin_dashboard_table_email'), key: 'email' },
-                { title: t('admin_dashboard_table_joined'), key: 'joinedAt' },
+                { title: t('admin_dashboard_table_affiliate'), key: 'affiliate' },
+                { title: t('admin_dashboard_table_amount'), key: 'amount' },
                 { title: t('admin_dashboard_table_status'), key: 'status' },
-                { title: t('admin_dashboard_table_commissions'), key: 'totalCommissions' },
+                { title: t('admin_dashboard_table_date'), key: 'date' },
               ]"
               :loading="dashboardStore.loading.tables"
               density="compact"
@@ -634,23 +633,22 @@ watch(autoRefresh, setupAutoRefresh)
       <VCol cols="12" md="6">
         <VCard>
           <VCardTitle class="d-flex align-center justify-space-between">
-            <span>{{ t('admin_dashboard_recent_payouts') }}</span>
+            <span>{{ t('admin_dashboard_monthly_paid_commissions') }}</span>
             <VBtn
               variant="text"
               size="small"
-              @click="dashboardStore.fetchTableData('recent_payouts')"
+              @click="dashboardStore.fetchTableData('monthly_paid_commissions')"
             >
               <VIcon icon="tabler-refresh" />
             </VBtn>
           </VCardTitle>
           <VCardText>
             <VDataTable
-              :items="dashboardStore.recentPayouts"
+              :items="dashboardStore.monthlyPaidCommissions"
               :headers="[
-                { title: t('admin_dashboard_table_affiliate'), key: 'affiliateName' },
+                { title: t('admin_dashboard_table_affiliate'), key: 'affiliate' },
                 { title: t('admin_dashboard_table_amount'), key: 'amount' },
-                { title: t('admin_dashboard_table_status'), key: 'status' },
-                { title: t('admin_dashboard_table_requested'), key: 'requestedAt' },
+                { title: t('admin_dashboard_table_date'), key: 'date' },
               ]"
               :loading="dashboardStore.loading.tables"
               density="compact"

@@ -3,11 +3,9 @@ import { ref, computed } from 'vue'
 import type {
   AffiliateDashboardStats,
   FilterOptions,
-  TimeSeriesData,
-  MyLead,
-  MyOrder,
-  MyCommission,
-  ReferralClick,
+  DashboardCard,
+  DashboardChartData,
+  DashboardTableData,
   DashboardApiResponse,
 } from '@/types/dashboard'
 import { $api } from '@/utils/api'
@@ -49,23 +47,16 @@ export const useAffiliateDashboardStore = defineStore('affiliateDashboard', () =
 
   const hasData = computed(() => stats.value !== null)
 
-  const currentPoints = computed(() => stats.value?.overview.currentPoints ?? 0)
-  const totalCommissions = computed(() => stats.value?.overview.totalCommissions ?? 0)
-  const totalCommissionsMTD = computed(() => stats.value?.overview.totalCommissionsMTD ?? 0)
-  const verifiedSignups = computed(() => stats.value?.overview.verifiedSignups ?? 0)
-  const conversionRate = computed(() => stats.value?.overview.conversionRate ?? 0)
-  const clickThroughRate = computed(() => stats.value?.overview.clickThroughRate ?? 0)
-
-  const commissionsGrowth = computed(() => stats.value?.commissions.growth ?? 0)
-  const ordersGrowth = computed(() => stats.value?.orders.growth ?? 0)
-  const performanceTrends = computed(() => stats.value?.performance.trends ?? {
-    clicks: 0,
-    signups: 0,
-    commissions: 0,
-  })
-
-  const nextPayoutAmount = computed(() => stats.value?.commissions.nextPayoutAmount ?? 0)
-  const nextPayoutDate = computed(() => stats.value?.commissions.nextPayoutDate)
+  const cards = computed(() => stats.value?.cards ?? [])
+  const getCardValue = (key: string) => {
+    const card = cards.value.find(c => c.key === key)
+    return card?.value ?? 0
+  }
+  const totalOrders = computed(() => getCardValue('total_orders'))
+  const totalCommissions = computed(() => getCardValue('total_commissions'))
+  const monthlyEarnings = computed(() => getCardValue('monthly_earnings'))
+  const paymentsStatus = computed(() => getCardValue('payments_status'))
+  const pendingTickets = computed(() => getCardValue('pending_tickets'))
 
   // Actions
   const fetchStats = async (customFilters?: Partial<FilterOptions>) => {
@@ -176,10 +167,9 @@ export const useAffiliateDashboardStore = defineStore('affiliateDashboard', () =
     await Promise.all([
       fetchStats(),
       fetchChartData(),
-      fetchTableData('my_leads'),
-      fetchTableData('my_orders'),
-      fetchTableData('my_commissions'),
-      fetchTableData('referral_clicks'),
+      fetchTableData('my_recent_orders'),
+      fetchTableData('my_recent_payments'),
+      fetchTableData('my_active_referrals'),
       fetchReferralLink(),
     ])
   }
@@ -209,17 +199,12 @@ export const useAffiliateDashboardStore = defineStore('affiliateDashboard', () =
   }
 
   // Specific getters for chart data
-  const signupsChartData = computed(() => chartData.value.signups_over_time as TimeSeriesData)
-  const commissionsChartData = computed(() => chartData.value.commissions_over_time as TimeSeriesData)
-  const pointsChartData = computed(() => chartData.value.points_over_time as TimeSeriesData)
-  const topProductsChart = computed(() => chartData.value.top_products)
-  const referralPerformanceChart = computed(() => chartData.value.referral_performance)
+  const topProductsSoldChart = computed(() => chartData.value.top_products_sold)
 
   // Specific getters for table data
-  const myLeads = computed(() => tableData.value.my_leads as MyLead[] || [])
-  const myOrders = computed(() => tableData.value.my_orders as MyOrder[] || [])
-  const myCommissions = computed(() => tableData.value.my_commissions as MyCommission[] || [])
-  const referralClicks = computed(() => tableData.value.referral_clicks as ReferralClick[] || [])
+  const myRecentOrders = computed(() => tableData.value.my_recent_orders?.rows || [])
+  const myRecentPayments = computed(() => tableData.value.my_recent_payments?.rows || [])
+  const myActiveReferrals = computed(() => tableData.value.my_active_referrals?.rows || [])
 
   return {
     // State
@@ -235,30 +220,19 @@ export const useAffiliateDashboardStore = defineStore('affiliateDashboard', () =
     // Getters
     isLoading,
     hasData,
-    currentPoints,
+    totalOrders,
     totalCommissions,
-    totalCommissionsMTD,
-    verifiedSignups,
-    conversionRate,
-    clickThroughRate,
-    commissionsGrowth,
-    ordersGrowth,
-    performanceTrends,
-    nextPayoutAmount,
-    nextPayoutDate,
+    monthlyEarnings,
+    paymentsStatus,
+    pendingTickets,
 
     // Chart data getters
-    signupsChartData,
-    commissionsChartData,
-    pointsChartData,
-    topProductsChart,
-    referralPerformanceChart,
+    topProductsSoldChart,
 
     // Table data getters
-    myLeads,
-    myOrders,
-    myCommissions,
-    referralClicks,
+    myRecentOrders,
+    myRecentPayments,
+    myActiveReferrals,
 
     // Actions
     fetchStats,
