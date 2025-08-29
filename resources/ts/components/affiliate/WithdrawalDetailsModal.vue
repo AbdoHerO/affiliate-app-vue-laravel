@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import type { AffiliateWithdrawal } from '@/stores/affiliate/payments'
+
+const { t } = useI18n()
 
 interface Props {
   isVisible: boolean
@@ -47,6 +50,22 @@ const getStatusColor = (status: string) => {
     'canceled': 'secondary',
   }
   return statusColors[status] || 'secondary'
+}
+
+const getOrderTypeColor = (type: string) => {
+  const colors: Record<string, string> = {
+    'order_sample': 'primary',
+    'exchange': 'warning'
+  }
+  return colors[type] || 'secondary'
+}
+
+const getOrderTypeLabel = (type: string) => {
+  const labels: Record<string, string> = {
+    'order_sample': 'Échantillon',
+    'exchange': 'Échange'
+  }
+  return labels[type] || type || 'N/A'
 }
 
 const getStatusText = (status: string) => {
@@ -189,7 +208,7 @@ const getMethodText = (method: string) => {
                     { title: 'Commande', key: 'commission.commande.id', sortable: false },
                     { title: 'Produit', key: 'commission.produit', sortable: false },
                     { title: 'Montant', key: 'amount', sortable: false },
-                    { title: 'Type', key: 'commission.type', sortable: false },
+                    { title: 'Type Commande', key: 'commission.order_type', sortable: false },
                     { title: 'Date', key: 'commission.created_at', sortable: false },
                   ]"
                   :items="withdrawal.items"
@@ -227,9 +246,9 @@ const getMethodText = (method: string) => {
                       {{ formatCurrency(item.amount) }}
                     </span>
                   </template>
-                  <template #item.commission.type="{ item }">
+                  <template #item.commission.order_type="{ item }">
                     <VChip size="small" variant="tonal">
-                      {{ item.commission?.type || 'N/A' }}
+                      {{ item.commission?.commande_article?.type_command || 'N/A' }}
                     </VChip>
                   </template>
                   <template #item.commission.created_at="{ item }">

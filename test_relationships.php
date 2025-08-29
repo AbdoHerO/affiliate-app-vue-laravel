@@ -6,53 +6,57 @@ require_once 'vendor/autoload.php';
 $app = require_once 'bootstrap/app.php';
 $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
 
-use App\Models\AffiliateCartItem;
-use App\Models\Produit;
-use App\Models\User;
+echo "=== Checking Database Relationships ===\n";
 
-echo "🧪 Testing Cart Summary with Relationships\n";
+use App\Models\CommissionAffilie;
+use App\Models\CommandeArticle;
 
-try {
-    // Get real data
-    $product = Produit::where('actif', true)->first();
-    $user = User::first();
+// Check commission data
+$commission = CommissionAffilie::whereNotNull('commande_article_id')->first();
+if ($commission) {
+    echo "Commission ID: " . $commission->id . "\n";
+    echo "Article ID: " . $commission->commande_article_id . "\n";
     
-    if (!$product || !$user) {
-        echo "⚠️  Missing test data - skipping test\n";
-        exit;
+    // Check if article exists
+    $article = CommandeArticle::find($commission->commande_article_id);
+    if ($article) {
+        echo "Article found - Product ID: " . ($article->produit_id ?? 'NULL') . "\n";
+        echo "Article type_command: " . ($article->type_command ?? 'NULL') . "\n";
+        
+        // Check if product exists
+        if ($article->produit_id) {
+            $product = \App\Models\Produit::find($article->produit_id);
+            if ($product) {
+                echo "Product found - SKU: " . ($product->sku ?? 'NULL') . "\n";
+                echo "Product title: " . ($product->titre ?? 'NULL') . "\n";
+            } else {
+                echo "Product with ID {$article->produit_id} not found!\n";
+            }
+        } else {
+            echo "Article has no product_id!\n";
+        }
+    } else {
+        echo "Article with ID {$commission->commande_article_id} not found!\n";
     }
-    
-    // Create a test cart item
-    $cartItem = new \App\Models\AffiliateCartItem();
-    $cartItem->user_id = $user->id;
-    $cartItem->produit_id = $product->id;
-    $cartItem->variante_id = null;
-    $cartItem->qty = 2;
-    $cartItem->added_at = now();
-    $cartItem->save();
-    
-    echo "✅ Test cart item created\n";
-    
-    // Test the relationships
-    $cartItems = \App\Models\AffiliateCartItem::with(['produit.images', 'produit.variantes', 'variante'])
-        ->where('user_id', $user->id)
-        ->get();
-    
-    echo "✅ Found " . $cartItems->count() . " cart items\n";
-    
-    foreach ($cartItems as $item) {
-        echo "✅ Item: " . $item->produit->titre . " (Qty: " . $item->qty . ")\n";
-        echo "   - Product price: " . $item->produit->prix_vente . "\n";
-        echo "   - Item key: " . $item->item_key . "\n";
-    }
-    
-    // Clean up
-    $cartItem->delete();
-    echo "✅ Test cart item cleaned up\n";
-    
-} catch (Exception $e) {
-    echo "❌ Error: " . $e->getMessage() . "\n";
-    echo "   Trace: " . $e->getTraceAsString() . "\n";
+} else {
+    echo "No commission found!\n";
 }
 
-echo "\n🎉 Relationship test completed!\n";
+echo "\n=== Testing Eager Loading ===\n";
+
+$commissionWithEager = CommissionAffilie::with([
+    'commandeArticle.produit'
+])->whereNotNull('commande_article_id')->first();
+
+if ($commissionWithEager && $commissionWithEager->commandeArticle) {
+    echo "Eager loaded article found\n";
+    if ($commissionWithEager->commandeArticle->produit) {
+        echo "Eager loaded product found - SKU: " . ($commissionWithEager->commandeArticle->produit->sku ?? 'NULL') . "\n";
+    } else {
+        echo "No product in eager loaded article\n";
+    }
+} else {
+    echo "No article in eager loaded commission\n";
+}
+
+echo "\n=== Done ===\n";

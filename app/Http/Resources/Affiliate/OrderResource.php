@@ -37,6 +37,12 @@ class OrderResource extends JsonResource
             // Status badge info for UI
             'status_badge' => $this->getStatusBadge(),
             
+            // Computed type_command based on first article (for backward compatibility)
+            'type_command' => $this->whenLoaded('articles', function () {
+                $firstArticle = $this->articles->first();
+                return $firstArticle ? ($firstArticle->type_command ?? 'order_sample') : 'order_sample';
+            }, 'order_sample'),
+            
             // Relationships
             'boutique' => $this->whenLoaded('boutique', function () {
                 return [
