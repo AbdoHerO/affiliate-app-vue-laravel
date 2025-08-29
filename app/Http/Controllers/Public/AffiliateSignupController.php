@@ -98,15 +98,10 @@ class AffiliateSignupController extends Controller
             // Send verification email
             Mail::to($affilie->email)->send(new AffiliateVerifyMail($affilie, $verification));
 
-            // Handle referral attribution if referral code provided
+            // Handle referral relationship if referral code provided
             if ($request->referral_code) {
-                $attribution = $this->createReferralAttribution($request->referral_code, $affilie, $request);
-
-                // Award signup points if attribution was created
-                if ($attribution) {
-                    $autoPointsService = new \App\Services\AutoPointsDispensationService();
-                    $autoPointsService->awardSignupPoints($attribution);
-                }
+                $this->setAffiliateReferral($request->referral_code, $affilie, $request);
+                // Note: No points are awarded at signup anymore - points will be awarded when user has delivered orders
             }
 
             return response()->json([
@@ -229,23 +224,7 @@ class AffiliateSignupController extends Controller
                 'email_verified_at' => now(),
             ]);
 
-            // Update referral attribution to verified if exists and award verification points
-            if ($affilie->user_id) {
-                $attributions = ReferralAttribution::where('new_user_id', $affilie->user_id)
-                    ->where('verified', false)
-                    ->get();
-
-                foreach ($attributions as $attribution) {
-                    $attribution->update([
-                        'verified' => true,
-                        'verified_at' => now(),
-                    ]);
-
-                    // Award verification points
-                    $autoPointsService = new \App\Services\AutoPointsDispensationService();
-                    $autoPointsService->awardVerificationPoints($attribution);
-                }
-            }
+            // Note: No verification points are awarded anymore - points will be awarded when user has delivered orders
 
             // Delete verification token
             $verification->delete();
@@ -258,9 +237,9 @@ class AffiliateSignupController extends Controller
     }
 
     /**
-     * Create referral attribution for affiliate signup
+     * Set affiliate referral relationship for affiliate signup
      */
-    private function createReferralAttribution(string $referralCode, Affilie $newAffiliate, Request $request): ?ReferralAttribution
+    private function setAffiliateReferral(string $referralCode, Affilie $newAffiliate, Request $request): bool
     {
         try {
             $referralCodeRecord = ReferralCode::where('code', $referralCode)
@@ -268,7 +247,7 @@ class AffiliateSignupController extends Controller
                 ->first();
 
             if (!$referralCodeRecord) {
-                return null; // Silently fail if referral code is invalid
+                return false; // Silently fail if referral code is invalid
             }
 
             // Create a proper user record for affiliate signup tracking
@@ -283,39 +262,24 @@ class AffiliateSignupController extends Controller
                 'email_verifie' => false,
                 'kyc_statut' => 'non_requis',
                 'approval_status' => 'pending_approval',
+                'affiliate_parrained_by' => $referralCodeRecord->affiliate_id, // Set the referring affiliate
             ]);
 
             // Assign affiliate role
             $affiliateUser->assignRole('affiliate');
 
-            // Create attribution record for affiliate signup
-            $attribution = ReferralAttribution::create([
-                'referral_code' => $referralCode,
-                'referrer_affiliate_id' => $referralCodeRecord->affiliate_id,
-                'new_user_id' => $affiliateUser->id,
-                'ip_hash' => hash('sha256', $request->ip() . config('app.key')),
-                'source' => 'affiliate_signup',
-                'device_fingerprint' => [
-                    'user_agent' => $request->userAgent(),
-                    'affiliate_id' => $newAffiliate->id,
-                    'signup_type' => 'affiliate'
-                ],
-                'verified' => false, // Will be verified when email is verified
-                'attributed_at' => now(),
-            ]);
-
             // Store the user ID in the affiliate record for future reference
             $newAffiliate->update(['user_id' => $affiliateUser->id]);
 
-            return $attribution;
+            return true;
         } catch (\Exception $e) {
             // Log error but don't fail the signup process
-            Log::error('Failed to create referral attribution: ' . $e->getMessage(), [
+            Log::error('Failed to set affiliate referral: ' . $e->getMessage(), [
                 'referral_code' => $referralCode,
                 'affiliate_id' => $newAffiliate->id,
                 'trace' => $e->getTraceAsString()
             ]);
-            return null;
+            return false;
         }
     }
 }

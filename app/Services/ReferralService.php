@@ -168,14 +168,14 @@ class ReferralService
             ->selectRaw('COUNT(DISTINCT CONCAT(ip_hash, DATE(clicked_at))) as unique_clicks')
             ->value('unique_clicks') ?? 0;
 
-        // Get attribution counts for this affiliate
-        $totalSignups = ReferralAttribution::where('referrer_affiliate_id', $affiliate->id)
-            ->whereBetween('attributed_at', [$startDate, $endDate])
+        // Get signup counts for this affiliate using the new affiliate_parrained_by relationship
+        $totalSignups = \App\Models\User::where('affiliate_parrained_by', $affiliate->id)
+            ->whereBetween('created_at', [$startDate, $endDate])
             ->count();
 
-        $verifiedSignups = ReferralAttribution::where('referrer_affiliate_id', $affiliate->id)
-            ->whereBetween('attributed_at', [$startDate, $endDate])
-            ->where('verified', true)
+        $verifiedSignups = \App\Models\User::where('affiliate_parrained_by', $affiliate->id)
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->where('email_verifie', true)
             ->count();
 
         // Get total points from dispensations (all time for this affiliate)

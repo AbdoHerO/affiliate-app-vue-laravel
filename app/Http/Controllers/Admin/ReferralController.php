@@ -43,20 +43,24 @@ class ReferralController extends Controller
             ->selectRaw('COUNT(DISTINCT CONCAT(ip_hash, DATE(clicked_at))) as unique_clicks')
             ->value('unique_clicks') ?? 0;
 
-        // Attribution statistics
-        $totalSignups = ReferralAttribution::whereBetween('attributed_at', [$startDate, $endDate])->count();
-        $verifiedSignups = ReferralAttribution::whereBetween('attributed_at', [$startDate, $endDate])
-            ->where('verified', true)
+        // Signup statistics using the new affiliate_parrained_by relationship
+        $totalSignups = \App\Models\User::whereNotNull('affiliate_parrained_by')
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->count();
+        $verifiedSignups = \App\Models\User::whereNotNull('affiliate_parrained_by')
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->where('email_verifie', true)
             ->count();
 
         // Points awarded (from dispensations in date range)
         $totalPointsAwarded = ReferralDispensation::whereBetween('created_at', [$startDate, $endDate])
             ->sum('points') ?? 0;
 
-        // Active referrers (affiliates with at least one attribution in date range)
-        $activeReferrers = ReferralAttribution::whereBetween('attributed_at', [$startDate, $endDate])
-            ->distinct('referrer_affiliate_id')
-            ->count('referrer_affiliate_id');
+        // Active referrers (affiliates with at least one referred user in date range)
+        $activeReferrers = \App\Models\User::whereNotNull('affiliate_parrained_by')
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->distinct('affiliate_parrained_by')
+            ->count('affiliate_parrained_by');
 
         // Conversion rate
         $conversionRate = $totalClicks > 0 ? ($totalSignups / $totalClicks) * 100 : 0;
@@ -107,54 +111,66 @@ class ReferralController extends Controller
             'source' => 'nullable|string|in:web,mobile',
         ]);
 
-        $query = ReferralAttribution::with([
-            'newUser:id,nom_complet,email,telephone,email_verifie,created_at',
-            'referrerAffiliate.utilisateur:id,nom_complet,email',
-        ]);
+        $query = \App\Models\User::whereNotNull('affiliate_parrained_by')
+            ->with(['affiliateParrain.utilisateur:id,nom_complet,email']);
 
         // Apply filters
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->whereHas('newUser', function ($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('nom_complet', 'like', "%{$search}%")
                   ->orWhere('email', 'like', "%{$search}%");
             });
         }
 
         if ($request->filled('referrer_id')) {
-            $query->where('referrer_affiliate_id', $request->referrer_id);
+            $query->where('affiliate_parrained_by', $request->referrer_id);
         }
 
         if ($request->has('verified')) {
-            $query->where('verified', $request->boolean('verified'));
+            $query->where('email_verifie', $request->boolean('verified'));
         }
 
         if ($request->filled('start_date')) {
-            $query->where('attributed_at', '>=', Carbon::parse($request->start_date));
+            $query->where('created_at', '>=', Carbon::parse($request->start_date));
         }
 
         if ($request->filled('end_date')) {
-            $query->where('attributed_at', '<=', Carbon::parse($request->end_date)->endOfDay());
+            $query->where('created_at', '<=', Carbon::parse($request->end_date)->endOfDay());
         }
 
-        if ($request->filled('source')) {
-            $query->where('source', $request->source);
-        }
+        // Note: Source filter removed as it's no longer applicable with the new system
 
         // Sort by most recent
-        $query->orderBy('attributed_at', 'desc');
+        $query->orderBy('created_at', 'desc');
 
         $perPage = $request->get('per_page', 15);
-        $attributions = $query->paginate($perPage);
+        $referredUsers = $query->paginate($perPage);
+
+        // Transform the data to match the expected format
+        $transformedData = $referredUsers->getCollection()->map(function ($user) {
+            return [
+                'id' => $user->id,
+                'new_user_id' => $user->id,
+                'new_user_name' => $user->nom_complet,
+                'new_user_email' => $user->email,
+                'new_user_phone' => $user->telephone,
+                'email_verified' => $user->email_verifie,
+                'affiliate_name' => $user->affiliateParrain?->utilisateur?->nom_complet ?? 'Unknown',
+                'referrer_affiliate_id' => $user->affiliate_parrained_by,
+                'attributed_at' => $user->created_at,
+                'verified' => $user->email_verifie,
+            ];
+        });
 
         return response()->json([
             'success' => true,
-            'data' => $attributions->items(),
+            'data' => $transformedData,
             'pagination' => [
-                'current_page' => $attributions->currentPage(),
-                'last_page' => $attributions->lastPage(),
-                'per_page' => $attributions->perPage(),
-                'total' => $attributions->total(),
+                'current_page' => $referredUsers->currentPage(),
+                'last_page' => $referredUsers->lastPage(),
+                'per_page' => $referredUsers->perPage(),
+                'total' => $referredUsers->total(),
             ],
         ]);
     }
@@ -164,20 +180,20 @@ class ReferralController extends Controller
      */
     private function getTopReferrers(Carbon $startDate, Carbon $endDate, int $limit = 10): array
     {
-        return DB::table('referral_attributions as ra')
-            ->join('profils_affilies as pa', 'ra.referrer_affiliate_id', '=', 'pa.id')
-            ->join('users as u', 'pa.utilisateur_id', '=', 'u.id')
+        return DB::table('users as u')
+            ->join('profils_affilies as pa', 'u.affiliate_parrained_by', '=', 'pa.id')
+            ->join('users as au', 'pa.utilisateur_id', '=', 'au.id')
             ->select([
                 'pa.id as affiliate_id',
-                'u.nom_complet as affiliate_name',
-                'u.email as affiliate_email',
-                DB::raw('COUNT(ra.id) as total_referrals'),
-                DB::raw('COUNT(CASE WHEN ra.verified = true THEN 1 END) as verified_referrals'),
+                'au.nom_complet as affiliate_name',
+                'au.email as affiliate_email',
+                DB::raw('COUNT(u.id) as total_referrals'),
+                DB::raw('COUNT(CASE WHEN u.email_verifie = true THEN 1 END) as verified_referrals'),
                 DB::raw('COALESCE(SUM(rd.points), 0) as total_points'),
             ])
             ->leftJoin('referral_dispensations as rd', 'pa.id', '=', 'rd.referrer_affiliate_id')
-            ->whereBetween('ra.attributed_at', [$startDate, $endDate])
-            ->groupBy('pa.id', 'u.nom_complet', 'u.email')
+            ->whereBetween('u.created_at', [$startDate, $endDate])
+            ->groupBy('pa.id', 'au.nom_complet', 'au.email')
             ->orderBy('verified_referrals', 'desc')
             ->orderBy('total_referrals', 'desc')
             ->limit($limit)

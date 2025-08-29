@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -43,6 +44,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'cin',
         'rib',
         'bank_type',
+        'affiliate_parrained_by',
     ];
 
     /**
@@ -259,6 +261,14 @@ class User extends Authenticatable implements MustVerifyEmail
     public function scopeEmailVerified($query)
     {
         return $query->where('email_verifie', true);
+    }
+
+    /**
+     * Get the affiliate who referred this user.
+     */
+    public function affiliateParrain(): BelongsTo
+    {
+        return $this->belongsTo(ProfilAffilie::class, 'affiliate_parrained_by');
     }
 
     /**

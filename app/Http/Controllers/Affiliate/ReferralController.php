@@ -224,28 +224,13 @@ class ReferralController extends Controller
 
     /**
      * Get recent activity for the affiliate.
+     * Note: Referred user activities are hidden for privacy - only showing points dispensations.
      */
     private function getRecentActivity($affiliate, int $limit = 10): array
     {
         $activities = [];
 
-        // Recent referrals
-        $recentReferrals = ReferralAttribution::where('referrer_affiliate_id', $affiliate->id)
-            ->with('newUser:id,nom_complet')
-            ->orderBy('attributed_at', 'desc')
-            ->limit($limit)
-            ->get();
-
-        foreach ($recentReferrals as $referral) {
-            $activities[] = [
-                'type' => 'referral',
-                'message' => $referral->newUser->nom_complet . ' s\'est inscrit via votre lien',
-                'date' => $referral->attributed_at,
-                'verified' => $referral->verified,
-            ];
-        }
-
-        // Recent dispensations
+        // Only show recent dispensations (points awarded) - no referred user details for privacy
         $recentDispensations = ReferralDispensation::where('referrer_affiliate_id', $affiliate->id)
             ->orderBy('created_at', 'desc')
             ->limit($limit)

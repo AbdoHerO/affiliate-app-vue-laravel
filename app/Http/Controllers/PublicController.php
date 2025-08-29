@@ -129,6 +129,18 @@ class PublicController extends Controller
 
         try {
             return DB::transaction(function () use ($request) {
+                // Get referring affiliate if referral code provided
+                $referringAffiliateId = null;
+                if ($request->referral_code) {
+                    $referralCodeRecord = ReferralCode::where('code', $request->referral_code)
+                        ->where('active', true)
+                        ->first();
+
+                    if ($referralCodeRecord) {
+                        $referringAffiliateId = $referralCodeRecord->affiliate_id;
+                    }
+                }
+
                 // Create the user
                 $user = User::create([
                     'nom_complet' => $request->nom_complet,
@@ -142,15 +154,13 @@ class PublicController extends Controller
                     'statut' => 'actif',
                     'kyc_statut' => 'non_requis',
                     'approval_status' => 'pending_approval',
+                    'affiliate_parrained_by' => $referringAffiliateId, // Set the referring affiliate
                 ]);
 
                 // Assign default role (customer/user)
                 $user->assignRole('user');
 
-                // Handle referral attribution if referral code provided
-                if ($request->referral_code) {
-                    $this->createReferralAttribution($request->referral_code, $user, $request);
-                }
+                // Note: No points are awarded at signup anymore - points will be awarded when user has delivered orders
 
                 return response()->json([
                     'success' => true,
@@ -170,30 +180,7 @@ class PublicController extends Controller
         }
     }
 
-    /**
-     * Create referral attribution
-     */
-    private function createReferralAttribution(string $referralCode, User $newUser, Request $request): void
-    {
-        $referralCodeRecord = ReferralCode::where('code', $referralCode)
-            ->where('active', true)
-            ->first();
 
-        if (!$referralCodeRecord) {
-            return; // Silently fail if referral code is invalid
-        }
-
-        // Create attribution record
-        ReferralAttribution::create([
-            'referral_code' => $referralCode,
-            'referrer_affiliate_id' => $referralCodeRecord->affiliate_id,
-            'new_user_id' => $newUser->id,
-            'ip_hash' => hash('sha256', $request->ip()),
-            'source' => 'web',
-            'verified' => false, // Will be verified later when user verifies email
-            'attributed_at' => now(),
-        ]);
-    }
 
     /**
      * Verify email and update referral attribution
