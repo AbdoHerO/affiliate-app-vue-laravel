@@ -129,7 +129,7 @@ export const useAdminDashboardStore = defineStore('adminDashboard', () => {
       })
 
       if (response.success) {
-        tableData.value[type] = response.data
+        tableData.value[type] = response.data as any
       } else {
         throw new Error(response.message || 'Failed to fetch table data')
       }
@@ -162,15 +162,106 @@ export const useAdminDashboardStore = defineStore('adminDashboard', () => {
     lastUpdated.value = null
   }
 
-  // Specific getters for chart data
-  const ordersByPeriodChart = computed(() => chartData.value.orders_by_period)
-  const monthlyRevenueChart = computed(() => chartData.value.monthly_revenue)
-  const topAffiliatesChart = computed(() => chartData.value.top_affiliates)
-  const topProductsChart = computed(() => chartData.value.top_products)
+  // Specific getters for chart data with format transformation
+  const ordersByPeriodChart = computed(() => {
+    const rawData = chartData.value.orders_by_period
+    if (!rawData || !rawData.series || rawData.series.length === 0) {
+      return null
+    }
+
+    // Transform series format to Chart.js format
+    const series = rawData.series[0]
+    return {
+      labels: series.categories,
+      datasets: [{
+        label: 'Orders',
+        data: series.data,
+        backgroundColor: '#7367F0',
+        borderColor: '#7367F0',
+        borderWidth: 2,
+      }]
+    }
+  })
+
+  const monthlyRevenueChart = computed(() => {
+    const rawData = chartData.value.monthly_revenue
+    if (!rawData || !rawData.series || rawData.series.length === 0) {
+      return null
+    }
+
+    // Transform series format to Chart.js format
+    const series = rawData.series[0]
+    return {
+      labels: series.categories,
+      datasets: [{
+        label: 'Revenue',
+        data: series.data,
+        backgroundColor: 'rgba(40, 199, 111, 0.1)',
+        borderColor: '#28C76F',
+        borderWidth: 2,
+        fill: true,
+      }]
+    }
+  })
+
+  const topAffiliatesChart = computed(() => {
+    const rawData = chartData.value.top_affiliates
+    if (!rawData || !rawData.items || rawData.items.length === 0) {
+      return null
+    }
+
+    // Transform items format to Chart.js format
+    const labels = rawData.items.map((item: any) => item.label)
+    const data = rawData.items.map((item: any) => item.value)
+    
+    return {
+      labels,
+      datasets: [{
+        label: 'Top Affiliates',
+        data,
+        backgroundColor: '#FF9F43',
+        borderColor: '#FF9F43',
+        borderWidth: 2,
+      }]
+    }
+  })
+
+  const topProductsChart = computed(() => {
+    const rawData = chartData.value.top_products
+    if (!rawData || !rawData.items || rawData.items.length === 0) {
+      return null
+    }
+
+    // Transform items format to Chart.js format
+    const labels = rawData.items.map((item: any) => item.label)
+    const data = rawData.items.map((item: any) => item.value)
+    
+    return {
+      labels,
+      datasets: [{
+        label: 'Top Products',
+        data,
+        backgroundColor: [
+          '#7367F0',
+          '#FF9F43', 
+          '#28C76F',
+          '#EA5455',
+          '#00CFE8'
+        ],
+        borderWidth: 2,
+      }]
+    }
+  })
 
   // Specific getters for table data
-  const recentPayments = computed(() => tableData.value.recent_payments?.rows || [])
-  const monthlyPaidCommissions = computed(() => tableData.value.monthly_paid_commissions?.rows || [])
+  const recentPayments = computed(() => {
+    const data = tableData.value.recent_payments
+    return Array.isArray(data) ? data : ((data as any)?.rows || [])
+  })
+  const monthlyPaidCommissions = computed(() => {
+    const data = tableData.value.monthly_paid_commissions
+    return Array.isArray(data) ? data : ((data as any)?.rows || [])
+  })
 
   return {
     // State

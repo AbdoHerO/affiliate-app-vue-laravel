@@ -7,6 +7,7 @@ import type {
   DashboardChartData,
   DashboardTableData,
   DashboardApiResponse,
+  TimeSeriesData,
 } from '@/types/dashboard'
 import { $api } from '@/utils/api'
 
@@ -208,12 +209,46 @@ export const useAffiliateDashboardStore = defineStore('affiliateDashboard', () =
   }
 
   // Specific getters for chart data
-  const topProductsSoldChart = computed(() => chartData.value.top_products_sold)
+  const topProductsSoldChart = computed(() => {
+    const rawData = chartData.value.top_products_sold
+    if (!rawData || !rawData.items || rawData.items.length === 0) {
+      return null
+    }
+
+    // Transform backend format { items: [...] } to Chart.js format { labels: [...], datasets: [...] }
+    const labels = rawData.items.map((item: any) => item.label)
+    const data = rawData.items.map((item: any) => item.value)
+    
+    return {
+      labels,
+      datasets: [{
+        label: 'Top Products',
+        data,
+        backgroundColor: [
+          '#7367F0',
+          '#FF9F43', 
+          '#28C76F',
+          '#EA5455',
+          '#00CFE8'
+        ],
+        borderWidth: 2,
+      }]
+    }
+  })
 
   // Specific getters for table data
-  const myRecentOrders = computed(() => tableData.value.my_recent_orders?.rows || [])
-  const myRecentPayments = computed(() => tableData.value.my_recent_payments?.rows || [])
-  const myActiveReferrals = computed(() => tableData.value.my_active_referrals?.rows || [])
+  const myRecentOrders = computed(() => {
+    const data = tableData.value.my_recent_orders
+    return Array.isArray(data) ? data : ((data as any)?.rows || [])
+  })
+  const myRecentPayments = computed(() => {
+    const data = tableData.value.my_recent_payments
+    return Array.isArray(data) ? data : ((data as any)?.rows || [])
+  })
+  const myActiveReferrals = computed(() => {
+    const data = tableData.value.my_active_referrals
+    return Array.isArray(data) ? data : ((data as any)?.rows || [])
+  })
 
   return {
     // State
