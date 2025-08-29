@@ -32,7 +32,7 @@ class CommissionsController extends Controller
             'affiliate:id,nom_complet,email',
             'commande:id,statut,total_ttc,created_at',
             'commandeArticle:id,quantite,prix_unitaire,total_ligne,type_command',
-            'commandeArticle.produit:id,titre'
+            'commandeArticle.produit:id,titre,sku'
         ]);
 
         // Apply filters

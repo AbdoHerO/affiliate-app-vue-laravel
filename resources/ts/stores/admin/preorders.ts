@@ -26,6 +26,7 @@ export interface PreorderArticle {
   produit: {
     id: string
     titre: string
+    sku?: string | null
     images?: Array<{ url: string }>
   }
   variante?: {

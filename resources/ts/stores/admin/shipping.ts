@@ -64,6 +64,22 @@ export interface ShippingOrder {
     ville: string
     adresse: string
   }
+  articles?: Array<{
+    id: string
+    produit_id: string
+    variante_id?: string
+    quantite: number
+    prix_unitaire: number
+    produit: {
+      id: string
+      titre: string
+      sku?: string | null
+    }
+    variante?: {
+      id: string
+      nom: string
+    }
+  }>
   shipping_parcel: ShippingParcel
 }
 

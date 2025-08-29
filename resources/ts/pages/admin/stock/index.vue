@@ -104,15 +104,16 @@ const breadcrumbs = computed(() => {
 const headers = computed(() => {
   try {
     return [
-      { title: t('stock.columns.product'), key: 'product', sortable: false, width: '25%', minWidth: '250px' },
-      { title: t('stock.columns.variant'), key: 'variant', sortable: false, width: '15%', minWidth: '120px' },
-      { title: t('stock.columns.category'), key: 'category', sortable: false, width: '12%', minWidth: '100px' },
-      { title: t('stock.columns.boutique'), key: 'boutique', sortable: false, width: '12%', minWidth: '100px' },
-      { title: t('stock.columns.on_hand'), key: 'on_hand', sortable: true, align: 'center' as const, width: '8%', minWidth: '80px' },
-      { title: t('stock.columns.reserved'), key: 'reserved', sortable: true, align: 'center' as const, width: '8%', minWidth: '80px' },
-      { title: t('stock.columns.available'), key: 'available', sortable: true, align: 'center' as const, width: '8%', minWidth: '80px' },
-      { title: t('stock.columns.last_movement'), key: 'last_movement', sortable: false, width: '12%', minWidth: '120px' },
-      { title: t('common.actions'), key: 'actions', sortable: false, align: 'center' as const, width: '120px' },
+      { title: t('stock.columns.product'), key: 'product', sortable: false, width: '22%', minWidth: '220px' },
+      { title: 'SKU', key: 'sku', sortable: false, width: '10%', minWidth: '100px' },
+      { title: t('stock.columns.variant'), key: 'variant', sortable: false, width: '13%', minWidth: '110px' },
+      { title: t('stock.columns.category'), key: 'category', sortable: false, width: '10%', minWidth: '90px' },
+      { title: t('stock.columns.boutique'), key: 'boutique', sortable: false, width: '10%', minWidth: '90px' },
+      { title: t('stock.columns.on_hand'), key: 'on_hand', sortable: true, align: 'center' as const, width: '7%', minWidth: '70px' },
+      { title: t('stock.columns.reserved'), key: 'reserved', sortable: true, align: 'center' as const, width: '7%', minWidth: '70px' },
+      { title: t('stock.columns.available'), key: 'available', sortable: true, align: 'center' as const, width: '7%', minWidth: '70px' },
+      { title: t('stock.columns.last_movement'), key: 'last_movement', sortable: false, width: '10%', minWidth: '100px' },
+      { title: t('common.actions'), key: 'actions', sortable: false, align: 'center' as const, width: '4%', minWidth: '120px' },
     ]
   } catch (error) {
     return [
@@ -451,6 +452,20 @@ onBeforeUnmount(() => {
               <div class="text-caption text-medium-emphasis">{{ item.product.slug }}</div>
             </div>
           </div>
+        </template>
+
+        <!-- SKU Column -->
+        <template #item.sku="{ item }">
+          <VChip
+            v-if="item.product.sku"
+            size="small"
+            color="secondary"
+            variant="tonal"
+            class="font-mono"
+          >
+            {{ item.product.sku }}
+          </VChip>
+          <span v-else class="text-medium-emphasis">—</span>
         </template>
 
         <!-- Variant Column -->

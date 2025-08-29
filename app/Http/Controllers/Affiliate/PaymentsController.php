@@ -40,7 +40,7 @@ class PaymentsController extends Controller
 
             $query = CommissionAffilie::with([
                 'commande:id,statut,total_ttc,created_at',
-                'commandeArticle.produit:id,titre'
+                'commandeArticle.produit:id,titre,sku'
             ])
             ->where('user_id', $user->id); // Scope to current affiliate only
 

@@ -57,6 +57,7 @@ const breadcrumbs = computed(() => [
 const commissionsHeaders = [
   { title: t('table.order'), key: 'commande.id', sortable: false },
   { title: t('table.product'), key: 'commandeArticle.produit.titre', sortable: false },
+  { title: 'SKU', key: 'sku', sortable: false, width: '100px' },
   { title: 'Type Commande', key: 'order_type', sortable: false },
   { title: t('table.type'), key: 'type', sortable: true },
   { title: t('affiliate_payments_base_amount'), key: 'base_amount', sortable: true },
@@ -416,6 +417,20 @@ onMounted(() => {
               <span class="font-weight-medium">
                 {{ item.commandeArticle?.produit?.titre || 'N/A' }}
               </span>
+            </template>
+
+            <!-- SKU Column -->
+            <template #item.sku="{ item }">
+              <VChip
+                v-if="item.commandeArticle?.produit?.sku"
+                size="small"
+                color="secondary"
+                variant="outlined"
+                class="font-mono"
+              >
+                {{ item.commandeArticle.produit.sku }}
+              </VChip>
+              <span v-else class="text-medium-emphasis">—</span>
             </template>
 
             <!-- Order Type Column -->

@@ -45,10 +45,10 @@ const pagination = computed(() => shippingStore.pagination)
 
 // Table headers
 const headers = [
-  { title: t('code'), key: 'id', sortable: true },
   { title: t('tracking'), key: 'tracking_number', sortable: true },
   { title: t('client'), key: 'client', sortable: false },
   { title: t('city'), key: 'city', sortable: false },
+  { title: 'SKU', key: 'sku_list', sortable: false, width: '150px' },
   { title: t('status'), key: 'status', sortable: true },
   { title: t('total'), key: 'total_ttc', sortable: true },
   { title: t('updated'), key: 'updated_at', sortable: true },
@@ -599,6 +599,22 @@ onMounted(() => {
           >
             {{ item.shipping_parcel.city_name || item.adresse.ville }}
           </VChip>
+        </template>
+
+        <!-- SKU List Column -->
+        <template #item.sku_list="{ item }">
+          <div class="d-flex flex-wrap gap-1">
+            <VChip
+              v-for="article in item.articles || []"
+              :key="article.id"
+              size="x-small"
+              color="secondary"
+              variant="outlined"
+              class="font-mono"
+            >
+              {{ article.produit.sku || 'N/A' }}
+            </VChip>
+          </div>
         </template>
 
         <!-- Status Column -->

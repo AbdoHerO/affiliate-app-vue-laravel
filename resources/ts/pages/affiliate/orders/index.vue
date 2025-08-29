@@ -52,6 +52,7 @@ const headers = [
   { title: t('table.reference'), key: 'id', sortable: true },
   { title: t('table.client'), key: 'client.nom_complet', sortable: false },
   { title: t('table.boutique'), key: 'boutique.nom', sortable: false },
+  { title: 'SKU', key: 'sku_list', sortable: false, width: '150px' },
   { title: 'Type', key: 'type_command', sortable: true },
   { title: t('table.status'), key: 'statut', sortable: true },
   { title: t('table.total_ttc'), key: 'total_ttc', sortable: true },
@@ -284,6 +285,22 @@ onMounted(() => {
           >
             {{ item.boutique?.nom || 'N/A' }}
           </VChip>
+        </template>
+
+        <!-- SKU List Column -->
+        <template #item.sku_list="{ item }">
+          <div class="d-flex flex-wrap gap-1">
+            <VChip
+              v-for="article in item.articles || []"
+              :key="article.id"
+              size="x-small"
+              color="secondary"
+              variant="outlined"
+              class="font-mono"
+            >
+              {{ article.produit?.sku || 'N/A' }}
+            </VChip>
+          </div>
         </template>
 
         <!-- Type Command Column -->

@@ -47,6 +47,7 @@ export interface AffiliateOrder {
     produit?: {
       id: string
       titre: string
+      sku?: string | null
     }
     variante?: {
       id: string

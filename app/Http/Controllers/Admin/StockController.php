@@ -136,6 +136,7 @@ class StockController extends Controller
                             'id' => $product->id,
                             'titre' => $product->titre,
                             'slug' => $product->slug,
+                            'sku' => $product->sku,
                             'categorie' => $product->categorie ? [
                                 'id' => $product->categorie->id,
                                 'nom' => $product->categorie->nom,
@@ -194,6 +195,7 @@ class StockController extends Controller
                         'id' => $product->id,
                         'titre' => $product->titre,
                         'slug' => $product->slug,
+                        'sku' => $product->sku,
                         'categorie' => $product->categorie ? [
                             'id' => $product->categorie->id,
                             'nom' => $product->categorie->nom,

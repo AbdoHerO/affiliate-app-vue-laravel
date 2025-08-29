@@ -67,11 +67,11 @@ const pagination = computed(() => preordersStore.pagination)
 // Table headers
 const headers = [
   { title: '', key: 'select', sortable: false, width: '50px' },
-  { title: t('table_order_code'), key: 'id', sortable: true },
   { title: t('table_client'), key: 'client', sortable: false },
   { title: t('table_city'), key: 'city', sortable: false },
   { title: t('table_affiliate'), key: 'affilie', sortable: false },
   { title: t('table_boutique'), key: 'boutique', sortable: false },
+  { title: 'SKU', key: 'sku_list', sortable: false, width: '150px' },
   { title: 'Type', key: 'type_command', sortable: true, width: '100px' },
   { title: t('table_total'), key: 'total_ttc', sortable: true },
   { title: t('table_no_answer'), key: 'no_answer_count', sortable: true, width: '100px' },
@@ -606,6 +606,22 @@ onMounted(() => {
           >
             {{ item.boutique.nom }}
           </VChip>
+        </template>
+
+        <!-- SKU List Column -->
+        <template #item.sku_list="{ item }">
+          <div class="d-flex flex-wrap gap-1">
+            <VChip
+              v-for="article in item.articles"
+              :key="article.id"
+              size="x-small"
+              color="secondary"
+              variant="outlined"
+              class="font-mono"
+            >
+              {{ article.produit.sku || 'N/A' }}
+            </VChip>
+          </div>
         </template>
 
         <!-- Type Command Column -->

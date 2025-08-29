@@ -132,14 +132,31 @@ class CommissionService
             return;
         }
 
+        Log::info('Applying delivery fee deduction', [
+            'order_id' => $order->id,
+            'order_type' => $order->type_command,
+            'delivery_fee' => $deliveryFee,
+            'commissions_count' => count($commissions),
+            'total_commission_before' => collect($commissions)->sum('amount')
+        ]);
+
         // For exchange orders, the delivery fee should make the commission negative
         if ($order->type_command === 'exchange') {
             // For exchange orders, set commission to negative delivery fee
+            // Split the negative amount across all commissions if multiple items
+            $negativeAmountPerCommission = -$deliveryFee / count($commissions);
+
             foreach ($commissions as $commission) {
-                $commission->amount = -$deliveryFee;
-                $commission->notes = "Exchange order: commission = -delivery fee ({$deliveryFee} MAD)";
+                $commission->amount = round($negativeAmountPerCommission, 2);
+                $commission->notes = "Exchange order: commission = -delivery fee (total: {$deliveryFee} MAD)";
                 $commission->rule_code = 'EXCHANGE_NEGATIVE_DELIVERY';
                 $commission->save();
+
+                Log::info('Applied exchange negative commission', [
+                    'commission_id' => $commission->id,
+                    'amount' => $commission->amount,
+                    'delivery_fee' => $deliveryFee
+                ]);
             }
         } else {
             // For normal orders, distribute the delivery fee deduction proportionally
@@ -148,18 +165,39 @@ class CommissionService
             if ($totalCommission > 0) {
                 foreach ($commissions as $commission) {
                     $proportion = $commission->amount / $totalCommission;
-                    $deduction = $deliveryFee * $proportion;
-                    $commission->amount = $commission->amount - $deduction;
+                    $deduction = round($deliveryFee * $proportion, 2);
+                    $originalAmount = $commission->amount;
+                    $commission->amount = round($commission->amount - $deduction, 2);
                     $commission->notes = ($commission->notes ?? '') . " | Delivery fee deduction: -{$deduction} MAD";
                     $commission->save();
+
+                    Log::info('Applied proportional delivery fee deduction', [
+                        'commission_id' => $commission->id,
+                        'original_amount' => $originalAmount,
+                        'deduction' => $deduction,
+                        'final_amount' => $commission->amount,
+                        'proportion' => $proportion
+                    ]);
                 }
             } else {
                 // If no positive commission, apply full delivery fee to first commission
                 $commissions[0]->amount = -$deliveryFee;
                 $commissions[0]->notes = "No product commission, full delivery fee deduction: -{$deliveryFee} MAD";
+                $commissions[0]->rule_code = 'NEGATIVE_DELIVERY_ONLY';
                 $commissions[0]->save();
+
+                Log::info('Applied full delivery fee as negative commission', [
+                    'commission_id' => $commissions[0]->id,
+                    'amount' => $commissions[0]->amount,
+                    'delivery_fee' => $deliveryFee
+                ]);
             }
         }
+
+        Log::info('Delivery fee deduction completed', [
+            'order_id' => $order->id,
+            'total_commission_after' => collect($commissions)->sum('amount')
+        ]);
     }
 
     /**
@@ -203,25 +241,39 @@ class CommissionService
     {
         // Use sell_price if available, otherwise fall back to prix_unitaire
         $salePrice = $article->sell_price ?? $article->prix_unitaire;
-        $costPrice = $product->prix_achat;
-        $recommendedPrice = $product->prix_vente;
-        $fixedCommission = $product->prix_affilie;
-        $quantity = $article->quantite;
+        $costPrice = $product->prix_achat ?? 0;
+        $recommendedPrice = $product->prix_vente ?? 0;
+        $fixedCommission = $product->prix_affilie ?? 0;
+        $quantity = $article->quantite ?? 1;
 
         // Log calculation inputs for audit
         $calculationInputs = [
             'product_id' => $product->id,
+            'product_title' => $product->titre,
             'cost_price' => $costPrice,
             'recommended_price' => $recommendedPrice,
             'fixed_commission' => $fixedCommission,
             'sale_price' => $salePrice,
             'quantity' => $quantity,
+            'article_type' => $article->type_command ?? 'order_sample',
         ];
 
         Log::info('Commission calculation inputs', $calculationInputs);
 
-        // RULE 1: Recommended price with fixed commission
-        if (abs($salePrice - $recommendedPrice) < 0.01 && $fixedCommission && $fixedCommission > 0) {
+        // Ensure we have valid prices
+        if ($salePrice <= 0) {
+            Log::warning('Invalid sale price for commission calculation', $calculationInputs);
+            return [
+                'base_amount' => 0,
+                'rate' => null,
+                'amount' => 0,
+                'rule_code' => 'INVALID_SALE_PRICE',
+                'notes' => 'Invalid sale price - cannot calculate commission'
+            ];
+        }
+
+        // RULE 1: Fixed commission when using recommended price
+        if (abs($salePrice - $recommendedPrice) < 0.01 && $fixedCommission > 0) {
             $commissionAmount = round($fixedCommission * $quantity, 2);
 
             Log::info('Applied FIXED_COMMISSION rule', [
@@ -247,7 +299,10 @@ class CommissionService
         Log::info("Applied {$ruleCode} rule", [
             'calculation' => "max(0, {$salePrice} - {$costPrice}) × {$quantity} = {$commissionAmount}",
             'margin_per_unit' => $marginPerUnit,
-            'commission_amount' => $commissionAmount
+            'commission_amount' => $commissionAmount,
+            'sale_price' => $salePrice,
+            'cost_price' => $costPrice,
+            'quantity' => $quantity
         ]);
 
         return [

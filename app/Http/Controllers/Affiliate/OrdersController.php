@@ -38,7 +38,7 @@ class OrdersController extends Controller
                 'client:id,nom_complet,telephone',
                 'clientFinal:id,nom_complet,telephone,email',
                 'adresse:id,ville,adresse',
-                'articles.produit:id,titre',
+                'articles.produit:id,titre,sku',
                 'articles.variante:id,nom',
                 'shippingParcel',
                 'expeditions'

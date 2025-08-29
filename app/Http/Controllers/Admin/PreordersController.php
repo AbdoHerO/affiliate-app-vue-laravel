@@ -30,7 +30,7 @@ class PreordersController extends Controller
             'client:id,nom_complet,telephone',
             'clientFinal:id,nom_complet,telephone,email', // Add client final relationship
             'adresse:id,ville,adresse',
-            'articles.produit:id,titre',
+            'articles.produit:id,titre,sku',
             'articles.variante:id,nom'
         ])
         ->select([

@@ -3,6 +3,7 @@ export interface StockItem {
     id: string
     titre: string
     slug: string
+    sku?: string | null
     categorie?: {
       id: string
       nom: string

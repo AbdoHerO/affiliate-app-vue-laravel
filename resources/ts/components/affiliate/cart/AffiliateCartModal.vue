@@ -77,7 +77,7 @@ const adjustedCommission = computed(() => {
     return finalCommission
   }
 
-  // For normal orders or mixed orders, calculate product commission then subtract delivery
+  // For normal orders or mixed orders, calculate product commission (no delivery fee deduction in estimation)
   let totalProductCommission = 0
 
   cartStore.items.forEach(item => {
@@ -85,33 +85,59 @@ const adjustedCommission = computed(() => {
       // Exchange items contribute 0 to product commission
       totalProductCommission += 0
     } else {
-      // Calculate commission for order_sample items
+      // Calculate commission for order_sample items - match backend logic
       const sellPrice = item.sell_price || item.product.prix_vente
       const costPrice = item.product.prix_achat
-      const margin = Math.max(0, sellPrice - costPrice)
-      totalProductCommission += margin * item.qty
+      const fixedCommission = item.product.prix_affilie
+
+      let itemCommission = 0
+      if (fixedCommission && fixedCommission > 0) {
+        // Use fixed commission if available
+        itemCommission = fixedCommission * item.qty
+      } else {
+        // Calculate margin-based commission
+        const margin = Math.max(0, sellPrice - costPrice)
+        itemCommission = margin * item.qty
+      }
+
+      totalProductCommission += itemCommission
     }
   })
 
-  // Subtract delivery fee from product commission
-  const finalCommission = totalProductCommission - deliveryFee.value
+  // For estimation, we don't subtract delivery fee - that happens during actual commission generation
+  const finalCommission = totalProductCommission
 
   console.log('💰 Commission calculation (Normal/Mixed):', {
     type: hasExchanges ? 'mixed' : 'normal',
-    items: cartStore.items.map(item => ({
-      title: item.product.titre,
-      type: item.type_command,
-      qty: item.qty,
-      sellPrice: item.sell_price || item.product.prix_vente,
-      costPrice: item.product.prix_achat,
-      margin: item.type_command === 'exchange' ? 0 :
-        Math.max(0, (item.sell_price || item.product.prix_vente) - item.product.prix_achat),
-      commission: item.type_command === 'exchange' ? 0 :
-        Math.max(0, (item.sell_price || item.product.prix_vente) - item.product.prix_achat) * item.qty
-    })),
+    items: cartStore.items.map(item => {
+      const sellPrice = item.sell_price || item.product.prix_vente
+      const costPrice = item.product.prix_achat
+      const fixedCommission = item.product.prix_affilie
+
+      let itemCommission = 0
+      if (item.type_command !== 'exchange') {
+        if (fixedCommission && fixedCommission > 0) {
+          itemCommission = fixedCommission * item.qty
+        } else {
+          const margin = Math.max(0, sellPrice - costPrice)
+          itemCommission = margin * item.qty
+        }
+      }
+
+      return {
+        title: item.product.titre,
+        type: item.type_command,
+        qty: item.qty,
+        sellPrice,
+        costPrice,
+        fixedCommission,
+        itemCommission
+      }
+    }),
     totalProductCommission,
     deliveryFee: deliveryFee.value,
-    finalCommission
+    finalCommission,
+    note: 'Delivery fee deduction happens during actual commission generation, not in estimation'
   })
 
   return finalCommission

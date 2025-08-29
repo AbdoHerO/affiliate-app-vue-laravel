@@ -32,6 +32,7 @@ export interface AffiliateCommission {
     produit?: {
       id: string
       titre: string
+      sku?: string | null
     }
   }
 }
