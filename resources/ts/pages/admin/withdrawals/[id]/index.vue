@@ -60,7 +60,7 @@ const breadcrumbItems = computed(() => [
 const commissionHeaders = [
   { title: t('admin_commissions_title'), key: 'commission.id', sortable: false },
   { title: t('table_order_id'), key: 'commission.commande.id', sortable: false },
-  { title: t('table_product'), key: 'commission.produit.titre', sortable: false },
+  { title: 'SKU', key: 'commission.sku', sortable: false, width: '150px' },
   { title: 'Type Commande', key: 'commission.order_type', sortable: false },
   { title: t('admin_withdrawals_amount'), key: 'amount', sortable: false },
   { title: t('table_status'), key: 'commission.status', sortable: false },
@@ -426,11 +426,22 @@ onMounted(() => {
             </div>
           </template>
 
-          <!-- Product -->
-          <template #item.commission.produit.titre="{ item }">
-            <div class="text-body-2">
-              {{ item.commission?.produit?.titre || 'N/A' }}
+          <!-- SKU -->
+          <template #item.commission.sku="{ item }">
+            <div v-if="item.commission?.commandeArticle?.produit">
+              <div class="font-weight-medium mb-1">{{ item.commission.commandeArticle.produit.titre }}</div>
+              <VChip
+                v-if="item.commission.commandeArticle.produit.sku"
+                size="small"
+                color="secondary"
+                variant="outlined"
+                class="font-mono"
+              >
+                {{ item.commission.commandeArticle.produit.sku }}
+              </VChip>
+              <span v-else class="text-caption text-medium-emphasis">No SKU</span>
             </div>
+            <span v-else class="text-medium-emphasis">N/A</span>
           </template>
 
           <!-- Order Type -->

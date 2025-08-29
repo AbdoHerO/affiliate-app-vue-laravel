@@ -63,12 +63,13 @@ class WithdrawalResource extends JsonResource
                                     ];
                                 }),
                                 'produit' => $this->when(
-                                    $item->commission->relationLoaded('commandeArticle') && 
-                                    $item->commission->commandeArticle?->relationLoaded('produit'), 
+                                    $item->commission->relationLoaded('commandeArticle') &&
+                                    $item->commission->commandeArticle?->relationLoaded('produit'),
                                     function () use ($item) {
                                         return [
                                             'id' => $item->commission->commandeArticle->produit->id,
                                             'titre' => $item->commission->commandeArticle->produit->titre,
+                                            'sku' => $item->commission->commandeArticle->produit->sku,
                                         ];
                                     }
                                 ),

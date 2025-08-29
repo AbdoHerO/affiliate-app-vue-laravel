@@ -62,8 +62,7 @@ const typeOptions = [
 const headers = [
   { title: t('table_column_affiliate'), key: 'affiliate.nom_complet', sortable: true },
   { title: t('table_column_order'), key: 'commande_id', sortable: true },
-  { title: t('table_column_product'), key: 'product', sortable: false },
-  { title: 'SKU', key: 'sku', sortable: false, width: '100px' },
+  { title: 'SKU', key: 'sku', sortable: false, width: '120px' },
   { title: 'Type Commande', key: 'order_type', sortable: false },
   { title: t('table_column_type'), key: 'type', sortable: true },
   { title: t('admin_commissions_base_amount'), key: 'base_amount', sortable: true },
@@ -553,26 +552,22 @@ onMounted(async () => {
           </VChip>
         </template>
 
-        <!-- Product Column -->
-        <template #item.product="{ item }">
-          <div v-if="item.commande_article?.produit">
-            <div class="font-weight-medium">{{ item.commande_article.produit.titre }}</div>
-          </div>
-          <span v-else class="text-medium-emphasis">{{ t('not_available') }}</span>
-        </template>
-
         <!-- SKU Column -->
         <template #item.sku="{ item }">
-          <VChip
-            v-if="item.commande_article?.produit?.sku"
-            size="small"
-            color="secondary"
-            variant="outlined"
-            class="font-mono"
-          >
-            {{ item.commande_article.produit.sku }}
-          </VChip>
-          <span v-else class="text-medium-emphasis">—</span>
+          <div v-if="item.commande_article?.produit">
+            <div class="font-weight-medium mb-1">{{ item.commande_article.produit.titre }}</div>
+            <VChip
+              v-if="item.commande_article.produit.sku"
+              size="small"
+              color="secondary"
+              variant="outlined"
+              class="font-mono"
+            >
+              {{ item.commande_article.produit.sku }}
+            </VChip>
+            <span v-else class="text-caption text-medium-emphasis">No SKU</span>
+          </div>
+          <span v-else class="text-medium-emphasis">{{ t('not_available') }}</span>
         </template>
 
         <!-- Order Type Column -->

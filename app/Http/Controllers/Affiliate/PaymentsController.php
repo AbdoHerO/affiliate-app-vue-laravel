@@ -211,7 +211,7 @@ class PaymentsController extends Controller
             $withdrawal = Withdrawal::with([
                 'items.commission:id,amount,status,type,created_at,commande_id,commande_article_id',
                 'items.commission.commande:id,statut,total_ttc,created_at',
-                'items.commission.commandeArticle.produit:id,titre'
+                'items.commission.commandeArticle.produit:id,titre,sku'
             ])
                 ->where('user_id', $user->id) // Ensure ownership
                 ->findOrFail($id);

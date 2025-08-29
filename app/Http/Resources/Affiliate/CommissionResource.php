@@ -58,6 +58,7 @@ class CommissionResource extends JsonResource
                             return [
                                 'id' => $this->commandeArticle->produit->id,
                                 'titre' => $this->commandeArticle->produit->titre ?? 'N/A',
+                                'sku' => $this->commandeArticle->produit->sku ?? null,
                                 'prix_vente' => $this->commandeArticle->produit->prix_vente ?? 0,
                             ];
                         }
