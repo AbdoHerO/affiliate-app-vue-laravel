@@ -76,13 +76,13 @@ const errorBoundaryRef = ref()
 // Error handling
 onErrorCaptured((err, instance, info) => {
   console.error('🚨 [Stock Page] Error captured:', err, info)
-  
+
   // Check for navigation errors specifically
   const message = err.message || ''
   if (message.includes('navigation') || message.includes('router')) {
     checkEmergencyReset()
   }
-  
+
   return false // Let error boundary handle it
 })
 
@@ -290,16 +290,69 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <ErrorBoundary
-    ref="errorBoundaryRef"
-    fallback-route="/admin/dashboard"
-    :max-retries="3"
-    @error="handleError"
-    @retry="handleRetry"
-  >
+  <ErrorBoundary ref="errorBoundaryRef" fallback-route="/admin/dashboard" :max-retries="3" @error="handleError"
+    @retry="handleRetry">
     <div>
       <!-- Breadcrumbs -->
       <Breadcrumbs :items="breadcrumbs" class="mb-6" />
+
+
+
+      <!-- Header with KPI Cards -->
+      <VRow class="mb-6">
+        <VCol cols="12">
+          <VCard>
+            <VCardText>
+              <div class="d-flex justify-space-between align-center mb-4">
+                <div>
+                  <h2 class="text-h4 mb-2">{{ t('stock.title') }}</h2>
+                  <p class="text-body-1 mb-0">{{ t('stock.subtitle') }}</p>
+                </div>
+              </div>
+
+              <!-- KPI Cards -->
+              <VRow v-if="summary">
+                <VCol cols="12" sm="6" md="3">
+                  <VCard color="primary" variant="tonal">
+                    <VCardText class="text-center">
+                      <VIcon icon="tabler-package" size="32" class="mb-2" />
+                      <div class="text-h5 font-weight-bold">{{ summary.totals.products_count }}</div>
+                      <div class="text-body-2">{{ t('stock.kpi.products') }}</div>
+                    </VCardText>
+                  </VCard>
+                </VCol>
+                <VCol cols="12" sm="6" md="3">
+                  <VCard color="success" variant="tonal">
+                    <VCardText class="text-center">
+                      <VIcon icon="tabler-stack" size="32" class="mb-2" />
+                      <div class="text-h5 font-weight-bold">{{ summary.totals.total_on_hand }}</div>
+                      <div class="text-body-2">{{ t('stock.kpi.on_hand') }}</div>
+                    </VCardText>
+                  </VCard>
+                </VCol>
+                <VCol cols="12" sm="6" md="3">
+                  <VCard color="warning" variant="tonal">
+                    <VCardText class="text-center">
+                      <VIcon icon="tabler-clock" size="32" class="mb-2" />
+                      <div class="text-h5 font-weight-bold">{{ summary.totals.total_reserved }}</div>
+                      <div class="text-body-2">{{ t('stock.kpi.reserved') }}</div>
+                    </VCardText>
+                  </VCard>
+                </VCol>
+                <VCol cols="12" sm="6" md="3">
+                  <VCard color="info" variant="tonal">
+                    <VCardText class="text-center">
+                      <VIcon icon="tabler-check" size="32" class="mb-2" />
+                      <div class="text-h5 font-weight-bold">{{ summary.totals.total_available }}</div>
+                      <div class="text-body-2">{{ t('stock.kpi.available') }}</div>
+                    </VCardText>
+                  </VCard>
+                </VCol>
+              </VRow>
+            </VCardText>
+          </VCard>
+        </VCol>
+      </VRow>
 
       <!-- Stock Statistics Table -->
       <VCard class="mb-6">
@@ -308,24 +361,11 @@ onBeforeUnmount(() => {
           Statistiques de Stock par Produit
         </VCardTitle>
         <VCardText>
-          <VDataTable
-            :headers="stockStatsHeaders"
-            :items="stockStatisticsTable"
-            :loading="loading"
-            density="compact"
-            :items-per-page="10"
-            :search="stockStatsSearch"
-          >
+          <VDataTable :headers="stockStatsHeaders" :items="stockStatisticsTable" :loading="loading" density="compact"
+            :items-per-page="10" :search="stockStatsSearch">
             <template #top>
-              <VTextField
-                v-model="stockStatsSearch"
-                label="Rechercher un produit..."
-                prepend-inner-icon="tabler-search"
-                variant="outlined"
-                density="compact"
-                class="mb-4"
-                clearable
-              />
+              <VTextField v-model="stockStatsSearch" label="Rechercher un produit..." prepend-inner-icon="tabler-search"
+                variant="outlined" density="compact" class="mb-4" clearable />
             </template>
 
             <template #item.product="{ item }">
@@ -348,21 +388,13 @@ onBeforeUnmount(() => {
             </template>
 
             <template #item.available="{ item }">
-              <VChip
-                size="small"
-                :color="getStockStatusColor(item.metrics.available)"
-                variant="tonal"
-              >
+              <VChip size="small" :color="getStockStatusColor(item.metrics.available)" variant="tonal">
                 {{ item.metrics.available }}
               </VChip>
             </template>
 
             <template #item.status="{ item }">
-              <VChip
-                size="small"
-                :color="getStockStatusColor(item.metrics.available)"
-                variant="tonal"
-              >
+              <VChip size="small" :color="getStockStatusColor(item.metrics.available)" variant="tonal">
                 <VIcon :icon="getStockStatusIcon(item.metrics.available)" size="12" class="me-1" />
                 {{ getStockStatusLabel(item.metrics.available) }}
               </VChip>
@@ -371,449 +403,237 @@ onBeforeUnmount(() => {
         </VCardText>
       </VCard>
 
-      <!-- Header with KPI Cards -->
-      <VRow class="mb-6">
-        <VCol cols="12">
-          <VCard>
-            <VCardText>
-              <div class="d-flex justify-space-between align-center mb-4">
-                <div>
-                  <h2 class="text-h4 mb-2">{{ t('stock.title') }}</h2>
-                  <p class="text-body-1 mb-0">{{ t('stock.subtitle') }}</p>
-                </div>
-              </div>
-
-            <!-- KPI Cards -->
-            <VRow v-if="summary">
-              <VCol cols="12" sm="6" md="3">
-                <VCard color="primary" variant="tonal">
-                  <VCardText class="text-center">
-                    <VIcon icon="tabler-package" size="32" class="mb-2" />
-                    <div class="text-h5 font-weight-bold">{{ summary.totals.products_count }}</div>
-                    <div class="text-body-2">{{ t('stock.kpi.products') }}</div>
-                  </VCardText>
-                </VCard>
-              </VCol>
-              <VCol cols="12" sm="6" md="3">
-                <VCard color="success" variant="tonal">
-                  <VCardText class="text-center">
-                    <VIcon icon="tabler-stack" size="32" class="mb-2" />
-                    <div class="text-h5 font-weight-bold">{{ summary.totals.total_on_hand }}</div>
-                    <div class="text-body-2">{{ t('stock.kpi.on_hand') }}</div>
-                  </VCardText>
-                </VCard>
-              </VCol>
-              <VCol cols="12" sm="6" md="3">
-                <VCard color="warning" variant="tonal">
-                  <VCardText class="text-center">
-                    <VIcon icon="tabler-clock" size="32" class="mb-2" />
-                    <div class="text-h5 font-weight-bold">{{ summary.totals.total_reserved }}</div>
-                    <div class="text-body-2">{{ t('stock.kpi.reserved') }}</div>
-                  </VCardText>
-                </VCard>
-              </VCol>
-              <VCol cols="12" sm="6" md="3">
-                <VCard color="info" variant="tonal">
-                  <VCardText class="text-center">
-                    <VIcon icon="tabler-check" size="32" class="mb-2" />
-                    <div class="text-h5 font-weight-bold">{{ summary.totals.total_available }}</div>
-                    <div class="text-body-2">{{ t('stock.kpi.available') }}</div>
-                  </VCardText>
-                </VCard>
-              </VCol>
-            </VRow>
-          </VCardText>
-        </VCard>
-      </VCol>
-    </VRow>
-
-    <!-- Filters -->
-    <VCard class="mb-6">
-      <VCardText>
-        <div class="d-flex justify-space-between align-center mb-4">
-          <h3 class="text-h6">{{ t('stock.filters.title') }}</h3>
-          <VBtn
-            color="secondary"
-            variant="outlined"
-            size="small"
-            prepend-icon="tabler-refresh"
-            @click="clearFilters"
-          >
-            {{ t('common.clear') }}
-          </VBtn>
-        </div>
-
-        <VRow>
-          <!-- Search - Full width on mobile, 1/3 on desktop -->
-          <VCol cols="12" md="4">
-            <VTextField
-              v-model="filters.q"
-              :label="t('stock.filters.search')"
-              prepend-inner-icon="tabler-search"
-              variant="outlined"
-              density="compact"
-              clearable
-              :placeholder="t('stock.filters.search_placeholder')"
-            />
-          </VCol>
-
-          <!-- Boutique - Half width on tablet, 1/4 on desktop -->
-          <VCol cols="12" sm="6" md="3">
-            <VSelect
-              v-model="filters.boutique_id"
-              :items="boutiques"
-              :label="t('stock.filters.boutique')"
-              item-title="nom"
-              item-value="id"
-              variant="outlined"
-              density="compact"
-              clearable
-            />
-          </VCol>
-
-          <!-- Category - Half width on tablet, 1/4 on desktop -->
-          <VCol cols="12" sm="6" md="3">
-            <VSelect
-              v-model="filters.categorie_id"
-              :items="categories"
-              :label="t('stock.filters.category')"
-              item-title="nom"
-              item-value="id"
-              variant="outlined"
-              density="compact"
-              clearable
-            />
-          </VCol>
-
-          <!-- With Variants Switch - Quarter width on tablet, 1/6 on desktop -->
-          <VCol cols="12" sm="6" md="2">
-            <VSwitch
-              v-model="filters.with_variants"
-              :label="t('stock.filters.with_variants')"
-              color="primary"
-              density="compact"
-            />
-          </VCol>
-        </VRow>
-
-        <!-- Quantity Filters Row -->
-        <VRow>
-          <VCol cols="12" sm="6" md="3">
-            <VTextField
-              v-model.number="filters.min_qty"
-              :label="t('stock.filters.min_qty')"
-              type="number"
-              variant="outlined"
-              density="compact"
-              min="0"
-              prepend-inner-icon="tabler-arrow-up"
-            />
-          </VCol>
-          <VCol cols="12" sm="6" md="3">
-            <VTextField
-              v-model.number="filters.max_qty"
-              :label="t('stock.filters.max_qty')"
-              type="number"
-              variant="outlined"
-              density="compact"
-              min="0"
-              prepend-inner-icon="tabler-arrow-down"
-            />
-          </VCol>
-        </VRow>
-      </VCardText>
-    </VCard>
-
-    <!-- Data Table -->
-    <VCard>
-      <VCardTitle class="d-flex justify-space-between align-center">
-        <span>{{ t('stock.table.title') }}</span>
-        <VChip
-          v-if="!loading"
-          size="small"
-          color="primary"
-          variant="tonal"
-        >
-          {{ pagination.total }} {{ t('stock.table.items') }}
-        </VChip>
-      </VCardTitle>
-
-      <VDataTableServer
-        :headers="headers"
-        :items="items"
-        :loading="loading"
-        :items-per-page="filters.per_page"
-        :page="filters.page"
-        :items-length="pagination.total"
-        @update:options="handleTableUpdate"
-        hide-default-footer
-        class="stock-table"
-      >
-
-        <!-- Product Column -->
-        <template #item.product="{ item }">
-          <div class="d-flex align-center">
-            <VAvatar
-              color="grey-lighten-2"
-              size="40"
-              class="me-3"
-            >
-              <VIcon icon="tabler-package" />
-            </VAvatar>
-            <div>
-              <div class="font-weight-medium">{{ item.product.titre }}</div>
-              <div class="text-caption text-medium-emphasis">{{ item.product.slug }}</div>
-            </div>
-          </div>
-        </template>
-
-        <!-- SKU Column -->
-        <template #item.sku="{ item }">
-          <VChip
-            v-if="item.product.sku"
-            size="small"
-            color="secondary"
-            variant="tonal"
-            class="font-mono"
-          >
-            {{ item.product.sku }}
-          </VChip>
-          <span v-else class="text-medium-emphasis">—</span>
-        </template>
-
-        <!-- Variant Column -->
-        <template #item.variant="{ item }">
-          <div v-if="item.variant">
-            <VChip
-              size="small"
-              color="primary"
-              variant="tonal"
-            >
-              {{ item.variant.libelle }}
-            </VChip>
-          </div>
-          <span v-else class="text-medium-emphasis">—</span>
-        </template>
-
-        <!-- Category Column -->
-        <template #item.category="{ item }">
-          <VChip
-            v-if="item.product.categorie"
-            size="small"
-            variant="outlined"
-          >
-            {{ item.product.categorie.nom }}
-          </VChip>
-          <span v-else class="text-medium-emphasis">—</span>
-        </template>
-
-        <!-- Boutique Column -->
-        <template #item.boutique="{ item }">
-          <VChip
-            size="small"
-            color="info"
-            variant="tonal"
-          >
-            {{ item.product.boutique.nom }}
-          </VChip>
-        </template>
-
-        <!-- On Hand Column -->
-        <template #item.on_hand="{ item }">
-          <VChip
-            size="small"
-            :color="stockStore.getStockStatusColor(item.metrics.available, item.metrics.on_hand)"
-            variant="tonal"
-          >
-            {{ item.metrics.on_hand }}
-          </VChip>
-        </template>
-
-        <!-- Reserved Column -->
-        <template #item.reserved="{ item }">
-          <VChip
-            size="small"
-            color="warning"
-            variant="tonal"
-          >
-            {{ item.metrics.reserved }}
-          </VChip>
-        </template>
-
-        <!-- Available Column -->
-        <template #item.available="{ item }">
-          <VChip
-            size="small"
-            :color="stockStore.getStockStatusColor(item.metrics.available, item.metrics.on_hand)"
-          >
-            {{ item.metrics.available }}
-          </VChip>
-        </template>
-
-        <!-- Last Movement Column -->
-        <template #item.last_movement="{ item }">
-          <div v-if="item.metrics.last_movement_at">
-            <div class="d-flex align-center">
-              <VIcon
-                :icon="stockStore.getMovementTypeIcon(item.metrics.last_movement_type || '')"
-                :color="stockStore.getMovementTypeColor(item.metrics.last_movement_type || '')"
-                size="16"
-                class="me-1"
-              />
-              <span class="text-caption">{{ item.metrics.last_movement_type }}</span>
-            </div>
-            <div class="text-caption text-medium-emphasis">
-              {{ $d(new Date(item.metrics.last_movement_at), 'short') }}
-            </div>
-          </div>
-          <span v-else class="text-medium-emphasis">—</span>
-        </template>
-
-        <!-- Actions Column -->
-        <template #item.actions="{ item }">
-          <div class="d-flex gap-1">
-            <VTooltip>
-              <template #activator="{ props }">
-                <VBtn
-                  v-bind="props"
-                  icon
-                  size="small"
-                  color="success"
-                  variant="text"
-                  @click="openMovementDialog(item, 'in')"
-                >
-                  <VIcon icon="tabler-arrow-up" />
-                </VBtn>
-              </template>
-              <span>{{ t('stock.actions.in') }}</span>
-            </VTooltip>
-
-            <VTooltip>
-              <template #activator="{ props }">
-                <VBtn
-                  v-bind="props"
-                  icon
-                  size="small"
-                  color="error"
-                  variant="text"
-                  @click="openMovementDialog(item, 'out')"
-                >
-                  <VIcon icon="tabler-arrow-down" />
-                </VBtn>
-              </template>
-              <span>{{ t('stock.actions.out') }}</span>
-            </VTooltip>
-
-            <VTooltip>
-              <template #activator="{ props }">
-                <VBtn
-                  v-bind="props"
-                  icon
-                  size="small"
-                  color="warning"
-                  variant="text"
-                  @click="openMovementDialog(item, 'adjust')"
-                >
-                  <VIcon icon="tabler-adjustments" />
-                </VBtn>
-              </template>
-              <span>{{ t('stock.actions.adjust') }}</span>
-            </VTooltip>
-
-            <VTooltip>
-              <template #activator="{ props }">
-                <VBtn
-                  v-bind="props"
-                  icon
-                  size="small"
-                  color="info"
-                  variant="text"
-                  @click="openHistoryDialog(item)"
-                >
-                  <VIcon icon="tabler-history" />
-                </VBtn>
-              </template>
-              <span>{{ t('stock.actions.history') }}</span>
-            </VTooltip>
-          </div>
-        </template>
-
-        <!-- Loading State -->
-        <template #loading>
-          <div class="pa-4">
-            <VSkeletonLoader
-              v-for="i in 8"
-              :key="i"
-              type="table-row"
-              class="mb-2"
-            />
-          </div>
-        </template>
-
-        <!-- No Data State -->
-        <template #no-data>
-          <div class="text-center py-12">
-            <VIcon
-              icon="tabler-package-off"
-              size="64"
-              color="grey-lighten-1"
-              class="mb-4"
-            />
-            <h3 class="text-h6 mb-2">{{ t('stock.table.no_data_title') }}</h3>
-            <p class="text-body-2 text-medium-emphasis mb-4">
-              {{ t('stock.table.no_data_subtitle') }}
-            </p>
-            <VBtn
-              color="primary"
-              variant="outlined"
-              prepend-icon="tabler-refresh"
-              @click="clearFilters"
-            >
-              {{ t('stock.table.reset_filters') }}
+      <!-- Filters -->
+      <VCard class="mb-6">
+        <VCardText>
+          <div class="d-flex justify-space-between align-center mb-4">
+            <h3 class="text-h6">{{ t('stock.filters.title') }}</h3>
+            <VBtn color="secondary" variant="outlined" size="small" prepend-icon="tabler-refresh" @click="clearFilters">
+              {{ t('common.clear') }}
             </VBtn>
           </div>
-        </template>
-      </VDataTableServer>
 
-      <!-- Pagination -->
-      <VCardText>
-        <VPagination
-          v-model="filters.page"
-          :length="pagination.last_page"
-          :total-visible="7"
-        />
-      </VCardText>
-    </VCard>
+          <VRow>
+            <!-- Search - Full width on mobile, 1/3 on desktop -->
+            <VCol cols="12" md="4">
+              <VTextField v-model="filters.q" :label="t('stock.filters.search')" prepend-inner-icon="tabler-search"
+                variant="outlined" density="compact" clearable :placeholder="t('stock.filters.search_placeholder')" />
+            </VCol>
 
-    <!-- Movement Dialog -->
-    <StockMovementDialog
-      v-if="showMovementDialog"
-      v-model="showMovementDialog"
-      :item="selectedItem"
-      :movement-type="movementType"
-      @saved="handleMovementCreated"
-    />
+            <!-- Boutique - Half width on tablet, 1/4 on desktop -->
+            <VCol cols="12" sm="6" md="3">
+              <VSelect v-model="filters.boutique_id" :items="boutiques" :label="t('stock.filters.boutique')"
+                item-title="nom" item-value="id" variant="outlined" density="compact" clearable />
+            </VCol>
 
-    <!-- History Dialog -->
-    <StockHistoryDialog
-      v-if="showHistoryDialog"
-      v-model="showHistoryDialog"
-      :item="selectedItem"
-    />
+            <!-- Category - Half width on tablet, 1/4 on desktop -->
+            <VCol cols="12" sm="6" md="3">
+              <VSelect v-model="filters.categorie_id" :items="categories" :label="t('stock.filters.category')"
+                item-title="nom" item-value="id" variant="outlined" density="compact" clearable />
+            </VCol>
 
-    <!-- Confirm Dialog -->
-    <ConfirmActionDialog
-      :is-dialog-visible="isConfirmDialogVisible"
-      :is-loading="isConfirmLoading"
-      :dialog-title="dialogTitle"
-      :dialog-text="dialogText"
-      :dialog-icon="dialogIcon"
-      :dialog-color="dialogColor"
-      :confirm-button-text="confirmButtonText"
-      :cancel-button-text="cancelButtonText"
-      @confirm="handleConfirm"
-      @cancel="handleCancel"
-    />
+            <!-- With Variants Switch - Quarter width on tablet, 1/6 on desktop -->
+            <VCol cols="12" sm="6" md="2">
+              <VSwitch v-model="filters.with_variants" :label="t('stock.filters.with_variants')" color="primary"
+                density="compact" />
+            </VCol>
+          </VRow>
+
+          <!-- Quantity Filters Row -->
+          <VRow>
+            <VCol cols="12" sm="6" md="3">
+              <VTextField v-model.number="filters.min_qty" :label="t('stock.filters.min_qty')" type="number"
+                variant="outlined" density="compact" min="0" prepend-inner-icon="tabler-arrow-up" />
+            </VCol>
+            <VCol cols="12" sm="6" md="3">
+              <VTextField v-model.number="filters.max_qty" :label="t('stock.filters.max_qty')" type="number"
+                variant="outlined" density="compact" min="0" prepend-inner-icon="tabler-arrow-down" />
+            </VCol>
+          </VRow>
+        </VCardText>
+      </VCard>
+
+      <!-- Data Table -->
+      <VCard>
+        <VCardTitle class="d-flex justify-space-between align-center">
+          <span>{{ t('stock.table.title') }}</span>
+          <VChip v-if="!loading" size="small" color="primary" variant="tonal">
+            {{ pagination.total }} {{ t('stock.table.items') }}
+          </VChip>
+        </VCardTitle>
+
+        <VDataTableServer :headers="headers" :items="items" :loading="loading" :items-per-page="filters.per_page"
+          :page="filters.page" :items-length="pagination.total" @update:options="handleTableUpdate" hide-default-footer
+          class="stock-table">
+
+          <!-- Product Column -->
+          <template #item.product="{ item }">
+            <div class="d-flex align-center">
+              <VAvatar color="grey-lighten-2" size="40" class="me-3">
+                <VIcon icon="tabler-package" />
+              </VAvatar>
+              <div>
+                <div class="font-weight-medium">{{ item.product.titre }}</div>
+                <div class="text-caption text-medium-emphasis">{{ item.product.slug }}</div>
+              </div>
+            </div>
+          </template>
+
+          <!-- SKU Column -->
+          <template #item.sku="{ item }">
+            <VChip v-if="item.product.sku" size="small" color="secondary" variant="tonal" class="font-mono">
+              {{ item.product.sku }}
+            </VChip>
+            <span v-else class="text-medium-emphasis">—</span>
+          </template>
+
+          <!-- Variant Column -->
+          <template #item.variant="{ item }">
+            <div v-if="item.variant">
+              <VChip size="small" color="primary" variant="tonal">
+                {{ item.variant.libelle }}
+              </VChip>
+            </div>
+            <span v-else class="text-medium-emphasis">—</span>
+          </template>
+
+          <!-- Category Column -->
+          <template #item.category="{ item }">
+            <VChip v-if="item.product.categorie" size="small" variant="outlined">
+              {{ item.product.categorie.nom }}
+            </VChip>
+            <span v-else class="text-medium-emphasis">—</span>
+          </template>
+
+          <!-- Boutique Column -->
+          <template #item.boutique="{ item }">
+            <VChip size="small" color="info" variant="tonal">
+              {{ item.product.boutique.nom }}
+            </VChip>
+          </template>
+
+          <!-- On Hand Column -->
+          <template #item.on_hand="{ item }">
+            <VChip size="small" :color="stockStore.getStockStatusColor(item.metrics.available, item.metrics.on_hand)"
+              variant="tonal">
+              {{ item.metrics.on_hand }}
+            </VChip>
+          </template>
+
+          <!-- Reserved Column -->
+          <template #item.reserved="{ item }">
+            <VChip size="small" color="warning" variant="tonal">
+              {{ item.metrics.reserved }}
+            </VChip>
+          </template>
+
+          <!-- Available Column -->
+          <template #item.available="{ item }">
+            <VChip size="small" :color="stockStore.getStockStatusColor(item.metrics.available, item.metrics.on_hand)">
+              {{ item.metrics.available }}
+            </VChip>
+          </template>
+
+          <!-- Last Movement Column -->
+          <template #item.last_movement="{ item }">
+            <div v-if="item.metrics.last_movement_at">
+              <div class="d-flex align-center">
+                <VIcon :icon="stockStore.getMovementTypeIcon(item.metrics.last_movement_type || '')"
+                  :color="stockStore.getMovementTypeColor(item.metrics.last_movement_type || '')" size="16"
+                  class="me-1" />
+                <span class="text-caption">{{ item.metrics.last_movement_type }}</span>
+              </div>
+              <div class="text-caption text-medium-emphasis">
+                {{ $d(new Date(item.metrics.last_movement_at), 'short') }}
+              </div>
+            </div>
+            <span v-else class="text-medium-emphasis">—</span>
+          </template>
+
+          <!-- Actions Column -->
+          <template #item.actions="{ item }">
+            <div class="d-flex gap-1">
+              <VTooltip>
+                <template #activator="{ props }">
+                  <VBtn v-bind="props" icon size="small" color="success" variant="text"
+                    @click="openMovementDialog(item, 'in')">
+                    <VIcon icon="tabler-arrow-up" />
+                  </VBtn>
+                </template>
+                <span>{{ t('stock.actions.in') }}</span>
+              </VTooltip>
+
+              <VTooltip>
+                <template #activator="{ props }">
+                  <VBtn v-bind="props" icon size="small" color="error" variant="text"
+                    @click="openMovementDialog(item, 'out')">
+                    <VIcon icon="tabler-arrow-down" />
+                  </VBtn>
+                </template>
+                <span>{{ t('stock.actions.out') }}</span>
+              </VTooltip>
+
+              <VTooltip>
+                <template #activator="{ props }">
+                  <VBtn v-bind="props" icon size="small" color="warning" variant="text"
+                    @click="openMovementDialog(item, 'adjust')">
+                    <VIcon icon="tabler-adjustments" />
+                  </VBtn>
+                </template>
+                <span>{{ t('stock.actions.adjust') }}</span>
+              </VTooltip>
+
+              <VTooltip>
+                <template #activator="{ props }">
+                  <VBtn v-bind="props" icon size="small" color="info" variant="text" @click="openHistoryDialog(item)">
+                    <VIcon icon="tabler-history" />
+                  </VBtn>
+                </template>
+                <span>{{ t('stock.actions.history') }}</span>
+              </VTooltip>
+            </div>
+          </template>
+
+          <!-- Loading State -->
+          <template #loading>
+            <div class="pa-4">
+              <VSkeletonLoader v-for="i in 8" :key="i" type="table-row" class="mb-2" />
+            </div>
+          </template>
+
+          <!-- No Data State -->
+          <template #no-data>
+            <div class="text-center py-12">
+              <VIcon icon="tabler-package-off" size="64" color="grey-lighten-1" class="mb-4" />
+              <h3 class="text-h6 mb-2">{{ t('stock.table.no_data_title') }}</h3>
+              <p class="text-body-2 text-medium-emphasis mb-4">
+                {{ t('stock.table.no_data_subtitle') }}
+              </p>
+              <VBtn color="primary" variant="outlined" prepend-icon="tabler-refresh" @click="clearFilters">
+                {{ t('stock.table.reset_filters') }}
+              </VBtn>
+            </div>
+          </template>
+        </VDataTableServer>
+
+        <!-- Pagination -->
+        <VCardText>
+          <VPagination v-model="filters.page" :length="pagination.last_page" :total-visible="7" />
+        </VCardText>
+      </VCard>
+
+      <!-- Movement Dialog -->
+      <StockMovementDialog v-if="showMovementDialog" v-model="showMovementDialog" :item="selectedItem"
+        :movement-type="movementType" @saved="handleMovementCreated" />
+
+      <!-- History Dialog -->
+      <StockHistoryDialog v-if="showHistoryDialog" v-model="showHistoryDialog" :item="selectedItem" />
+
+      <!-- Confirm Dialog -->
+      <ConfirmActionDialog :is-dialog-visible="isConfirmDialogVisible" :is-loading="isConfirmLoading"
+        :dialog-title="dialogTitle" :dialog-text="dialogText" :dialog-icon="dialogIcon" :dialog-color="dialogColor"
+        :confirm-button-text="confirmButtonText" :cancel-button-text="cancelButtonText" @confirm="handleConfirm"
+        @cancel="handleCancel" />
     </div>
   </ErrorBoundary>
 </template>
@@ -826,7 +646,8 @@ onBeforeUnmount(() => {
 
 /* Table column width enforcement */
 .stock-table :deep(.v-data-table__wrapper) {
-  min-width: 800px; /* Ensure minimum table width */
+  min-width: 800px;
+  /* Ensure minimum table width */
 }
 
 .stock-table :deep(.v-data-table__th),
