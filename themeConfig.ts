@@ -2,16 +2,27 @@ import { breakpointsVuetifyV3 } from '@vueuse/core'
 import { VIcon } from 'vuetify/components/VIcon'
 import { defineThemeConfig } from '@core'
 import { Skins } from '@core/enums'
+import { h } from 'vue'
 
 // ❗ Logo PNG import
 import logo from '@images/logo.png'
 
 import { AppContentLayoutNav, ContentWidth, FooterType, NavbarType } from '@layouts/enums'
 
+// Create a reactive configuration that can be updated
+const createDynamicLogo = () => {
+  return h('img', {
+    src: logo,
+    alt: 'Arif Style',
+    style: 'height: 55px; width: auto; object-fit: contain;',
+    id: 'app-logo-main'
+  })
+}
+
 export const { themeConfig, layoutConfig } = defineThemeConfig({
   app: {
-    title: 'Arif Style',
-    logo: h('img', { src: logo, alt: 'Arif Style', style: 'height: 55px; width: auto;' }),
+    title: 'Arif Style' as any,
+    logo: createDynamicLogo(),
     contentWidth: ContentWidth.Boxed,
     contentLayoutNav: AppContentLayoutNav.Vertical,
     overlayNavFromBreakpoint: breakpointsVuetifyV3.lg - 1, // 1 for matching with vuetify breakpoint. Docs: https://next.vuetifyjs.com/en/features/display-and-platform/

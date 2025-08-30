@@ -2,11 +2,14 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <link rel="icon" href="{{ asset('favicon.ico') }}" />
+  <link rel="icon" href="{{ $faviconUrl ?: asset('favicon.ico') }}" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="csrf-token" content="{{ csrf_token() }}" />
-  <title>Arif Style - Plateforme d'Affiliation COD</title>
-  <meta name="description" content="Plateforme d'affiliation COD - Arif Style, solution complète pour la gestion des affiliés et commandes contre remboursement" />
+  <title>{{ $appName ?? 'Arif Style - Plateforme d\'Affiliation COD' }}</title>
+  <meta name="description" content="{{ $appDescription ?? 'Plateforme d\'affiliation COD - Arif Style, solution complète pour la gestion des affiliés et commandes contre remboursement' }}" />
+  @if(isset($appKeywords) && $appKeywords)
+  <meta name="keywords" content="{{ $appKeywords }}" />
+  @endif
   <link rel="stylesheet" type="text/css" href="{{ asset('loader.css') }}" />
   @vite(['resources/ts/main.ts'])
 </head>

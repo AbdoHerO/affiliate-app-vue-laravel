@@ -416,6 +416,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::get('/new', [SettingsController::class, 'getNewSettings']);
             Route::get('/{category}', [SettingsController::class, 'getByCategory']);
             Route::put('/{category}', [SettingsController::class, 'updateByCategory']);
+            Route::post('/upload-file', [SettingsController::class, 'uploadFile']);
 
             // Legacy Settings
             Route::get('/commission', [SettingsController::class, 'getCommissionSettings']);

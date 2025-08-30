@@ -4,6 +4,7 @@ import App from '@/App.vue'
 import { registerPlugins } from '@core/utils/plugins'
 import { useAuthStore } from '@/stores/auth'
 import { setupGlobalErrorHandler } from '@/plugins/globalErrorHandler'
+import AppInitService from '@/services/appInitService'
 
 // Styles
 import '@core-scss/template/index.scss'
@@ -52,14 +53,19 @@ if (loadingElement) {
   console.log('✅ Loading screen hidden')
 }
 
-// Initialize auth store after app is mounted (non-blocking)
+// Initialize auth store and app settings after app is mounted (non-blocking)
 setTimeout(async () => {
   try {
+    // Initialize app settings first
+    await AppInitService.initialize()
+    console.log('✅ App settings initialized')
+
+    // Then initialize auth store
     const authStore = useAuthStore()
     await authStore.initializeAuth()
     console.log('✅ Auth store initialized')
   } catch (error) {
-    console.error('❌ Auth store initialization failed:', error)
-    // Don't block the app if auth fails
+    console.error('❌ Initialization failed:', error)
+    // Don't block the app if initialization fails
   }
 }, 100)

@@ -824,4 +824,74 @@ class SettingsController extends Controller
 
         return $processed;
     }
+
+    /**
+     * Upload a file for settings
+     */
+    public function uploadFile(Request $request): JsonResponse
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'file' => 'required|file|max:5120', // 5MB max
+                'type' => 'required|string|in:logo,favicon'
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validation failed',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            $file = $request->file('file');
+            $type = $request->input('type');
+
+            // Validate file type based on upload type
+            $allowedMimes = [
+                'logo' => ['image/jpeg', 'image/png', 'image/svg+xml'],
+                'favicon' => ['image/x-icon', 'image/png', 'image/jpeg']
+            ];
+
+            if (!in_array($file->getMimeType(), $allowedMimes[$type])) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid file type for ' . $type
+                ], 422);
+            }
+
+            // Generate unique filename
+            $extension = $file->getClientOriginalExtension();
+            $filename = $type . '_' . time() . '_' . uniqid() . '.' . $extension;
+
+            // Store the file
+            $path = $file->storeAs('settings', $filename, 'public');
+
+            if (!$path) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to upload file'
+                ], 500);
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'filename' => $filename,
+                    'path' => $path,
+                    'url' => asset('storage/' . $path)
+                ],
+                'message' => 'File uploaded successfully'
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('File upload failed: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'File upload failed',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 }

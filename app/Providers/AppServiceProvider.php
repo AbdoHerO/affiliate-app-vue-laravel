@@ -5,7 +5,9 @@ namespace App\Providers;
 use App\Models\Commande;
 use App\Observers\CommandeObserver;
 use App\Services\OzonSettingsService;
+use App\Http\View\Composers\AppSettingsComposer;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\View;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -27,5 +29,8 @@ class AppServiceProvider extends ServiceProvider
     {
         // Register model observers
         Commande::observe(CommandeObserver::class);
+
+        // Register view composers
+        View::composer('application', AppSettingsComposer::class);
     }
 }

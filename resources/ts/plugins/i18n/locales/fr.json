@@ -3301,5 +3301,70 @@
   "dashboard.admin.refresh": "Actualiser",
   "dashboard.admin.export": "Exporter",
   "dashboard.admin.period_filter": "Filtrer par période",
-  "dashboard.admin.charts.title": "Graphiques et analyses"
+  "dashboard.admin.charts.title": "Graphiques et analyses",
+
+  "settings": {
+    "title": "Paramètres de l'application",
+    "description": "Configurez et personnalisez votre application",
+    "coming_soon": "Bientôt",
+    "coming_soon_description": "La fonctionnalité {feature} sera disponible dans une prochaine version.",
+    "tabs": {
+      "general": "Informations de l'application",
+      "business": "Paramètres Commerciaux",
+      "shipping": "Expédition",
+      "users": "Utilisateurs",
+      "products": "Produits",
+      "communication": "Communication",
+      "security": "Sécurité",
+      "system": "Système"
+    },
+    "general": {
+      "title": "Informations de l'application",
+      "description": "Configurez les informations de base et les préférences de l'application",
+      "app_name": "Nom de l'application",
+      "app_name_placeholder": "Entrez le nom de votre application",
+      "app_description": "Description de l'application",
+      "app_description_placeholder": "Décrivez votre application en quelques mots",
+      "app_slogan": "Slogan de l'application",
+      "app_slogan_placeholder": "Un slogan accrocheur pour votre application",
+      "app_keywords": "Mots-clés SEO",
+      "app_keywords_placeholder": "affiliation, ecommerce, COD",
+      "keywords_help": "Séparez les mots-clés par des virgules pour le référencement SEO",
+      "company_logo": "Logo de l'entreprise",
+      "logo_upload": "Télécharger le logo",
+      "logo_requirements": "Format recommandé: PNG/JPG, taille: 200x60px",
+      "favicon": "Favicon",
+      "favicon_upload": "Télécharger le favicon",
+      "favicon_requirements": "Format recommandé: ICO/PNG, taille: 32x32px",
+      "facebook_pixel": "Facebook Pixel",
+      "facebook_pixel_id": "ID Facebook Pixel",
+      "facebook_pixel_placeholder": "Entrez votre ID Facebook Pixel",
+      "facebook_pixel_help": "Utilisé pour le suivi des conversions et la création d'audiences personnalisées",
+      "preview": "Aperçu",
+      "remove": "Supprimer",
+      "clear": "Effacer",
+      "drag_drop": "Glissez-déposez votre fichier ici ou cliquez pour sélectionner",
+      "file_selected": "Fichier sélectionné",
+      "change_file": "Changer le fichier"
+    },
+    "business": {
+      "description": "Configurez les paramètres commerciaux et de commission."
+    },
+    "actions": {
+      "save": "Enregistrer les paramètres",
+      "reload": "Recharger les paramètres",
+      "cancel": "Annuler",
+      "reset": "Réinitialiser"
+    },
+    "messages": {
+      "saved_successfully": "Paramètres sauvegardés avec succès",
+      "save_failed": "Échec de la sauvegarde des paramètres",
+      "load_failed": "Échec du chargement des paramètres",
+      "uploading": "Téléchargement en cours...",
+      "upload_success": "Fichier téléchargé avec succès",
+      "upload_failed": "Échec du téléchargement",
+      "invalid_file_type": "Type de fichier non valide",
+      "file_too_large": "Fichier trop volumineux"
+    }
+  }
 }

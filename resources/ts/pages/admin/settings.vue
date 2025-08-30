@@ -4,10 +4,17 @@ import { useI18n } from 'vue-i18n'
 import { $api } from '@/utils/api'
 import { useSettingsStore } from '@/stores/settings'
 import { useNotifications } from '@/composables/useNotifications'
+import ThemeConfigService from '@/services/themeConfigService'
+import AppInitService from '@/services/appInitService'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const settingsStore = useSettingsStore()
 const { showSuccess, showError } = useNotifications()
+
+// Debug i18n
+console.log('Current locale:', locale.value)
+console.log('Available locales:', Object.keys(t('settings') || {}))
+console.log('Settings title translation:', t('settings.title'))
 
 // Page state
 const loading = ref(false)
@@ -22,7 +29,7 @@ const localData = ref({
   app_keywords: '',
   company_logo: '',
   favicon: '',
-  facebook_pixel_id: ''
+  facebook_pxm_api_key: ''
 })
 
 // Computed state
@@ -37,6 +44,10 @@ const faviconPreview = ref('')
 // Image helper functions
 const getImageUrl = (filename: string | null) => {
   if (!filename) return ''
+  // Check if filename is already a full URL
+  if (filename.startsWith('http') || filename.startsWith('/storage/')) {
+    return filename
+  }
   // Return the full URL for the uploaded image
   return `/storage/settings/${filename}`
 }
@@ -52,31 +63,61 @@ const clearFavicon = () => {
 }
 
 // Handle file uploads
-const handleLogoUpload = (event: Event) => {
+const handleLogoUpload = async (event: Event) => {
   const file = (event.target as HTMLInputElement).files?.[0]
   if (file) {
     if (!validateImageFile(file, 'logo')) return
 
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      logoPreview.value = e.target?.result as string
-      localData.value.company_logo = file.name
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('type', 'logo')
+
+      const response = await $api('/admin/settings/upload-file', {
+        method: 'POST',
+        body: formData
+      })
+
+      if (response.success) {
+        localData.value.company_logo = response.data.filename
+        logoPreview.value = response.data.url
+        showSuccess(t('settings.messages.upload_success'))
+      } else {
+        showError(response.message || t('settings.messages.upload_failed'))
+      }
+    } catch (error) {
+      console.error('Logo upload failed:', error)
+      showError(t('settings.messages.upload_failed'))
     }
-    reader.readAsDataURL(file)
   }
 }
 
-const handleFaviconUpload = (event: Event) => {
+const handleFaviconUpload = async (event: Event) => {
   const file = (event.target as HTMLInputElement).files?.[0]
   if (file) {
     if (!validateImageFile(file, 'favicon')) return
 
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      faviconPreview.value = e.target?.result as string
-      localData.value.favicon = file.name
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('type', 'favicon')
+
+      const response = await $api('/admin/settings/upload-file', {
+        method: 'POST',
+        body: formData
+      })
+
+      if (response.success) {
+        localData.value.favicon = response.data.filename
+        faviconPreview.value = response.data.url
+        showSuccess(t('settings.messages.upload_success'))
+      } else {
+        showError(response.message || t('settings.messages.upload_failed'))
+      }
+    } catch (error) {
+      console.error('Favicon upload failed:', error)
+      showError(t('settings.messages.upload_failed'))
     }
-    reader.readAsDataURL(file)
   }
 }
 
@@ -114,10 +155,30 @@ const handleSave = async () => {
     // Update metadata immediately after saving
     updateAppMetadata()
 
-    showSuccess(t('settings_saved_successfully'))
+    // Update store to trigger reactive updates across the app
+    await settingsStore.fetchSettings()
+
+    // Update themeConfig with new settings
+    await updateThemeConfig()
+
+    showSuccess(t('settings.messages.saved_successfully'))
+
+    // Emit settings update event for other components
+    window.dispatchEvent(new CustomEvent('settings:updated', {
+      detail: localData.value
+    }))
+
+    // Reinitialize app with new settings
+    await AppInitService.reinitialize()
+
+    // Reload page after short delay to ensure all changes are applied
+    setTimeout(() => {
+      window.location.reload()
+    }, 1500)
+
   } catch (error) {
     console.error('Failed to save settings:', error)
-    showError(t('settings_save_failed'))
+    showError(t('settings.messages.save_failed'))
   } finally {
     isSaving.value = false
   }
@@ -148,6 +209,9 @@ const loadSettings = async () => {
 
       // Update app metadata immediately
       updateAppMetadata()
+
+      // Update theme config with loaded settings
+      updateThemeConfig()
     }
   } catch (error) {
     console.error('Failed to load settings:', error)
@@ -230,6 +294,19 @@ watch(() => localData.value.favicon, (newValue) => {
     faviconLink.href = getImageUrl(newValue)
   }
 }, { immediate: true })
+
+// Update theme config with new settings
+const updateThemeConfig = async () => {
+  try {
+    // Use the ThemeConfigService to update theme configuration
+    ThemeConfigService.updateFromSettings({
+      app_name: localData.value.app_name,
+      company_logo: localData.value.company_logo
+    })
+  } catch (error) {
+    console.error('Failed to update theme config:', error)
+  }
+}
 
 // Initialize on mount
 onMounted(() => {
@@ -412,11 +489,11 @@ onMounted(() => {
         </VTab>
       </VTabs>
 
-      <VTabsWindow v-model="activeTab">
+      <VTabsWindow v-model="activeTab" class="mt-8">
         <!-- General Settings Tab -->
         <VTabsWindowItem value="general">
           <VCardText class="pa-6">
-            <div class="mb-6">
+            <div class="mb-8">
               <h3 class="text-h5 mb-2">{{ t('settings.general.title') }}</h3>
               <p class="text-body-2 text-medium-emphasis">{{ t('settings.general.description') }}</p>
             </div>
@@ -430,8 +507,8 @@ onMounted(() => {
                 >
                   <AppTextField
                     v-model="localData.app_name"
-                    :label="`${t('app_name')} *`"
-                    :placeholder="t('enter_app_name')"
+                    :label="`${t('settings.general.app_name')} *`"
+                    :placeholder="t('settings.general.app_name_placeholder')"
                     required
                   />
                 </VCol>
@@ -443,8 +520,8 @@ onMounted(() => {
                 >
                   <AppTextField
                     v-model="localData.app_description"
-                    :label="t('app_description')"
-                    :placeholder="t('enter_app_description')"
+                    :label="t('settings.general.app_description')"
+                    :placeholder="t('settings.general.app_description_placeholder')"
                   />
                 </VCol>
 
@@ -455,8 +532,8 @@ onMounted(() => {
                 >
                   <AppTextField
                     v-model="localData.app_slogan"
-                    :label="t('app_slogan')"
-                    :placeholder="t('enter_app_slogan')"
+                    :label="t('settings.general.app_slogan')"
+                    :placeholder="t('settings.general.app_slogan_placeholder')"
                   />
                 </VCol>
 
@@ -467,9 +544,12 @@ onMounted(() => {
                 >
                   <AppTextField
                     v-model="localData.app_keywords"
-                    :label="t('app_keywords')"
-                    :placeholder="t('enter_app_keywords')"
+                    :label="t('settings.general.app_keywords')"
+                    :placeholder="t('settings.general.app_keywords_placeholder')"
                   />
+                  <VLabel class="text-caption text-medium-emphasis mt-1">
+                    {{ t('settings.general.keywords_help') }}
+                  </VLabel>
                 </VCol>
 
                 <!-- Company Logo Upload -->
@@ -477,16 +557,16 @@ onMounted(() => {
                   cols="12"
                   md="6"
                 >
-                  <VCard variant="outlined" class="pa-4">
+                  <VCard variant="outlined" class="pa-4 mb-4">
                     <VCardTitle class="text-body-1 pa-0 mb-3">
                       <VIcon start icon="tabler-photo" />
-                      {{ t('company_logo') }}
+                      {{ t('settings.general.company_logo') }}
                     </VCardTitle>
 
                     <!-- Current Logo Display -->
                     <div v-if="logoPreview || localData.company_logo" class="mb-4">
                       <VLabel class="text-caption text-medium-emphasis mb-2">
-                        {{ t('settings.current_logo') }}
+                        {{ t('settings.general.preview') }}
                       </VLabel>
                       <div class="d-flex align-center gap-3">
                         <VAvatar
@@ -496,12 +576,12 @@ onMounted(() => {
                         >
                           <VImg
                             :src="logoPreview || getImageUrl(localData.company_logo)"
-                            :alt="t('company_logo')"
+                            :alt="t('settings.general.company_logo')"
                             cover
                           />
                         </VAvatar>
                         <div>
-                          <p class="text-body-2 mb-1">{{ localData.company_logo || t('settings.no_logo') }}</p>
+                          <p class="text-body-2 mb-1">{{ localData.company_logo || t('settings.general.file_selected') }}</p>
                           <VBtn
                             v-if="logoPreview || localData.company_logo"
                             size="small"
@@ -510,7 +590,7 @@ onMounted(() => {
                             @click="clearLogo"
                           >
                             <VIcon start icon="tabler-trash" />
-                            {{ t('settings.remove') }}
+                            {{ t('settings.general.remove') }}
                           </VBtn>
                         </div>
                       </div>
@@ -519,7 +599,7 @@ onMounted(() => {
                     <!-- Upload New Logo -->
                     <VFileInput
                       accept="image/jpeg,image/png,image/svg+xml"
-                      :label="t('select_logo_file')"
+                      :label="t('settings.general.logo_upload')"
                       prepend-icon="tabler-upload"
                       variant="outlined"
                       density="compact"
@@ -531,7 +611,7 @@ onMounted(() => {
                       density="compact"
                       class="mt-2"
                     >
-                      {{ t('settings.logo_requirements') }}
+                      {{ t('settings.general.logo_requirements') }}
                     </VAlert>
                   </VCard>
                 </VCol>
@@ -541,16 +621,16 @@ onMounted(() => {
                   cols="12"
                   md="6"
                 >
-                  <VCard variant="outlined" class="pa-4">
+                  <VCard variant="outlined" class="pa-4 mb-4">
                     <VCardTitle class="text-body-1 pa-0 mb-3">
                       <VIcon start icon="tabler-world" />
-                      {{ t('favicon') }}
+                      {{ t('settings.general.favicon') }}
                     </VCardTitle>
 
                     <!-- Current Favicon Display -->
                     <div v-if="faviconPreview || localData.favicon" class="mb-4">
                       <VLabel class="text-caption text-medium-emphasis mb-2">
-                        {{ t('settings.current_favicon') }}
+                        {{ t('settings.general.preview') }}
                       </VLabel>
                       <div class="d-flex align-center gap-3">
                         <VAvatar
@@ -560,12 +640,12 @@ onMounted(() => {
                         >
                           <VImg
                             :src="faviconPreview || getImageUrl(localData.favicon)"
-                            :alt="t('favicon')"
+                            :alt="t('settings.general.favicon')"
                             cover
                           />
                         </VAvatar>
                         <div>
-                          <p class="text-body-2 mb-1">{{ localData.favicon || t('settings.no_favicon') }}</p>
+                          <p class="text-body-2 mb-1">{{ localData.favicon || t('settings.general.file_selected') }}</p>
                           <VBtn
                             v-if="faviconPreview || localData.favicon"
                             size="small"
@@ -574,7 +654,7 @@ onMounted(() => {
                             @click="clearFavicon"
                           >
                             <VIcon start icon="tabler-trash" />
-                            {{ t('settings.remove') }}
+                            {{ t('settings.general.remove') }}
                           </VBtn>
                         </div>
                       </div>
@@ -583,7 +663,7 @@ onMounted(() => {
                     <!-- Upload New Favicon -->
                     <VFileInput
                       accept="image/x-icon,image/png,image/jpeg"
-                      :label="t('select_favicon_file')"
+                      :label="t('settings.general.favicon_upload')"
                       prepend-icon="tabler-upload"
                       variant="outlined"
                       density="compact"
@@ -595,23 +675,23 @@ onMounted(() => {
                       density="compact"
                       class="mt-2"
                     >
-                      {{ t('settings.favicon_requirements') }}
+                      {{ t('settings.general.favicon_requirements') }}
                     </VAlert>
                   </VCard>
                 </VCol>
 
                 <!-- Facebook Pixel ID -->
                 <VCol cols="12">
-                  <VCard variant="outlined" class="pa-4">
+                  <VCard variant="outlined" class="pa-4 mb-6">
                     <VCardTitle class="text-body-1 pa-0 mb-3">
                       <VIcon start icon="tabler-brand-facebook" />
-                      {{ t('settings.facebook_pixel_id') }}
+                      {{ t('settings.general.facebook_pixel') }}
                     </VCardTitle>
 
                     <AppTextField
-                      v-model="localData.facebook_pixel_id"
-                      :label="t('settings.facebook_pixel_id')"
-                      :placeholder="t('settings.enter_facebook_pixel_id')"
+                      v-model="localData.facebook_pxm_api_key"
+                      :label="t('settings.general.facebook_pixel_id')"
+                      :placeholder="t('settings.general.facebook_pixel_placeholder')"
                       variant="outlined"
                       density="compact"
                       prepend-inner-icon="tabler-hash"
@@ -624,7 +704,7 @@ onMounted(() => {
                       class="mt-3"
                     >
                       <VIcon start icon="tabler-info-circle" />
-                      {{ t('settings.facebook_pixel_description') }}
+                      {{ t('settings.general.facebook_pixel_help') }}
                     </VAlert>
                   </VCard>
                 </VCol>
@@ -639,7 +719,7 @@ onMounted(() => {
                       :disabled="isFormLoading"
                       type="submit"
                     >
-                      {{ t('save_settings') }}
+                      {{ t('settings.actions.save') }}
                     </VBtn>
 
                     <VBtn
@@ -649,7 +729,7 @@ onMounted(() => {
                       :disabled="isFormLoading"
                       @click="loadSettings"
                     >
-                      {{ t('reload_settings') }}
+                      {{ t('settings.actions.reload') }}
                     </VBtn>
                   </div>
                 </VCol>
