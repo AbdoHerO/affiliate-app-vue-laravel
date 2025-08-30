@@ -101,41 +101,48 @@ const breadcrumbs = computed(() => {
   }
 })
 
-// Stock statistics computed
-const stockStatistics = computed(() => {
-  if (!items.value.length) {
-    return {
-      total: 0,
-      outOfStock: 0,
-      lowStock: 0,
-      mediumStock: 0,
-      goodStock: 0
-    }
-  }
+// Stock statistics table
+const stockStatsSearch = ref('')
 
-  const stats = {
-    total: items.value.length,
-    outOfStock: 0,
-    lowStock: 0,
-    mediumStock: 0,
-    goodStock: 0
-  }
+const stockStatsHeaders = computed(() => [
+  { title: 'Produit', key: 'product', sortable: false, width: '35%' },
+  { title: 'SKU', key: 'sku', sortable: true, width: '15%' },
+  { title: 'En Stock', key: 'on_hand', sortable: true, width: '12%' },
+  { title: 'Disponible', key: 'available', sortable: true, width: '12%' },
+  { title: 'Réservé', key: 'reserved', sortable: true, width: '12%' },
+  { title: 'Statut', key: 'status', sortable: false, width: '14%' },
+])
 
-  items.value.forEach((item: any) => {
-    const available = item.metrics.available
-    if (available <= 0) {
-      stats.outOfStock++
-    } else if (available <= 5) {
-      stats.lowStock++
-    } else if (available <= 10) {
-      stats.mediumStock++
-    } else {
-      stats.goodStock++
-    }
-  })
-
-  return stats
+const stockStatisticsTable = computed(() => {
+  return items.value.map((item: any) => ({
+    ...item,
+    on_hand: item.metrics.on_hand,
+    available: item.metrics.available,
+    reserved: item.metrics.reserved,
+  }))
 })
+
+// Stock status helpers
+const getStockStatusColor = (available: number) => {
+  if (available <= 0) return 'error'
+  if (available <= 5) return 'warning'
+  if (available <= 10) return 'info'
+  return 'success'
+}
+
+const getStockStatusIcon = (available: number) => {
+  if (available <= 0) return 'tabler-alert-circle'
+  if (available <= 5) return 'tabler-alert-triangle'
+  if (available <= 10) return 'tabler-info-circle'
+  return 'tabler-circle-check'
+}
+
+const getStockStatusLabel = (available: number) => {
+  if (available <= 0) return 'Rupture'
+  if (available <= 5) return 'Faible'
+  if (available <= 10) return 'Moyen'
+  return 'Bon'
+}
 
 const headers = computed(() => {
   try {
@@ -294,45 +301,75 @@ onBeforeUnmount(() => {
       <!-- Breadcrumbs -->
       <Breadcrumbs :items="breadcrumbs" class="mb-6" />
 
-      <!-- Stock Statistics Cards -->
-      <VRow class="mb-6">
-        <VCol cols="12" sm="6" md="3">
-          <VCard>
-            <VCardText class="text-center">
-              <VIcon icon="tabler-package" size="40" color="primary" class="mb-2" />
-              <div class="text-h4 font-weight-bold">{{ stockStatistics.total }}</div>
-              <div class="text-body-2 text-medium-emphasis">Total Produits</div>
-            </VCardText>
-          </VCard>
-        </VCol>
-        <VCol cols="12" sm="6" md="3">
-          <VCard>
-            <VCardText class="text-center">
-              <VIcon icon="tabler-alert-circle" size="40" color="error" class="mb-2" />
-              <div class="text-h4 font-weight-bold text-error">{{ stockStatistics.outOfStock }}</div>
-              <div class="text-body-2 text-medium-emphasis">Rupture de Stock</div>
-            </VCardText>
-          </VCard>
-        </VCol>
-        <VCol cols="12" sm="6" md="3">
-          <VCard>
-            <VCardText class="text-center">
-              <VIcon icon="tabler-alert-triangle" size="40" color="warning" class="mb-2" />
-              <div class="text-h4 font-weight-bold text-warning">{{ stockStatistics.lowStock }}</div>
-              <div class="text-body-2 text-medium-emphasis">Stock Faible (≤5)</div>
-            </VCardText>
-          </VCard>
-        </VCol>
-        <VCol cols="12" sm="6" md="3">
-          <VCard>
-            <VCardText class="text-center">
-              <VIcon icon="tabler-circle-check" size="40" color="success" class="mb-2" />
-              <div class="text-h4 font-weight-bold text-success">{{ stockStatistics.goodStock }}</div>
-              <div class="text-body-2 text-medium-emphasis">Stock Bon (>10)</div>
-            </VCardText>
-          </VCard>
-        </VCol>
-      </VRow>
+      <!-- Stock Statistics Table -->
+      <VCard class="mb-6">
+        <VCardTitle class="d-flex align-center">
+          <VIcon icon="tabler-chart-bar" class="me-2" />
+          Statistiques de Stock par Produit
+        </VCardTitle>
+        <VCardText>
+          <VDataTable
+            :headers="stockStatsHeaders"
+            :items="stockStatisticsTable"
+            :loading="loading"
+            density="compact"
+            :items-per-page="10"
+            :search="stockStatsSearch"
+          >
+            <template #top>
+              <VTextField
+                v-model="stockStatsSearch"
+                label="Rechercher un produit..."
+                prepend-inner-icon="tabler-search"
+                variant="outlined"
+                density="compact"
+                class="mb-4"
+                clearable
+              />
+            </template>
+
+            <template #item.product="{ item }">
+              <div class="d-flex align-center">
+                <VAvatar size="32" class="me-3">
+                  <VImg v-if="item.product.image" :src="item.product.image" />
+                  <VIcon v-else icon="tabler-package" />
+                </VAvatar>
+                <div>
+                  <div class="font-weight-medium">{{ item.product.titre }}</div>
+                  <div class="text-caption text-medium-emphasis">{{ item.variant.libelle }}</div>
+                </div>
+              </div>
+            </template>
+
+            <template #item.sku="{ item }">
+              <VChip size="small" variant="tonal" color="primary">
+                {{ item.variant.sku }}
+              </VChip>
+            </template>
+
+            <template #item.available="{ item }">
+              <VChip
+                size="small"
+                :color="getStockStatusColor(item.metrics.available)"
+                variant="tonal"
+              >
+                {{ item.metrics.available }}
+              </VChip>
+            </template>
+
+            <template #item.status="{ item }">
+              <VChip
+                size="small"
+                :color="getStockStatusColor(item.metrics.available)"
+                variant="tonal"
+              >
+                <VIcon :icon="getStockStatusIcon(item.metrics.available)" size="12" class="me-1" />
+                {{ getStockStatusLabel(item.metrics.available) }}
+              </VChip>
+            </template>
+          </VDataTable>
+        </VCardText>
+      </VCard>
 
       <!-- Header with KPI Cards -->
       <VRow class="mb-6">

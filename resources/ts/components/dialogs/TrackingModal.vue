@@ -46,17 +46,14 @@
               <VIcon start icon="tabler-info-circle" />
               Résumé
             </VTab>
-            <VTab value="history">
-              <VIcon start icon="tabler-history" />
-              Historique
-            </VTab>
+
           </VTabs>
 
           <VTabsWindow v-model="activeTab">
             <!-- Summary Tab -->
             <VTabsWindowItem value="summary" class="pa-6">
               <VRow>
-                <VCol cols="12" md="6">
+                <VCol cols="12">
                   <VCard variant="outlined" class="h-100">
                     <VCardText>
                       <h6 class="text-h6 mb-4">Informations du Colis</h6>
@@ -100,36 +97,6 @@
                     </VCardText>
                   </VCard>
                 </VCol>
-                
-                <VCol cols="12" md="6">
-                  <VCard variant="outlined" class="h-100">
-                    <VCardText>
-                      <h6 class="text-h6 mb-4">Tarification</h6>
-                      
-                      <div class="d-flex flex-column gap-3">
-                        <div v-if="parcelInfo?.price" class="d-flex justify-space-between">
-                          <span class="text-body-2 text-medium-emphasis">Prix du colis:</span>
-                          <span class="text-body-2 font-weight-bold">{{ formatCurrency(parcelInfo.price) }}</span>
-                        </div>
-                        
-                        <div v-if="parcelInfo?.delivered_price" class="d-flex justify-space-between">
-                          <span class="text-body-2 text-medium-emphasis">Frais de livraison:</span>
-                          <span class="text-body-2">{{ formatCurrency(parcelInfo.delivered_price) }}</span>
-                        </div>
-                        
-                        <div v-if="parcelInfo?.returned_price" class="d-flex justify-space-between">
-                          <span class="text-body-2 text-medium-emphasis">{{ t('labels.returnFee') }}:</span>
-                          <span class="text-body-2">{{ formatCurrency(parcelInfo.returned_price) }}</span>
-                        </div>
-                        
-                        <div v-if="parcelInfo?.refused_price" class="d-flex justify-space-between">
-                          <span class="text-body-2 text-medium-emphasis">Frais de refus:</span>
-                          <span class="text-body-2">{{ formatCurrency(parcelInfo.refused_price) }}</span>
-                        </div>
-                      </div>
-                    </VCardText>
-                  </VCard>
-                </VCol>
               </VRow>
 
               <!-- Delivery Boy Information -->
@@ -165,51 +132,7 @@
               </VRow>
             </VTabsWindowItem>
 
-            <!-- History Tab -->
-            <VTabsWindowItem value="history" class="pa-6">
-              <div v-if="trackingHistory && trackingHistory.length > 0">
-                <VTimeline side="end" class="pt-0">
-                  <VTimelineItem
-                    v-for="(event, index) in trackingHistory"
-                    :key="index"
-                    :dot-color="getStatusColor(event.status)"
-                    size="small"
-                  >
-                    <template #icon>
-                      <VIcon :icon="getStatusIcon(event.status)" size="16" />
-                    </template>
-                    
-                    <VCard variant="outlined" class="mb-2">
-                      <VCardText class="pa-4">
-                        <div class="d-flex justify-space-between align-center mb-2">
-                          <VChip 
-                            size="small" 
-                            :color="getStatusColor(event.status)"
-                            variant="tonal"
-                          >
-                            {{ event.status_text }}
-                          </VChip>
-                          <span class="text-caption text-medium-emphasis">
-                            {{ formatDate(event.time) }}
-                          </span>
-                        </div>
-                        <p v-if="event.comment" class="text-body-2 mb-0">
-                          {{ event.comment }}
-                        </p>
-                      </VCardText>
-                    </VCard>
-                  </VTimelineItem>
-                </VTimeline>
-              </div>
-              
-              <div v-else class="text-center py-8">
-                <VIcon icon="tabler-history-off" size="64" color="disabled" class="mb-4" />
-                <h6 class="text-h6 mb-2">Aucun historique</h6>
-                <p class="text-body-2 text-medium-emphasis">
-                  Aucun événement de suivi disponible pour ce colis
-                </p>
-              </div>
-            </VTabsWindowItem>
+
           </VTabsWindow>
         </div>
       </VCardText>

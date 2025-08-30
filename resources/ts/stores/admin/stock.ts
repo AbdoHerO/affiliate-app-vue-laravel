@@ -207,7 +207,7 @@ export const useStockStore = defineStore('admin-stock', () => {
 
       const response = await $api<StockHistoryResponse>(url, {
         method: 'GET',
-        params,
+        query: params,
       })
 
       console.log('📥 [Stock Store] API response:', response)

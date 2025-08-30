@@ -419,10 +419,20 @@ onMounted(async () => {
 })
 
 // Navigation guard to close dialogs before leaving
-onBeforeRouteLeave(() => {
-  // Close all dialogs to prevent white screen issue
-  showStatusUpdateDialog.value = false
-  return true
+onBeforeRouteLeave((_to, _from, next) => {
+  console.log('🚪 [Navigation] Leaving shipping order detail page')
+
+  try {
+    // Close all dialogs to prevent white screen issue
+    showStatusUpdateDialog.value = false
+
+    console.log('✅ [Navigation] Cleanup completed successfully')
+    next()
+  } catch (error) {
+    console.error('❌ [Navigation] Error during cleanup:', error)
+    // Still allow navigation even if cleanup fails
+    next()
+  }
 })
 </script>
 

@@ -567,13 +567,23 @@ onMounted(() => {
 })
 
 // Navigation guard to close dialogs before leaving
-onBeforeRouteLeave(() => {
-  // Close all dialogs to prevent white screen issue
-  showStatusUpdateDialog.value = false
-  showReturnConfirmDialog.value = false
-  showDeliveryBoyDialog.value = false
-  showTrackingModal.value = false
-  return true
+onBeforeRouteLeave((_to, _from, next) => {
+  console.log('🚪 [Navigation] Leaving shipping orders page')
+
+  try {
+    // Close all dialogs to prevent white screen issue
+    showStatusUpdateDialog.value = false
+    showReturnConfirmDialog.value = false
+    showDeliveryBoyDialog.value = false
+    showTrackingModal.value = false
+
+    console.log('✅ [Navigation] Cleanup completed successfully')
+    next()
+  } catch (error) {
+    console.error('❌ [Navigation] Error during cleanup:', error)
+    // Still allow navigation even if cleanup fails
+    next()
+  }
 })
 </script>
 
@@ -810,22 +820,11 @@ onBeforeRouteLeave(() => {
               {{ t('actions.viewDetails') }}
             </VTooltip>
 
-            <!-- If no tracking number, show resend button -->
-            <template v-if="!item.shipping_parcel?.tracking_number">
-              <VBtn
-                size="small"
-                color="warning"
-                variant="text"
-                icon="tabler-truck"
-                @click="resendToOzonExpress(item)"
-              />
-              <VTooltip activator="prev" location="top">
-                {{ t('admin_shipping_tooltip_resend_ozon') }}
-              </VTooltip>
-            </template>
+            <!-- REMOVED: Problematic resend to OzonExpress button -->
+            <!-- The resend functionality was not working properly -->
 
             <!-- If has tracking number, show tracking actions -->
-            <template v-else>
+            <template v-if="item.shipping_parcel?.tracking_number">
               <VBtn
                 size="small"
                 color="info"
