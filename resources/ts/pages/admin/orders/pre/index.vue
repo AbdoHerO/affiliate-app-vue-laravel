@@ -691,29 +691,34 @@ onMounted(() => {
         <template #item.actions="{ item }">
           <div class="d-flex gap-1">
             <!-- View Details -->
-            <VBtn
-              size="small"
-              color="primary"
-              variant="text"
-              icon="tabler-eye"
-              @click="viewPreorder(item)"
-            />
-            <VTooltip activator="prev" location="top">
-              Voir les détails
+            <VTooltip location="top">
+              <template #activator="{ props }">
+                <VBtn
+                  v-bind="props"
+                  size="small"
+                  color="primary"
+                  variant="text"
+                  icon="tabler-eye"
+                  @click="viewPreorder(item)"
+                />
+              </template>
+              <span>{{ t('actions.viewDetails') }}</span>
             </VTooltip>
 
             <!-- Quick Status Actions (only if not shipped) -->
             <VMenu v-if="!item.shipping_parcel">
               <template #activator="{ props }">
-                <VBtn
-                  size="small"
-                  color="secondary"
-                  variant="text"
-                  icon="tabler-dots-vertical"
-                  v-bind="props"
-                />
-                <VTooltip activator="prev" location="top">
-                  Actions rapides
+                <VTooltip location="top">
+                  <template #activator="{ props: tooltipProps }">
+                    <VBtn
+                      v-bind="{ ...props, ...tooltipProps }"
+                      size="small"
+                      color="secondary"
+                      variant="text"
+                      icon="tabler-dots-vertical"
+                    />
+                  </template>
+                  <span>{{ t('admin_preorders_quick_actions') }}</span>
                 </VTooltip>
               </template>
 

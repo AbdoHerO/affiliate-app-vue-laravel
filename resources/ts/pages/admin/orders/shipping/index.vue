@@ -809,99 +809,100 @@ onBeforeRouteLeave((_to, _from, next) => {
         <template #item.actions="{ item }">
           <div class="d-flex gap-1">
             <!-- View Order Details -->
-            <VBtn
-              size="small"
-              color="primary"
-              variant="text"
-              icon="tabler-eye"
-              @click="viewShippingOrder(item)"
-            />
-            <VTooltip activator="prev" location="top">
-              {{ t('actions.viewDetails') }}
+            <VTooltip location="top">
+              <template #activator="{ props }">
+                <VBtn
+                  v-bind="props"
+                  size="small"
+                  color="primary"
+                  variant="text"
+                  icon="tabler-eye"
+                  @click="viewShippingOrder(item)"
+                />
+              </template>
+              <span>{{ t('actions.viewDetails') }}</span>
             </VTooltip>
-
-            <!-- REMOVED: Problematic resend to OzonExpress button -->
-            <!-- The resend functionality was not working properly -->
 
             <!-- If has tracking number, show tracking actions -->
             <template v-if="item.shipping_parcel?.tracking_number">
-              <VBtn
-                size="small"
-                color="info"
-                variant="text"
-                icon="tabler-route"
-                :loading="trackingLoading"
-                @click="viewTracking(item)"
-              />
-              <VTooltip activator="prev" location="top">
-                {{ t('actions.viewTracking') }}
+              <VTooltip location="top">
+                <template #activator="{ props }">
+                  <VBtn
+                    v-bind="props"
+                    size="small"
+                    color="info"
+                    variant="text"
+                    icon="tabler-route"
+                    :loading="trackingLoading"
+                    @click="viewTracking(item)"
+                  />
+                </template>
+                <span>{{ t('actions.viewTracking') }}</span>
               </VTooltip>
 
-              <VBtn
-                size="small"
-                color="success"
-                variant="text"
-                icon="tabler-refresh"
-                :loading="refreshingTracking.includes(item.shipping_parcel?.tracking_number)"
-                @click="refreshTracking(item)"
-              />
-              <VTooltip activator="prev" location="top">
-                {{ t('admin_shipping_tooltip_refresh_tracking') }}
+              <VTooltip location="top">
+                <template #activator="{ props }">
+                  <VBtn
+                    v-bind="props"
+                    size="small"
+                    color="success"
+                    variant="text"
+                    icon="tabler-refresh"
+                    :loading="refreshingTracking.includes(item.shipping_parcel?.tracking_number)"
+                    @click="refreshTracking(item)"
+                  />
+                </template>
+                <span>{{ t('admin_shipping_tooltip_refresh_tracking') }}</span>
               </VTooltip>
             </template>
 
             <!-- TEMPORARILY HIDDEN: Stock Management Buttons -->
             <template v-if="false && canShipOrder(item)">
-              <VBtn
-                size="small"
-                color="success"
-                variant="text"
-                icon="tabler-truck"
-                :loading="shippingActionLoading === item.id"
-                @click="handleShipOrder(item)"
-              />
-              <VTooltip activator="prev" location="top">
-                Expédier (décrémenter stock)
-              </VTooltip>
-            </template>
-
-            <template v-if="canReturnToWarehouse(item)">
-              <VBtn
-                size="small"
-                color="warning"
-                variant="text"
-                icon="tabler-package-import"
-                :loading="shippingActionLoading === item.id"
-                @click="handleReturnToWarehouse(item)"
-              />
-              <VTooltip activator="prev" location="top">
-                Retour entrepôt (ré-incrémenter stock)
+              <VTooltip location="top">
+                <template #activator="{ props }">
+                  <VBtn
+                    v-bind="props"
+                    size="small"
+                    color="success"
+                    variant="text"
+                    icon="tabler-truck"
+                    :loading="shippingActionLoading === item.id"
+                    @click="shipOrder(item)"
+                  />
+                </template>
+                <span>{{ t('admin_shipping_tooltip_ship_order') }}</span>
               </VTooltip>
             </template>
 
             <!-- Delivery Boy Info Button -->
-            <VBtn
-              size="small"
-              :color="item.delivery_boy_name ? 'success' : 'info'"
-              variant="text"
-              icon="tabler-user"
-              @click="openDeliveryBoyDialog(item)"
-            />
-            <VTooltip activator="prev" location="top">
-              {{ item.delivery_boy_name ? 'Modifier livreur' : 'Ajouter livreur' }}
+            <VTooltip location="top">
+              <template #activator="{ props }">
+                <VBtn
+                  v-bind="props"
+                  size="small"
+                  :color="item.delivery_boy_name ? 'success' : 'info'"
+                  variant="text"
+                  icon="tabler-user"
+                  @click="openDeliveryBoyDialog(item)"
+                />
+              </template>
+              <span>{{ item.delivery_boy_name ? 'Modifier livreur' : 'Ajouter livreur' }}</span>
             </VTooltip>
 
             <!-- Status Update Button (only for local deliveries) -->
             <template v-if="!item.shipping_parcel?.sent_to_carrier">
-              <VBtn
-                size="small"
-                color="warning"
-                variant="text"
-                icon="tabler-edit"
-                @click="openStatusUpdateDialog(item)"
-              />
-              <VTooltip activator="prev" location="top">
-                {{ t('admin_shipping_tooltip_modify_status') }}
+              <VTooltip location="top">
+                <template #activator="{ props }">
+                  <VBtn
+                    v-bind="props"
+                    size="small"
+                    color="warning"
+                    variant="text"
+                    icon="tabler-edit"
+                    @click="openStatusUpdateDialog(item)"
+                  />
+                </template>
+                <span>{{ t('admin_shipping_tooltip_modify_status') }}</span>
               </VTooltip>
             </template>
 
