@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, nextTick } from 'vue'
 import { useRoute, useRouter, onBeforeRouteLeave } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useShippingStore } from '@/stores/admin/shipping'
@@ -28,6 +28,7 @@ const trackingLoading = ref(false)
 const parcelInfo = ref(null)
 const deliveryNoteRef = ref('')
 const selectedParcels = ref<string[]>([])
+const isNavigatingAway = ref(false)  // Add flag to prevent error message during navigation
 
 // Manual status update state
 const showStatusUpdateDialog = ref(false)
@@ -47,7 +48,25 @@ const orderId = computed(() => route.params.id as string)
 
 // Methods
 const fetchShippingOrder = async () => {
-  await shippingStore.fetchShippingOrder(orderId.value)
+  try {
+    await shippingStore.fetchShippingOrder(orderId.value)
+    
+    // If order is still null after fetch, redirect automatically
+    if (!shippingOrder.value) {
+      console.log('🔄 [Order] Order not found - redirecting automatically')
+      isNavigatingAway.value = true
+      setTimeout(() => {
+        window.location.href = '/admin/orders/shipping'
+      }, 1500) // Give user 1.5 seconds to see the loading message
+    }
+  } catch (error) {
+    console.error('❌ [Order] Error fetching shipping order:', error)
+    // On error, also redirect automatically
+    isNavigatingAway.value = true
+    setTimeout(() => {
+      window.location.href = '/admin/orders/shipping'
+    }, 1500)
+  }
 }
 
 const fetchTracking = async () => {
@@ -318,8 +337,45 @@ const copyTrackingNumber = async () => {
   }
 }
 
-const goBack = () => {
-  router.push({ name: 'admin-orders-shipping' })
+const goBack = async () => {
+  console.log('🔙 [Navigation] GoBack function called')
+  
+  // Set navigation flag to prevent error message
+  isNavigatingAway.value = true
+  
+  try {
+    // Clear store state first
+    shippingStore.clearCurrentShippingOrder()
+    
+    // Clear all component state aggressively
+    trackingData.value = null
+    parcelInfo.value = null
+    deliveryNoteRef.value = ''
+    selectedParcels.value = []
+    showStatusUpdateDialog.value = false
+    trackingLoading.value = false
+    statusUpdateLoading.value = false
+    deliveryBoyLoading.value = false
+    newStatus.value = ''
+    statusNote.value = ''
+    deliveryBoyName.value = ''
+    deliveryBoyPhone.value = ''
+    activeTab.value = 'parcel'
+    
+    // Wait for DOM updates
+    await nextTick()
+    
+    console.log('🔙 [Navigation] Using direct window.location for guaranteed navigation')
+    
+    // Since the router navigation is technically successful but the component doesn't render,
+    // we'll use window.location directly to force a proper page load
+    window.location.href = '/admin/orders/shipping'
+    
+  } catch (error) {
+    console.error('❌ [Navigation] Error in goBack:', error)
+    // Ultimate fallback
+    window.location.href = '/admin/orders/shipping'
+  }
 }
 
 // Client Final helpers
@@ -418,19 +474,68 @@ onMounted(async () => {
   loadDeliveryBoyInfo()
 })
 
-// Navigation guard to close dialogs before leaving
-onBeforeRouteLeave((_to, _from, next) => {
-  console.log('🚪 [Navigation] Leaving shipping order detail page')
+// Enhanced navigation guard to prevent white screen issues - FINAL VERSION
+let isNavigating = false  // Prevent double execution
+
+onBeforeRouteLeave(async (to, from, next) => {
+  // Prevent double execution of navigation guard
+  if (isNavigating) {
+    console.log('🚪 [Navigation] Already navigating - skipping duplicate guard')
+    return next()
+  }
+  
+  isNavigating = true
+  isNavigatingAway.value = true  // Set flag to prevent error message
+  console.log('🚪 [Navigation] === STARTING NAVIGATION FROM SHIPPING DETAIL ===')
+  console.log('🚪 [Navigation] To:', to.path, '| Name:', to.name)
+  console.log('🚪 [Navigation] From:', from.path, '| Name:', from.name)
 
   try {
-    // Close all dialogs to prevent white screen issue
+    // Step 1: Immediately clear all dialogs to prevent UI blocking
     showStatusUpdateDialog.value = false
-
-    console.log('✅ [Navigation] Cleanup completed successfully')
-    next()
+    console.log('✅ [Navigation] Step 1: Dialogs cleared')
+    
+    // Step 2: Clear all loading states 
+    trackingLoading.value = false
+    statusUpdateLoading.value = false
+    deliveryBoyLoading.value = false
+    console.log('✅ [Navigation] Step 2: Loading states cleared')
+    
+    // Step 3: Clear all form data
+    newStatus.value = ''
+    statusNote.value = ''
+    deliveryBoyName.value = ''
+    deliveryBoyPhone.value = ''
+    console.log('✅ [Navigation] Step 3: Form data cleared')
+    
+    // Step 4: Clear all reactive refs
+    trackingData.value = null
+    parcelInfo.value = null
+    deliveryNoteRef.value = ''
+    selectedParcels.value = []
+    activeTab.value = 'parcel'
+    console.log('✅ [Navigation] Step 4: Reactive refs cleared')
+    
+    // Step 5: Clear store state
+    shippingStore.clearCurrentShippingOrder()
+    console.log('✅ [Navigation] Step 5: Store state cleared')
+    
+    // Step 6: Force DOM update and wait longer for Suspense
+    await nextTick()
+    console.log('✅ [Navigation] Step 6: DOM updated')
+    
+    // Step 7: Add small delay for Suspense to resolve properly
+    setTimeout(() => {
+      console.log('🚪 [Navigation] === PROCEEDING WITH NAVIGATION AFTER DELAY ===')
+      isNavigating = false  // Reset flag
+      next()
+    }, 100)
+    
   } catch (error) {
-    console.error('❌ [Navigation] Error during cleanup:', error)
-    // Still allow navigation even if cleanup fails
+    console.error('❌ [Navigation] CRITICAL ERROR during cleanup:', error)
+    console.log('🚪 [Navigation] === FORCING NAVIGATION DESPITE ERROR ===')
+    isNavigating = false  // Reset flag
+    isNavigatingAway.value = false  // Reset flag on error
     next()
   }
 })
@@ -1139,7 +1244,7 @@ onBeforeRouteLeave((_to, _from, next) => {
     </div>
 
     <!-- Error State -->
-    <div v-else class="text-center py-8">
+    <div v-else-if="!isNavigatingAway" class="text-center py-8">
       <VIcon
         icon="tabler-alert-circle"
         size="64"
@@ -1157,6 +1262,20 @@ onBeforeRouteLeave((_to, _from, next) => {
       >
         {{ t('actions.backToList') }}
       </VBtn>
+    </div>
+    
+    <!-- Navigation Loading State -->
+    <div v-else-if="isNavigatingAway" class="text-center py-8">
+      <VProgressCircular 
+        indeterminate 
+        color="primary" 
+        size="64"
+        class="mb-4"
+      />
+      <h3 class="text-h6 mb-2">Redirection en cours...</h3>
+      <p class="text-body-2 text-medium-emphasis">
+        Veuillez patienter pendant la redirection
+      </p>
     </div>
   </div>
 
