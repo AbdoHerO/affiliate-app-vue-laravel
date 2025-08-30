@@ -15,6 +15,7 @@ import { themeConfig } from '@themeConfig'
 import { useAffiliateSignupStore } from '@/stores/public/affiliateSignup'
 import { useFormErrors } from '@/composables/useFormErrors'
 import { useNotifications } from '@/composables/useNotifications'
+import { useFacebookPixel } from '@/composables/useFacebookPixel'
 
 definePage({
   meta: {
@@ -28,6 +29,7 @@ const route = useRoute()
 const affiliateStore = useAffiliateSignupStore()
 const { showSuccess, showError } = useNotifications()
 const { errors, set: setErrors, clear: clearErrors } = useFormErrors()
+const { trackViewContent, trackCompleteRegistration, trackLead } = useFacebookPixel()
 
 // Helper functions for error handling
 const getError = (field: string) => errors[field] || []
@@ -94,6 +96,12 @@ const handleSubmit = async () => {
     if (result.success) {
       showSuccess(result.message)
       showSuccessScreen.value = true
+      
+      // Track Facebook Pixel CompleteRegistration event
+      trackCompleteRegistration(0, 'MAD')
+      
+      // Also track Lead event for email verification waiting
+      trackLead({ page: 'email_verification_wait' })
     } else {
       if (result.errors) {
         setErrors(result.errors)
@@ -157,6 +165,9 @@ const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
 
 // Lifecycle - Handle referral code detection
 onMounted(() => {
+  // Track Facebook Pixel ViewContent event
+  trackViewContent({ page: 'affiliate_signup' })
+  
   // Check for referral code in URL
   const refParam = route.query.ref as string
   if (refParam) {
@@ -246,40 +257,58 @@ onMounted(() => {
           </div>
 
           <div v-else>
-            <h4 class="text-h4 mb-1 text-success">
-              ✅ Inscription réussie !
-            </h4>
-            <p class="mb-4">
-              Vérifiez votre email <strong>{{ affiliateStore.lastSignupEmail }}</strong> pour continuer.
+            <div class="text-center mb-4">
+              <VIcon
+                icon="tabler-circle-check"
+                color="success"
+                size="64"
+                class="mb-3"
+              />
+              <h4 class="text-h4 mb-1 text-success">
+                🎉 {{ t('thank_you_registration_complete') }}
+              </h4>
+              <p class="text-h6 mb-4 text-medium-emphasis">
+                {{ t('welcome_to_our_affiliate_network') }}
+              </p>
+            </div>
+            
+            <p class="mb-4 text-center">
+              {{ t('verification_email_sent_to') }} <strong>{{ affiliateStore.lastSignupEmail }}</strong>
             </p>
             
             <VAlert
-              type="info"
+              type="success"
               variant="tonal"
               class="mb-4"
             >
+              <template #prepend>
+                <VIcon icon="tabler-gift" />
+              </template>
               <p class="mb-2">
-                <strong>Prochaines étapes :</strong>
+                <strong>{{ t('congratulations_next_steps') }}:</strong>
               </p>
               <ol class="ps-4">
-                <li>Cliquez sur le lien dans votre email</li>
-                <li>Attendez l'approbation de votre demande</li>
-                <li>Recevez vos identifiants de connexion</li>
+                <li>{{ t('click_verification_link_in_email') }}</li>
+                <li>{{ t('wait_for_application_approval') }}</li>
+                <li>{{ t('receive_login_credentials') }}</li>
+                <li>{{ t('start_earning_commissions') }}</li>
               </ol>
             </VAlert>
 
-            <div class="d-flex gap-4">
+            <div class="d-flex gap-4 justify-center">
               <VBtn
                 variant="outlined"
                 @click="handleResendVerification"
                 :loading="affiliateStore.isResending"
+                prepend-icon="tabler-refresh"
               >
-                Renvoyer l'email
+                {{ t('resend_verification_email') }}
               </VBtn>
               
               <VBtn
                 color="primary"
                 :to="{ name: 'login' }"
+                prepend-icon="tabler-arrow-left"
               >
                 {{ t('actions.backToLogin') }}
               </VBtn>

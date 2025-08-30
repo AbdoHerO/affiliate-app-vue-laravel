@@ -17,11 +17,11 @@ class SettingsController extends Controller
     /**
      * Get all system settings (legacy method)
      */
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
         try {
             // Check if we should use new settings system
-            if (request()->query('new_system') === 'true') {
+            if ($request->query('new_system') === 'true') {
                 return $this->getNewSettings();
             }
 
@@ -594,6 +594,9 @@ class SettingsController extends Controller
                 'company_social_twitter' => 'nullable|url|max:255',
                 'app_logo' => 'nullable|string|max:255',
                 'app_favicon' => 'nullable|string|max:255',
+                'company_logo' => 'nullable|string|max:255',
+                'favicon' => 'nullable|string|max:255',
+                'facebook_pxm_api_key' => 'nullable|string|max:255',
                 'primary_color' => 'nullable|string|max:7',
                 'secondary_color' => 'nullable|string|max:7',
                 'login_background_image' => 'nullable|string|max:255',
@@ -614,8 +617,7 @@ class SettingsController extends Controller
                 'allowed_file_types' => 'nullable|string|max:255',
                 'session_timeout' => 'nullable|integer|min:5|max:1440',
                 'password_min_length' => 'nullable|integer|min:6|max:50',
-                'password_require_special' => 'nullable|boolean',
-                'app_version' => 'nullable|string|max:50',
+                'password_require_special' => 'nullable|boolean'
             ],
             'business' => [
                 'default_commission_rate' => 'required|numeric|min:0|max:100',
@@ -659,6 +661,9 @@ class SettingsController extends Controller
                 'app_description' => ['type' => 'string', 'is_public' => true, 'description' => 'Application description'],
                 'app_tagline' => ['type' => 'string', 'is_public' => true, 'description' => 'Application tagline'],
                 'app_keywords' => ['type' => 'string', 'is_public' => true, 'description' => 'Application keywords'],
+                'company_logo' => ['type' => 'string', 'is_public' => true, 'description' => 'Company logo URL'],
+                'favicon' => ['type' => 'string', 'is_public' => true, 'description' => 'Favicon URL'],
+                'facebook_pxm_api_key' => ['type' => 'string', 'is_public' => false, 'description' => 'Facebook Pixel API Key', 'is_encrypted' => true],
                 'company_name' => ['type' => 'string', 'is_public' => true, 'description' => 'Company name'],
                 'company_email' => ['type' => 'string', 'is_public' => false, 'description' => 'Company email'],
                 'company_phone' => ['type' => 'string', 'is_public' => true, 'description' => 'Company phone'],
@@ -690,7 +695,6 @@ class SettingsController extends Controller
                 'session_timeout' => ['type' => 'integer', 'is_public' => false, 'description' => 'Session timeout (minutes)'],
                 'password_min_length' => ['type' => 'integer', 'is_public' => false, 'description' => 'Minimum password length'],
                 'password_require_special' => ['type' => 'boolean', 'is_public' => false, 'description' => 'Require special characters in password'],
-                'app_version' => ['type' => 'string', 'is_public' => true, 'description' => 'Application version'],
             ],
             'business' => [
                 'default_commission_rate' => ['type' => 'float', 'is_public' => false, 'description' => 'Default commission rate'],

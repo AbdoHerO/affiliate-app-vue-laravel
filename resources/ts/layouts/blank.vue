@@ -1,8 +1,18 @@
 <script lang="ts" setup>
+import { useFacebookPixel } from '@/composables/useFacebookPixel'
+
 const { injectSkinClasses } = useSkins()
+
+// Initialize Facebook Pixel
+const { initializePixel } = useFacebookPixel()
 
 // ℹ️ This will inject classes in body tag for accurate styling
 injectSkinClasses()
+
+// Initialize Facebook Pixel on mount
+onMounted(() => {
+  initializePixel()
+})
 
 // SECTION: Loading Indicator
 const isFallbackStateActive = ref(false)

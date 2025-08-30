@@ -20,14 +20,15 @@ export const useSettingsStore = defineStore('settings', () => {
 
   // Computed properties for commonly used settings
   const appName = computed(() => settings.value.app_name || 'Affiliate Platform')
-  const appLogo = computed(() => settings.value.app_logo || '')
-  const appFavicon = computed(() => settings.value.app_favicon || '')
+  const appLogo = computed(() => settings.value.app_logo || settings.value.company_logo || '')
+  const appFavicon = computed(() => settings.value.app_favicon || settings.value.favicon || '')
   const primaryColor = computed(() => settings.value.primary_color || '#6366F1')
   const secondaryColor = computed(() => settings.value.secondary_color || '#8B5CF6')
   const defaultLanguage = computed(() => settings.value.default_language || 'fr')
   const appTheme = computed(() => settings.value.app_theme || 'light')
   const loginBackground = computed(() => settings.value.login_background_image || '')
   const signupBackground = computed(() => settings.value.signup_background_image || '')
+  const facebookPxmApiKey = computed(() => settings.value.facebook_pxm_api_key || '')
   
   // Company information
   const companyInfo = computed(() => ({
@@ -88,7 +89,8 @@ export const useSettingsStore = defineStore('settings', () => {
         app_theme: 'light',
         default_language: 'fr',
         currency: 'MAD',
-        currency_symbol: 'MAD'
+        currency_symbol: 'MAD',
+        facebook_pxm_api_key: ''
       }
       // Set initialized to true to prevent infinite retries
       initialized.value = true
@@ -188,6 +190,12 @@ export const useSettingsStore = defineStore('settings', () => {
     // Apply favicon
     applyFavicon()
     
+    // Apply logo
+    applyLogo()
+    
+    // Apply app name
+    applyAppName()
+    
     // Apply CSS custom properties for colors
     applyCSSVariables()
   }
@@ -239,16 +247,49 @@ export const useSettingsStore = defineStore('settings', () => {
    * Apply favicon
    */
   const applyFavicon = (): void => {
-    if (appFavicon.value) {
+    const faviconUrl = appFavicon.value || settings.value.favicon
+    if (faviconUrl) {
       const faviconLink = document.querySelector('link[rel="icon"]') as HTMLLinkElement
       if (faviconLink) {
-        faviconLink.href = appFavicon.value
+        faviconLink.href = faviconUrl
       } else {
         const newFaviconLink = document.createElement('link')
         newFaviconLink.rel = 'icon'
-        newFaviconLink.href = appFavicon.value
+        newFaviconLink.href = faviconUrl
         document.head.appendChild(newFaviconLink)
       }
+      console.log('✅ Favicon updated:', faviconUrl)
+    }
+  }
+
+  /**
+   * Apply logo changes throughout the app
+   */
+  const applyLogo = (): void => {
+    const logoUrl = appLogo.value || settings.value.company_logo
+    if (logoUrl) {
+      // Emit event for components to update logo
+      window.dispatchEvent(new CustomEvent('logo:updated', {
+        detail: { logoUrl }
+      }))
+      console.log('✅ Logo updated:', logoUrl)
+    }
+  }
+
+  /**
+   * Apply app name changes throughout the app
+   */
+  const applyAppName = (): void => {
+    const name = appName.value
+    if (name) {
+      // Update document title
+      document.title = name
+      
+      // Emit event for components to update app name
+      window.dispatchEvent(new CustomEvent('appName:updated', {
+        detail: { appName: name }
+      }))
+      console.log('✅ App name updated:', name)
     }
   }
 
@@ -304,6 +345,7 @@ export const useSettingsStore = defineStore('settings', () => {
     appTheme,
     loginBackground,
     signupBackground,
+    facebookPxmApiKey,
     companyInfo,
     socialLinks,
     brandingInfo,

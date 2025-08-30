@@ -4,7 +4,9 @@ export interface AppSettings {
   app_description: string
   app_slogan: string
   app_keywords: string
-  app_version: string
+  company_logo: string
+  favicon: string
+  facebook_pxm_api_key: string
 
   // Company Information
   company_name: string

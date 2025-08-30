@@ -2,188 +2,132 @@
 import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { $api } from '@/utils/api'
-
-// Components
-import GeneralSettings from '@/components/admin/settings/GeneralSettings.vue'
-import BusinessSettings from '@/components/admin/settings/BusinessSettings.vue'
-import ShippingSettings from '@/components/admin/settings/ShippingSettings.vue'
-import UserSettings from '@/components/admin/settings/UserSettings.vue'
-import ProductSettings from '@/components/admin/settings/ProductSettings.vue'
-import CommunicationSettings from '@/components/admin/settings/CommunicationSettings.vue'
-import SecuritySettings from '@/components/admin/settings/SecuritySettings.vue'
-import SystemSettings from '@/components/admin/settings/SystemSettings.vue'
+import { useSettingsStore } from '@/stores/settings'
+import { useNotifications } from '@/composables/useNotifications'
 
 const { t } = useI18n()
+const settingsStore = useSettingsStore()
+const { showSuccess, showError } = useNotifications()
 
 // Page state
 const loading = ref(false)
+const isSaving = ref(false)
 const activeTab = ref('general')
 
 // Settings data
-const settings = ref<Record<string, Record<string, any>>>({
-  general: {},
-  business: {},
-  shipping: {},
-  users: {},
-  products: {},
-  communication: {},
-  security: {},
-  system: {},
+const localData = ref({
+  app_name: '',
+  app_description: '',
+  app_slogan: '',
+  app_keywords: '',
+  company_logo: '',
+  favicon: '',
+  facebook_pxm_api_key: ''
 })
 
-// Tab configuration
-const tabs = computed(() => [
-  {
-    value: 'general',
-    title: t('general_settings'),
-    icon: 'tabler-settings'
-  },
-  {
-    value: 'business',
-    title: t('business_config'),
-    icon: 'tabler-building-store'
-  },
-  {
-    value: 'shipping',
-    title: t('shipping_integration'),
-    icon: 'tabler-truck-delivery'
-  },
-  {
-    value: 'users',
-    title: t('user_management'),
-    icon: 'tabler-users'
-  },
-  {
-    value: 'products',
-    title: t('product_settings'),
-    icon: 'tabler-package'
-  },
-  {
-    value: 'communication',
-    title: t('communication'),
-    icon: 'tabler-mail'
-  },
-  {
-    value: 'security',
-    title: t('security_privacy'),
-    icon: 'tabler-shield-lock'
-  },
-  {
-    value: 'system',
-    title: t('system_config'),
-    icon: 'tabler-server'
-  }
-])
+// Computed state
+const isFormLoading = computed(() => loading.value || isSaving.value)
 
-// Handle setting changes
-const onSettingChange = (category: string, key: string, value: any) => {
-  if (!settings.value[category]) {
-    settings.value[category] = {}
+// Preview states
+const logoPreview = ref('')
+const faviconPreview = ref('')
+
+// Password visibility for Facebook API key
+const showApiKey = ref(false)
+
+// Handle file uploads
+const handleLogoUpload = (event: Event) => {
+  const file = (event.target as HTMLInputElement).files?.[0]
+  if (file) {
+    if (!validateImageFile(file, 'logo')) return
+
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      logoPreview.value = e.target?.result as string
+      localData.value.company_logo = file.name
+    }
+    reader.readAsDataURL(file)
   }
-  settings.value[category][key] = value
+}
+
+const handleFaviconUpload = (event: Event) => {
+  const file = (event.target as HTMLInputElement).files?.[0]
+  if (file) {
+    if (!validateImageFile(file, 'favicon')) return
+
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      faviconPreview.value = e.target?.result as string
+      localData.value.favicon = file.name
+    }
+    reader.readAsDataURL(file)
+  }
+}
+
+// File validation
+const validateImageFile = (file: File, type: 'logo' | 'favicon'): boolean => {
+  const maxSizes = {
+    logo: 2 * 1024 * 1024, // 2MB
+    favicon: 1 * 1024 * 1024, // 1MB
+  }
+
+  const allowedTypes = {
+    logo: ['image/jpeg', 'image/png', 'image/svg+xml'],
+    favicon: ['image/x-icon', 'image/png', 'image/jpeg'],
+  }
+
+  if (file.size > maxSizes[type]) {
+    showError(`File too large. Maximum size for ${type} is ${maxSizes[type] / (1024 * 1024)}MB`)
+    return false
+  }
+
+  if (!allowedTypes[type].includes(file.type)) {
+    showError(`Invalid file type for ${type}. Allowed types: ${allowedTypes[type].join(', ')}`)
+    return false
+  }
+
+  return true
 }
 
 // Save settings
-const saveSettings = async (category: string, data: any) => {
+const handleSave = async () => {
+  isSaving.value = true
   try {
-    const response = await $api(`/admin/settings/${category}`, {
-      method: 'PUT',
-      body: data
-    })
-
-    if (response.success) {
-      settings.value[category] = { ...settings.value[category], ...data }
-      // You can add a toast notification here
-      console.log('Settings saved successfully:', response.message)
-    }
-
-    return response.success
+    await settingsStore.updateSettings('general', localData.value)
+    showSuccess(t('settings_saved_successfully'))
   } catch (error) {
     console.error('Failed to save settings:', error)
-    return false
+    showError(t('settings_save_failed'))
+  } finally {
+    isSaving.value = false
   }
 }
 
-// Load settings on mount
+// Load settings
 const loadSettings = async () => {
   loading.value = true
   try {
-    const response = await $api('/admin/settings/new', {
+    const response = await $api('/admin/settings/general', {
       method: 'GET'
     })
 
-    if (response.success) {
-      // Merge loaded settings with defaults
-      Object.keys(response.data).forEach(category => {
-        if (settings.value[category]) {
-          settings.value[category] = { ...settings.value[category], ...response.data[category] }
-        } else {
-          settings.value[category] = response.data[category]
+    if (response.success && response.data) {
+      Object.keys(localData.value).forEach(key => {
+        if (response.data[key] !== undefined) {
+          (localData.value as any)[key] = response.data[key]
         }
       })
     }
   } catch (error) {
     console.error('Failed to load settings:', error)
+    showError(t('settings_load_failed'))
   } finally {
     loading.value = false
   }
 }
 
-// Initialize settings with defaults
-const initializeSettings = () => {
-  // Set default values for all categories
-  settings.value = {
-    general: {
-      app_name: 'Affiliate Platform',
-      app_description: '',
-      app_tagline: '',
-      app_keywords: '',
-      company_name: '',
-      company_email: '',
-      company_phone: '',
-      company_address: '',
-      company_website: '',
-      company_social_facebook: '',
-      company_social_instagram: '',
-      company_social_twitter: '',
-      app_logo: '',
-      app_favicon: '',
-      primary_color: '#6366F1',
-      secondary_color: '#8B5CF6',
-      login_background_image: '',
-      signup_background_image: '',
-      app_theme: 'light',
-      default_language: 'fr',
-      timezone: 'Africa/Casablanca',
-      currency: 'MAD',
-      currency_symbol: 'MAD',
-      date_format: 'DD/MM/YYYY',
-      time_format: '24',
-      number_format: 'european',
-      maintenance_mode: false,
-      registration_enabled: true,
-      email_verification_required: true,
-      kyc_verification_required: true,
-      max_file_upload_size: 10,
-      allowed_file_types: 'jpg,jpeg,png,pdf,doc,docx',
-      session_timeout: 120,
-      password_min_length: 8,
-      password_require_special: true,
-      app_version: '1.0.0'
-    },
-    business: {},
-    shipping: {},
-    users: {},
-    products: {},
-    communication: {},
-    security: {},
-    system: {}
-  }
-}
-
-// Load settings when component mounts
+// Initialize on mount
 onMounted(() => {
-  initializeSettings()
   loadSettings()
 })
 </script>
@@ -194,118 +138,305 @@ onMounted(() => {
     <div class="d-flex align-center justify-space-between mb-6">
       <div>
         <h4 class="text-h4 font-weight-bold mb-1">
-          {{ t('app_settings') }}
+          {{ t('settings.title') }}
         </h4>
         <p class="text-body-1 mb-0">
-          {{ t('configure_app_behavior_preferences') }}
+          {{ t('settings.description') }}
         </p>
       </div>
     </div>
 
+    <!-- Loading Skeleton -->
+    <VRow v-if="loading">
+      <VCol cols="12">
+        <VCard>
+          <VCardText>
+            <VSkeletonLoader
+              type="heading, paragraph, divider, heading, paragraph, button"
+            />
+          </VCardText>
+        </VCard>
+      </VCol>
+    </VRow>
+
     <!-- Settings Tabs -->
-    <VTabs
-      v-model="activeTab"
-      class="v-tabs-pill"
-    >
-      <VTab
-        v-for="tab in tabs"
-        :key="tab.value"
-        :value="tab.value"
+    <VCard v-else>
+      <VTabs
+        v-model="activeTab"
+        color="primary"
+        align-tabs="start"
       >
-        <VIcon
-          size="20"
-          start
-          :icon="tab.icon"
-        />
-        {{ tab.title }}
-      </VTab>
-    </VTabs>
+        <VTab value="general">
+          <VIcon start icon="tabler-settings" />
+          {{ t('settings.tabs.general') }}
+        </VTab>
 
-    <!-- Settings Content -->
-    <VWindow
-      v-model="activeTab"
-      class="mt-6 disable-tab-transition"
-      :touch="false"
-    >
-      <!-- General Settings -->
-      <VWindowItem value="general">
-        <GeneralSettings
-          :data="settings.general"
-          :loading="loading"
-          @change="(key, value) => onSettingChange('general', key, value)"
-          @save="(data) => saveSettings('general', data)"
-        />
-      </VWindowItem>
+        <VTab value="business">
+          <VIcon start icon="tabler-building-store" />
+          {{ t('settings.tabs.business') }}
+        </VTab>
 
-      <!-- Business Settings -->
-      <VWindowItem value="business">
-        <BusinessSettings
-          :data="settings.business"
-          :loading="loading"
-          @change="(key, value) => onSettingChange('business', key, value)"
-          @save="(data) => saveSettings('business', data)"
-        />
-      </VWindowItem>
+        <VTab value="shipping">
+          <VIcon start icon="tabler-truck" />
+          {{ t('settings.tabs.shipping') }}
+          <VChip
+            size="x-small"
+            color="warning"
+            class="ml-2"
+          >
+            {{ t('settings.coming_soon') }}
+          </VChip>
+        </VTab>
 
-      <!-- Shipping Settings -->
-      <VWindowItem value="shipping">
-        <ShippingSettings
-          :data="settings.shipping"
-          :loading="loading"
-          @change="(key, value) => onSettingChange('shipping', key, value)"
-          @save="(data) => saveSettings('shipping', data)"
-        />
-      </VWindowItem>
+        <VTab value="users">
+          <VIcon start icon="tabler-users" />
+          {{ t('settings.tabs.users') }}
+          <VChip
+            size="x-small"
+            color="warning"
+            class="ml-2"
+          >
+            {{ t('settings.coming_soon') }}
+          </VChip>
+        </VTab>
 
-      <!-- User Settings -->
-      <VWindowItem value="users">
-        <UserSettings
-          :data="settings.users"
-          :loading="loading"
-          @change="(key, value) => onSettingChange('users', key, value)"
-          @save="(data) => saveSettings('users', data)"
-        />
-      </VWindowItem>
+        <VTab value="products">
+          <VIcon start icon="tabler-package" />
+          {{ t('settings.tabs.products') }}
+          <VChip
+            size="x-small"
+            color="warning"
+            class="ml-2"
+          >
+            {{ t('settings.coming_soon') }}
+          </VChip>
+        </VTab>
 
-      <!-- Product Settings -->
-      <VWindowItem value="products">
-        <ProductSettings
-          :data="settings.products"
-          :loading="loading"
-          @change="(key, value) => onSettingChange('products', key, value)"
-          @save="(data) => saveSettings('products', data)"
-        />
-      </VWindowItem>
+        <VTab value="communication">
+          <VIcon start icon="tabler-mail" />
+          {{ t('settings.tabs.communication') }}
+          <VChip
+            size="x-small"
+            color="warning"
+            class="ml-2"
+          >
+            {{ t('settings.coming_soon') }}
+          </VChip>
+        </VTab>
 
-      <!-- Communication Settings -->
-      <VWindowItem value="communication">
-        <CommunicationSettings
-          :data="settings.communication"
-          :loading="loading"
-          @change="(key, value) => onSettingChange('communication', key, value)"
-          @save="(data) => saveSettings('communication', data)"
-        />
-      </VWindowItem>
+        <VTab value="security">
+          <VIcon start icon="tabler-shield" />
+          {{ t('settings.tabs.security') }}
+          <VChip
+            size="x-small"
+            color="warning"
+            class="ml-2"
+          >
+            {{ t('settings.coming_soon') }}
+          </VChip>
+        </VTab>
 
-      <!-- Security Settings -->
-      <VWindowItem value="security">
-        <SecuritySettings
-          :data="settings.security"
-          :loading="loading"
-          @change="(key, value) => onSettingChange('security', key, value)"
-          @save="(data) => saveSettings('security', data)"
-        />
-      </VWindowItem>
+        <VTab value="system">
+          <VIcon start icon="tabler-server" />
+          {{ t('settings.tabs.system') }}
+          <VChip
+            size="x-small"
+            color="warning"
+            class="ml-2"
+          >
+            {{ t('settings.coming_soon') }}
+          </VChip>
+        </VTab>
+      </VTabs>
 
-      <!-- System Settings -->
-      <VWindowItem value="system">
-        <SystemSettings
-          :data="settings.system"
-          :loading="loading"
-          @change="(key, value) => onSettingChange('system', key, value)"
-          @save="(data) => saveSettings('system', data)"
-        />
-      </VWindowItem>
-    </VWindow>
+      <VTabsWindow v-model="activeTab">
+        <!-- General Settings Tab -->
+        <VTabsWindowItem value="general">
+          <VCardText>
+            <VForm @submit.prevent="handleSave">
+              <VRow>
+                <!-- App Name -->
+                <VCol
+                  cols="12"
+                  md="6"
+                >
+                  <AppTextField
+                    v-model="localData.app_name"
+                    :label="`${t('app_name')} *`"
+                    :placeholder="t('enter_app_name')"
+                    required
+                  />
+                </VCol>
+
+                <!-- App Description -->
+                <VCol
+                  cols="12"
+                  md="6"
+                >
+                  <AppTextField
+                    v-model="localData.app_description"
+                    :label="t('app_description')"
+                    :placeholder="t('enter_app_description')"
+                  />
+                </VCol>
+
+                <!-- App Slogan -->
+                <VCol
+                  cols="12"
+                  md="6"
+                >
+                  <AppTextField
+                    v-model="localData.app_slogan"
+                    :label="t('app_slogan')"
+                    :placeholder="t('enter_app_slogan')"
+                  />
+                </VCol>
+
+                <!-- App Keywords -->
+                <VCol
+                  cols="12"
+                  md="6"
+                >
+                  <AppTextField
+                    v-model="localData.app_keywords"
+                    :label="t('app_keywords')"
+                    :placeholder="t('enter_app_keywords')"
+                  />
+                </VCol>
+
+                <!-- Company Logo Upload -->
+                <VCol
+                  cols="12"
+                  md="6"
+                >
+                  <VLabel class="text-body-2 text-high-emphasis mb-1">
+                    {{ t('company_logo') }}
+                  </VLabel>
+                  <VFileInput
+                    accept="image/jpeg,image/png,image/svg+xml"
+                    :label="t('select_logo_file')"
+                    prepend-icon="tabler-upload"
+                    @change="handleLogoUpload"
+                  />
+                  <div v-if="logoPreview" class="mt-2">
+                    <VImg
+                      :src="logoPreview"
+                      width="100"
+                      height="60"
+                      class="border rounded"
+                    />
+                  </div>
+                </VCol>
+
+                <!-- Favicon Upload -->
+                <VCol
+                  cols="12"
+                  md="6"
+                >
+                  <VLabel class="text-body-2 text-high-emphasis mb-1">
+                    {{ t('favicon') }}
+                  </VLabel>
+                  <VFileInput
+                    accept="image/x-icon,image/png,image/jpeg"
+                    :label="t('select_favicon_file')"
+                    prepend-icon="tabler-upload"
+                    @change="handleFaviconUpload"
+                  />
+                  <div v-if="faviconPreview" class="mt-2">
+                    <VImg
+                      :src="faviconPreview"
+                      width="32"
+                      height="32"
+                      class="border rounded"
+                    />
+                  </div>
+                </VCol>
+
+                <!-- Facebook Pixel API Key -->
+                <VCol cols="12">
+                  <AppTextField
+                    v-model="localData.facebook_pxm_api_key"
+                    :label="t('facebook_pixel_api_key')"
+                    :placeholder="t('enter_facebook_pixel_api_key')"
+                    :type="showApiKey ? 'text' : 'password'"
+                    :append-inner-icon="showApiKey ? 'tabler-eye-off' : 'tabler-eye'"
+                    @click:append-inner="showApiKey = !showApiKey"
+                  >
+                    <template #details>
+                      <div class="text-caption text-medium-emphasis">
+                        {{ t('facebook_pixel_api_key_description') }}
+                      </div>
+                    </template>
+                  </AppTextField>
+                </VCol>
+
+                <!-- Action Buttons -->
+                <VCol cols="12">
+                  <div class="d-flex gap-3 flex-wrap">
+                    <VBtn
+                      color="primary"
+                      prepend-icon="tabler-device-floppy"
+                      :loading="isSaving"
+                      :disabled="isFormLoading"
+                      type="submit"
+                    >
+                      {{ t('save_settings') }}
+                    </VBtn>
+
+                    <VBtn
+                      color="secondary"
+                      variant="outlined"
+                      prepend-icon="tabler-refresh"
+                      :disabled="isFormLoading"
+                      @click="loadSettings"
+                    >
+                      {{ t('reload_settings') }}
+                    </VBtn>
+                  </div>
+                </VCol>
+              </VRow>
+            </VForm>
+          </VCardText>
+        </VTabsWindowItem>
+
+        <!-- Business Settings Tab -->
+        <VTabsWindowItem value="business">
+          <VCardText>
+            <VAlert
+              type="info"
+              variant="tonal"
+              class="mb-4"
+            >
+              <VIcon start icon="tabler-info-circle" />
+              {{ t('settings.business.description') }}
+            </VAlert>
+            <!-- Business settings content will be added in future versions -->
+          </VCardText>
+        </VTabsWindowItem>
+
+        <!-- Coming Soon Tabs -->
+        <VTabsWindowItem
+          v-for="tab in ['shipping', 'users', 'products', 'communication', 'security', 'system']"
+          :key="tab"
+          :value="tab"
+        >
+          <VCardText>
+            <div class="text-center py-8">
+              <VIcon
+                icon="tabler-clock"
+                size="64"
+                class="text-medium-emphasis mb-4"
+              />
+              <h3 class="text-h5 mb-2">
+                {{ t('settings.coming_soon') }}
+              </h3>
+              <p class="text-body-1 text-medium-emphasis">
+                {{ t('settings.coming_soon_description', { feature: t(`settings.tabs.${tab}`) }) }}
+              </p>
+            </div>
+          </VCardText>
+        </VTabsWindowItem>
+      </VTabsWindow>
+    </VCard>
   </div>
 </template>
