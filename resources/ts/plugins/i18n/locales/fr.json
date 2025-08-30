@@ -3168,7 +3168,10 @@
   "dashboard.affiliate.cards.total_orders": "Mes commandes totales",
   "dashboard.affiliate.cards.total_commissions": "Mes commissions totales",
   "dashboard.affiliate.cards.monthly_earnings": "Gains du mois",
-  "dashboard.affiliate.cards.payments_status": "Paiements reçus / en attente",
+  "dashboard.affiliate.cards.received_payments": "Paiements reçus",
+  "dashboard.affiliate.cards.pending_payments": "Paiements en attente",
+  "dashboard.affiliate.cards.received": "Reçus",
+  "dashboard.affiliate.cards.pending": "En attente",
   "dashboard.affiliate.cards.pending_tickets": "Tickets en attente",
 
   "dashboard.affiliate.charts.top_products_sold": "Produits les plus vendus via moi",

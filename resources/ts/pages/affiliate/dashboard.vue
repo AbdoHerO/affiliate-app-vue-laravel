@@ -47,10 +47,7 @@ const kpiCards = computed(() => {
     let prefix = undefined
 
     // Handle special formatting for different card types
-    if (card.key === 'payments_status' && typeof card.value === 'object') {
-      const payments = card.value as any
-      displayValue = `${payments.received || 0} DH / ${payments.pending || 0} DH`
-    } else if (['total_commissions', 'monthly_earnings'].includes(card.key)) {
+    if (['total_commissions', 'monthly_earnings', 'received_payments', 'pending_payments'].includes(card.key)) {
       prefix = 'DH'
     }
 
@@ -70,7 +67,8 @@ const getCardIcon = (key: string) => {
     total_orders: 'tabler-shopping-cart',
     total_commissions: 'tabler-currency-dollar',
     monthly_earnings: 'tabler-calendar',
-    payments_status: 'tabler-clock',
+    received_payments: 'tabler-check-circle',
+    pending_payments: 'tabler-clock',
     pending_tickets: 'tabler-ticket',
   }
   return icons[key] || 'tabler-chart-bar'
@@ -81,7 +79,8 @@ const getCardColor = (key: string) => {
     total_orders: 'primary',
     total_commissions: 'success',
     monthly_earnings: 'info',
-    payments_status: 'warning',
+    received_payments: 'success',
+    pending_payments: 'warning',
     pending_tickets: 'error',
   }
   return colors[key] || 'primary'

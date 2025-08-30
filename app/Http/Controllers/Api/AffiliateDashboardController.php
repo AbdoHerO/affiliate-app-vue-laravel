@@ -211,12 +211,14 @@ class AffiliateDashboardController extends Controller
                     ->sum('amount') ?? 0)
             ],
             [
-                'key' => 'payments_status',
-                'labelKey' => 'dashboard.affiliate.cards.payments_status',
-                'value' => [
-                    'received' => (float) $receivedPayments,
-                    'pending' => (float) $pendingPayments
-                ]
+                'key' => 'received_payments',
+                'labelKey' => 'dashboard.affiliate.cards.received_payments',
+                'value' => (float) $receivedPayments
+            ],
+            [
+                'key' => 'pending_payments',
+                'labelKey' => 'dashboard.affiliate.cards.pending_payments',
+                'value' => (float) $pendingPayments
             ],
             [
                 'key' => 'pending_tickets',
