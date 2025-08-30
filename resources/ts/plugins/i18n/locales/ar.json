@@ -3212,6 +3212,483 @@
   "dashboard.admin.refresh": "تحديث",
   "dashboard.admin.export": "تصدير",
   "dashboard.admin.period_filter": "تصفية حسب الفترة",
-  "dashboard.admin.charts.title": "الرسوم البيانية والتحليلات"
+  "dashboard.admin.charts.title": "الرسوم البيانية والتحليلات",
+  "settings": {
+    "description": "قم بتكوين وتخصيص تطبيقك",
+    "messages": {
+      "saved_successfully": "تم حفظ الإعدادات بنجاح",
+      "save_failed": "فشل في حفظ الإعدادات",
+      "load_failed": "فشل في تحميل الإعدادات",
+      "uploading": "جاري الرفع...",
+      "upload_success": "تم رفع الملف بنجاح",
+      "upload_failed": "فشل في رفع الملف",
+      "invalid_file_type": "نوع ملف غير صالح",
+      "file_too_large": "الملف كبير جداً"
+    },
+    "actions": {
+      "save": "حفظ الإعدادات",
+      "reload": "إعادة تحميل الإعدادات",
+      "cancel": "إلغاء",
+      "reset": "إعادة تعيين"
+    },
+    "tabs": {
+      "communication": "التواصل",
+      "shipping": "الشحن",
+      "products": "المنتجات",
+      "general": "معلومات التطبيق",
+      "system": "النظام",
+      "business": "الإعدادات التجارية",
+      "users": "المستخدمون",
+      "security": "الأمان"
+    },
+    "general": {
+      "clear": "مسح",
+      "title": "معلومات التطبيق",
+      "description": "قم بتكوين المعلومات الأساسية وتفضيلات التطبيق",
+      "app_name": "اسم التطبيق",
+      "app_name_placeholder": "أدخل اسم تطبيقك",
+      "app_description": "وصف التطبيق",
+      "app_description_placeholder": "صف تطبيقك في بضع كلمات",
+      "app_slogan": "شعار التطبيق",
+      "app_slogan_placeholder": "شعار جذاب لتطبيقك",
+      "app_keywords": "كلمات مفتاحية للسيو",
+      "app_keywords_placeholder": "تسويق بالعمولة، تجارة إلكترونية، دفع عند الاستلام",
+      "keywords_help": "افصل الكلمات المفتاحية بفواصل لتحسين محركات البحث",
+      "company_logo": "شعار الشركة",
+      "logo_upload": "رفع الشعار",
+      "logo_requirements": "التنسيق الموصى به: PNG/JPG، الحجم: 200x60px",
+      "favicon": "أيقونة المفضلة",
+      "favicon_upload": "رفع أيقونة المفضلة",
+      "favicon_requirements": "التنسيق الموصى به: ICO/PNG، الحجم: 32x32px",
+      "facebook_pixel": "فيسبوك بكسل",
+      "facebook_pixel_id": "معرف فيسبوك بكسل",
+      "facebook_pixel_placeholder": "أدخل معرف فيسبوك بكسل الخاص بك",
+      "facebook_pixel_help": "يُستخدم لتتبع التحويلات وإنشاء جماهير مخصصة",
+      "preview": "معاينة",
+      "remove": "إزالة",
+      "drag_drop": "اسحب وأفلت ملفك هنا أو انقر للتحديد",
+      "file_selected": "تم تحديد الملف",
+      "change_file": "تغيير الملف"
+    },
+    "coming_soon": "قريباً",
+    "business": {
+      "description": "قم بتكوين الإعدادات التجارية والعمولة."
+    },
+    "title": "إعدادات التطبيق",
+    "coming_soon_description": "ستكون ميزة {feature} متاحة في إصدار قادم."
+  },
+  "admin": {
+    "cities": {
+      "importerror": "خطأ في الاستيراد",
+      "clear": "مسح",
+      "deliveryPrice": "سعر التوصيل (درهم)",
+      "returnPrice": "سعر الإرجاع (درهم)",
+      "importError": "خطأ في الاستيراد",
+      "saveError": "خطأ في الحفظ",
+      "name": "الاسم",
+      "editCity": "تعديل المدينة",
+      "citiesImportedSuccess": "تم استيراد المدن بنجاح",
+      "search": "بحث",
+      "cityCreatedSuccess": "تم إنشاء المدينة بنجاح",
+      "importcities": "استيراد المدن",
+      "deliveryprice": "سعر التوصيل (درهم)",
+      "cityModifiedSuccess": "تم تعديل المدينة بنجاح",
+      "activecities": "المدن النشطة",
+      "cityidplaceholder": "مثال: 97",
+      "searchPlaceholder": "الاسم، المعرف أو المرجع...",
+      "lastupdate": "آخر تحديث",
+      "inactivecities": "المدن غير النشطة",
+      "fileToImport": "الملف المراد استيراده",
+      "perPage": "لكل صفحة",
+      "cityname": "اسم المدينة",
+      "lastUpdate": "آخر تحديث",
+      "status": "الحالة",
+      "totalcities": "إجمالي المدن",
+      "cityid": "معرف المدينة",
+      "importformats": "التنسيقات المقبولة: JSON، CSV. يجب أن يحتوي الملف على الأعمدة: city_id، name، ref (اختياري)، prices.",
+      "citynameplaceholder": "مثال: الدار البيضاء",
+      "cityNamePlaceholder": "مثال: الدار البيضاء",
+      "managecitiesdesc": "إدارة المدن المتاحة لشحنات أوزون إكسبريس",
+      "importFormats": "التنسيقات المقبولة: JSON، CSV. يجب أن يحتوي الملف على الأعمدة: city_id، name، ref (اختياري)، prices.",
+      "citycreatedsuccess": "تم إنشاء المدينة بنجاح",
+      "newcity": "مدينة جديدة",
+      "referencePlaceholder": "مثال: CSA",
+      "all": "الكل",
+      "active": "نشطة",
+      "activecity": "مدينة نشطة",
+      "activeCities": "المدن النشطة",
+      "cityId": "معرف المدينة",
+      "totalCities": "إجمالي المدن",
+      "returnprice": "سعر الإرجاع (درهم)",
+      "searchplaceholder": "الاسم، المعرف أو المرجع...",
+      "cityIdPlaceholder": "مثال: 97",
+      "ozonexpresscities": "مدن أوزون إكسبريس",
+      "saveerror": "خطأ في الحفظ",
+      "filetoimport": "الملف المراد استيراده",
+      "import": "استيراد",
+      "reference": "المرجع",
+      "ozonExpressCities": "مدن أوزون إكسبريس",
+      "manageCitiesDesc": "إدارة المدن المتاحة لشحنات أوزون إكسبريس",
+      "newCity": "مدينة جديدة",
+      "inactiveCities": "المدن غير النشطة",
+      "inactive": "غير نشطة",
+      "cityName": "اسم المدينة",
+      "activeCity": "مدينة نشطة",
+      "refusedPrice": "سعر الرفض (درهم)",
+      "importCities": "استيراد المدن",
+      "citiesimportedsuccess": "تم استيراد المدن بنجاح",
+      "referenceplaceholder": "مثال: CSA",
+      "refusedprice": "سعر الرفض (درهم)",
+      "citymodifiedsuccess": "تم تعديل المدينة بنجاح",
+      "perpage": "لكل صفحة",
+      "editcity": "تعديل المدينة"
+    },
+    "debug": {
+      "parcelNature": "طبيعة الطرد",
+      "platformsync": "مزامنة منصة أوزون إكسبريس",
+      "platformSync": "مزامنة منصة أوزون إكسبريس",
+      "parcelType": "نوع الطرد",
+      "quickActions": "إجراءات سريعة",
+      "productionmodedesc": "استدعاءات API تنشئ طرود حقيقية بأرقام تتبع حقيقية",
+      "advancedApiDebug": "تصحيح API متقدم",
+      "success": "نجح",
+      "track": "تتبع",
+      "sendParcel": "إرسال طرد",
+      "manualEntry": "إدخال يدوي",
+      "error": "خطأ",
+      "manualentry": "إدخال يدوي",
+      "testModeDesc": "استدعاءات API تستخدم بيانات وهمية للاختبار",
+      "sendparcel": "إرسال طرد",
+      "systemStatus": "حالة النظام",
+      "testMode": "وضع الاختبار",
+      "uselastcreated": "استخدام آخر طرد منشأ",
+      "phone": "الهاتف",
+      "ozonExpressDescription": "تسمح هذه الصفحة بتجربة وتصحيح تكامل أوزون إكسبريس. استخدمها للتحقق من أن API يعمل بشكل صحيح.",
+      "ozonExpressTitle": "تصحيح واختبار API أوزون إكسبريس",
+      "trackparcel": "تتبع طرد",
+      "useLastCreated": "استخدام آخر طرد منشأ",
+      "testmode": "وضع الاختبار",
+      "createdsuccessfully": "تم إنشاؤه بنجاح",
+      "ozonexpresstitle": "تصحيح واختبار API أوزون إكسبريس",
+      "parceldetails": "تفاصيل الطرد",
+      "city": "المدينة",
+      "advancedapidebug": "تصحيح API متقدم",
+      "realparcelsanalytics": "تحليلات الطرود الحقيقية",
+      "trackinginfo": "معلومات التتبع",
+      "mocktestmode": "وضع الاختبار الوهمي",
+      "updated": "تم تحديثه",
+      "realApiMode": "وضع API الحقيقي",
+      "mockTestMode": "وضع الاختبار الوهمي",
+      "productionMode": "وضع الإنتاج",
+      "productionModeDesc": "استدعاءات API تنشئ طرود حقيقية بأرقام تتبع حقيقية",
+      "checkStatus": "فحص الحالة",
+      "realParcelsAnalytics": "تحليلات الطرود الحقيقية",
+      "recentRealParcels": "الطرود الحقيقية الأخيرة",
+      "trackParcel": "تتبع طرد",
+      "deliveryNoteTest": "اختبار سند التسليم",
+      "fromOrder": "من الطلب",
+      "recipient": "المستلم",
+      "price": "السعر",
+      "address": "العنوان",
+      "parcelDetails": "تفاصيل الطرد",
+      "trackingInfo": "معلومات التتبع",
+      "result": "النتيجة",
+      "trackingNumber": "رقم التتبع",
+      "close": "إغلاق",
+      "cancel": "إلغاء",
+      "createdSuccessfully": "تم إنشاؤه بنجاح",
+      "realapimode": "وضع API الحقيقي",
+      "fromorder": "من الطلب",
+      "systemstatus": "حالة النظام",
+      "testmodedesc": "استدعاءات API تستخدم بيانات وهمية للاختبار",
+      "recentrealparcels": "الطرود الحقيقية الأخيرة",
+      "quickactions": "إجراءات سريعة",
+      "deliverynotetest": "اختبار سند التسليم",
+      "checkstatus": "فحص الحالة",
+      "parceltype": "نوع الطرد",
+      "parcelnature": "طبيعة الطرد",
+      "trackingnumber": "رقم التتبع",
+      "productionmode": "وضع الإنتاج",
+      "ozonexpressdescription": "تسمح هذه الصفحة بتجربة وتصحيح تكامل أوزون إكسبريس. استخدمها للتحقق من أن API يعمل بشكل صحيح."
+    },
+    "dashboard": {
+      "weeklyEarningsOverview": "نظرة عامة على الأرباح الأسبوعية",
+      "title": "لوحة تحكم المدير",
+      "stats": {
+        "totalUsers": "إجمالي المستخدمين",
+        "totalrevenue": "إجمالي الإيرادات",
+        "totalorders": "إجمالي الطلبات",
+        "pendingorders": "الطلبات المعلقة",
+        "totalOrders": "إجمالي الطلبات",
+        "totalRevenue": "إجمالي الإيرادات",
+        "pendingOrders": "الطلبات المعلقة",
+        "totalusers": "إجمالي المستخدمين"
+      },
+      "revenue": "الإيرادات",
+      "updatedago": "تم التحديث منذ {time}",
+      "earnings": "الأرباح",
+      "weeklyearningsoverview": "نظرة عامة على الأرباح الأسبوعية",
+      "products": "المنتجات",
+      "profit": "الربح",
+      "earningreports": "تقارير الأرباح",
+      "welcome": "مرحباً بك في المساحة الإدارية",
+      "delete": "حذف",
+      "viewmore": "عرض المزيد",
+      "expense": "المصروفات",
+      "customers": "العملاء",
+      "earningReports": "تقارير الأرباح",
+      "youInformed": "أنت مطلع على هذا الأسبوع مقارنة بالأسبوع الماضي",
+      "viewMore": "عرض المزيد",
+      "statistics": "الإحصائيات",
+      "updatedAgo": "تم التحديث منذ {time}",
+      "sales": "المبيعات",
+      "youinformed": "أنت مطلع على هذا الأسبوع مقارنة بالأسبوع الماضي"
+    },
+    "orders": {
+      "bulkupdatesuccess": "تم تحديث {count} طلب(طلبات) إلى \"{status}\"",
+      "bulkUpdateSuccess": "تم تحديث {count} طلب(طلبات) إلى \"{status}\""
+    },
+    "commissions": {
+      "details": "تفاصيل العمولة"
+    }
+  },
+  "enter_app_name": "أدخل اسم التطبيق",
+  "enter_facebook_pixel_api_key": "أدخل مفتاح API فيسبوك بكسل",
+  "$vuetify": {
+    "nodatatext": "لا توجد بيانات متاحة",
+    "input": {
+      "clear": "مسح",
+      "appendAction": "إضافة إجراء",
+      "prependaction": "إجراء مسبق",
+      "appendaction": "إضافة إجراء",
+      "otp": "رمز التحقق",
+      "prependAction": "إجراء مسبق"
+    },
+    "close": "إغلاق",
+    "pagination": {
+      "arialabel": {
+        "first": "الأول",
+        "next": "التالي",
+        "page": "صفحة",
+        "previous": "السابق",
+        "currentpage": "الصفحة الحالية",
+        "root": "الجذر",
+        "last": "الأخير",
+        "currentPage": "الصفحة الحالية"
+      },
+      "ariaLabel": {
+        "root": "الجذر",
+        "previous": "السابق",
+        "first": "الأول",
+        "last": "الأخير",
+        "next": "التالي",
+        "currentPage": "الصفحة الحالية",
+        "page": "صفحة"
+      }
+    },
+    "rating": {
+      "arialabel": {
+        "item": "عنصر"
+      },
+      "ariaLabel": {
+        "item": "عنصر"
+      }
+    },
+    "datafooter": {
+      "nextPage": "الصفحة التالية",
+      "itemsPerPageText": "عناصر لكل صفحة:",
+      "itemsPerPageAll": "الكل",
+      "pageText": "{0}-{1} من {2}",
+      "firstPage": "الصفحة الأولى",
+      "prevPage": "الصفحة السابقة",
+      "lastPage": "الصفحة الأخيرة"
+    },
+    "fileinput": {
+      "countersize": "حجم العداد",
+      "counterSize": "حجم العداد"
+    },
+    "carousel": {
+      "arialabel": {
+        "delimiter": "فاصل"
+      },
+      "ariaLabel": {
+        "delimiter": "فاصل"
+      }
+    },
+    "loading": "جاري التحميل"
+  },
+  "errors": {
+    "ticket_reopen_failed": "خطأ في إعادة فتح التذكرة",
+    "pagenotfounddescription": "لم نتمكن من العثور على الصفحة التي تبحث عنها.",
+    "commissions_loading_error": "خطأ في تحميل العمولات",
+    "no_eligible_commissions": "لا توجد عمولات مؤهلة للسحب",
+    "message_required": "يرجى إدخال رسالة",
+    "withdrawal_request_failed": "خطأ في طلب السحب",
+    "orders_load_failed": "خطأ في تحميل الطلبات",
+    "commissions_load_failed": "خطأ في تحميل العمولات",
+    "ticket_close_failed": "خطأ في إغلاق التذكرة",
+    "ticket_load_failed": "خطأ في تحميل التذكرة",
+    "message_add_failed": "خطأ في إضافة الرسالة",
+    "pagenotfoundtitle": "الصفحة غير موجودة ⚠️",
+    "users_loading_error": "خطأ في تحميل المستخدمين",
+    "withdrawals_load_failed": "خطأ في تحميل السحوبات"
+  },
+  "form": {
+    "modified": "معدل",
+    "date": "التاريخ",
+    "name": "الاسم",
+    "created": "منشأ",
+    "status": "الحالة",
+    "title": "العنوان",
+    "fullname": "الاسم الكامل",
+    "address": "العنوان",
+    "email": "البريد الإلكتروني",
+    "description": "الوصف",
+    "phone": "الهاتف"
+  },
+  "save_settings": "حفظ الإعدادات",
+  "stock": {
+    "history": {
+      "columns": {
+        "date": "التاريخ",
+        "type": "النوع",
+        "quantity": "الكمية",
+        "reference": "المرجع",
+        "variant": "المتغير"
+      },
+      "title": "تاريخ الحركات",
+      "title_for": "التاريخ - {product}",
+      "no_movements": "لم يتم العثور على حركات",
+      "no_movements_desc": "لم يتم تسجيل أي حركة مخزون لهذا المنتج"
+    },
+    "table": {
+      "title": "قائمة المخزون",
+      "items": "عناصر",
+      "no_data_title": "لم يتم العثور على مخزون",
+      "no_data_subtitle": "لا يوجد منتج يطابق معايير البحث",
+      "reset_filters": "إعادة تعيين المرشحات"
+    },
+    "filters": {
+      "title": "المرشحات",
+      "search": "بحث",
+      "search_placeholder": "اسم المنتج، المرجع...",
+      "boutique": "المتجر",
+      "category": "الفئة",
+      "with_variants": "مع المتغيرات",
+      "min_qty": "الكمية الدنيا",
+      "max_qty": "الكمية القصوى",
+      "type": "نوع الحركة",
+      "reason": "السبب",
+      "date_from": "تاريخ البداية",
+      "date_to": "تاريخ النهاية"
+    },
+    "kpi": {
+      "products": "المنتجات",
+      "on_hand": "في المخزن",
+      "reserved": "محجوز",
+      "available": "متاح"
+    },
+    "movement_created_successfully": "تم إنشاء حركة المخزون بنجاح",
+    "actions": {
+      "in": "دخول مخزون",
+      "out": "خروج مخزون",
+      "adjust": "تعديل",
+      "history": "التاريخ"
+    },
+    "messages": {
+      "movement_created": "تم إنشاء حركة المخزون بنجاح"
+    },
+    "columns": {
+      "product": "المنتج",
+      "variant": "المتغير",
+      "category": "الفئة",
+      "boutique": "المتجر",
+      "on_hand": "في المخزن",
+      "reserved": "محجوز",
+      "available": "متاح",
+      "last_movement": "آخر حركة"
+    }
+  },
+  "error_account_inactive": "حسابك غير نشط. يرجى الاتصال بالمدير.",
+  "notifications": {
+    "nonotificationsfound": "لم يتم العثور على إشعارات!"
+  },
+  "common": {
+    "go_to_dashboard": "الذهاب إلى لوحة التحكم",
+    "norole": "لا يوجد دور",
+    "guest": "ضيف",
+    "retry": "إعادة المحاولة",
+    "unknown_error": "خطأ غير معروف",
+    "max_retries_reached": "تم الوصول إلى الحد الأقصى للمحاولات",
+    "error_loading_data": "خطأ في تحميل البيانات",
+    "error_occurred": "حدث خطأ",
+    "details": "التفاصيل",
+    "too_many_errors_redirecting": "تم اكتشاف أخطاء كثيرة، جاري إعادة التوجيه...",
+    "notprovided": "غير محدد"
+  },
+  "current_image": "الصورة الحالية",
+  "wait_for_application_approval": "انتظر الموافقة على طلبك",
+  "payments": {
+    "actions": {
+      "view": "عرض التفاصيل",
+      "download_pdf": "تحميل PDF"
+    }
+  },
+  "table": {
+    "deletedonly": "المحذوفة فقط",
+    "display": "عرض",
+    "of": "من",
+    "itemsperpage": "عناصر لكل صفحة",
+    "loading": "جاري التحميل...",
+    "allactiveanddeleted": "الكل (النشطة + المحذوفة)",
+    "nodataavailable": "لا توجد بيانات متاحة",
+    "results": "نتائج",
+    "showing": "عرض",
+    "activeonly": "النشطة فقط",
+    "to": "إلى"
+  },
+  "banks": {
+    "banque_populaire": "البنك الشعبي",
+    "attijariwafa": "التجاري وفا بنك"
+  },
+  "congratulations_next_steps": "تهانينا! الخطوات التالية",
+  "enter_app_slogan": "أدخل شعار التطبيق",
+  "configure_app_information_preferences": "قم بتكوين معلومات وتفضيلات التطبيق",
+  "facebook_pixel_api_key_description": "مفتاح API لتتبع فيسبوك بكسل. اتركه فارغاً لتعطيل التتبع.",
+  "app_keywords": "كلمات مفتاحية للسيو",
+  "app_slogan": "شعار التطبيق",
+  "enter_app_description": "أدخل وصف التطبيق",
+  "enter_app_keywords": "أدخل الكلمات المفتاحية للسيو (مفصولة بفواصل)",
+  "settings_load_failed": "فشل في تحميل الإعدادات",
+  "facebook_pixel_api_key": "مفتاح API فيسبوك بكسل",
+  "select_logo_file": "اختر ملف الشعار",
+  "start_earning_commissions": "ابدأ في كسب العمولات",
+  "thank_you_registration_complete": "شكراً لك! اكتمل التسجيل",
+  "settings_save_failed": "فشل في حفظ الإعدادات",
+  "reload_settings": "إعادة تحميل الإعدادات",
+  "dialogs": {
+    "confirmaction": "تأكيد الإجراء",
+    "confirmmessage": "هل أنت متأكد من أنك تريد المتابعة؟"
+  },
+  "no_image_uploaded": "لم يتم رفع صورة",
+  "a11y": {
+    "decorativeimage": "صورة تزيينية",
+    "error404image": "صورة خطأ 404"
+  },
+  "cart": {
+    "title": "السلة"
+  },
+  "click_verification_link_in_email": "انقر على رابط التحقق في بريدك الإلكتروني",
+  "error_account_not_active": "حسابك غير نشط. يرجى الاتصال بالمدير.",
+  "receive_login_credentials": "استلم بيانات تسجيل الدخول الخاصة بك",
+  "error_account_blocked": "تم حظر حسابك. يرجى الاتصال بالمدير.",
+  "search": {
+    "noresultsfor": "لا توجد نتائج لـ"
+  },
+  "select_favicon_file": "اختر ملف أيقونة المفضلة",
+  "verification_email_sent_to": "تم إرسال بريد إلكتروني للتحقق إلى",
+  "welcome_to_our_affiliate_network": "مرحباً بك في شبكة الشراكة الخاصة بنا",
+  "settings_saved_successfully": "تم حفظ الإعدادات بنجاح",
+  "email_readonly_notice": "لا يمكن تعديل البريد الإلكتروني"
 }
 

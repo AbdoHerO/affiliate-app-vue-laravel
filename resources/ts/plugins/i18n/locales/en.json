@@ -3216,5 +3216,484 @@
   "dashboard.admin.refresh": "Refresh",
   "dashboard.admin.export": "Export",
   "dashboard.admin.period_filter": "Filter by period",
-  "dashboard.admin.charts.title": "Charts and Analytics"
+  "dashboard.admin.charts.title": "Charts and Analytics",
+  "settings": {
+    "description": "Configure and customize your application",
+    "messages": {
+      "saved_successfully": "Settings saved successfully",
+      "save_failed": "Failed to save settings",
+      "load_failed": "Failed to load settings",
+      "uploading": "Uploading...",
+      "upload_success": "File uploaded successfully",
+      "upload_failed": "Upload failed",
+      "invalid_file_type": "Invalid file type",
+      "file_too_large": "File too large"
+    },
+    "actions": {
+      "save": "Save settings",
+      "reload": "Reload settings",
+      "cancel": "Cancel",
+      "reset": "Reset"
+    },
+    "tabs": {
+      "communication": "Communication",
+      "shipping": "Shipping",
+      "products": "Products",
+      "general": "Application information",
+      "system": "System",
+      "business": "Business Settings",
+      "users": "Users",
+      "security": "Security"
+    },
+    "general": {
+      "clear": "Clear",
+      "title": "Application information",
+      "description": "Configure basic information and application preferences",
+      "app_name": "Application name",
+      "app_name_placeholder": "Enter your application name",
+      "app_description": "Application description",
+      "app_description_placeholder": "Describe your application in a few words",
+      "app_slogan": "Application slogan",
+      "app_slogan_placeholder": "A catchy slogan for your application",
+      "app_keywords": "SEO keywords",
+      "app_keywords_placeholder": "affiliate, ecommerce, COD",
+      "keywords_help": "Separate keywords with commas for SEO optimization",
+      "company_logo": "Company logo",
+      "logo_upload": "Upload logo",
+      "logo_requirements": "Recommended format: PNG/JPG, size: 200x60px",
+      "favicon": "Favicon",
+      "favicon_upload": "Upload favicon",
+      "favicon_requirements": "Recommended format: ICO/PNG, size: 32x32px",
+      "facebook_pixel": "Facebook Pixel",
+      "facebook_pixel_id": "Facebook Pixel ID",
+      "facebook_pixel_placeholder": "Enter your Facebook Pixel ID",
+      "facebook_pixel_help": "Used for conversion tracking and creating custom audiences",
+      "preview": "Preview",
+      "remove": "Remove",
+      "drag_drop": "Drag and drop your file here or click to select",
+      "file_selected": "File selected",
+      "change_file": "Change file"
+    },
+    "coming_soon": "Coming soon",
+    "business": {
+      "description": "Configure business and commission settings."
+    },
+    "title": "Application settings",
+    "coming_soon_description": "The {feature} feature will be available in an upcoming version."
+  },
+  "admin": {
+    "cities": {
+      "importerror": "Import error",
+      "clear": "Clear",
+      "deliveryPrice": "Delivery price (MAD)",
+      "returnPrice": "Return price (MAD)",
+      "importError": "Import error",
+      "saveError": "Save error",
+      "name": "Name",
+      "editCity": "Edit city",
+      "citiesImportedSuccess": "Cities imported successfully",
+      "search": "Search",
+      "cityCreatedSuccess": "City created successfully",
+      "importcities": "Import cities",
+      "deliveryprice": "Delivery price (MAD)",
+      "cityModifiedSuccess": "City modified successfully",
+      "activecities": "Active cities",
+      "cityidplaceholder": "Ex: 97",
+      "searchPlaceholder": "Name, ID or reference...",
+      "lastupdate": "Last update",
+      "inactivecities": "Inactive cities",
+      "fileToImport": "File to import",
+      "perPage": "Per page",
+      "cityname": "City name",
+      "lastUpdate": "Last update",
+      "status": "Status",
+      "totalcities": "Total cities",
+      "cityid": "City ID",
+      "importformats": "Accepted formats: JSON, CSV. File must contain columns: city_id, name, ref (optional), prices.",
+      "citynameplaceholder": "Ex: Casablanca",
+      "cityNamePlaceholder": "Ex: Casablanca",
+      "managecitiesdesc": "Manage cities available for OzonExpress shipments",
+      "importFormats": "Accepted formats: JSON, CSV. File must contain columns: city_id, name, ref (optional), prices.",
+      "citycreatedsuccess": "City created successfully",
+      "newcity": "New city",
+      "referencePlaceholder": "Ex: CSA",
+      "all": "All",
+      "active": "Active",
+      "activecity": "Active city",
+      "activeCities": "Active cities",
+      "cityId": "City ID",
+      "totalCities": "Total cities",
+      "returnprice": "Return price (MAD)",
+      "searchplaceholder": "Name, ID or reference...",
+      "cityIdPlaceholder": "Ex: 97",
+      "ozonexpresscities": "OzonExpress cities",
+      "saveerror": "Save error",
+      "filetoimport": "File to import",
+      "import": "Import",
+      "reference": "Reference",
+      "ozonExpressCities": "OzonExpress cities",
+      "manageCitiesDesc": "Manage cities available for OzonExpress shipments",
+      "newCity": "New city",
+      "inactiveCities": "Inactive cities",
+      "inactive": "Inactive",
+      "cityName": "City name",
+      "activeCity": "Active city",
+      "refusedPrice": "Refused price (MAD)",
+      "importCities": "Import cities",
+      "citiesimportedsuccess": "Cities imported successfully",
+      "referenceplaceholder": "Ex: CSA",
+      "refusedprice": "Refused price (MAD)",
+      "citymodifiedsuccess": "City modified successfully",
+      "perpage": "Per page",
+      "editcity": "Edit city"
+    },
+    "debug": {
+      "parcelNature": "Parcel nature",
+      "platformsync": "OzonExpress Platform Sync",
+      "platformSync": "OzonExpress Platform Sync",
+      "parcelType": "Parcel type",
+      "quickActions": "Quick Actions",
+      "productionmodedesc": "API calls create real parcels with real tracking numbers",
+      "advancedApiDebug": "Advanced API Debug",
+      "success": "Success",
+      "track": "Track",
+      "sendParcel": "Send Parcel",
+      "manualEntry": "Manual Entry",
+      "error": "Error",
+      "manualentry": "Manual Entry",
+      "testModeDesc": "API calls use mock data for testing",
+      "sendparcel": "Send Parcel",
+      "systemStatus": "System Status",
+      "testMode": "Test Mode",
+      "uselastcreated": "Use Last Created",
+      "phone": "Phone",
+      "ozonExpressDescription": "This page allows testing and debugging OzonExpress integration. Use it to verify that the API is working correctly.",
+      "ozonExpressTitle": "OzonExpress API Debug & Testing",
+      "trackparcel": "Track Parcel",
+      "useLastCreated": "Use Last Created",
+      "testmode": "Test Mode",
+      "createdsuccessfully": "created successfully",
+      "ozonexpresstitle": "OzonExpress API Debug & Testing",
+      "parceldetails": "Parcel Details",
+      "city": "City",
+      "advancedapidebug": "Advanced API Debug",
+      "realparcelsanalytics": "Real Parcels Analytics",
+      "trackinginfo": "Tracking Information",
+      "mocktestmode": "Mock Test Mode",
+      "updated": "updated",
+      "realApiMode": "Real API Mode",
+      "mockTestMode": "Mock Test Mode",
+      "productionMode": "Production Mode",
+      "productionModeDesc": "API calls create real parcels with real tracking numbers",
+      "checkStatus": "Check Status",
+      "realParcelsAnalytics": "Real Parcels Analytics",
+      "recentRealParcels": "Recent Real Parcels",
+      "trackParcel": "Track Parcel",
+      "deliveryNoteTest": "Delivery Note Test (BL)",
+      "fromOrder": "From Order",
+      "recipient": "Recipient",
+      "price": "Price",
+      "address": "Address",
+      "parcelDetails": "Parcel Details",
+      "trackingInfo": "Tracking Information",
+      "result": "Result",
+      "trackingNumber": "Tracking number",
+      "close": "Close",
+      "cancel": "Cancel",
+      "createdSuccessfully": "created successfully",
+      "realapimode": "Real API Mode",
+      "fromorder": "From Order",
+      "systemstatus": "System Status",
+      "testmodedesc": "API calls use mock data for testing",
+      "recentrealparcels": "Recent Real Parcels",
+      "quickactions": "Quick Actions",
+      "deliverynotetest": "Delivery Note Test (BL)",
+      "checkstatus": "Check Status",
+      "parceltype": "Parcel type",
+      "parcelnature": "Parcel nature",
+      "trackingnumber": "Tracking number",
+      "productionmode": "Production Mode",
+      "ozonexpressdescription": "This page allows testing and debugging OzonExpress integration. Use it to verify that the API is working correctly."
+    },
+    "dashboard": {
+      "weeklyEarningsOverview": "Weekly Earnings Overview",
+      "title": "Admin Dashboard",
+      "stats": {
+        "totalUsers": "Total Users",
+        "totalrevenue": "Total Revenue",
+        "totalorders": "Total Orders",
+        "pendingorders": "Pending Orders",
+        "totalOrders": "Total Orders",
+        "totalRevenue": "Total Revenue",
+        "pendingOrders": "Pending Orders",
+        "totalusers": "Total Users"
+      },
+      "revenue": "Revenue",
+      "updatedago": "Updated {time} ago",
+      "earnings": "Earnings",
+      "weeklyearningsoverview": "Weekly Earnings Overview",
+      "products": "Products",
+      "profit": "Profit",
+      "earningreports": "Earning Reports",
+      "welcome": "Welcome to the admin area",
+      "delete": "Delete",
+      "viewmore": "View More",
+      "expense": "Expenses",
+      "customers": "Customers",
+      "earningReports": "Earning Reports",
+      "youInformed": "You are informed about this week compared to last week",
+      "viewMore": "View More",
+      "statistics": "Statistics",
+      "updatedAgo": "Updated {time} ago",
+      "sales": "Sales",
+      "youinformed": "You are informed about this week compared to last week"
+    },
+    "orders": {
+      "bulkupdatesuccess": "{count} order(s) updated to \"{status}\"",
+      "bulkUpdateSuccess": "{count} order(s) updated to \"{status}\""
+    },
+    "commissions": {
+      "details": "Commission details"
+    }
+  },
+  "enter_app_name": "Enter application name",
+  "enter_facebook_pixel_api_key": "Enter Facebook Pixel API key",
+  "$vuetify": {
+    "nodatatext": "No data available",
+    "input": {
+      "clear": "clear",
+      "appendAction": "append action",
+      "prependaction": "prepend action",
+      "appendaction": "append action",
+      "otp": "otp",
+      "prependAction": "prepend action"
+    },
+    "close": "Close",
+    "pagination": {
+      "arialabel": {
+        "first": "first",
+        "next": "next",
+        "page": "page",
+        "previous": "previous",
+        "currentpage": "current page",
+        "root": "root",
+        "last": "last",
+        "currentPage": "current page"
+      },
+      "ariaLabel": {
+        "root": "root",
+        "previous": "previous",
+        "first": "first",
+        "last": "last",
+        "next": "next",
+        "currentPage": "current page",
+        "page": "page"
+      }
+    },
+    "rating": {
+      "arialabel": {
+        "item": "Item"
+      },
+      "ariaLabel": {
+        "item": "Item"
+      }
+    },
+    "datafooter": {
+      "nextPage": "Next page",
+      "itemsPerPageText": "Items per page:",
+      "itemsPerPageAll": "All",
+      "pageText": "{0}-{1} of {2}",
+      "firstPage": "First page",
+      "prevPage": "Previous page",
+      "lastPage": "Last page"
+    },
+    "fileinput": {
+      "countersize": "Counter size",
+      "counterSize": "Counter size"
+    },
+    "carousel": {
+      "arialabel": {
+        "delimiter": "delimiter"
+      },
+      "ariaLabel": {
+        "delimiter": "delimiter"
+      }
+    },
+    "loading": "Loading"
+  },
+  "errors": {
+    "ticket_reopen_failed": "Error reopening ticket",
+    "pagenotfounddescription": "We couldn't find the page you're looking for.",
+    "commissions_loading_error": "Error loading commissions",
+    "no_eligible_commissions": "No eligible commissions for withdrawal",
+    "message_required": "Please enter a message",
+    "withdrawal_request_failed": "Error requesting withdrawal",
+    "orders_load_failed": "Error loading orders",
+    "commissions_load_failed": "Error loading commissions",
+    "ticket_close_failed": "Error closing ticket",
+    "ticket_load_failed": "Error loading ticket",
+    "message_add_failed": "Error adding message",
+    "pagenotfoundtitle": "Page Not Found ⚠️",
+    "users_loading_error": "Error loading users",
+    "withdrawals_load_failed": "Error loading withdrawals"
+  },
+  "form": {
+    "modified": "Modified",
+    "date": "Date",
+    "name": "Name",
+    "created": "Created",
+    "status": "Status",
+    "title": "Title",
+    "fullname": "Full name",
+    "address": "Address",
+    "email": "Email",
+    "description": "Description",
+    "phone": "Phone"
+  },
+  "save_settings": "Save settings",
+  "stock": {
+    "history": {
+      "columns": {
+        "date": "Date",
+        "type": "Type",
+        "quantity": "Quantity",
+        "reference": "Reference",
+        "variant": "Variant"
+      },
+      "title": "Movement history",
+      "title_for": "History - {product}",
+      "no_movements": "No movements found",
+      "no_movements_desc": "No stock movements have been recorded for this product"
+    },
+    "table": {
+      "title": "Stock list",
+      "items": "items",
+      "no_data_title": "No stock found",
+      "no_data_subtitle": "No products match the search criteria",
+      "reset_filters": "Reset filters"
+    },
+    "filters": {
+      "title": "Filters",
+      "search": "Search",
+      "search_placeholder": "Product name, reference...",
+      "boutique": "Boutique",
+      "category": "Category",
+      "with_variants": "With variants",
+      "min_qty": "Min quantity",
+      "max_qty": "Max quantity",
+      "type": "Movement type",
+      "reason": "Reason",
+      "date_from": "Start date",
+      "date_to": "End date"
+    },
+    "kpi": {
+      "products": "Products",
+      "on_hand": "On hand",
+      "reserved": "Reserved",
+      "available": "Available"
+    },
+    "movement_created_successfully": "Stock movement created successfully",
+    "actions": {
+      "in": "Stock in",
+      "out": "Stock out",
+      "adjust": "Adjustment",
+      "history": "History"
+    },
+    "messages": {
+      "movement_created": "Stock movement created successfully"
+    },
+    "columns": {
+      "product": "Product",
+      "variant": "Variant",
+      "category": "Category",
+      "boutique": "Boutique",
+      "on_hand": "On hand",
+      "reserved": "Reserved",
+      "available": "Available",
+      "last_movement": "Last movement"
+    }
+  },
+  "error_account_inactive": "Your account is inactive. Please contact the administrator.",
+  "notifications": {
+    "nonotificationsfound": "No notifications found!"
+  },
+  "common": {
+    "go_to_dashboard": "Go to dashboard",
+    "norole": "No Role",
+    "guest": "Guest",
+    "retry": "Retry",
+    "unknown_error": "Unknown error",
+    "max_retries_reached": "Maximum number of attempts reached",
+    "error_loading_data": "Error loading data",
+    "error_occurred": "An error occurred",
+    "details": "Details",
+    "too_many_errors_redirecting": "Too many errors detected, redirecting...",
+    "notprovided": "Not provided"
+  },
+  "current_image": "Current image",
+  "wait_for_application_approval": "Wait for approval of your application",
+  "payments": {
+    "actions": {
+      "view": "View Details",
+      "download_pdf": "Download PDF"
+    }
+  },
+  "table": {
+    "deletedonly": "Deleted only",
+    "display": "Display",
+    "of": "of",
+    "itemsperpage": "Items per page",
+    "loading": "Loading...",
+    "allactiveanddeleted": "All (active + deleted)",
+    "nodataavailable": "No data available",
+    "results": "results",
+    "showing": "Showing",
+    "activeonly": "Active only",
+    "to": "to"
+  },
+  "banks": {
+    "banque_populaire": "Banque Populaire",
+    "attijariwafa": "Attijariwafa"
+  },
+  "congratulations_next_steps": "Congratulations! Next steps",
+  "enter_app_slogan": "Enter application slogan",
+  "configure_app_information_preferences": "Configure application information and preferences",
+  "facebook_pixel_api_key_description": "API key for Facebook Pixel tracking. Leave empty to disable tracking.",
+  "app_keywords": "SEO keywords",
+  "app_slogan": "Application slogan",
+  "enter_app_description": "Enter application description",
+  "enter_app_keywords": "Enter SEO keywords (separated by commas)",
+  "settings_load_failed": "Failed to load settings",
+  "facebook_pixel_api_key": "Facebook Pixel API key",
+  "select_logo_file": "Select logo file",
+  "start_earning_commissions": "Start earning commissions",
+  "thank_you_registration_complete": "Thank you! Registration complete",
+  "settings_save_failed": "Failed to save settings",
+  "reload_settings": "Reload settings",
+  "dialogs": {
+    "confirmaction": "Confirm action",
+    "confirmmessage": "Are you sure you want to continue?"
+  },
+  "no_image_uploaded": "No image uploaded",
+  "a11y": {
+    "decorativeimage": "Decorative image",
+    "error404image": "Error 404"
+  },
+  "cart": {
+    "title": "Cart"
+  },
+  "click_verification_link_in_email": "Click the verification link in your email",
+  "error_account_not_active": "Your account is not active. Please contact the administrator.",
+  "receive_login_credentials": "Receive your login credentials",
+  "error_account_blocked": "Your account has been blocked. Please contact the administrator.",
+  "search": {
+    "noresultsfor": "No results for"
+  },
+  "select_favicon_file": "Select favicon file",
+  "verification_email_sent_to": "A verification email has been sent to",
+  "welcome_to_our_affiliate_network": "Welcome to our affiliate network",
+  "joined": "Member since",
+  "settings_saved_successfully": "Settings saved successfully",
+  "email_readonly_notice": "Email cannot be modified"
 }
+
