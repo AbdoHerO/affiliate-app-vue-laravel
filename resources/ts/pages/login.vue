@@ -190,6 +190,7 @@ const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
               <VCol
                 cols="12"
                 class="text-body-1 text-center"
+                style="display: none;"
               >
                 <span class="d-inline-block">
                   {{ t('new_on_platform') }}
@@ -289,6 +290,7 @@ const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
               <VCol
                 cols="12"
                 class="d-flex align-center"
+                style="display: none;"
               >
                 <VDivider />
                 <span class="mx-4">{{ t('or') }}</span>
@@ -333,12 +335,12 @@ const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
               </VCol>
 
               <!-- auth providers -->
-              <VCol
+              <!-- <VCol
                 cols="12"
                 class="text-center"
               >
                 <AuthProvider />
-              </VCol>
+              </VCol> -->
             </VRow>
           </VForm>
         </VCardText>

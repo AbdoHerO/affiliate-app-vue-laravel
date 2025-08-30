@@ -29,6 +29,11 @@ const userAvatarUrl = computed(() => {
 const handleLogout = async () => {
   await logout()
 }
+
+// Check if user is admin
+const isAdmin = computed(() => {
+  return user.value?.roles?.includes('admin') || false
+})
 </script>
 
 <template>
@@ -121,8 +126,12 @@ const handleLogout = async () => {
             <VListItemTitle>{{ t('profile') }}</VListItemTitle>
           </VListItem>
 
-          <!-- 👉 Settings -->
-          <VListItem link>
+          <!-- 👉 Settings (Admin Only) -->
+          <VListItem
+            v-if="isAdmin"
+            link
+            :to="{ name: 'admin-settings' }"
+          >
             <template #prepend>
               <VIcon
                 class="me-2"
@@ -134,31 +143,7 @@ const handleLogout = async () => {
             <VListItemTitle>{{ t('settings') }}</VListItemTitle>
           </VListItem>
 
-          <!-- 👉 Pricing -->
-          <VListItem link>
-            <template #prepend>
-              <VIcon
-                class="me-2"
-                icon="tabler-currency-dollar"
-                size="22"
-              />
-            </template>
 
-            <VListItemTitle>{{ t('pricing') }}</VListItemTitle>
-          </VListItem>
-
-          <!-- 👉 FAQ -->
-          <VListItem link>
-            <template #prepend>
-              <VIcon
-                class="me-2"
-                icon="tabler-help"
-                size="22"
-              />
-            </template>
-
-            <VListItemTitle>{{ t('faq') }}</VListItemTitle>
-          </VListItem>
 
           <!-- Divider -->
           <VDivider class="my-2" />

@@ -568,7 +568,7 @@ const formatCopywriting = (text: string): string => {
 
               <!-- Command Type Selector -->
               <div class="mb-4">
-                <h4 class="text-subtitle-1 mb-3">Type de commande</h4>
+                <h4 class="text-subtitle-1 mb-3">{{ t('order_type') }}</h4>
                 <VRadioGroup
                   v-model="selectedCommandType"
                   inline
@@ -576,12 +576,12 @@ const formatCopywriting = (text: string): string => {
                 >
                   <VRadio
                     value="order_sample"
-                    label="Échantillon de commande"
+                    :label="t('order_sample')"
                     color="primary"
                   />
                   <VRadio
                     value="exchange"
-                    label="Échange"
+                    :label="t('exchange')"
                     color="warning"
                   />
                 </VRadioGroup>

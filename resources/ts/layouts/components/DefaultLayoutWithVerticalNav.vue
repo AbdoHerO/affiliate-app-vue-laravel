@@ -64,12 +64,12 @@ const isReady = computed(() => {
           :languages="themeConfig.app.i18n.langConfig"
         />
         <NavbarThemeSwitcher />
-        <NavbarShortcuts />
+        <NavbarShortcuts style="display: none;" />
 
         <!-- Affiliate Cart (only for affiliate users) -->
         <AffiliateHeaderCart v-if="user?.roles?.some(role => role.name === 'affiliate')" class="me-2" />
 
-        <NavBarNotifications class="me-1" />
+        <NavBarNotifications class="me-1" style="display: none;" />
         <UserProfile />
       </div>
     </template>
