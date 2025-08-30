@@ -303,6 +303,7 @@ declare global {
   const useFloor: typeof import('@vueuse/math')['useFloor']
   const useFocus: typeof import('@vueuse/core')['useFocus']
   const useFocusWithin: typeof import('@vueuse/core')['useFocusWithin']
+  const useFontManager: typeof import('./resources/ts/composables/useFontManager')['useFontManager']
   const useFormErrors: typeof import('./resources/ts/composables/useFormErrors')['useFormErrors']
   const useFps: typeof import('@vueuse/core')['useFps']
   const useFullscreen: typeof import('@vueuse/core')['useFullscreen']
@@ -756,6 +757,7 @@ declare module 'vue' {
     readonly useFloor: UnwrapRef<typeof import('@vueuse/math')['useFloor']>
     readonly useFocus: UnwrapRef<typeof import('@vueuse/core')['useFocus']>
     readonly useFocusWithin: UnwrapRef<typeof import('@vueuse/core')['useFocusWithin']>
+    readonly useFontManager: UnwrapRef<typeof import('./resources/ts/composables/useFontManager')['useFontManager']>
     readonly useFormErrors: UnwrapRef<typeof import('./resources/ts/composables/useFormErrors')['useFormErrors']>
     readonly useFps: UnwrapRef<typeof import('@vueuse/core')['useFps']>
     readonly useFullscreen: UnwrapRef<typeof import('@vueuse/core')['useFullscreen']>

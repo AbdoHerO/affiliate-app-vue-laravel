@@ -25,5 +25,27 @@ export const getI18n = () => {
 }
 
 export default function (app: App) {
-  app.use(getI18n())
+  const i18n = getI18n()
+  app.use(i18n)
+  
+  // Set up locale change watchers for font management
+  if (typeof window !== 'undefined') {
+    // Watch for locale changes and update fonts
+    const { global } = i18n
+    
+    // Apply font immediately based on current locale
+    setTimeout(() => {
+      try {
+        import('@/composables/useFontManager').then(({ useFontManager }) => {
+          const { setFontForLanguage } = useFontManager()
+          setFontForLanguage(global.locale.value)
+          
+          // Set up watcher for future changes
+          global.locale.value // This triggers reactivity setup
+        })
+      } catch (error) {
+        console.warn('Font manager setup failed:', error)
+      }
+    }, 0)
+  }
 }

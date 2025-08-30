@@ -5,6 +5,7 @@ import { useTheme } from 'vuetify'
 import { useConfigStore } from '@core/stores/config'
 import { $api } from '@/utils/api'
 import type { AppSettings } from '@/types/settings'
+import { useFontManager } from '@/composables/useFontManager'
 
 export const useSettingsStore = defineStore('settings', () => {
   // State
@@ -187,6 +188,9 @@ export const useSettingsStore = defineStore('settings', () => {
     // Apply language settings
     applyLanguageSettings()
     
+    // Apply font settings (must be after language settings)
+    applyFontSettings()
+    
     // Apply favicon
     applyFavicon()
     
@@ -240,6 +244,30 @@ export const useSettingsStore = defineStore('settings', () => {
       }
     } catch (error) {
       console.warn('Failed to apply language settings:', error)
+    }
+  }
+
+  /**
+   * Apply font settings based on current language
+   */
+  const applyFontSettings = (): void => {
+    try {
+      const { setFontForLanguage } = useFontManager()
+      const { locale } = useI18n()
+      
+      // Set font based on current locale
+      setFontForLanguage(locale.value)
+      
+      // Add language class to body for CSS targeting
+      document.body.className = document.body.className.replace(/language-\w+/g, '')
+      document.body.classList.add(`language-${locale.value}`)
+      
+      // Set lang attribute on html element
+      document.documentElement.lang = locale.value
+      
+      console.log('✅ Font settings applied for language:', locale.value)
+    } catch (error) {
+      console.warn('Failed to apply font settings:', error)
     }
   }
 

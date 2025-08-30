@@ -5,6 +5,7 @@ import { registerPlugins } from '@core/utils/plugins'
 import { useAuthStore } from '@/stores/auth'
 import { setupGlobalErrorHandler } from '@/plugins/globalErrorHandler'
 import AppInitService from '@/services/appInitService'
+import { useFontManager } from '@/composables/useFontManager'
 
 // Styles
 import '@core-scss/template/index.scss'
@@ -45,6 +46,10 @@ setupGlobalErrorHandler(app)
 
 // Mount app
 app.mount('#app')
+
+// Initialize font management
+const { initFontManager } = useFontManager()
+initFontManager()
 
 // Hide loading screen after app is mounted
 const loadingElement = document.getElementById('loading-bg')

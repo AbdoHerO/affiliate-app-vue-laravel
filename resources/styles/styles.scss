@@ -5,3 +5,61 @@
 
 // Import ApexCharts critical fixes
 @import 'apexcharts-fixes.scss';
+
+// Dynamic Font System
+:root {
+  --font-family-custom: "Public Sans", sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-family-arabic: "Cairo", "Tahoma", "Arial Unicode MS", sans-serif;
+  --font-family-default: "Public Sans", sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+// Arabic language support
+html[lang="ar"], 
+body[lang="ar"],
+.language-ar {
+  font-family: var(--font-family-arabic) !important;
+  
+  * {
+    font-family: var(--font-family-arabic) !important;
+  }
+}
+
+// Default language support
+html[lang="en"], 
+html[lang="fr"],
+body[lang="en"],
+body[lang="fr"],
+.language-en,
+.language-fr {
+  font-family: var(--font-family-default) !important;
+}
+
+// Apply dynamic font to all elements when font family changes
+body {
+  font-family: var(--font-family-custom, var(--font-family-default)) !important;
+}
+
+// Override Vuetify component fonts
+.v-application {
+  font-family: var(--font-family-custom, var(--font-family-default)) !important;
+  
+  .v-btn,
+  .v-card,
+  .v-list,
+  .v-text-field,
+  .v-select,
+  .v-textarea,
+  .v-autocomplete,
+  .v-navigation-drawer,
+  .v-app-bar,
+  .v-tab,
+  .v-tabs,
+  .v-dialog,
+  .v-alert,
+  .v-chip,
+  .v-badge,
+  .v-tooltip,
+  .v-snackbar {
+    font-family: inherit !important;
+  }
+}
