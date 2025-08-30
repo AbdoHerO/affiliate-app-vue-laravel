@@ -1,1 +1,0 @@
-function a(r){if(!r)return"/images/avatars/avatar-1.png";const t=r.replace(/\\/g,"");return t.startsWith("http://")||t.startsWith("https://")?t:t.startsWith("/storage/")?`${"https://affiliate.moriny.com/api".replace("/api","")}${t}`:t}function l(r){const t=a(r);return t}export{l as g};
