@@ -39,6 +39,19 @@ const filters = ref<StockHistoryFilters>({
   per_page: 15,
 })
 
+// Reset filters to show all data initially
+const resetFilters = () => {
+  filters.value = {
+    variante_id: '',
+    entrepot_id: '',
+    type: undefined,
+    reason: undefined,
+    date_from: '',
+    date_to: '',
+    per_page: 15,
+  }
+}
+
 // Computed
 const isOpen = computed({
   get: () => props.modelValue,
@@ -91,14 +104,15 @@ const fetchHistory = async () => {
     filters: filters.value
   })
 
-  const cleanFilters = { ...filters.value }
+  // Prepare filters - only include non-empty values
+  const cleanFilters: any = { per_page: filters.value.per_page || 15 }
 
-  // Remove empty values
-  Object.keys(cleanFilters).forEach(key => {
-    if (cleanFilters[key as keyof StockHistoryFilters] === '') {
-      delete cleanFilters[key as keyof StockHistoryFilters]
-    }
-  })
+  // Only add filters that have actual values
+  if (filters.value.entrepot_id) cleanFilters.entrepot_id = filters.value.entrepot_id
+  if (filters.value.type) cleanFilters.type = filters.value.type
+  if (filters.value.reason) cleanFilters.reason = filters.value.reason
+  if (filters.value.date_from) cleanFilters.date_from = filters.value.date_from
+  if (filters.value.date_to) cleanFilters.date_to = filters.value.date_to
 
   console.log('📡 [StockHistoryDialog] Making API call with variant ID:', variantId, 'and filters:', cleanFilters)
 
@@ -132,10 +146,8 @@ watch(
   () => props.modelValue,
   (newValue) => {
     if (newValue && props.item) {
-      // Set variant filter if specific variant
-      if (props.item.variant) {
-        filters.value.variante_id = props.item.variant.id
-      }
+      // Reset filters to show all data when dialog opens
+      resetFilters()
       fetchHistory()
     }
   }

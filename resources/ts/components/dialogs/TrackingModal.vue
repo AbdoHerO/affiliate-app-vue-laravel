@@ -131,6 +131,38 @@
                   </VCard>
                 </VCol>
               </VRow>
+
+              <!-- Delivery Boy Information -->
+              <VRow v-if="deliveryBoyName || deliveryBoyPhone" class="mt-4">
+                <VCol cols="12">
+                  <VCard variant="outlined">
+                    <VCardText>
+                      <h6 class="text-h6 mb-4 d-flex align-center">
+                        <VIcon icon="tabler-user" class="me-2" />
+                        Informations du Livreur
+                      </h6>
+
+                      <div class="d-flex flex-column gap-3">
+                        <div v-if="deliveryBoyName" class="d-flex justify-space-between">
+                          <span class="text-body-2 text-medium-emphasis">Nom du livreur:</span>
+                          <span class="text-body-2 font-weight-medium">{{ deliveryBoyName }}</span>
+                        </div>
+
+                        <div v-if="deliveryBoyPhone" class="d-flex justify-space-between">
+                          <span class="text-body-2 text-medium-emphasis">Téléphone:</span>
+                          <a
+                            :href="`tel:${deliveryBoyPhone}`"
+                            class="text-decoration-none text-primary font-weight-medium"
+                          >
+                            <VIcon icon="tabler-phone" size="16" class="me-1" />
+                            {{ deliveryBoyPhone }}
+                          </a>
+                        </div>
+                      </div>
+                    </VCardText>
+                  </VCard>
+                </VCol>
+              </VRow>
             </VTabsWindowItem>
 
             <!-- History Tab -->
@@ -234,6 +266,8 @@ interface Props {
   trackingData?: any
   loading?: boolean
   error?: string
+  deliveryBoyName?: string | null
+  deliveryBoyPhone?: string | null
 }
 
 interface Emit {

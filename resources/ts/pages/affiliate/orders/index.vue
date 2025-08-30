@@ -54,6 +54,7 @@ const headers = [
   { title: t('table.boutique'), key: 'boutique.nom', sortable: false },
   { title: 'SKU', key: 'sku_list', sortable: false, width: '150px' },
   { title: 'Type', key: 'type_command', sortable: true },
+  { title: 'Livreur', key: 'delivery_boy', sortable: false, width: '150px' },
   { title: t('table.status'), key: 'statut', sortable: true },
   { title: t('table.total_ttc'), key: 'total_ttc', sortable: true },
   { title: t('table.date'), key: 'created_at', sortable: true },
@@ -312,6 +313,24 @@ onMounted(() => {
           >
             {{ getOrderTypeLabel(item.type_command) }}
           </VChip>
+        </template>
+
+        <!-- Delivery Boy Column -->
+        <template #item.delivery_boy="{ item }">
+          <div v-if="item.delivery_boy_name || item.delivery_boy_phone" class="d-flex flex-column">
+            <span v-if="item.delivery_boy_name" class="text-body-2 font-weight-medium">
+              {{ item.delivery_boy_name }}
+            </span>
+            <a
+              v-if="item.delivery_boy_phone"
+              :href="`tel:${item.delivery_boy_phone}`"
+              class="text-caption text-primary text-decoration-none"
+            >
+              <VIcon icon="tabler-phone" size="12" class="me-1" />
+              {{ item.delivery_boy_phone }}
+            </a>
+          </div>
+          <span v-else class="text-caption text-medium-emphasis">—</span>
         </template>
 
         <!-- Status Column -->

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, onBeforeRouteLeave } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useShippingStore } from '@/stores/admin/shipping'
 import { useConfirmAction } from '@/composables/useConfirmAction'
@@ -43,6 +43,13 @@ const shippingActionLoading = ref<string | null>(null)
 const showReturnConfirmDialog = ref(false)
 const returnReason = ref('')
 const currentReturnOrder = ref<any>(null)
+
+// Delivery boy quick edit state
+const showDeliveryBoyDialog = ref(false)
+const deliveryBoyLoading = ref(false)
+const currentDeliveryBoyOrder = ref<any>(null)
+const quickDeliveryBoyName = ref('')
+const quickDeliveryBoyPhone = ref('')
 
 // Computed
 const isLoading = computed(() => shippingStore.isLoading)
@@ -132,6 +139,7 @@ const trackingData = ref<any>(null)
 const trackingLoading = ref(false)
 const trackingError = ref('')
 const currentTrackingNumber = ref('')
+const currentTrackingOrder = ref<any>(null)
 
 const showDeliveryNoteDialog = ref(false)
 const showOzonDialog = ref(false)
@@ -140,6 +148,7 @@ const currentOrderForResend = ref<any>(null)
 
 const viewTracking = async (order: any) => {
   currentTrackingNumber.value = order.shipping_parcel.tracking_number
+  currentTrackingOrder.value = order
   trackingLoading.value = true
   trackingError.value = ''
 
@@ -372,6 +381,41 @@ const cancelReturnToWarehouse = () => {
   returnReason.value = ''
 }
 
+// Delivery boy quick edit methods
+const openDeliveryBoyDialog = (order: any) => {
+  currentDeliveryBoyOrder.value = order
+  quickDeliveryBoyName.value = order.delivery_boy_name || ''
+  quickDeliveryBoyPhone.value = order.delivery_boy_phone || ''
+  showDeliveryBoyDialog.value = true
+}
+
+const saveQuickDeliveryBoyInfo = async () => {
+  if (!currentDeliveryBoyOrder.value) return
+
+  deliveryBoyLoading.value = true
+  try {
+    await shippingStore.updateDeliveryBoyInfo(currentDeliveryBoyOrder.value.id, {
+      delivery_boy_name: quickDeliveryBoyName.value.trim() || null,
+      delivery_boy_phone: quickDeliveryBoyPhone.value.trim() || null
+    })
+
+    showSuccess('Informations du livreur mises à jour avec succès')
+    showDeliveryBoyDialog.value = false
+    await fetchShippingOrders()
+  } catch (error: any) {
+    showError(error.message || 'Erreur lors de la mise à jour')
+  } finally {
+    deliveryBoyLoading.value = false
+  }
+}
+
+const cancelDeliveryBoyDialog = () => {
+  showDeliveryBoyDialog.value = false
+  currentDeliveryBoyOrder.value = null
+  quickDeliveryBoyName.value = ''
+  quickDeliveryBoyPhone.value = ''
+}
+
 const createDeliveryNote = async () => {
   if (selectedOrders.value.length === 0) {
     showError('Veuillez sélectionner au moins une commande')
@@ -520,6 +564,16 @@ const openPDF = (ref: string, type: string) => {
 // Lifecycle
 onMounted(() => {
   fetchShippingOrders()
+})
+
+// Navigation guard to close dialogs before leaving
+onBeforeRouteLeave(() => {
+  // Close all dialogs to prevent white screen issue
+  showStatusUpdateDialog.value = false
+  showReturnConfirmDialog.value = false
+  showDeliveryBoyDialog.value = false
+  showTrackingModal.value = false
+  return true
 })
 </script>
 
@@ -826,6 +880,18 @@ onMounted(() => {
               </VTooltip>
             </template>
 
+            <!-- Delivery Boy Info Button -->
+            <VBtn
+              size="small"
+              :color="item.delivery_boy_name ? 'success' : 'info'"
+              variant="text"
+              icon="tabler-user"
+              @click="openDeliveryBoyDialog(item)"
+            />
+            <VTooltip activator="prev" location="top">
+              {{ item.delivery_boy_name ? 'Modifier livreur' : 'Ajouter livreur' }}
+            </VTooltip>
+
             <!-- Status Update Button (only for local deliveries) -->
             <template v-if="!item.shipping_parcel?.sent_to_carrier">
               <VBtn
@@ -905,6 +971,8 @@ onMounted(() => {
       :tracking-data="trackingData"
       :loading="trackingLoading"
       :error="trackingError"
+      :delivery-boy-name="currentTrackingOrder?.delivery_boy_name"
+      :delivery-boy-phone="currentTrackingOrder?.delivery_boy_phone"
       @refresh="refreshTrackingModal"
       @retry="refreshTrackingModal"
     />
@@ -1051,6 +1119,65 @@ onMounted(() => {
           >
             <VIcon start icon="tabler-package-import" />
             Confirmer le retour
+          </VBtn>
+        </VCardActions>
+      </VCard>
+    </VDialog>
+
+    <!-- Quick Delivery Boy Edit Dialog -->
+    <VDialog
+      v-model="showDeliveryBoyDialog"
+      max-width="500"
+      persistent
+    >
+      <VCard>
+        <VCardTitle class="d-flex align-center">
+          <VIcon icon="tabler-user" color="info" class="me-2" />
+          Informations du Livreur
+        </VCardTitle>
+
+        <VCardText>
+          <VRow>
+            <VCol cols="12">
+              <VTextField
+                v-model="quickDeliveryBoyName"
+                label="Nom du livreur"
+                placeholder="Ex: Ahmed Benali"
+                variant="outlined"
+                prepend-inner-icon="tabler-user"
+                :disabled="deliveryBoyLoading"
+              />
+            </VCol>
+            <VCol cols="12">
+              <VTextField
+                v-model="quickDeliveryBoyPhone"
+                label="Téléphone du livreur"
+                placeholder="Ex: +212 6 12 34 56 78"
+                variant="outlined"
+                prepend-inner-icon="tabler-phone"
+                :disabled="deliveryBoyLoading"
+              />
+            </VCol>
+          </VRow>
+        </VCardText>
+
+        <VCardActions>
+          <VSpacer />
+          <VBtn
+            variant="text"
+            @click="cancelDeliveryBoyDialog"
+            :disabled="deliveryBoyLoading"
+          >
+            Annuler
+          </VBtn>
+          <VBtn
+            color="primary"
+            variant="elevated"
+            :loading="deliveryBoyLoading"
+            @click="saveQuickDeliveryBoyInfo"
+          >
+            <VIcon start icon="tabler-device-floppy" />
+            Enregistrer
           </VBtn>
         </VCardActions>
       </VCard>

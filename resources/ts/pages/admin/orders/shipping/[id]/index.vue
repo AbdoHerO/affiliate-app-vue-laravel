@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute, useRouter, onBeforeRouteLeave } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useShippingStore } from '@/stores/admin/shipping'
 import { useConfirmAction } from '@/composables/useConfirmAction'
@@ -416,6 +416,13 @@ const loadDeliveryBoyInfo = () => {
 onMounted(async () => {
   await fetchShippingOrder()
   loadDeliveryBoyInfo()
+})
+
+// Navigation guard to close dialogs before leaving
+onBeforeRouteLeave(() => {
+  // Close all dialogs to prevent white screen issue
+  showStatusUpdateDialog.value = false
+  return true
 })
 </script>
 

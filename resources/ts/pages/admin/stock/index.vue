@@ -101,25 +101,46 @@ const breadcrumbs = computed(() => {
   }
 })
 
-// Stock state helpers
-const getStockState = (item: StockItem) => {
-  const available = item.metrics.available
-
-  if (available <= 0) {
-    return { label: 'Rupture', color: 'error', icon: 'tabler-alert-circle' }
-  } else if (available <= 5) {
-    return { label: 'Stock faible', color: 'warning', icon: 'tabler-alert-triangle' }
-  } else if (available <= 10) {
-    return { label: 'Stock moyen', color: 'info', icon: 'tabler-info-circle' }
-  } else {
-    return { label: 'Stock bon', color: 'success', icon: 'tabler-circle-check' }
+// Stock statistics computed
+const stockStatistics = computed(() => {
+  if (!items.value.length) {
+    return {
+      total: 0,
+      outOfStock: 0,
+      lowStock: 0,
+      mediumStock: 0,
+      goodStock: 0
+    }
   }
-}
+
+  const stats = {
+    total: items.value.length,
+    outOfStock: 0,
+    lowStock: 0,
+    mediumStock: 0,
+    goodStock: 0
+  }
+
+  items.value.forEach((item: any) => {
+    const available = item.metrics.available
+    if (available <= 0) {
+      stats.outOfStock++
+    } else if (available <= 5) {
+      stats.lowStock++
+    } else if (available <= 10) {
+      stats.mediumStock++
+    } else {
+      stats.goodStock++
+    }
+  })
+
+  return stats
+})
 
 const headers = computed(() => {
   try {
     return [
-      { title: t('stock.columns.product'), key: 'product', sortable: false, width: '28%', minWidth: '280px' },
+      { title: t('stock.columns.product'), key: 'product', sortable: false, width: '22%', minWidth: '220px' },
       { title: 'SKU', key: 'sku', sortable: false, width: '10%', minWidth: '100px' },
       { title: t('stock.columns.variant'), key: 'variant', sortable: false, width: '13%', minWidth: '110px' },
       { title: t('stock.columns.category'), key: 'category', sortable: false, width: '10%', minWidth: '90px' },
@@ -272,6 +293,46 @@ onBeforeUnmount(() => {
     <div>
       <!-- Breadcrumbs -->
       <Breadcrumbs :items="breadcrumbs" class="mb-6" />
+
+      <!-- Stock Statistics Cards -->
+      <VRow class="mb-6">
+        <VCol cols="12" sm="6" md="3">
+          <VCard>
+            <VCardText class="text-center">
+              <VIcon icon="tabler-package" size="40" color="primary" class="mb-2" />
+              <div class="text-h4 font-weight-bold">{{ stockStatistics.total }}</div>
+              <div class="text-body-2 text-medium-emphasis">Total Produits</div>
+            </VCardText>
+          </VCard>
+        </VCol>
+        <VCol cols="12" sm="6" md="3">
+          <VCard>
+            <VCardText class="text-center">
+              <VIcon icon="tabler-alert-circle" size="40" color="error" class="mb-2" />
+              <div class="text-h4 font-weight-bold text-error">{{ stockStatistics.outOfStock }}</div>
+              <div class="text-body-2 text-medium-emphasis">Rupture de Stock</div>
+            </VCardText>
+          </VCard>
+        </VCol>
+        <VCol cols="12" sm="6" md="3">
+          <VCard>
+            <VCardText class="text-center">
+              <VIcon icon="tabler-alert-triangle" size="40" color="warning" class="mb-2" />
+              <div class="text-h4 font-weight-bold text-warning">{{ stockStatistics.lowStock }}</div>
+              <div class="text-body-2 text-medium-emphasis">Stock Faible (≤5)</div>
+            </VCardText>
+          </VCard>
+        </VCol>
+        <VCol cols="12" sm="6" md="3">
+          <VCard>
+            <VCardText class="text-center">
+              <VIcon icon="tabler-circle-check" size="40" color="success" class="mb-2" />
+              <div class="text-h4 font-weight-bold text-success">{{ stockStatistics.goodStock }}</div>
+              <div class="text-body-2 text-medium-emphasis">Stock Bon (>10)</div>
+            </VCardText>
+          </VCard>
+        </VCol>
+      </VRow>
 
       <!-- Header with KPI Cards -->
       <VRow class="mb-6">
@@ -462,24 +523,8 @@ onBeforeUnmount(() => {
             >
               <VIcon icon="tabler-package" />
             </VAvatar>
-            <div class="flex-grow-1">
-              <div class="d-flex align-center gap-2">
-                <div class="font-weight-medium">{{ item.product.titre }}</div>
-                <!-- Stock State Indicator -->
-                <VChip
-                  :color="getStockState(item).color"
-                  size="x-small"
-                  variant="tonal"
-                  class="text-caption"
-                >
-                  <VIcon
-                    :icon="getStockState(item).icon"
-                    size="12"
-                    start
-                  />
-                  {{ getStockState(item).label }}
-                </VChip>
-              </div>
+            <div>
+              <div class="font-weight-medium">{{ item.product.titre }}</div>
               <div class="text-caption text-medium-emphasis">{{ item.product.slug }}</div>
             </div>
           </div>
