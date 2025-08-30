@@ -3121,6 +3121,7 @@
   "order_status_livree": "تم التسليم",
   "order_status_annulee": "ملغي",
   "order_status_retournee": "مرتجع",
+  "order_status_returned_to_warehouse": "مرتجع إلى المستودع",
   "order_status_refusee": "مرفوض",
   "order_status_injoignable": "غير قابل للوصول",
   "order_status_echec_livraison": "فشل التسليم",

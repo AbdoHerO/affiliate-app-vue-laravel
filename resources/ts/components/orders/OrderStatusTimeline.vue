@@ -80,6 +80,7 @@ const getStatusColor = (status: string): string => {
     'livree': 'success',
     'annulee': 'error',
     'retournee': 'secondary',
+    'returned_to_warehouse': 'info',
     'refusee': 'error',
     'injoignable': 'warning',
     'echec_livraison': 'error',

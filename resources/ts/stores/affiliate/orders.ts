@@ -216,6 +216,7 @@ export const useAffiliateOrdersStore = defineStore('affiliateOrders', () => {
       'delivered': 'success',
       'canceled': 'error',
       'returned': 'orange',
+      'returned_to_warehouse': 'info',
       'delivery_failed': 'error',
       'paid': 'success',
     }
@@ -231,6 +232,7 @@ export const useAffiliateOrdersStore = defineStore('affiliateOrders', () => {
       'delivered': 'Livrée',
       'canceled': 'Annulée',
       'returned': 'Retournée',
+      'returned_to_warehouse': 'Retournée en entrepôt',
       'delivery_failed': 'Échec livraison',
       'paid': 'Payée',
     }

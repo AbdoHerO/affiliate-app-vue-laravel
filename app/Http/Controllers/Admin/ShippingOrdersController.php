@@ -7,6 +7,7 @@ use App\Models\Commande;
 use App\Models\ShippingParcel;
 use App\Models\AuditLog;
 use App\Events\OrderDelivered;
+use App\Services\StockService;
 use App\Services\OrderService;
 use App\Services\OrderStatusHistoryService;
 use Illuminate\Http\Request;
@@ -686,6 +687,245 @@ class ShippingOrdersController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Erreur lors de la mise à jour du statut: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Manually decrement stock when shipping an order
+     */
+    public function decrementStock(Request $request, string $id): JsonResponse
+    {
+        try {
+            $order = Commande::with(['articles.produit', 'articles.variante'])->findOrFail($id);
+
+            // Check if order can be shipped
+            if (!in_array($order->statut, ['confirmee', 'en_attente'])) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Cette commande ne peut pas être expédiée (statut: ' . $order->statut . ')'
+                ], 422);
+            }
+
+            // Check if stock has already been decremented
+            $existingMovements = \App\Models\MouvementStock::where('reference', 'ORDER_' . $order->id)
+                ->where('type', 'out')
+                ->exists();
+
+            if ($existingMovements) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Le stock a déjà été décrémenté pour cette commande'
+                ], 422);
+            }
+
+            $stockService = app(StockService::class);
+            $stockDetails = [];
+
+            DB::transaction(function () use ($order, $stockService, &$stockDetails) {
+                foreach ($order->articles as $article) {
+                    // Get default warehouse for the product's boutique
+                    $entrepot = $stockService->getDefaultEntrepot($article->produit->boutique_id);
+
+                    if (!$entrepot) {
+                        throw new \Exception("Aucun entrepôt trouvé pour la boutique: {$article->produit->boutique_id}");
+                    }
+
+                    // Check available stock
+                    $stock = \App\Models\Stock::where('variante_id', $article->variante_id)
+                        ->where('entrepot_id', $entrepot->id)
+                        ->first();
+
+                    $availableStock = $stock ? ($stock->qte_disponible - $stock->qte_reservee) : 0;
+
+                    if ($availableStock < $article->quantite) {
+                        throw new \Exception("Stock insuffisant pour {$article->produit->titre} - Variante {$article->variante->nom}: {$article->variante->valeur}. Disponible: {$availableStock}, Demandé: {$article->quantite}");
+                    }
+
+                    // Decrement stock
+                    $result = $stockService->move(
+                        $article->variante_id,
+                        $entrepot->id,
+                        'out',
+                        $article->quantite,
+                        'delivery_shipment',
+                        "Stock décrémenté pour expédition manuelle de la commande",
+                        'ORDER_' . $order->id,
+                        request()->user()?->id
+                    );
+
+                    $stockDetails[] = [
+                        'product' => $article->produit->titre,
+                        'variant' => $article->variante->nom . ': ' . $article->variante->valeur,
+                        'quantity_decremented' => $article->quantite,
+                        'remaining_stock' => $availableStock - $article->quantite,
+                    ];
+                }
+
+                // Update order status to shipped
+                $order->update(['statut' => 'expediee']);
+
+                // Create audit log
+                AuditLog::create([
+                    'auteur_id' => request()->user()?->id,
+                    'action' => 'manual_stock_decrement_on_shipment',
+                    'table_name' => 'commandes',
+                    'record_id' => $order->id,
+                    'new_values' => [
+                        'stock_decremented_at' => now()->toISOString(),
+                        'stock_details' => $stockDetails,
+                    ],
+                    'ip_address' => request()->ip(),
+                    'user_agent' => request()->userAgent(),
+                ]);
+            });
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Stock décrémenté avec succès et commande expédiée',
+                'data' => [
+                    'order_id' => $order->id,
+                    'new_status' => 'expediee',
+                    'stock_details' => $stockDetails,
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error decrementing stock for shipment', [
+                'order_id' => $id,
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors du décrément du stock: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Manually increment stock when returning an order to warehouse
+     */
+    public function incrementStock(Request $request, string $id): JsonResponse
+    {
+        $request->validate([
+            'return_reason' => 'nullable|string|max:500'
+        ]);
+
+        try {
+            $order = Commande::with(['articles.produit', 'articles.variante'])->findOrFail($id);
+
+            // Check if order can be returned
+            if (!in_array($order->statut, ['expediee', 'livree', 'refusee'])) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Cette commande ne peut pas être retournée (statut: ' . $order->statut . ')'
+                ], 422);
+            }
+
+            // Check if stock was previously decremented
+            $existingDecrements = \App\Models\MouvementStock::where('reference', 'ORDER_' . $order->id)
+                ->where('type', 'out')
+                ->exists();
+
+            if (!$existingDecrements) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Aucun décrément de stock trouvé pour cette commande'
+                ], 422);
+            }
+
+            // Check if stock has already been incremented for return
+            $existingReturns = \App\Models\MouvementStock::where('reference', 'RETURN_ORDER_' . $order->id)
+                ->where('type', 'in')
+                ->exists();
+
+            if ($existingReturns) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Le stock a déjà été ré-incrémenté pour le retour de cette commande'
+                ], 422);
+            }
+
+            $stockService = app(StockService::class);
+            $stockDetails = [];
+            $returnReason = $request->input('return_reason', 'Retour en entrepôt');
+
+            DB::transaction(function () use ($order, $stockService, $returnReason, &$stockDetails) {
+                foreach ($order->articles as $article) {
+                    // Get default warehouse for the product's boutique
+                    $entrepot = $stockService->getDefaultEntrepot($article->produit->boutique_id);
+
+                    if (!$entrepot) {
+                        throw new \Exception("Aucun entrepôt trouvé pour la boutique: {$article->produit->boutique_id}");
+                    }
+
+                    // Get current stock before increment
+                    $stock = \App\Models\Stock::where('variante_id', $article->variante_id)
+                        ->where('entrepot_id', $entrepot->id)
+                        ->first();
+
+                    $currentStock = $stock ? $stock->qte_disponible : 0;
+
+                    // Increment stock
+                    $stockService->move(
+                        $article->variante_id,
+                        $entrepot->id,
+                        'in',
+                        $article->quantite,
+                        'return',
+                        "Stock ré-incrémenté pour retour en entrepôt: {$returnReason}",
+                        'RETURN_ORDER_' . $order->id,
+                        request()->user()?->id
+                    );
+
+                    $stockDetails[] = [
+                        'product' => $article->produit->titre,
+                        'variant' => $article->variante->nom . ': ' . $article->variante->valeur,
+                        'quantity_incremented' => $article->quantite,
+                        'new_stock' => $currentStock + $article->quantite,
+                    ];
+                }
+
+                // Update order status to returned to warehouse
+                $order->update(['statut' => 'returned_to_warehouse']);
+
+                // Create audit log
+                AuditLog::create([
+                    'auteur_id' => request()->user()?->id,
+                    'action' => 'manual_stock_increment_on_return',
+                    'table_name' => 'commandes',
+                    'record_id' => $order->id,
+                    'new_values' => [
+                        'stock_incremented_at' => now()->toISOString(),
+                        'return_reason' => $returnReason,
+                        'stock_details' => $stockDetails,
+                    ],
+                    'ip_address' => request()->ip(),
+                    'user_agent' => request()->userAgent(),
+                ]);
+            });
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Stock ré-incrémenté avec succès et commande marquée comme retournée en entrepôt',
+                'data' => [
+                    'order_id' => $order->id,
+                    'new_status' => 'returned_to_warehouse',
+                    'return_reason' => $returnReason,
+                    'stock_details' => $stockDetails,
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error incrementing stock for return', [
+                'order_id' => $id,
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de l\'incrémentation du stock: ' . $e->getMessage()
             ], 500);
         }
     }

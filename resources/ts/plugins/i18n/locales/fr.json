@@ -3151,6 +3151,7 @@
   "order_status_livree": "Livrée",
   "order_status_annulee": "Annulée",
   "order_status_retournee": "Retournée",
+  "order_status_returned_to_warehouse": "Retournée en entrepôt",
   "order_status_refusee": "Refusée",
   "order_status_injoignable": "Injoignable",
   "order_status_echec_livraison": "Échec livraison",

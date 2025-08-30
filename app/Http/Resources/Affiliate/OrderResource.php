@@ -192,6 +192,7 @@ class OrderResource extends JsonResource
             'livree' => ['color' => 'success', 'text' => 'Livrée'],
             'annulee' => ['color' => 'error', 'text' => 'Annulée'],
             'retournee' => ['color' => 'secondary', 'text' => 'Retournée'],
+            'returned_to_warehouse' => ['color' => 'info', 'text' => 'Retournée en entrepôt'],
             'echec_livraison' => ['color' => 'error', 'text' => 'Échec livraison'],
             // Additional statuses for safety
             'pending' => ['color' => 'warning', 'text' => 'En attente'],

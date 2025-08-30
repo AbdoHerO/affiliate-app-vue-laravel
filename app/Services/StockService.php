@@ -85,7 +85,7 @@ class StockService
             }
             
             // Validate reason
-            $validReasons = ['purchase', 'correction', 'return', 'damage', 'manual', 'delivery_return', 'cancel'];
+            $validReasons = ['purchase', 'correction', 'return', 'damage', 'manual', 'delivery_return', 'delivery_shipment', 'cancel'];
             if (!in_array($reason, $validReasons)) {
                 throw new \InvalidArgumentException("Invalid reason: {$reason}");
             }
@@ -157,7 +157,22 @@ class StockService
                     'available' => max(0, $newOnHand - $stock->qte_reservee),
                 ],
             ]);
-            
+
+            // Update product global stock after variant stock change
+            $variant = \App\Models\ProduitVariante::find($varianteId);
+            if ($variant && $variant->produit_id) {
+                try {
+                    $this->updateProductGlobalStock($variant->produit_id);
+                } catch (\Exception $e) {
+                    // Log error but don't fail the stock movement
+                    Log::warning('Failed to update product global stock', [
+                        'product_id' => $variant->produit_id,
+                        'variant_id' => $varianteId,
+                        'error' => $e->getMessage()
+                    ]);
+                }
+            }
+
             return [
                 'movement' => $movement,
                 'snapshot' => [
@@ -280,5 +295,94 @@ class StockService
         ]);
 
         return $updated;
+    }
+
+    /**
+     * Calculate and update the global stock for a product
+     */
+    public function updateProductGlobalStock(string $productId): array
+    {
+        $product = \App\Models\Produit::findOrFail($productId);
+
+        // Calculate total stock from all variants
+        $totalStock = 0;
+        $totalReserved = 0;
+        $variantDetails = [];
+
+        foreach ($product->variantes as $variant) {
+            $variantStock = Stock::where('variante_id', $variant->id)->sum('qte_disponible');
+            $variantReserved = Stock::where('variante_id', $variant->id)->sum('qte_reservee');
+
+            $totalStock += $variantStock;
+            $totalReserved += $variantReserved;
+
+            $variantDetails[] = [
+                'variant_id' => $variant->id,
+                'variant_name' => $variant->nom . ': ' . $variant->valeur,
+                'stock' => $variantStock,
+                'reserved' => $variantReserved,
+                'available' => max(0, $variantStock - $variantReserved),
+            ];
+        }
+
+        // Update product's global stock
+        $product->update(['stock_total' => $totalStock]);
+
+        Log::info('Product global stock updated', [
+            'product_id' => $productId,
+            'total_stock' => $totalStock,
+            'total_reserved' => $totalReserved,
+            'variant_count' => count($variantDetails)
+        ]);
+
+        return [
+            'product_id' => $productId,
+            'total_stock' => $totalStock,
+            'total_reserved' => $totalReserved,
+            'total_available' => max(0, $totalStock - $totalReserved),
+            'variants' => $variantDetails,
+            'updated_at' => now()->toISOString(),
+        ];
+    }
+
+    /**
+     * Synchronize global stock for all products or specific boutique
+     */
+    public function syncAllProductsGlobalStock(?string $boutiqueId = null): array
+    {
+        $query = \App\Models\Produit::with('variantes');
+
+        if ($boutiqueId) {
+            $query->where('boutique_id', $boutiqueId);
+        }
+
+        $products = $query->get();
+        $results = [];
+        $totalProcessed = 0;
+        $totalUpdated = 0;
+
+        foreach ($products as $product) {
+            $result = $this->updateProductGlobalStock($product->id);
+            $results[] = $result;
+            $totalProcessed++;
+
+            if ($result['total_stock'] !== $product->getOriginal('stock_total')) {
+                $totalUpdated++;
+            }
+        }
+
+        Log::info('Global stock synchronization completed', [
+            'boutique_id' => $boutiqueId,
+            'total_processed' => $totalProcessed,
+            'total_updated' => $totalUpdated
+        ]);
+
+        return [
+            'success' => true,
+            'total_processed' => $totalProcessed,
+            'total_updated' => $totalUpdated,
+            'boutique_id' => $boutiqueId,
+            'results' => $results,
+        ];
     }
 }

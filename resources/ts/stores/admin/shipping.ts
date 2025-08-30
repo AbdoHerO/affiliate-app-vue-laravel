@@ -500,6 +500,54 @@ export const useShippingStore = defineStore('shipping', () => {
     }
   }
 
+  const decrementStock = async (orderId: string): Promise<any> => {
+    loading.value = true
+    error.value = null
+
+    try {
+      const response = await axios.post(`admin/shipping/orders/${orderId}/decrement-stock`)
+
+      if (response.data.success) {
+        // Refresh shipping orders to get updated data
+        await fetchShippingOrders(filters.value)
+        return response.data
+      } else {
+        throw new Error(response.data.message || 'Failed to decrement stock')
+      }
+    } catch (err: any) {
+      error.value = err.response?.data?.message || err.message || 'Failed to decrement stock'
+      console.error('Error decrementing stock:', err)
+      throw new Error(error.value || 'Failed to decrement stock')
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const incrementStock = async (orderId: string, returnReason?: string): Promise<any> => {
+    loading.value = true
+    error.value = null
+
+    try {
+      const response = await axios.post(`admin/shipping/orders/${orderId}/increment-stock`, {
+        return_reason: returnReason
+      })
+
+      if (response.data.success) {
+        // Refresh shipping orders to get updated data
+        await fetchShippingOrders(filters.value)
+        return response.data
+      } else {
+        throw new Error(response.data.message || 'Failed to increment stock')
+      }
+    } catch (err: any) {
+      error.value = err.response?.data?.message || err.message || 'Failed to increment stock'
+      console.error('Error incrementing stock:', err)
+      throw new Error(error.value || 'Failed to increment stock')
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     // State
     shippingOrders,
@@ -534,5 +582,7 @@ export const useShippingStore = defineStore('shipping', () => {
     refreshTracking,
     refreshTrackingBulk,
     updateShippingStatus,
+    decrementStock,
+    incrementStock,
   }
 })

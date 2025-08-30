@@ -38,6 +38,12 @@ const currentOrderId = ref('')
 const newStatus = ref('')
 const statusNote = ref('')
 
+// Stock management state
+const shippingActionLoading = ref<string | null>(null)
+const showReturnConfirmDialog = ref(false)
+const returnReason = ref('')
+const currentReturnOrder = ref<any>(null)
+
 // Computed
 const isLoading = computed(() => shippingStore.isLoading)
 const shippingOrders = computed(() => shippingStore.shippingOrders)
@@ -305,6 +311,67 @@ const cancelStatusUpdate = () => {
   statusNote.value = ''
 }
 
+// Stock management functions
+const canShipOrder = (order: any): boolean => {
+  return ['confirmee', 'en_attente'].includes(order.statut)
+}
+
+const canReturnToWarehouse = (order: any): boolean => {
+  return ['expediee', 'livree', 'retournee'].includes(order.statut)
+}
+
+const handleShipOrder = async (order: any) => {
+  const confirmed = await confirm({
+    title: 'Expédier la commande',
+    text: `Êtes-vous sûr de vouloir expédier la commande ${order.id} ?\n\nCette action va décrémenter le stock des produits.`,
+    confirmText: 'Expédier',
+    cancelText: 'Annuler',
+    type: 'warning'
+  })
+
+  if (!confirmed) return
+
+  shippingActionLoading.value = order.id
+  try {
+    await shippingStore.decrementStock(order.id)
+    showSuccess('Commande expédiée avec succès et stock décrémenté')
+    await fetchShippingOrders()
+  } catch (error: any) {
+    showError(error.message || 'Erreur lors de l\'expédition')
+  } finally {
+    shippingActionLoading.value = null
+  }
+}
+
+const handleReturnToWarehouse = (order: any) => {
+  currentReturnOrder.value = order
+  returnReason.value = ''
+  showReturnConfirmDialog.value = true
+}
+
+const confirmReturnToWarehouse = async () => {
+  if (!currentReturnOrder.value) return
+
+  shippingActionLoading.value = currentReturnOrder.value.id
+  try {
+    await shippingStore.incrementStock(currentReturnOrder.value.id, returnReason.value)
+    showSuccess('Commande retournée en entrepôt avec succès et stock ré-incrémenté')
+    showReturnConfirmDialog.value = false
+    await fetchShippingOrders()
+  } catch (error: any) {
+    showError(error.message || 'Erreur lors du retour en entrepôt')
+  } finally {
+    shippingActionLoading.value = null
+    currentReturnOrder.value = null
+  }
+}
+
+const cancelReturnToWarehouse = () => {
+  showReturnConfirmDialog.value = false
+  currentReturnOrder.value = null
+  returnReason.value = ''
+}
+
 const createDeliveryNote = async () => {
   if (selectedOrders.value.length === 0) {
     showError('Veuillez sélectionner au moins une commande')
@@ -335,6 +402,7 @@ const getStatusColor = (status: string) => {
     case 'refused':
     case 'delivery_attempted': return 'error'
     case 'returned': return 'secondary'
+    case 'returned_to_warehouse': return 'info'
     case 'unknown': return 'default'
     default: return 'default'
   }
@@ -362,6 +430,7 @@ const getShippingStatusLabel = (status: any) => {
     'livree': t('admin_shipping_status_delivered_fem'),
     'returned': t('order.status.returned'),
     'retournee': t('order.status.returned_feminine'),
+    'returned_to_warehouse': t('order.status.returned_to_warehouse'),
     'refused': t('admin_shipping_status_refused'),
     'refusee': t('admin_shipping_status_refused_fem'),
     'cancelled': t('admin_shipping_status_cancelled'),
@@ -726,6 +795,35 @@ onMounted(() => {
               </VTooltip>
             </template>
 
+            <!-- Stock Management Buttons -->
+            <template v-if="canShipOrder(item)">
+              <VBtn
+                size="small"
+                color="success"
+                variant="text"
+                icon="tabler-truck"
+                :loading="shippingActionLoading === item.id"
+                @click="handleShipOrder(item)"
+              />
+              <VTooltip activator="prev" location="top">
+                Expédier (décrémenter stock)
+              </VTooltip>
+            </template>
+
+            <template v-if="canReturnToWarehouse(item)">
+              <VBtn
+                size="small"
+                color="warning"
+                variant="text"
+                icon="tabler-package-import"
+                :loading="shippingActionLoading === item.id"
+                @click="handleReturnToWarehouse(item)"
+              />
+              <VTooltip activator="prev" location="top">
+                Retour entrepôt (ré-incrémenter stock)
+              </VTooltip>
+            </template>
+
             <!-- Status Update Button (only for local deliveries) -->
             <template v-if="!item.shipping_parcel?.sent_to_carrier">
               <VBtn
@@ -891,6 +989,64 @@ onMounted(() => {
           >
             <VIcon start icon="tabler-check" />
             {{ t('admin_shipping_update') }}
+          </VBtn>
+        </VCardActions>
+      </VCard>
+    </VDialog>
+
+    <!-- Return to Warehouse Confirmation Dialog -->
+    <VDialog
+      v-model="showReturnConfirmDialog"
+      max-width="500"
+      persistent
+    >
+      <VCard>
+        <VCardTitle class="d-flex align-center">
+          <VIcon icon="tabler-alert-triangle" color="warning" class="me-2" />
+          Retour en entrepôt
+        </VCardTitle>
+
+        <VCardText>
+          <VAlert
+            type="warning"
+            variant="tonal"
+            class="mb-4"
+          >
+            <VAlertTitle>Attention !</VAlertTitle>
+            Cette action va ré-incrémenter le stock des produits de cette commande.
+            Assurez-vous que les produits sont physiquement retournés en entrepôt.
+          </VAlert>
+
+          <p class="mb-4">
+            Commande: <strong>{{ currentReturnOrder?.id }}</strong>
+          </p>
+
+          <VTextarea
+            v-model="returnReason"
+            label="Raison du retour (optionnel)"
+            placeholder="Ex: Produit défectueux, refus client, etc."
+            rows="3"
+            variant="outlined"
+          />
+        </VCardText>
+
+        <VCardActions>
+          <VSpacer />
+          <VBtn
+            variant="text"
+            @click="cancelReturnToWarehouse"
+            :disabled="shippingActionLoading === currentReturnOrder?.id"
+          >
+            Annuler
+          </VBtn>
+          <VBtn
+            color="warning"
+            variant="elevated"
+            :loading="shippingActionLoading === currentReturnOrder?.id"
+            @click="confirmReturnToWarehouse"
+          >
+            <VIcon start icon="tabler-package-import" />
+            Confirmer le retour
           </VBtn>
         </VCardActions>
       </VCard>

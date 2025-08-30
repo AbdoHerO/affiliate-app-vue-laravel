@@ -108,6 +108,7 @@ class OrderStatusHistory extends Model
             'livree' => 'Livrée',
             'annulee' => 'Annulée',
             'retournee' => 'Retournée',
+            'returned_to_warehouse' => 'Retournée en entrepôt',
             'refusee' => 'Refusée',
             'injoignable' => 'Injoignable',
             'echec_livraison' => 'Échec livraison',

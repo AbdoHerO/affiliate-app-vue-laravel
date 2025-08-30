@@ -328,6 +328,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('shipping/orders/{id}/timeline', [ShippingOrdersController::class, 'timeline']);
         Route::post('shipping/orders/{id}/status', [ShippingOrdersController::class, 'updateShippingStatus']);
 
+        // Manual Stock Management for Shipping
+        Route::post('shipping/orders/{id}/decrement-stock', [ShippingOrdersController::class, 'decrementStock']);
+        Route::post('shipping/orders/{id}/increment-stock', [ShippingOrdersController::class, 'incrementStock']);
+
         // Tracking refresh endpoints
         Route::post('shipping/orders/refresh-tracking', [ShippingOrdersController::class, 'refreshTracking']);
         Route::post('shipping/orders/refresh-tracking-bulk', [ShippingOrdersController::class, 'refreshTrackingBulk']);

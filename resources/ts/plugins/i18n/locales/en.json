@@ -3125,6 +3125,7 @@
   "order_status_livree": "Delivered",
   "order_status_annulee": "Cancelled",
   "order_status_retournee": "Returned",
+  "order_status_returned_to_warehouse": "Returned to Warehouse",
   "order_status_refusee": "Refused",
   "order_status_injoignable": "Unreachable",
   "order_status_echec_livraison": "Delivery Failed",
