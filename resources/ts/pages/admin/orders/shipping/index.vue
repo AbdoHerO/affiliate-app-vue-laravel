@@ -850,8 +850,8 @@ onBeforeRouteLeave((_to, _from, next) => {
               </VTooltip>
             </template>
 
-            <!-- Stock Management Buttons -->
-            <template v-if="canShipOrder(item)">
+            <!-- TEMPORARILY HIDDEN: Stock Management Buttons -->
+            <template v-if="false && canShipOrder(item)">
               <VBtn
                 size="small"
                 color="success"

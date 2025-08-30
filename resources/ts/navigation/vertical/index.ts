@@ -185,22 +185,23 @@ const adminNavigation = [
       },
     ],
   },
-  {
-    title: 'nav_reports_analytics',
-    icon: { icon: 'tabler-chart-bar' },
-    children: [
-      {
-        title: 'nav_sales_reports',
-        to: '/admin/reports/sales',
-        icon: { icon: 'tabler-chart-line' },
-      },
-      {
-        title: 'nav_affiliate_performance',
-        to: '/admin/reports/affiliates',
-        icon: { icon: 'tabler-chart-pie' },
-      },
-    ],
-  },
+  // TEMPORARILY HIDDEN: Reports & Analytics section
+  // {
+  //   title: 'nav_reports_analytics',
+  //   icon: { icon: 'tabler-chart-bar' },
+  //   children: [
+  //     {
+  //       title: 'nav_sales_reports',
+  //       to: '/admin/reports/sales',
+  //       icon: { icon: 'tabler-chart-line' },
+  //     },
+  //     {
+  //       title: 'nav_affiliate_performance',
+  //       to: '/admin/reports/affiliates',
+  //       icon: { icon: 'tabler-chart-pie' },
+  //     },
+  //   ],
+  // },
 ] satisfies VerticalNavItems
 
 // Affiliate Navigation (string paths)

@@ -698,6 +698,9 @@ onMounted(() => {
               icon="tabler-eye"
               @click="viewPreorder(item)"
             />
+            <VTooltip activator="prev" location="top">
+              Voir les détails
+            </VTooltip>
 
             <!-- Quick Status Actions (only if not shipped) -->
             <VMenu v-if="!item.shipping_parcel">
@@ -709,6 +712,9 @@ onMounted(() => {
                   icon="tabler-dots-vertical"
                   v-bind="props"
                 />
+                <VTooltip activator="prev" location="top">
+                  Actions rapides
+                </VTooltip>
               </template>
 
               <VList>

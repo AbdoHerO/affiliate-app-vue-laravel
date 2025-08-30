@@ -207,20 +207,20 @@ export function useNavigation() {
               },
             ],
           },
-          {
-            title: t('nav_reports_analytics'),
-            icon: { icon: 'tabler-chart-bar' },
-            children: [
-              {
-                title: t('nav_sales_reports'),
-                to: 'admin-reports-sales',
-              },
-              {
-                title: t('nav_affiliate_performance'),
-                to: 'admin-reports-affiliates',
-              },
-            ],
-          },
+          // {
+          //   title: t('nav_reports_analytics'),
+          //   icon: { icon: 'tabler-chart-bar' },
+          //   children: [
+          //     {
+          //       title: t('nav_sales_reports'),
+          //       to: 'admin-reports-sales',
+          //     },
+          //     {
+          //       title: t('nav_affiliate_performance'),
+          //       to: 'admin-reports-affiliates',
+          //     },
+          //   ],
+          // },
           {
             title: t('profile'),
             to: 'profile',
