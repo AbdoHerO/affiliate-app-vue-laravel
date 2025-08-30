@@ -158,9 +158,10 @@ const changePeriod = async (period: string) => {
 
   console.log('Affiliate Dashboard - Date range:', dateRange)
 
-  // Update store filters
+  // Update store filters with both dateRange and period
   dashboardStore.updateFilters({
     dateRange: dateRange,
+    period: period, // Send the selected period to backend
   })
 
   // Refresh all data with new period
@@ -340,7 +341,7 @@ watch(autoRefresh, setupAutoRefresh)
         cols="12"
         sm="6"
         md="4"
-        lg="2"
+        lg="4"
       >
         <StatisticsCard
           :title="card.title"
@@ -353,9 +354,10 @@ watch(autoRefresh, setupAutoRefresh)
       </VCol>
     </VRow>
 
+
     <!-- Charts Section -->
     <VRow class="mb-6">
-      <VCol cols="12">
+      <VCol cols="6">
         <VCard>
           <VCardItem>
             <VCardTitle>{{ t('dashboard.affiliate.charts.top_products_sold') }}</VCardTitle>
@@ -371,12 +373,10 @@ watch(autoRefresh, setupAutoRefresh)
           </VCardText>
         </VCard>
       </VCol>
-    </VRow>
 
 
     <!-- Tables Section - 3 tables as specified -->
-    <VRow>
-      <VCol cols="12" md="4">
+      <VCol cols="12" md="6">
         <VCard>
           <VCardTitle>{{ t('dashboard.affiliate.tables.my_recent_orders') }}</VCardTitle>
           <VCardText>
@@ -412,8 +412,10 @@ watch(autoRefresh, setupAutoRefresh)
           </VCardText>
         </VCard>
       </VCol>
+    </VRow>
 
-      <VCol cols="12" md="4">
+    <VRow>
+      <VCol cols="12" md="6">
         <VCard>
           <VCardTitle>{{ t('dashboard.affiliate.tables.my_recent_payments') }}</VCardTitle>
           <VCardText>
@@ -449,7 +451,7 @@ watch(autoRefresh, setupAutoRefresh)
         </VCard>
       </VCol>
 
-      <VCol cols="12" md="4">
+      <VCol cols="12" md="6">
         <VCard>
           <VCardTitle>{{ t('dashboard.affiliate.tables.my_active_referrals') }}</VCardTitle>
           <VCardText>

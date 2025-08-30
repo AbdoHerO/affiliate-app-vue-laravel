@@ -171,6 +171,7 @@ class AffiliateDashboardController extends Controller
         return [
             'date_start' => $dateStart,
             'date_end' => $dateEnd,
+            'period' => $request->get('period', 'month'), // Add period parameter
             'status' => $request->get('status'),
             'page' => (int) $request->get('page', 1),
             'per_page' => min((int) $request->get('per_page', 15), 100),

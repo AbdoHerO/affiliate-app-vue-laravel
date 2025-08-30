@@ -138,6 +138,7 @@ class AdminDashboardController extends Controller
         return [
             'date_start' => $dateStart,
             'date_end' => $dateEnd,
+            'period' => $request->get('period', 'month'), // Add period parameter
             'affiliate_id' => $request->get('affiliate_id'),
             'status' => $request->get('status'),
             'country' => $request->get('country'),
@@ -483,56 +484,155 @@ class AdminDashboardController extends Controller
      */
     private function getOrdersByPeriodChart(array $filters): array
     {
-        // Get last 12 months of data
-        $months = collect();
-        for ($i = 11; $i >= 0; $i--) {
-            $months->push(Carbon::now()->subMonths($i)->format('Y-m'));
+        $period = $filters['period'] ?? 'month';
+        $dateStart = Carbon::parse($filters['date_start']);
+        $dateEnd = Carbon::parse($filters['date_end']);
+
+        switch ($period) {
+            case 'year':
+                // Group by year
+                $dateFormat = '%Y';
+                $categories = collect();
+                $current = $dateStart->copy()->startOfYear();
+                while ($current <= $dateEnd) {
+                    $categories->push($current->format('Y'));
+                    $current->addYear();
+                }
+                break;
+
+            case 'quarter':
+                // Group by quarter
+                $dateFormat = '%Y-Q%u';
+                $categories = collect();
+                $current = $dateStart->copy()->startOfQuarter();
+                while ($current <= $dateEnd) {
+                    $quarter = ceil($current->month / 3);
+                    $categories->push($current->year . '-Q' . $quarter);
+                    $current->addQuarter();
+                }
+                break;
+
+            case 'month':
+            default:
+                // Group by month
+                $dateFormat = '%Y-%m';
+                $categories = collect();
+                $current = $dateStart->copy()->startOfMonth();
+                while ($current <= $dateEnd) {
+                    $categories->push($current->format('Y-m'));
+                    $current->addMonth();
+                }
+                break;
         }
 
-        $ordersData = Commande::selectRaw("DATE_FORMAT(created_at, '%Y-%m') as month, COUNT(*) as count")
-            ->whereRaw("DATE_FORMAT(created_at, '%Y-%m') IN ('" . $months->implode("','") . "')")
-            ->groupBy('month')
-            ->orderBy('month')
-            ->pluck('count', 'month')
-            ->toArray();
+        // Build the SQL query based on period
+        $query = Commande::whereBetween('created_at', [$dateStart, $dateEnd]);
+        
+        if ($period === 'year') {
+            $ordersData = $query->selectRaw("YEAR(created_at) as period_key, COUNT(*) as count")
+                ->groupBy('period_key')
+                ->orderBy('period_key')
+                ->pluck('count', 'period_key')
+                ->toArray();
+        } elseif ($period === 'quarter') {
+            $ordersData = $query->selectRaw("CONCAT(YEAR(created_at), '-Q', QUARTER(created_at)) as period_key, COUNT(*) as count")
+                ->groupBy('period_key')
+                ->orderBy('period_key')
+                ->pluck('count', 'period_key')
+                ->toArray();
+        } else {
+            $ordersData = $query->selectRaw("DATE_FORMAT(created_at, '%Y-%m') as period_key, COUNT(*) as count")
+                ->groupBy('period_key')
+                ->orderBy('period_key')
+                ->pluck('count', 'period_key')
+                ->toArray();
+        }
 
         return [
             'series' => [
                 [
                     'nameKey' => 'dashboard.admin.charts.orders_by_period.series.orders',
-                    'data' => $months->map(fn($month) => (int) ($ordersData[$month] ?? 0))->values()->toArray(),
-                    'categories' => $months->toArray(),
-                    'period' => 'monthly'
+                    'data' => $categories->map(fn($cat) => (int) ($ordersData[$cat] ?? 0))->values()->toArray(),
+                    'categories' => $categories->toArray(),
+                    'period' => $period
                 ]
             ]
         ];
     }
 
     /**
-     * Get monthly revenue chart data (line or bars)
+     * Get revenue chart data (line or bars) - respects period parameter
      */
     private function getMonthlyRevenueChart(array $filters): array
     {
-        // Get last 12 months of data
-        $months = collect();
-        for ($i = 11; $i >= 0; $i--) {
-            $months->push(Carbon::now()->subMonths($i)->format('Y-m'));
+        $period = $filters['period'] ?? 'month';
+        $dateStart = Carbon::parse($filters['date_start']);
+        $dateEnd = Carbon::parse($filters['date_end']);
+
+        switch ($period) {
+            case 'year':
+                // Group by year
+                $categories = collect();
+                $current = $dateStart->copy()->startOfYear();
+                while ($current <= $dateEnd) {
+                    $categories->push($current->format('Y'));
+                    $current->addYear();
+                }
+                break;
+
+            case 'quarter':
+                // Group by quarter
+                $categories = collect();
+                $current = $dateStart->copy()->startOfQuarter();
+                while ($current <= $dateEnd) {
+                    $quarter = ceil($current->month / 3);
+                    $categories->push($current->year . '-Q' . $quarter);
+                    $current->addQuarter();
+                }
+                break;
+
+            case 'month':
+            default:
+                // Group by month
+                $categories = collect();
+                $current = $dateStart->copy()->startOfMonth();
+                while ($current <= $dateEnd) {
+                    $categories->push($current->format('Y-m'));
+                    $current->addMonth();
+                }
+                break;
         }
 
-        $revenueData = Commande::selectRaw("DATE_FORMAT(created_at, '%Y-%m') as month, COALESCE(SUM(total_ttc), 0) as total")
-            ->whereRaw("DATE_FORMAT(created_at, '%Y-%m') IN ('" . $months->implode("','") . "')")
-            ->groupBy('month')
-            ->orderBy('month')
-            ->pluck('total', 'month')
-            ->toArray();
+        // Build the SQL query based on period
+        $query = Commande::whereBetween('created_at', [$dateStart, $dateEnd]);
+        
+        if ($period === 'year') {
+            $revenueData = $query->selectRaw("YEAR(created_at) as period_key, COALESCE(SUM(total_ttc), 0) as total")
+                ->groupBy('period_key')
+                ->orderBy('period_key')
+                ->pluck('total', 'period_key')
+                ->toArray();
+        } elseif ($period === 'quarter') {
+            $revenueData = $query->selectRaw("CONCAT(YEAR(created_at), '-Q', QUARTER(created_at)) as period_key, COALESCE(SUM(total_ttc), 0) as total")
+                ->groupBy('period_key')
+                ->orderBy('period_key')
+                ->pluck('total', 'period_key')
+                ->toArray();
+        } else {
+            $revenueData = $query->selectRaw("DATE_FORMAT(created_at, '%Y-%m') as period_key, COALESCE(SUM(total_ttc), 0) as total")
+                ->groupBy('period_key')
+                ->orderBy('period_key')
+                ->pluck('total', 'period_key')
+                ->toArray();
+        }
 
         return [
             'series' => [
                 [
                     'nameKey' => 'dashboard.admin.charts.monthly_revenue.series.revenue',
-                    'data' => $months->map(fn($month) => (float) ($revenueData[$month] ?? 0))->values()->toArray(),
-                    'categories' => $months->toArray(),
-                    'period' => 'monthly'
+                    'data' => $categories->map(fn($cat) => (float) ($revenueData[$cat] ?? 0))->values()->toArray(),
+                    'categories' => $categories->toArray(),
+                    'period' => $period
                 ]
             ]
         ];

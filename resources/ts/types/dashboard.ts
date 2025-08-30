@@ -6,6 +6,7 @@ export interface DateRange {
 
 export interface FilterOptions {
   dateRange?: DateRange
+  period?: string // 'month' | 'quarter' | 'year'
   affiliate?: string
   status?: string
   country?: string

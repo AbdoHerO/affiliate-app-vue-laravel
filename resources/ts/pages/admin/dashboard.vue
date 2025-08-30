@@ -125,9 +125,55 @@ const refreshData = async () => {
   }
 }
 
-const changePeriod = (period: string) => {
+const changePeriod = async (period: string) => {
   selectedPeriod.value = period
-  dashboardStore.fetchChartData(period)
+  console.log('Admin Dashboard - Period changed to:', period)
+
+  // Calculate date range based on period
+  const now = new Date()
+  let startDate: Date
+
+  switch (period) {
+    case 'month':
+      startDate = new Date(now.getFullYear(), now.getMonth(), 1)
+      break
+    case 'quarter':
+      const quarter = Math.floor(now.getMonth() / 3)
+      startDate = new Date(now.getFullYear(), quarter * 3, 1)
+      break
+    case 'year':
+      startDate = new Date(now.getFullYear(), 0, 1)
+      break
+    default:
+      startDate = new Date(now.getFullYear(), now.getMonth(), 1)
+  }
+
+  const dateRange = {
+    start: startDate.toISOString().split('T')[0],
+    end: now.toISOString().split('T')[0],
+  }
+
+  console.log('Admin Dashboard - Date range:', dateRange)
+
+  // Update store filters with both dateRange and period
+  dashboardStore.updateFilters({
+    dateRange: dateRange,
+    period: period, // Send the selected period to backend
+  })
+
+  // Refresh all data with new period
+  console.log('Admin Dashboard - Refreshing data...')
+  await Promise.all([
+    dashboardStore.fetchStats(),
+    dashboardStore.fetchChartData('orders_by_period'),
+    dashboardStore.fetchChartData('monthly_revenue'),
+    dashboardStore.fetchChartData('top_affiliates'),
+    dashboardStore.fetchChartData('top_products'),
+    dashboardStore.fetchTableData('recent_payments'),
+    dashboardStore.fetchTableData('monthly_paid_commissions'),
+  ])
+
+  console.log('Admin Dashboard - Data refreshed')
 }
 
 const refreshCharts = async () => {

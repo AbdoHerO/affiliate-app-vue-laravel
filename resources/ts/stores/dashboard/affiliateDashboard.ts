@@ -37,6 +37,7 @@ export const useAffiliateDashboardStore = defineStore('affiliateDashboard', () =
       start: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 30 days ago
       end: new Date().toISOString().split('T')[0], // today
     },
+    period: 'month', // default period
     page: 1,
     perPage: 15,
   })
