@@ -11,10 +11,18 @@ const { t, locale } = useI18n()
 const settingsStore = useSettingsStore()
 const { showSuccess, showError } = useNotifications()
 
-// Debug i18n
-console.log('Current locale:', locale.value)
-console.log('Available locales:', Object.keys(t('settings') || {}))
-console.log('Settings title translation:', t('settings.title'))
+// Ensure French locale is set and debug i18n
+onMounted(() => {
+  console.log('Current locale:', locale.value)
+  console.log('Available locales:', Object.keys(t('settings') || {}))
+  console.log('Settings title:', t('settings.title'))
+
+  // Force French locale
+  if (locale.value !== 'fr') {
+    locale.value = 'fr'
+    console.log('Locale forced to French')
+  }
+})
 
 // Page state
 const loading = ref(false)
@@ -342,12 +350,12 @@ onMounted(() => {
     </VRow>
 
     <!-- Enhanced Settings Tabs -->
-    <VCard v-else class="settings-card">
+    <VCard v-else class="settings-card mb-6 h-50">
       <VTabs
         v-model="activeTab"
         color="primary"
         align-tabs="start"
-        class="settings-tabs"
+        class="settings-tabs h-50"
         bg-color="grey-lighten-5"
         slider-color="primary"
         show-arrows
@@ -355,7 +363,6 @@ onMounted(() => {
         <VTab
           value="general"
           class="settings-tab"
-          prepend-icon="tabler-settings"
         >
           <div class="d-flex align-center">
             <VIcon start icon="tabler-settings" size="20" />
@@ -366,7 +373,6 @@ onMounted(() => {
         <VTab
           value="business"
           class="settings-tab"
-          prepend-icon="tabler-building-store"
         >
           <div class="d-flex align-center">
             <VIcon start icon="tabler-building-store" size="20" />
@@ -377,7 +383,6 @@ onMounted(() => {
         <VTab
           value="shipping"
           class="settings-tab"
-          prepend-icon="tabler-truck"
         >
           <div class="d-flex align-center">
             <VIcon start icon="tabler-truck" size="20" />
@@ -396,7 +401,6 @@ onMounted(() => {
         <VTab
           value="users"
           class="settings-tab"
-          prepend-icon="tabler-users"
         >
           <div class="d-flex align-center">
             <VIcon start icon="tabler-users" size="20" />
@@ -415,7 +419,6 @@ onMounted(() => {
         <VTab
           value="products"
           class="settings-tab"
-          prepend-icon="tabler-package"
         >
           <div class="d-flex align-center">
             <VIcon start icon="tabler-package" size="20" />
@@ -434,7 +437,6 @@ onMounted(() => {
         <VTab
           value="communication"
           class="settings-tab"
-          prepend-icon="tabler-mail"
         >
           <div class="d-flex align-center">
             <VIcon start icon="tabler-mail" size="20" />
@@ -453,7 +455,6 @@ onMounted(() => {
         <VTab
           value="security"
           class="settings-tab"
-          prepend-icon="tabler-shield"
         >
           <div class="d-flex align-center">
             <VIcon start icon="tabler-shield" size="20" />
@@ -472,7 +473,6 @@ onMounted(() => {
         <VTab
           value="system"
           class="settings-tab"
-          prepend-icon="tabler-server"
         >
           <div class="d-flex align-center">
             <VIcon start icon="tabler-server" size="20" />
@@ -488,10 +488,13 @@ onMounted(() => {
           </div>
         </VTab>
       </VTabs>
+    </VCard>
 
-      <VTabsWindow v-model="activeTab" class="mt-8">
-        <!-- General Settings Tab -->
-        <VTabsWindowItem value="general">
+    <!-- Settings Content -->
+    <VTabsWindow v-model="activeTab">
+      <!-- General Settings Tab -->
+      <VTabsWindowItem value="general">
+        <VCard>
           <VCardText class="pa-6">
             <div class="mb-8">
               <h3 class="text-h5 mb-2">{{ t('settings.general.title') }}</h3>
@@ -736,21 +739,24 @@ onMounted(() => {
               </VRow>
             </VForm>
           </VCardText>
+          </VCard>
         </VTabsWindowItem>
 
         <!-- Business Settings Tab -->
         <VTabsWindowItem value="business">
-          <VCardText>
-            <VAlert
-              type="info"
-              variant="tonal"
-              class="mb-4"
-            >
-              <VIcon start icon="tabler-info-circle" />
-              {{ t('settings.business.description') }}
-            </VAlert>
-            <!-- Business settings content will be added in future versions -->
-          </VCardText>
+          <VCard>
+            <VCardText>
+              <VAlert
+                type="info"
+                variant="tonal"
+                class="mb-4"
+              >
+                <VIcon start icon="tabler-info-circle" />
+                {{ t('settings.business.description') }}
+              </VAlert>
+              <!-- Business settings content will be added in future versions -->
+            </VCardText>
+          </VCard>
         </VTabsWindowItem>
 
         <!-- Coming Soon Tabs -->
@@ -759,24 +765,25 @@ onMounted(() => {
           :key="tab"
           :value="tab"
         >
-          <VCardText>
-            <div class="text-center py-8">
-              <VIcon
-                icon="tabler-clock"
-                size="64"
-                class="text-medium-emphasis mb-4"
-              />
-              <h3 class="text-h5 mb-2">
-                {{ t('settings.coming_soon') }}
-              </h3>
-              <p class="text-body-1 text-medium-emphasis">
-                {{ t('settings.coming_soon_description', { feature: t(`settings.tabs.${tab}`) }) }}
-              </p>
-            </div>
-          </VCardText>
+          <VCard>
+            <VCardText>
+              <div class="text-center py-8">
+                <VIcon
+                  icon="tabler-clock"
+                  size="64"
+                  class="text-medium-emphasis mb-4"
+                />
+                <h3 class="text-h5 mb-2">
+                  {{ t('settings.coming_soon') }}
+                </h3>
+                <p class="text-body-1 text-medium-emphasis">
+                  {{ t('settings.coming_soon_description', { feature: t(`settings.tabs.${tab}`) }) }}
+                </p>
+              </div>
+            </VCardText>
+          </VCard>
         </VTabsWindowItem>
       </VTabsWindow>
-    </VCard>
   </div>
 </template>
 
