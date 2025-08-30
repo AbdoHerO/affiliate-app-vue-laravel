@@ -157,6 +157,7 @@ class ReferralController extends Controller
                 'new_user_phone' => $user->telephone,
                 'email_verified' => $user->email_verifie,
                 'affiliate_name' => $user->affiliateParrain?->utilisateur?->nom_complet ?? 'Unknown',
+                'affiliate_email' => $user->affiliateParrain?->utilisateur?->email ?? 'N/A',
                 'referrer_affiliate_id' => $user->affiliate_parrained_by,
                 'attributed_at' => $user->created_at,
                 'verified' => $user->email_verifie,

@@ -256,8 +256,8 @@ onMounted(() => {
                 <VIcon icon="tabler-user" />
               </VAvatar>
               <div>
-                <div class="font-weight-medium">{{ item.new_user.nom_complet }}</div>
-                <div class="text-body-2 text-medium-emphasis">{{ item.new_user.email }}</div>
+                <div class="font-weight-medium">{{ item.new_user_name }}</div>
+                <div class="text-body-2 text-medium-emphasis">{{ item.new_user_email }}</div>
               </div>
             </div>
           </template>
@@ -268,8 +268,8 @@ onMounted(() => {
                 <VIcon icon="tabler-user-star" />
               </VAvatar>
               <div>
-                <div class="font-weight-medium">{{ item.referrer_affiliate.utilisateur.nom_complet }}</div>
-                <div class="text-body-2 text-medium-emphasis">{{ item.referrer_affiliate.utilisateur.email }}</div>
+                <div class="font-weight-medium">{{ item.affiliate_name }}</div>
+                <div class="text-body-2 text-medium-emphasis">{{ item.affiliate_email }}</div>
               </div>
             </div>
           </template>
