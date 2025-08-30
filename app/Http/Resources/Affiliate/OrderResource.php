@@ -24,6 +24,8 @@ class OrderResource extends JsonResource
             'adresse_livraison_id' => $this->adresse_livraison_id,
             'offre_id' => $this->offre_id,
             'statut' => $this->statut,
+            'delivery_boy_name' => $this->delivery_boy_name,
+            'delivery_boy_phone' => $this->delivery_boy_phone,
             'confirmation_cc' => $this->confirmation_cc,
             'mode_paiement' => $this->mode_paiement,
             'total_ht' => $this->total_ht,

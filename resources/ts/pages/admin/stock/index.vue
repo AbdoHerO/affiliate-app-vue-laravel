@@ -101,10 +101,25 @@ const breadcrumbs = computed(() => {
   }
 })
 
+// Stock state helpers
+const getStockState = (item: StockItem) => {
+  const available = item.metrics.available
+
+  if (available <= 0) {
+    return { label: 'Rupture', color: 'error', icon: 'tabler-alert-circle' }
+  } else if (available <= 5) {
+    return { label: 'Stock faible', color: 'warning', icon: 'tabler-alert-triangle' }
+  } else if (available <= 10) {
+    return { label: 'Stock moyen', color: 'info', icon: 'tabler-info-circle' }
+  } else {
+    return { label: 'Stock bon', color: 'success', icon: 'tabler-circle-check' }
+  }
+}
+
 const headers = computed(() => {
   try {
     return [
-      { title: t('stock.columns.product'), key: 'product', sortable: false, width: '22%', minWidth: '220px' },
+      { title: t('stock.columns.product'), key: 'product', sortable: false, width: '28%', minWidth: '280px' },
       { title: 'SKU', key: 'sku', sortable: false, width: '10%', minWidth: '100px' },
       { title: t('stock.columns.variant'), key: 'variant', sortable: false, width: '13%', minWidth: '110px' },
       { title: t('stock.columns.category'), key: 'category', sortable: false, width: '10%', minWidth: '90px' },
@@ -447,8 +462,24 @@ onBeforeUnmount(() => {
             >
               <VIcon icon="tabler-package" />
             </VAvatar>
-            <div>
-              <div class="font-weight-medium">{{ item.product.titre }}</div>
+            <div class="flex-grow-1">
+              <div class="d-flex align-center gap-2">
+                <div class="font-weight-medium">{{ item.product.titre }}</div>
+                <!-- Stock State Indicator -->
+                <VChip
+                  :color="getStockState(item).color"
+                  size="x-small"
+                  variant="tonal"
+                  class="text-caption"
+                >
+                  <VIcon
+                    :icon="getStockState(item).icon"
+                    size="12"
+                    start
+                  />
+                  {{ getStockState(item).label }}
+                </VChip>
+              </div>
               <div class="text-caption text-medium-emphasis">{{ item.product.slug }}</div>
             </div>
           </div>

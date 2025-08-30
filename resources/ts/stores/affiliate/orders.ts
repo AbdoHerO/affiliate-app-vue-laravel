@@ -9,6 +9,8 @@ export interface AffiliateOrder {
   client_final_id?: string
   adresse_id: string
   statut: string
+  delivery_boy_name?: string | null
+  delivery_boy_phone?: string | null
   confirmation_cc: string
   mode_paiement: string
   type_command: string

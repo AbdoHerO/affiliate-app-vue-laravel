@@ -35,6 +35,11 @@ const statusUpdateLoading = ref(false)
 const newStatus = ref('')
 const statusNote = ref('')
 
+// Delivery boy information state
+const deliveryBoyName = ref('')
+const deliveryBoyPhone = ref('')
+const deliveryBoyLoading = ref(false)
+
 // Computed
 const isLoading = computed(() => shippingStore.isLoading)
 const shippingOrder = computed(() => shippingStore.currentShippingOrder)
@@ -372,9 +377,45 @@ ${getClientFinalCity()}, ${getClientFinalCountry()}`
   }
 }
 
+// Delivery boy methods
+const saveDeliveryBoyInfo = async () => {
+  if (!deliveryBoyName.value.trim() && !deliveryBoyPhone.value.trim()) {
+    showError('Veuillez saisir au moins le nom ou le téléphone du livreur')
+    return
+  }
+
+  deliveryBoyLoading.value = true
+  try {
+    await shippingStore.updateDeliveryBoyInfo(orderId.value, {
+      delivery_boy_name: deliveryBoyName.value.trim() || null,
+      delivery_boy_phone: deliveryBoyPhone.value.trim() || null
+    })
+
+    showSuccess('Informations du livreur enregistrées avec succès')
+    await fetchShippingOrder() // Refresh data
+  } catch (error: any) {
+    showError(error.message || 'Erreur lors de l\'enregistrement')
+  } finally {
+    deliveryBoyLoading.value = false
+  }
+}
+
+const resetDeliveryBoyInfo = () => {
+  deliveryBoyName.value = shippingOrder.value?.delivery_boy_name || ''
+  deliveryBoyPhone.value = shippingOrder.value?.delivery_boy_phone || ''
+}
+
+const loadDeliveryBoyInfo = () => {
+  if (shippingOrder.value) {
+    deliveryBoyName.value = shippingOrder.value.delivery_boy_name || ''
+    deliveryBoyPhone.value = shippingOrder.value.delivery_boy_phone || ''
+  }
+}
+
 // Lifecycle
-onMounted(() => {
-  fetchShippingOrder()
+onMounted(async () => {
+  await fetchShippingOrder()
+  loadDeliveryBoyInfo()
 })
 </script>
 
@@ -475,7 +516,8 @@ onMounted(() => {
             Modifier Statut
           </VBtn>
 
-          <VMenu v-if="shippingOrder.shipping_parcel?.delivery_note_ref">
+          <!-- TEMPORARILY HIDDEN: Delivery Note PDF Menu -->
+          <VMenu v-if="false && shippingOrder.shipping_parcel?.delivery_note_ref">
             <template #activator="{ props }">
               <VBtn
                 color="primary"
@@ -514,9 +556,14 @@ onMounted(() => {
           <VIcon start icon="tabler-route" />
           Suivi
         </VTab>
-        <VTab value="delivery-note">
+        <!-- TEMPORARILY HIDDEN: Delivery Note Tab -->
+        <VTab v-if="false" value="delivery-note">
           <VIcon start icon="tabler-file-text" />
           Bon de Livraison
+        </VTab>
+        <VTab value="delivery-boy">
+          <VIcon start icon="tabler-user" />
+          Livreur
         </VTab>
       </VTabs>
 
@@ -902,8 +949,8 @@ onMounted(() => {
           </VCard>
         </VWindowItem>
 
-        <!-- Delivery Note Tab -->
-        <VWindowItem value="delivery-note">
+        <!-- TEMPORARILY HIDDEN: Delivery Note Tab Content -->
+        <VWindowItem v-if="false" value="delivery-note">
           <VCard>
             <VCardTitle>Gestion du Bon de Livraison</VCardTitle>
             <VCardText>
@@ -988,6 +1035,76 @@ onMounted(() => {
                   </VBtn>
                 </div>
               </div>
+            </VCardText>
+          </VCard>
+        </VWindowItem>
+
+        <!-- Delivery Boy Tab -->
+        <VWindowItem value="delivery-boy">
+          <VCard>
+            <VCardTitle class="d-flex align-center">
+              <VIcon icon="tabler-user" class="me-2" />
+              Informations du Livreur
+            </VCardTitle>
+            <VCardText>
+              <VRow>
+                <VCol cols="12" md="6">
+                  <VTextField
+                    v-model="deliveryBoyName"
+                    label="Nom du livreur"
+                    placeholder="Ex: Ahmed Benali"
+                    variant="outlined"
+                    prepend-inner-icon="tabler-user"
+                    :disabled="deliveryBoyLoading"
+                  />
+                </VCol>
+                <VCol cols="12" md="6">
+                  <VTextField
+                    v-model="deliveryBoyPhone"
+                    label="Téléphone du livreur"
+                    placeholder="Ex: +212 6 12 34 56 78"
+                    variant="outlined"
+                    prepend-inner-icon="tabler-phone"
+                    :disabled="deliveryBoyLoading"
+                  />
+                </VCol>
+              </VRow>
+
+              <div class="d-flex gap-3 mt-4">
+                <VBtn
+                  color="primary"
+                  variant="elevated"
+                  :loading="deliveryBoyLoading"
+                  @click="saveDeliveryBoyInfo"
+                >
+                  <VIcon start icon="tabler-device-floppy" />
+                  Enregistrer
+                </VBtn>
+                <VBtn
+                  variant="outlined"
+                  @click="resetDeliveryBoyInfo"
+                  :disabled="deliveryBoyLoading"
+                >
+                  <VIcon start icon="tabler-refresh" />
+                  Réinitialiser
+                </VBtn>
+              </div>
+
+              <!-- Current Info Display -->
+              <VAlert
+                v-if="shippingOrder?.delivery_boy_name || shippingOrder?.delivery_boy_phone"
+                type="info"
+                variant="tonal"
+                class="mt-4"
+              >
+                <VAlertTitle>Informations actuelles</VAlertTitle>
+                <div v-if="shippingOrder?.delivery_boy_name">
+                  <strong>Nom:</strong> {{ shippingOrder.delivery_boy_name }}
+                </div>
+                <div v-if="shippingOrder?.delivery_boy_phone">
+                  <strong>Téléphone:</strong> {{ shippingOrder.delivery_boy_phone }}
+                </div>
+              </VAlert>
             </VCardText>
           </VCard>
         </VWindowItem>

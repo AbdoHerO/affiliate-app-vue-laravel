@@ -34,6 +34,8 @@ class Commande extends Model
         'client_final_snapshot',
         'offre_id',
         'statut',
+        'delivery_boy_name',
+        'delivery_boy_phone',
         'confirmation_cc',
         'mode_paiement',
         'type_command',

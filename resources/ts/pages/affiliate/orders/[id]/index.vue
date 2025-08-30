@@ -208,6 +208,47 @@ onMounted(() => {
             </VCol>
           </VRow>
 
+          <!-- Delivery Boy Information -->
+          <VCard
+            v-if="currentOrder.delivery_boy_name || currentOrder.delivery_boy_phone"
+            class="mt-6"
+          >
+            <VCardTitle class="d-flex align-center">
+              <VIcon icon="tabler-user" class="me-2" />
+              Informations du livreur
+            </VCardTitle>
+            <VCardText>
+              <VRow>
+                <VCol v-if="currentOrder.delivery_boy_name" cols="12" md="6">
+                  <VList>
+                    <VListItem>
+                      <VListItemTitle>Nom du livreur</VListItemTitle>
+                      <VListItemSubtitle class="font-weight-medium">
+                        {{ currentOrder.delivery_boy_name }}
+                      </VListItemSubtitle>
+                    </VListItem>
+                  </VList>
+                </VCol>
+                <VCol v-if="currentOrder.delivery_boy_phone" cols="12" md="6">
+                  <VList>
+                    <VListItem>
+                      <VListItemTitle>Téléphone du livreur</VListItemTitle>
+                      <VListItemSubtitle>
+                        <a
+                          :href="`tel:${currentOrder.delivery_boy_phone}`"
+                          class="text-decoration-none text-primary font-weight-medium"
+                        >
+                          <VIcon icon="tabler-phone" size="16" class="me-1" />
+                          {{ currentOrder.delivery_boy_phone }}
+                        </a>
+                      </VListItemSubtitle>
+                    </VListItem>
+                  </VList>
+                </VCol>
+              </VRow>
+            </VCardText>
+          </VCard>
+
           <!-- Notes -->
           <VCard v-if="currentOrder.notes" class="mt-6">
             <VCardTitle>Notes</VCardTitle>

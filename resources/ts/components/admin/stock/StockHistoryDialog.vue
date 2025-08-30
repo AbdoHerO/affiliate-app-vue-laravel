@@ -75,14 +75,19 @@ const fetchHistory = async () => {
     return
   }
 
-  // Use variant ID if available, otherwise use product ID
-  const variantId = props.item.variant?.id || props.item.product.id
+  // Stock history requires a variant ID - every stock item should have one
+  if (!props.item.variant?.id) {
+    console.error('❌ [StockHistoryDialog] No variant ID found for stock item:', props.item)
+    return
+  }
+
+  const variantId = props.item.variant.id
 
   console.log('🔍 [StockHistoryDialog] Fetching history for:', {
     productId: props.item.product.id,
     productTitle: props.item.product.titre,
     variantId: variantId,
-    variantLabel: props.item.variant?.libelle || 'Default variant',
+    variantLabel: props.item.variant.libelle,
     filters: filters.value
   })
 

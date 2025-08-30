@@ -545,7 +545,9 @@ onMounted(() => {
           <VIcon start icon="tabler-refresh" />
           {{ t('admin_shipping_button_refresh_bulk', { count: selectedOrders.length }) }}
         </VBtn>
+        <!-- TEMPORARILY HIDDEN: Delivery Note Button -->
         <VBtn
+          v-if="false"
           color="secondary"
           variant="outlined"
           :disabled="selectedOrders.length === 0"
@@ -838,7 +840,8 @@ onMounted(() => {
               </VTooltip>
             </template>
 
-            <VMenu>
+            <!-- TEMPORARILY HIDDEN: Delivery Note Actions -->
+            <VMenu v-if="false">
               <template #activator="{ props }">
                 <VBtn
                   size="small"
@@ -917,8 +920,9 @@ onMounted(() => {
       @cancel="handleOzonCancel"
     />
 
-    <!-- Delivery Note Dialog -->
+    <!-- TEMPORARILY HIDDEN: Delivery Note Dialog -->
     <DeliveryNoteDialog
+      v-if="false"
       v-model="showDeliveryNoteDialog"
       :selected-tracking-numbers="selectedOrders
         .map(orderId => {

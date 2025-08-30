@@ -40,6 +40,8 @@ export interface ShippingParcel {
 export interface ShippingOrder {
   id: string
   statut: string
+  delivery_boy_name?: string | null
+  delivery_boy_phone?: string | null
   total_ttc: number
   created_at: string
   updated_at: string
@@ -548,6 +550,27 @@ export const useShippingStore = defineStore('shipping', () => {
     }
   }
 
+  const updateDeliveryBoyInfo = async (orderId: string, data: { delivery_boy_name?: string | null; delivery_boy_phone?: string | null }): Promise<any> => {
+    loading.value = true
+    error.value = null
+
+    try {
+      const response = await axios.post(`admin/shipping/orders/${orderId}/delivery-boy`, data)
+
+      if (response.data.success) {
+        return response.data
+      } else {
+        throw new Error(response.data.message || 'Failed to update delivery boy info')
+      }
+    } catch (err: any) {
+      error.value = err.response?.data?.message || err.message || 'Failed to update delivery boy info'
+      console.error('Error updating delivery boy info:', err)
+      throw new Error(error.value || 'Failed to update delivery boy info')
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     // State
     shippingOrders,
@@ -584,5 +607,6 @@ export const useShippingStore = defineStore('shipping', () => {
     updateShippingStatus,
     decrementStock,
     incrementStock,
+    updateDeliveryBoyInfo,
   }
 })

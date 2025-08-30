@@ -971,4 +971,39 @@ class ShippingOrdersController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Update delivery boy information for an order
+     */
+    public function updateDeliveryBoyInfo(Request $request, string $id): JsonResponse
+    {
+        $request->validate([
+            'delivery_boy_name' => 'nullable|string|max:255',
+            'delivery_boy_phone' => 'nullable|string|max:20'
+        ]);
+
+        try {
+            $order = Commande::findOrFail($id);
+
+            $order->update([
+                'delivery_boy_name' => $request->delivery_boy_name,
+                'delivery_boy_phone' => $request->delivery_boy_phone
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Informations du livreur mises à jour avec succès',
+                'data' => [
+                    'delivery_boy_name' => $order->delivery_boy_name,
+                    'delivery_boy_phone' => $order->delivery_boy_phone
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de la mise à jour des informations du livreur: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }
