@@ -62,7 +62,7 @@ const headers = [
   { title: t('client'), key: 'client', sortable: false },
   { title: t('city'), key: 'city', sortable: false },
   { title: 'SKU', key: 'sku_list', sortable: false, width: '150px' },
-  { title: 'Type Commande', key: 'type_command', sortable: false },
+  { title: t('order_type'), key: 'type_command', sortable: false },
   { title: t('status'), key: 'status', sortable: true },
   { title: t('total'), key: 'total_ttc', sortable: true },
   { title: t('updated'), key: 'updated_at', sortable: true },
@@ -399,11 +399,11 @@ const saveQuickDeliveryBoyInfo = async () => {
       delivery_boy_phone: quickDeliveryBoyPhone.value.trim() || null
     })
 
-    showSuccess('Informations du livreur mises à jour avec succès')
+    showSuccess(t('delivery_person_info_updated_success'))
     showDeliveryBoyDialog.value = false
     await fetchShippingOrders()
   } catch (error: any) {
-    showError(error.message || 'Erreur lors de la mise à jour')
+    showError(error.message || t('error_updating'))
   } finally {
     deliveryBoyLoading.value = false
   }
@@ -418,7 +418,7 @@ const cancelDeliveryBoyDialog = () => {
 
 const createDeliveryNote = async () => {
   if (selectedOrders.value.length === 0) {
-    showError('Veuillez sélectionner au moins une commande')
+    showError(t('please_select_at_least_one_order'))
     return
   }
 
@@ -886,7 +886,7 @@ onBeforeRouteLeave((_to, _from, next) => {
                   @click="openDeliveryBoyDialog(item)"
                 />
               </template>
-              <span>{{ item.delivery_boy_name ? 'Modifier livreur' : 'Ajouter livreur' }}</span>
+              <span>{{ item.delivery_boy_name ? t('edit_delivery_person') : t('add_delivery_person') }}</span>
             </VTooltip>
 
             <!-- Status Update Button (only for local deliveries) -->
@@ -1133,7 +1133,7 @@ onBeforeRouteLeave((_to, _from, next) => {
       <VCard>
         <VCardTitle class="d-flex align-center">
           <VIcon icon="tabler-user" color="info" class="me-2" />
-          Informations du Livreur
+          {{ t('delivery_person_information') }}
         </VCardTitle>
 
         <VCardText>
@@ -1141,8 +1141,8 @@ onBeforeRouteLeave((_to, _from, next) => {
             <VCol cols="12">
               <VTextField
                 v-model="quickDeliveryBoyName"
-                label="Nom du livreur"
-                placeholder="Ex: Ahmed Benali"
+                :label="t('delivery_person_name')"
+                :placeholder="t('delivery_person_name_placeholder')"
                 variant="outlined"
                 prepend-inner-icon="tabler-user"
                 :disabled="deliveryBoyLoading"
@@ -1151,8 +1151,8 @@ onBeforeRouteLeave((_to, _from, next) => {
             <VCol cols="12">
               <VTextField
                 v-model="quickDeliveryBoyPhone"
-                label="Téléphone du livreur"
-                placeholder="Ex: +212 6 12 34 56 78"
+                :label="t('delivery_person_phone')"
+                :placeholder="t('delivery_person_phone_placeholder')"
                 variant="outlined"
                 prepend-inner-icon="tabler-phone"
                 :disabled="deliveryBoyLoading"
@@ -1168,7 +1168,7 @@ onBeforeRouteLeave((_to, _from, next) => {
             @click="cancelDeliveryBoyDialog"
             :disabled="deliveryBoyLoading"
           >
-            Annuler
+            {{ t('cancel') }}
           </VBtn>
           <VBtn
             color="primary"
@@ -1177,7 +1177,7 @@ onBeforeRouteLeave((_to, _from, next) => {
             @click="saveQuickDeliveryBoyInfo"
           >
             <VIcon start icon="tabler-device-floppy" />
-            Enregistrer
+            {{ t('save') }}
           </VBtn>
         </VCardActions>
       </VCard>

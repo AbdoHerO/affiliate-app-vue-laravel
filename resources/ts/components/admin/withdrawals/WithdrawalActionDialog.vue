@@ -262,7 +262,7 @@ const handleSubmit = async () => {
             </VRow>
 
             <VFileInput
-              label="Preuve de paiement (optionnelle)"
+              :label="t('proof_of_payment_optional')"
               accept="image/*,.pdf"
               prepend-icon="tabler-paperclip"
               @change="handleFileChange"
@@ -274,7 +274,7 @@ const handleSubmit = async () => {
               class="mt-2"
             >
               <VIcon icon="tabler-info-circle" class="me-2" />
-              Formats acceptés: PDF, JPG, PNG (max 5MB)
+              {{ t('accepted_formats_info') }}
             </VAlert>
           </div>
         </VForm>
@@ -286,7 +286,7 @@ const handleSubmit = async () => {
           variant="tonal"
           @click="closeDialog"
         >
-          Annuler
+          {{ t('cancel') }}
         </VBtn>
         <VBtn
           :color="dialogColor"

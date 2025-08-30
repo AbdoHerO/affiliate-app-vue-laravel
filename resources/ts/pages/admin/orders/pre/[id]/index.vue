@@ -79,7 +79,7 @@ const fetchPreorder = async () => {
       }
     }
   } catch (error: any) {
-    showError(error.message || 'Erreur lors du chargement de la commande')
+    showError(error.message || t('error_loading_order'))
     router.push({ name: 'admin-orders-pre' })
   }
 }
@@ -155,7 +155,7 @@ const handleOzonConfirm = async (mode: 'ramassage' | 'stock') => {
     // Refresh order data
     await fetchPreorder()
   } catch (error: any) {
-    showError(error.message || 'Erreur lors de l\'envoi vers OzonExpress')
+    showError(error.message || t('error_sending_to_ozonexpress'))
     console.error('Detail shipping error:', error)
   } finally {
     ozonDialogLoading.value = false

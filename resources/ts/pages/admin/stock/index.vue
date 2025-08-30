@@ -105,12 +105,12 @@ const breadcrumbs = computed(() => {
 const stockStatsSearch = ref('')
 
 const stockStatsHeaders = computed(() => [
-  { title: 'Produit', key: 'product', sortable: false, width: '35%' },
-  { title: 'SKU', key: 'sku', sortable: true, width: '15%' },
-  { title: 'En Stock', key: 'on_hand', sortable: true, width: '12%' },
-  { title: 'Disponible', key: 'available', sortable: true, width: '12%' },
-  { title: 'Réservé', key: 'reserved', sortable: true, width: '12%' },
-  { title: 'Statut', key: 'status', sortable: false, width: '14%' },
+  { title: t('product'), key: 'product', sortable: false, width: '35%' },
+  { title: t('sku'), key: 'sku', sortable: true, width: '15%' },
+  { title: t('on_hand'), key: 'on_hand', sortable: true, width: '12%' },
+  { title: t('available'), key: 'available', sortable: true, width: '12%' },
+  { title: t('reserved'), key: 'reserved', sortable: true, width: '12%' },
+  { title: t('status'), key: 'status', sortable: false, width: '14%' },
 ])
 
 const stockStatisticsTable = computed(() => {
@@ -358,13 +358,13 @@ onBeforeUnmount(() => {
       <VCard class="mb-6">
         <VCardTitle class="d-flex align-center">
           <VIcon icon="tabler-chart-bar" class="me-2" />
-          Statistiques de Stock par Produit
+          {{ t('stock_statistics_by_product') }}
         </VCardTitle>
         <VCardText>
           <VDataTable :headers="stockStatsHeaders" :items="stockStatisticsTable" :loading="loading" density="compact"
             :items-per-page="10" :search="stockStatsSearch">
             <template #top>
-              <VTextField v-model="stockStatsSearch" label="Rechercher un produit..." prepend-inner-icon="tabler-search"
+              <VTextField v-model="stockStatsSearch" :label="t('search_product')" prepend-inner-icon="tabler-search"
                 variant="outlined" density="compact" class="mb-4" clearable />
             </template>
 

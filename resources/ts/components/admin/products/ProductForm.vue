@@ -1003,7 +1003,7 @@ const generateCombinations = async () => {
 
     const response = data.value as any
     if (response?.success) {
-      showSuccess(`${response.data.created} combinaisons créées avec succès`)
+      showSuccess(t('combinations_created_success', { count: response.data.created }))
       // Reload the stock matrix to show the new combinations
       await loadStockMatrix()
     } else if (error.value) {
@@ -1482,7 +1482,7 @@ onMounted(async () => {
       >
         <VTab value="details">
           <VIcon icon="tabler-info-circle" class="me-2" />
-          Details
+          {{ t('product_details') }}
         </VTab>
         <VTab value="notation">
           <VIcon icon="tabler-star" class="me-2" />
@@ -1490,15 +1490,15 @@ onMounted(async () => {
         </VTab>
         <VTab :disabled="!readyForMedia" value="images">
           <VIcon icon="tabler-photo" class="me-2" />
-          Images
+          {{ t('product_images') }}
         </VTab>
         <VTab :disabled="!readyForMedia" value="videos">
           <VIcon icon="tabler-video" class="me-2" />
-          Videos
+          {{ t('product_videos') }}
         </VTab>
         <VTab :disabled="!readyForMedia" value="variants">
           <VIcon icon="tabler-versions" class="me-2" />
-          Variants
+          {{ t('product_variants') }}
         </VTab>
         <VTab :disabled="!readyForMedia" value="stock">
           <VIcon icon="tabler-package" class="me-2" />
@@ -1506,11 +1506,11 @@ onMounted(async () => {
         </VTab>
         <VTab :disabled="!readyForMedia" value="propositions">
           <VIcon icon="tabler-list-details" class="me-2" />
-          Propositions
+          {{ t('product_propositions') }}
         </VTab>
         <VTab :disabled="!readyForMedia" value="ruptures">
           <VIcon icon="tabler-alert-triangle" class="me-2" />
-          Stock Issues
+          {{ t('product_stock_issues') }}
         </VTab>
       </VTabs>
 
@@ -1673,12 +1673,12 @@ onMounted(async () => {
               </VCol>
               <VCol cols="12" md="4">
                 <VCard variant="outlined" class="pa-4">
-                  <div class="text-subtitle-2 mb-2">Commission Estimée</div>
+                  <div class="text-subtitle-2 mb-2">{{ t('estimated_commission') }}</div>
                   <div class="d-flex align-center justify-space-between">
                     <div>
                       <div class="text-h6 text-success">{{ computedPrixAffilie.toFixed(2) }} MAD</div>
                       <div class="text-caption text-medium-emphasis">
-                        Prix de vente - Prix d'achat
+                        {{ t('sale_price_purchase_price') }}
                       </div>
                     </div>
                     <VIcon icon="tabler-calculator" color="success" size="24" />
@@ -1686,11 +1686,11 @@ onMounted(async () => {
                   <VDivider class="my-3" />
                   <div class="text-caption">
                     <div class="d-flex justify-space-between">
-                      <span>Prix de vente:</span>
+                      <span>{{ t('sale_price') }}</span>
                       <span>{{ form.prix_vente || 0 }} MAD</span>
                     </div>
                     <div class="d-flex justify-space-between">
-                      <span>Prix d'achat:</span>
+                      <span>{{ t('purchase_price') }}</span>
                       <span>{{ form.prix_achat || 0 }} MAD</span>
                     </div>
                   </div>
@@ -1807,7 +1807,7 @@ onMounted(async () => {
                 <div v-if="!currentProduit?.rating?.updated_at" class="text-center py-4">
                   <VIcon icon="tabler-star-off" size="48" color="grey-lighten-1" class="mb-2" />
                   <p class="text-body-2 text-medium-emphasis">
-                    Aucune note définie
+                    {{ t('no_note_defined') }}
                   </p>
                 </div>
               </VCard>
@@ -1819,23 +1819,23 @@ onMounted(async () => {
         <VTabsWindowItem value="images">
           <div v-if="!readyForMedia" class="text-center py-12">
             <VIcon icon="tabler-photo-off" size="64" color="grey-lighten-1" class="mb-4" />
-            <h3 class="text-h6 mb-2">Save Product First</h3>
+            <h3 class="text-h6 mb-2">{{ t('save_product_first') }}</h3>
             <p class="text-body-2 text-medium-emphasis">
-              You need to save the product details before adding images.
+              {{ t('save_product_before_adding_images') }}
             </p>
           </div>
           <div v-else>
             <div class="mb-6">
-              <h3 class="text-h6 mb-2">Product Images</h3>
+              <h3 class="text-h6 mb-2">{{ t('product_images') }}</h3>
               <p class="text-body-2 text-medium-emphasis">
-                Upload multiple images for this product. Drag and drop or click to select files.
+                {{ t('upload_images_description') }}
               </p>
             </div>
 
             <VFileInput
               multiple
               show-size
-              label="Upload Images"
+              :label="t('upload_images')"
               accept="image/*"
               variant="outlined"
               prepend-icon="tabler-upload"
@@ -1861,7 +1861,7 @@ onMounted(async () => {
             </VRow>
 
             <VAlert v-if="!images.length" type="info" variant="tonal" class="mt-6">
-              No images uploaded yet. Add some images to showcase your product.
+              {{ t('no_images_uploaded_yet') }}
             </VAlert>
           </div>
         </VTabsWindowItem>
@@ -1870,16 +1870,16 @@ onMounted(async () => {
         <VTabsWindowItem value="videos">
           <div v-if="!readyForMedia" class="text-center py-12">
             <VIcon icon="tabler-video-off" size="64" color="grey-lighten-1" class="mb-4" />
-            <h3 class="text-h6 mb-2">Save Product First</h3>
+            <h3 class="text-h6 mb-2">{{ t('save_product_first') }}</h3>
             <p class="text-body-2 text-medium-emphasis">
-              You need to save the product details before adding videos.
+              {{ t('save_product_before_adding_videos') }}
             </p>
           </div>
           <div v-else>
             <div class="mb-6">
-              <h3 class="text-h6 mb-2">Product Videos</h3>
+              <h3 class="text-h6 mb-2">{{ t('product_videos') }}</h3>
               <p class="text-body-2 text-medium-emphasis">
-                Add videos by URL (YouTube, Vimeo) or upload video files directly.
+                {{ t('add_videos_description') }}
               </p>
             </div>
 
@@ -1947,7 +1947,7 @@ onMounted(async () => {
               <VFileInput
                 multiple
                 show-size
-                label="Upload Videos"
+                :label="t('upload_videos')"
                 accept="video/*"
                 variant="outlined"
                 prepend-icon="tabler-upload"
@@ -1956,10 +1956,10 @@ onMounted(async () => {
             </div>
 
             <div v-if="videos.length">
-              <h4 class="text-subtitle-1 mb-4">Uploaded Videos</h4>
+              <h4 class="text-subtitle-1 mb-4">{{ t('uploaded_videos') }}</h4>
               <VList>
                 <VListItem v-for="v in videos" :key="v.id">
-                  <VListItemTitle>{{ v.titre || 'Untitled Video' }}</VListItemTitle>
+                  <VListItemTitle>{{ v.titre || t('untitled_video') }}</VListItemTitle>
                   <VListItemSubtitle>{{ v.url }}</VListItemSubtitle>
                   <template #append>
                     <VBtn
@@ -1975,7 +1975,7 @@ onMounted(async () => {
             </div>
 
             <VAlert v-else type="info" variant="tonal">
-              No videos added yet. Add some videos to showcase your product in action.
+              {{ t('no_videos_added_yet') }}
             </VAlert>
           </div>
         </VTabsWindowItem>
@@ -1984,16 +1984,16 @@ onMounted(async () => {
         <VTabsWindowItem value="variants">
           <div v-if="!readyForMedia" class="text-center py-12">
             <VIcon icon="tabler-versions-off" size="64" color="grey-lighten-1" class="mb-4" />
-            <h3 class="text-h6 mb-2">Save Product First</h3>
+            <h3 class="text-h6 mb-2">{{ t('save_product_first') }}</h3>
             <p class="text-body-2 text-medium-emphasis">
-              You need to save the product details before adding variants.
+              {{ t('save_product_before_adding_variants') }}
             </p>
           </div>
           <div v-else>
             <div class="mb-6">
-              <h3 class="text-h6 mb-2">Product Variants</h3>
+              <h3 class="text-h6 mb-2">{{ t('product_variants') }}</h3>
               <p class="text-body-2 text-medium-emphasis">
-                Create different variants of your product (size, color, etc.) with optional images.
+                {{ t('create_variants_description') }}
               </p>
             </div>
 
@@ -2003,7 +2003,7 @@ onMounted(async () => {
                   <span>Add New Variant</span>
                   <VSwitch
                     v-model="isMultiSelectMode"
-                    label="Multi-select"
+                    :label="t('multi_select')"
                     color="primary"
                     density="compact"
                     hide-details
@@ -2101,14 +2101,14 @@ onMounted(async () => {
             </VCard>
 
             <div v-if="variantes.length">
-              <h4 class="text-subtitle-1 mb-4">Product Variants</h4>
+              <h4 class="text-subtitle-1 mb-4">{{ t('product_variants') }}</h4>
               <VDataTable
                 :headers="[
-                  { title: 'Attribute', key: 'attribut' },
-                  { title: 'Value', key: 'valeur' },
-                  { title: 'Price', key: 'prix_vente_variante' },
-                  { title: 'Image', key: 'image', sortable: false },
-                  { title: 'Actions', key: 'actions', sortable: false }
+                  { title: t('attribute'), key: 'attribut' },
+                  { title: t('value'), key: 'valeur' },
+                  { title: t('price'), key: 'prix_vente_variante' },
+                  { title: t('image'), key: 'image', sortable: false },
+                  { title: t('actions'), key: 'actions', sortable: false }
                 ]"
                 :items="variantes"
                 class="elevation-1"
@@ -2147,7 +2147,7 @@ onMounted(async () => {
                       class="rounded"
                       :alt="`Variant ${item.nom} ${item.valeur}`"
                     />
-                    <span v-else class="text-caption text-medium-emphasis">No image</span>
+                    <span v-else class="text-caption text-medium-emphasis">{{ t('no_image') }}</span>
                     <VFileInput
                       density="compact"
                       hide-details
@@ -2179,9 +2179,9 @@ onMounted(async () => {
         <VTabsWindowItem value="stock">
           <div v-if="!readyForMedia" class="text-center py-12">
             <VIcon icon="tabler-package-off" size="64" color="grey-lighten-1" class="mb-4" />
-            <h3 class="text-h6 mb-2">Save Product First</h3>
+            <h3 class="text-h6 mb-2">{{ t('save_product_first') }}</h3>
             <p class="text-body-2 text-medium-emphasis">
-              You need to save the product details before managing stock.
+              {{ t('save_product_before_managing_stock') }}
             </p>
           </div>
 
@@ -2240,13 +2240,13 @@ onMounted(async () => {
             <VCard variant="outlined" class="mb-6">
               <VCardTitle>
                 <div class="d-flex justify-space-between align-center">
-                  <span>Stock par combinaison (Taille × Couleur)</span>
+                  <span>{{ t('stock_by_combination') }}</span>
                   <div class="d-flex gap-2">
                     <VChip v-if="stockMatrix.some(item => item.is_combination)" color="success" variant="tonal" size="small">
-                      Combinaisons créées
+                      {{ t('created_combinations') }}
                     </VChip>
                     <VChip v-else-if="stockMatrix.some(item => item.is_virtual)" color="warning" variant="tonal" size="small">
-                      Combinaisons virtuelles
+                      {{ t('virtual_combinations') }}
                     </VChip>
                   </div>
                 </div>
@@ -2254,13 +2254,13 @@ onMounted(async () => {
               <VCardText>
                 <div v-if="loadingMatrix" class="text-center py-8">
                   <VProgressCircular indeterminate color="primary" />
-                  <p class="text-body-2 text-medium-emphasis mt-2">Chargement de la matrice...</p>
+                  <p class="text-body-2 text-medium-emphasis mt-2">{{ t('loading_matrix') }}</p>
                 </div>
 
                 <div v-else-if="!stockMatrix.length" class="text-center py-8">
                   <VIcon icon="tabler-versions-off" size="48" color="grey-lighten-1" class="mb-4" />
                   <p class="text-body-2 text-medium-emphasis">
-                    Aucune variante trouvée. Créez des variantes de taille et/ou couleur d'abord.
+                    {{ t('no_variants_found_create_first') }}
                   </p>
                 </div>
 
@@ -2275,9 +2275,9 @@ onMounted(async () => {
                     <div class="d-flex justify-space-between align-center">
                       <div>
                         <VIcon icon="tabler-alert-triangle" start />
-                        <strong>Combinaisons virtuelles détectées :</strong>
-                        Vous avez des variantes de taille et couleur séparées.
-                        Générez les combinaisons pour gérer le stock par taille × couleur.
+                        <strong>{{ t('virtual_combinations_detected') }}</strong>
+                        {{ t('separate_size_color_variants_detected') }}
+                        {{ t('generate_combinations_to_manage_stock') }}
                       </div>
                       <VBtn
                         color="warning"
@@ -2287,7 +2287,7 @@ onMounted(async () => {
                         :loading="generatingCombinations"
                       >
                         <VIcon icon="tabler-plus" start />
-                        Générer combinaisons
+                        {{ t('generate_combinations') }}
                       </VBtn>
                     </div>
                   </VAlert>
@@ -2300,8 +2300,8 @@ onMounted(async () => {
                     class="mb-4"
                   >
                     <VIcon icon="tabler-check-circle" start />
-                    <strong>Combinaisons Taille × Couleur :</strong>
-                    Le stock est géré individuellement pour chaque combinaison de taille et couleur.
+                    <strong>{{ t('size_color_combinations') }}</strong>
+                    {{ t('stock_info_per_combination') }}
                   </VAlert>
 
                   <!-- Stock Matrix Table -->
@@ -2380,12 +2380,12 @@ onMounted(async () => {
                     class="mt-4"
                   >
                     <VIcon icon="tabler-alert-circle" start />
-                    <strong>❌ Erreur : Stock dépassé !</strong>
+                    <strong>{{ t('stock_exceeded_error') }}</strong>
                     <br>
-                    La somme des variantes ({{ totalVariantStock }}) dépasse le stock total ({{ stockForm.stock_total }}).
+                    {{ t('variant_sum_exceeds_total_stock', { variantSum: totalVariantStock, totalStock: stockForm.stock_total }) }}
                     <br>
                     <small class="text-medium-emphasis">
-                      Réduisez les quantités des variantes ou augmentez le stock total.
+                      {{ t('reduce_variant_quantities_or_increase_total') }}
                     </small>
                   </VAlert>
 
@@ -2400,10 +2400,10 @@ onMounted(async () => {
                     {{ $t('product.stock.mismatch_warning') }}
                     <br>
                     <strong>Stock total: {{ stockForm.stock_total }}</strong> |
-                    <strong>Somme variantes: {{ totalVariantStock }}</strong>
+                    <strong>{{ t('variant_sum') }}: {{ totalVariantStock }}</strong>
                     <br>
                     <small class="text-medium-emphasis">
-                      Utilisez le bouton "Répartir sur variantes" pour équilibrer automatiquement.
+                      {{ t('use_distribute_button_to_balance') }}
                     </small>
                   </VAlert>
                 </div>
@@ -2416,16 +2416,16 @@ onMounted(async () => {
         <VTabsWindowItem value="propositions">
           <div v-if="!readyForMedia" class="text-center py-12">
             <VIcon icon="tabler-list-details-off" size="64" color="grey-lighten-1" class="mb-4" />
-            <h3 class="text-h6 mb-2">Save Product First</h3>
+            <h3 class="text-h6 mb-2">{{ t('save_product_first') }}</h3>
             <p class="text-body-2 text-medium-emphasis">
-              You need to save the product details before adding propositions.
+              {{ t('save_product_before_adding_propositions') }}
             </p>
           </div>
           <div v-else>
             <div class="mb-6">
-              <h3 class="text-h6 mb-2">Product Propositions</h3>
+              <h3 class="text-h6 mb-2">{{ t('product_propositions') }}</h3>
               <p class="text-body-2 text-medium-emphasis">
-                Create marketing propositions and selling points for your product.
+                {{ t('create_marketing_propositions_description') }}
               </p>
             </div>
 
@@ -2481,7 +2481,7 @@ onMounted(async () => {
 
             <!-- Propositions List -->
             <VCard v-if="propositions.length > 0">
-              <VCardTitle>Existing Propositions</VCardTitle>
+              <VCardTitle>{{ t('existing_propositions') }}</VCardTitle>
               <VCardText>
                 <VRow>
                   <VCol
@@ -2548,7 +2548,7 @@ onMounted(async () => {
 
             <!-- Empty State -->
             <VAlert v-else type="info" variant="tonal">
-              No propositions created yet. Add propositions to create compelling selling points for your product.
+              {{ t('no_propositions_created_yet') }}
             </VAlert>
           </div>
         </VTabsWindowItem>
@@ -2557,16 +2557,16 @@ onMounted(async () => {
         <VTabsWindowItem value="ruptures">
           <div v-if="!readyForMedia" class="text-center py-12">
             <VIcon icon="tabler-alert-triangle-off" size="64" color="grey-lighten-1" class="mb-4" />
-            <h3 class="text-h6 mb-2">Save Product First</h3>
+            <h3 class="text-h6 mb-2">{{ t('save_product_first') }}</h3>
             <p class="text-body-2 text-medium-emphasis">
-              You need to save the product details before managing stock issues.
+              {{ t('save_product_before_managing_stock_issues') }}
             </p>
           </div>
           <div v-else>
             <div class="mb-6">
-              <h3 class="text-h6 mb-2">Stock Issues (Ruptures)</h3>
+              <h3 class="text-h6 mb-2">{{ t('product_stock_issues') }}</h3>
               <p class="text-body-2 text-medium-emphasis">
-                Manage stock shortages and expected restock dates for this product.
+                {{ t('manage_stock_shortages_description') }}
               </p>
             </div>
 
@@ -2580,7 +2580,7 @@ onMounted(async () => {
                       <VSelect
                         v-model="newRupture.variante_id"
                         :items="[
-                          { title: 'Product-level issue (all variants)', value: null },
+                          { title: t('product_level_issue_all_variants'), value: null },
                           ...variantes.map(v => {
                             console.debug('[ProductForm] Variant for select:', v)
                             return {
@@ -2589,7 +2589,7 @@ onMounted(async () => {
                             }
                           })
                         ]"
-                        :label="variantes.length > 0 ? 'Variant (Required)' : 'Variant (Optional)'"
+                        :label="variantes.length > 0 ? t('variant_required') : t('variant_optional')"
                         variant="outlined"
                         :required="variantes.length > 0"
                         :error-messages="ruptureValidationErrors.variante_id"
@@ -2642,7 +2642,7 @@ onMounted(async () => {
 
             <!-- Ruptures List -->
             <VCard v-if="ruptures.length > 0">
-              <VCardTitle>Current Stock Issues</VCardTitle>
+              <VCardTitle>{{ t('current_stock_issues') }}</VCardTitle>
               <VCardText>
                 <VDataTable
                   :items="ruptures"
@@ -2704,7 +2704,7 @@ onMounted(async () => {
 
             <!-- Empty State -->
             <VAlert v-else type="info" variant="tonal">
-              No stock issues reported yet. Report issues when products are out of stock or delayed.
+              {{ t('no_stock_issues_reported_yet') }}
             </VAlert>
           </div>
         </VTabsWindowItem>

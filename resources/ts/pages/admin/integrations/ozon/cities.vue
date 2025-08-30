@@ -418,6 +418,7 @@ const formatPrice = (price: number | null | undefined) => {
         :items="ozonCitiesStore.cities"
         :loading="ozonCitiesStore.loading"
         :items-per-page="ozonCitiesStore.filters.per_page"
+        :no-data-text="t('no_data_available')"
         hide-default-footer
         class="text-no-wrap"
       >

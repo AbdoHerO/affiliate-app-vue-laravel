@@ -595,7 +595,7 @@ const formatCopywriting = (text: string): string => {
                   class="mt-2"
                 >
                   <VIcon icon="tabler-info-circle" start />
-                  Échange : Commission = 0 MAD, prix de vente désactivé
+                  {{ t('catalogue.exchange_info') }}
                 </VAlert>
                 <VAlert
                   v-else
@@ -606,9 +606,9 @@ const formatCopywriting = (text: string): string => {
                 >
                   <VIcon icon="tabler-info-circle" start />
                   <div>
-                    Prix minimum requis : {{ minimumPrice }} MAD (Prix d'achat + 50 MAD livraison)
+                    {{ t('catalogue.minimum_price_required', { price: minimumPrice }) }}
                     <div v-if="maxQuantity > 0" class="mt-1">
-                      <strong>Stock maximum disponible : {{ maxQuantity }} unités</strong>
+                      <strong>{{ t('catalogue.max_stock_available', { quantity: maxQuantity }) }}</strong>
                     </div>
                   </div>
                 </VAlert>
@@ -616,19 +616,19 @@ const formatCopywriting = (text: string): string => {
 
               <!-- Custom Pricing Section -->
               <div class="mb-4">
-                <h4 class="text-subtitle-1 mb-3">Prix et Commission</h4>
+                <h4 class="text-subtitle-1 mb-3">{{ t('catalogue.price_and_commission') }}</h4>
                 <VCard variant="outlined" class="pa-4">
                   <div class="d-flex justify-space-between align-center mb-3">
                     <div>
-                      <div class="text-caption text-medium-emphasis">Prix d'achat</div>
+                      <div class="text-caption text-medium-emphasis">{{ t('catalogue.purchase_price') }}</div>
                       <div class="text-body-1">{{ product?.prix_achat || 0 }} MAD</div>
                     </div>
                     <div class="text-center">
-                      <div class="text-caption text-medium-emphasis">Prix recommandé</div>
+                      <div class="text-caption text-medium-emphasis">{{ t('catalogue.recommended_price') }}</div>
                       <div class="text-h6 text-primary">{{ product?.prix_vente || 0 }} MAD</div>
                     </div>
                     <div class="text-end">
-                      <div class="text-caption text-medium-emphasis">Commission unitaire</div>
+                      <div class="text-caption text-medium-emphasis">{{ t('catalogue.unit_commission') }}</div>
                       <div class="text-h6 text-success">+{{ computedCommission.toFixed(2) }} MAD</div>
                     </div>
                   </div>
@@ -678,14 +678,14 @@ const formatCopywriting = (text: string): string => {
                   <!-- Custom Sell Price Input -->
                   <VTextField
                     v-model.number="customSellPrice"
-                    label="Prix de vente personnalisé (optionnel)"
+                    :label="t('catalogue.custom_sell_price_optional')"
                     type="number"
                     variant="outlined"
                     density="compact"
                     suffix="MAD"
                     :min="selectedCommandType === 'order_sample' ? minimumPrice : (product?.prix_achat || 0)"
                     :placeholder="product?.prix_vente?.toString() || '0'"
-                    :hint="selectedCommandType === 'exchange' ? 'Prix désactivé pour les échanges' : `Prix minimum: ${minimumPrice} MAD`"
+                    :hint="selectedCommandType === 'exchange' ? t('catalogue.price_disabled_for_exchange') : t('catalogue.minimum_price_hint', { price: minimumPrice })"
                     :disabled="selectedCommandType === 'exchange'"
                     persistent-hint
                     clearable
@@ -710,10 +710,10 @@ const formatCopywriting = (text: string): string => {
                     start
                   />
                   <span v-if="selectedVariantStock > 0">
-                    <strong>Stock disponible:</strong> {{ selectedVariantStock }} unités pour cette variante
+                    <strong>{{ t('catalogue.stock_available') }}:</strong> {{ t('catalogue.units_for_variant', { stock: selectedVariantStock }) }}
                   </span>
                   <span v-else>
-                    <strong>Rupture de stock</strong> pour cette variante
+                    <strong>{{ t('catalogue.out_of_stock') }}</strong> {{ t('catalogue.for_this_variant') }}
                   </span>
                 </VAlert>
                 <div class="d-flex align-center gap-3">
@@ -742,13 +742,13 @@ const formatCopywriting = (text: string): string => {
                     :disabled="store.selectedQty >= maxQuantity || maxQuantity === 0"
                     @click="store.selectedQty++"
                   />
-                  <span class="text-caption text-medium-emphasis">Max: {{ maxQuantity }}</span>
+                  <span class="text-caption text-medium-emphasis">{{ t('catalogue.max_label', { quantity: maxQuantity }) }}</span>
                 </div>
 
                 <!-- Minimum quantity info -->
                 <div v-if="product?.quantite_min && product.quantite_min > 1" class="text-caption text-warning mt-2">
                   <VIcon icon="tabler-info-circle" size="14" class="me-1" />
-                  Quantité minimale: {{ product.quantite_min }}
+                  {{ t('catalogue.minimum_quantity_required', { quantity: product.quantite_min }) }}
                 </div>
 
                 <!-- Stock out message -->
@@ -875,7 +875,7 @@ const formatCopywriting = (text: string): string => {
                       block
                       @click="openZoomModal(index)"
                     >
-                      Voir
+                      {{ t('catalogue.view') }}
                     </VBtn>
                     <VBtn
                       size="small"
@@ -885,7 +885,7 @@ const formatCopywriting = (text: string): string => {
                       block
                       @click.stop="downloadFile(image.url, `${product.titre}_image_${index + 1}.jpg`)"
                     >
-                      Télécharger
+                      {{ t('catalogue.download') }}
                     </VBtn>
                   </div>
                 </VCardText>
@@ -906,7 +906,7 @@ const formatCopywriting = (text: string): string => {
               density="compact"
             >
               <VIcon icon="tabler-info-circle" start />
-              Cliquez sur "Voir" pour ouvrir la vidéo ou "Télécharger" pour la sauvegarder
+              {{ t('catalogue.video_instructions') }}
             </VAlert>
             <div class="d-flex gap-4 flex-wrap video-list">
               <VCard

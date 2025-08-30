@@ -72,7 +72,7 @@ const headers = [
   { title: t('table_affiliate'), key: 'affilie', sortable: false },
   { title: t('table_boutique'), key: 'boutique', sortable: false },
   { title: 'SKU', key: 'sku_list', sortable: false, width: '150px' },
-  { title: 'Type', key: 'type_command', sortable: true, width: '100px' },
+  { title: t('table_type'), key: 'type_command', sortable: true, width: '100px' },
   { title: t('table_total'), key: 'total_ttc', sortable: true },
   { title: t('table_no_answer'), key: 'no_answer_count', sortable: true, width: '100px' },
   { title: t('table_status'), key: 'statut', sortable: true },
@@ -165,8 +165,8 @@ const getCommandTypeColor = (type: string) => {
 
 const getCommandTypeLabel = (type: string) => {
   const labels: Record<string, string> = {
-    'order_sample': 'Échantillon',
-    'exchange': 'Échange'
+    'order_sample': t('order_type_sample'),
+    'exchange': t('order_type_exchange')
   }
   return labels[type] || type
 }

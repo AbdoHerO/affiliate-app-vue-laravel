@@ -90,7 +90,7 @@ onMounted(() => {
         color="primary"
         size="64"
       />
-      <p class="text-body-1 mt-4">Chargement de la commande...</p>
+      <p class="text-body-1 mt-4">{{ t('order_loading') }}</p>
     </div>
 
     <!-- Order Details -->
@@ -99,7 +99,7 @@ onMounted(() => {
       <div class="d-flex justify-space-between align-center mb-6">
         <div>
           <h1 class="text-h4 font-weight-bold mb-1">
-            Commande #{{ currentOrder.id.toString().slice(-8) }}
+            {{ t('order_number', { number: currentOrder.id.toString().slice(-8) }) }}
           </h1>
           <div class="d-flex align-center gap-4">
             <VChip
@@ -127,7 +127,7 @@ onMounted(() => {
         <VTab value="details">{{ t('common.details') }}</VTab>
         <VTab value="articles">{{ t('affiliate.orders.articles') }}</VTab>
         <VTab value="shipping">{{ t('affiliate.orders.shipping') }}</VTab>
-        <VTab value="commissions">Commissions</VTab>
+        <VTab value="commissions">{{ t('commissions') }}</VTab>
       </VTabs>
 
       <VWindow v-model="activeTab">
@@ -137,11 +137,11 @@ onMounted(() => {
             <!-- Order Information -->
             <VCol cols="12" md="6">
               <VCard>
-                <VCardTitle>Informations de la commande</VCardTitle>
+                <VCardTitle>{{ t('order_information') }}</VCardTitle>
                 <VCardText>
                   <VList>
                     <VListItem>
-                      <VListItemTitle>Référence</VListItemTitle>
+                      <VListItemTitle>{{ t('reference') }}</VListItemTitle>
                       <VListItemSubtitle>#{{ currentOrder.id }}</VListItemSubtitle>
                     </VListItem>
                     <VListItem>
@@ -157,19 +157,19 @@ onMounted(() => {
                       </VListItemSubtitle>
                     </VListItem>
                     <VListItem>
-                      <VListItemTitle>Boutique</VListItemTitle>
+                      <VListItemTitle>{{ t('boutique') }}</VListItemTitle>
                       <VListItemSubtitle>{{ currentOrder.boutique?.nom || 'N/A' }}</VListItemSubtitle>
                     </VListItem>
                     <VListItem>
-                      <VListItemTitle>Mode de paiement</VListItemTitle>
+                      <VListItemTitle>{{ t('payment_method') }}</VListItemTitle>
                       <VListItemSubtitle>{{ currentOrder.mode_paiement || 'N/A' }}</VListItemSubtitle>
                     </VListItem>
                     <VListItem>
-                      <VListItemTitle>Total HT</VListItemTitle>
+                      <VListItemTitle>{{ t('total_ht') }}</VListItemTitle>
                       <VListItemSubtitle>{{ formatCurrency(currentOrder.total_ht) }}</VListItemSubtitle>
                     </VListItem>
                     <VListItem>
-                      <VListItemTitle>Total TTC</VListItemTitle>
+                      <VListItemTitle>{{ t('total_ttc') }}</VListItemTitle>
                       <VListItemSubtitle class="font-weight-bold">{{ formatCurrency(currentOrder.total_ttc) }}</VListItemSubtitle>
                     </VListItem>
                   </VList>
@@ -180,15 +180,15 @@ onMounted(() => {
             <!-- Client Information -->
             <VCol cols="12" md="6">
               <VCard>
-                <VCardTitle>Informations client</VCardTitle>
+                <VCardTitle>{{ t('client_information') }}</VCardTitle>
                 <VCardText>
                   <VList>
                     <VListItem v-if="currentOrder.client">
-                      <VListItemTitle>Client</VListItemTitle>
+                      <VListItemTitle>{{ t('client') }}</VListItemTitle>
                       <VListItemSubtitle>{{ currentOrder.client.nom_complet }}</VListItemSubtitle>
                     </VListItem>
                     <VListItem v-if="currentOrder.clientFinal">
-                      <VListItemTitle>Client final</VListItemTitle>
+                      <VListItemTitle>{{ t('final_client') }}</VListItemTitle>
                       <VListItemSubtitle>
                         {{ currentOrder.clientFinal.nom_complet }}<br>
                         {{ currentOrder.clientFinal.telephone }}<br>
@@ -215,14 +215,14 @@ onMounted(() => {
           >
             <VCardTitle class="d-flex align-center">
               <VIcon icon="tabler-user" class="me-2" />
-              Informations du livreur
+              {{ t('delivery_boy_information') }}
             </VCardTitle>
             <VCardText>
               <VRow>
                 <VCol v-if="currentOrder.delivery_boy_name" cols="12" md="6">
                   <VList>
                     <VListItem>
-                      <VListItemTitle>Nom du livreur</VListItemTitle>
+                      <VListItemTitle>{{ t('delivery_boy_name') }}</VListItemTitle>
                       <VListItemSubtitle class="font-weight-medium">
                         {{ currentOrder.delivery_boy_name }}
                       </VListItemSubtitle>
@@ -232,7 +232,7 @@ onMounted(() => {
                 <VCol v-if="currentOrder.delivery_boy_phone" cols="12" md="6">
                   <VList>
                     <VListItem>
-                      <VListItemTitle>Téléphone du livreur</VListItemTitle>
+                      <VListItemTitle>{{ t('delivery_boy_phone') }}</VListItemTitle>
                       <VListItemSubtitle>
                         <a
                           :href="`tel:${currentOrder.delivery_boy_phone}`"

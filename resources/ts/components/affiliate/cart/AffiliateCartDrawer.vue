@@ -197,7 +197,7 @@ onMounted(() => {
     <div class="d-flex align-center justify-space-between pa-4 border-b">
       <div class="d-flex align-center">
         <VIcon icon="tabler-shopping-cart" class="me-2" />
-        <h3 class="text-h6">Votre panier</h3>
+        <h3 class="text-h6">{{ t('cart.your_cart') }}</h3>
         <VBadge
           v-if="cartStore.count > 0"
           :content="cartStore.count"
@@ -223,8 +223,8 @@ onMounted(() => {
     <!-- Empty State -->
     <div v-else-if="!cartStore.hasItems" class="pa-4 text-center">
       <VIcon icon="tabler-shopping-cart-off" size="64" color="disabled" class="mb-4" />
-      <p class="text-body-1 text-disabled">Votre panier est vide</p>
-      <p class="text-body-2 text-disabled">Ajoutez des produits depuis le catalogue</p>
+      <p class="text-body-1 text-disabled">{{ t('cart.empty_message') }}</p>
+      <p class="text-body-2 text-disabled">{{ t('cart.add_products_message') }}</p>
     </div>
 
     <!-- Cart Content -->
@@ -294,7 +294,7 @@ onMounted(() => {
       <!-- Items List Section (Middle) -->
       <div class="flex-grow-1 overflow-y-auto">
         <div class="pa-4">
-          <h4 class="text-h6 mb-4">Articles dans le panier</h4>
+          <h4 class="text-h6 mb-4">{{ t('cart.items_in_cart') }}</h4>
           <div
             v-for="item in cartStore.items"
             :key="item.key"
@@ -315,7 +315,7 @@ onMounted(() => {
                   {{ item.variant.attribut_principal }}: {{ item.variant.valeur }}
                 </div>
                 <div class="text-body-2 text-success">
-                  Commission: {{ item.product.prix_affilie }} MAD
+                  {{ t('cart.commission') }}: {{ item.product.prix_affilie }} MAD
                 </div>
               </div>
               <VBtn
@@ -348,7 +348,7 @@ onMounted(() => {
               </div>
               <div class="text-end">
                 <div class="text-body-1 font-weight-medium">{{ item.item_total }} MAD</div>
-                <div class="text-body-2 text-medium-emphasis">{{ item.product.prix_vente }} MAD/unité</div>
+                <div class="text-body-2 text-medium-emphasis">{{ item.product.prix_vente }} {{ t('cart.mad_per_unit') }}</div>
               </div>
             </div>
           </div>
@@ -360,20 +360,20 @@ onMounted(() => {
         <!-- New Totals Calculation -->
         <div class="mb-4">
           <div class="d-flex justify-space-between mb-2">
-            <span>Sous-total:</span>
+            <span>{{ t('cart.subtotal') }}:</span>
             <span class="font-weight-medium">{{ subtotal.toFixed(2) }} MAD</span>
           </div>
           <div v-if="selectedCity" class="d-flex justify-space-between mb-2 text-info">
-            <span>{{ selectedCity.name }} (livraison):</span>
+            <span>{{ selectedCity.name }} ({{ t('cart.delivery') }}):</span>
             <span class="font-weight-medium">+{{ deliveryFee.toFixed(2) }} MAD</span>
           </div>
           <div class="d-flex justify-space-between mb-2 text-success">
-            <span>Commission estimée:</span>
+            <span>{{ t('cart.estimated_commission') }}:</span>
             <span class="font-weight-medium">+{{ adjustedCommission.toFixed(2) }} MAD</span>
           </div>
           <VDivider class="my-2" />
           <div class="d-flex justify-space-between text-h6">
-            <span>Total:</span>
+            <span>{{ t('cart.total') }}:</span>
             <span class="font-weight-bold text-primary">{{ finalTotal.toFixed(2) }} MAD</span>
           </div>
         </div>
@@ -386,7 +386,7 @@ onMounted(() => {
             @click="clearCart"
             :disabled="!cartStore.hasItems"
           >
-            Vider le panier
+            {{ t('cart.clear_cart') }}
           </VBtn>
           <VSpacer />
           <VBtn
@@ -395,7 +395,7 @@ onMounted(() => {
             :loading="submitting"
             @click="submitOrder"
           >
-            Valider la commande
+            {{ t('cart.validate_order') }}
           </VBtn>
         </div>
       </div>

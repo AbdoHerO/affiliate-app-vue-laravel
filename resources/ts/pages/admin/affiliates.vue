@@ -227,10 +227,10 @@ onMounted(async () => {
     <div class="d-flex justify-space-between align-center mb-6">
       <div>
         <h1 class="text-h4 font-weight-bold mb-1">
-          File d'Attente d'Approbation
+          {{ t('affiliate_approval_queue_title') }}
         </h1>
         <p class="text-body-1 mb-0">
-          Gérer les demandes d'inscription des affiliés
+          {{ t('affiliate_approval_queue_description') }}
         </p>
       </div>
       <VBtn
@@ -239,7 +239,7 @@ onMounted(async () => {
         @click="resetFilters"
       >
         <VIcon start icon="tabler-refresh" />
-        Actualiser
+        {{ t('refresh') }}
       </VBtn>
     </div>
 

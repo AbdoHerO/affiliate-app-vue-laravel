@@ -524,7 +524,7 @@ const handleImageError = () => {
           @click.stop="handleViewDetails"
         >
           <VIcon icon="tabler-shopping-cart" class="me-2" />
-          Commander
+          {{ t('catalogue.order_button') }}
         </VBtn>
       </div>
 
@@ -548,7 +548,7 @@ const handleImageError = () => {
       <!-- Minimum Quantity Info -->
       <div v-if="product.quantite_min && product.quantite_min > 1" class="text-caption text-warning mb-2">
         <VIcon icon="tabler-info-circle" size="14" class="me-1" />
-        Quantité min: {{ product.quantite_min }}
+        {{ t('catalogue.minimum_quantity', { quantity: product.quantite_min }) }}
       </div>
 
       <!-- Product Name -->

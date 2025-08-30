@@ -101,7 +101,7 @@ const getMethodText = (method: string) => {
         <div>
           <h3 class="text-h5">{{ t('labels.withdrawalDetails') }}</h3>
           <p class="text-body-2 text-medium-emphasis mb-0">
-            Référence: #{{ withdrawal.id.slice(-8) }}
+            {{ t('reference') }}: #{{ withdrawal.id.slice(-8) }}
           </p>
         </div>
         <VBtn
@@ -138,7 +138,7 @@ const getMethodText = (method: string) => {
               <VCardText>
                 <div class="text-center">
                   <h4 class="text-h4 mb-2">{{ withdrawal.commission_count || 0 }}</h4>
-                  <p class="text-body-1 mb-0">Commission(s) incluse(s)</p>
+                  <p class="text-body-1 mb-0">{{ t('commissions_included') }}</p>
                 </div>
               </VCardText>
             </VCard>
@@ -147,48 +147,48 @@ const getMethodText = (method: string) => {
           <!-- Details -->
           <VCol cols="12">
             <VCard variant="outlined">
-              <VCardTitle>Informations détaillées</VCardTitle>
+              <VCardTitle>{{ t('detailed_information') }}</VCardTitle>
               <VCardText>
                 <VRow>
                   <VCol cols="12" sm="6">
                     <div class="mb-3">
-                      <p class="text-caption text-medium-emphasis mb-1">Méthode de paiement</p>
+                      <p class="text-caption text-medium-emphasis mb-1">{{ t('payment_method') }}</p>
                       <p class="text-body-1 font-weight-medium">{{ getMethodText(withdrawal.method) }}</p>
                     </div>
                   </VCol>
                   <VCol cols="12" sm="6">
                     <div class="mb-3">
-                      <p class="text-caption text-medium-emphasis mb-1">Date de création</p>
+                      <p class="text-caption text-medium-emphasis mb-1">{{ t('creation_date') }}</p>
                       <p class="text-body-1 font-weight-medium">{{ formatDate(withdrawal.created_at) }}</p>
                     </div>
                   </VCol>
                   <VCol v-if="withdrawal.approved_at" cols="12" sm="6">
                     <div class="mb-3">
-                      <p class="text-caption text-medium-emphasis mb-1">Date d'approbation</p>
+                      <p class="text-caption text-medium-emphasis mb-1">{{ t('approval_date') }}</p>
                       <p class="text-body-1 font-weight-medium">{{ formatDate(withdrawal.approved_at) }}</p>
                     </div>
                   </VCol>
                   <VCol v-if="withdrawal.paid_at" cols="12" sm="6">
                     <div class="mb-3">
-                      <p class="text-caption text-medium-emphasis mb-1">Date de paiement</p>
+                      <p class="text-caption text-medium-emphasis mb-1">{{ t('payment_date') }}</p>
                       <p class="text-body-1 font-weight-medium">{{ formatDate(withdrawal.paid_at) }}</p>
                     </div>
                   </VCol>
                   <VCol v-if="withdrawal.payment_ref" cols="12">
                     <div class="mb-3">
-                      <p class="text-caption text-medium-emphasis mb-1">Référence de paiement</p>
+                      <p class="text-caption text-medium-emphasis mb-1">{{ t('payment_reference') }}</p>
                       <p class="text-body-1 font-weight-medium">{{ withdrawal.payment_ref }}</p>
                     </div>
                   </VCol>
                   <VCol v-if="withdrawal.iban_rib" cols="12">
                     <div class="mb-3">
-                      <p class="text-caption text-medium-emphasis mb-1">RIB/IBAN</p>
+                      <p class="text-caption text-medium-emphasis mb-1">{{ t('rib_iban') }}</p>
                       <p class="text-body-1 font-weight-medium">{{ withdrawal.iban_rib }}</p>
                     </div>
                   </VCol>
                   <VCol v-if="withdrawal.notes" cols="12">
                     <div class="mb-3">
-                      <p class="text-caption text-medium-emphasis mb-1">Notes</p>
+                      <p class="text-caption text-medium-emphasis mb-1">{{ t('notes') }}</p>
                       <p class="text-body-1">{{ withdrawal.notes }}</p>
                     </div>
                   </VCol>
@@ -200,16 +200,16 @@ const getMethodText = (method: string) => {
           <!-- Commission Items -->
           <VCol v-if="withdrawal.items && withdrawal.items.length > 0" cols="12">
             <VCard variant="outlined">
-              <VCardTitle>Commissions incluses</VCardTitle>
+              <VCardTitle>{{ t('commissions_included') }}</VCardTitle>
               <VCardText>
                 <VDataTable
                   :headers="[
-                    { title: 'Commission', key: 'commission.id', sortable: false },
-                    { title: 'Commande', key: 'commission.commande.id', sortable: false },
-                    { title: 'Produit', key: 'commission.produit', sortable: false },
-                    { title: 'Montant', key: 'amount', sortable: false },
-                    { title: 'Type Commande', key: 'commission.order_type', sortable: false },
-                    { title: 'Date', key: 'commission.created_at', sortable: false },
+                    { title: t('commission'), key: 'commission.id', sortable: false },
+                    { title: t('order'), key: 'commission.commande.id', sortable: false },
+                    { title: t('product'), key: 'commission.produit', sortable: false },
+                    { title: t('amount'), key: 'amount', sortable: false },
+                    { title: t('order_type'), key: 'commission.order_type', sortable: false },
+                    { title: t('date'), key: 'commission.created_at', sortable: false },
                   ]"
                   :items="withdrawal.items"
                   items-per-page="5"

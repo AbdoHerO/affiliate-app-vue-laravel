@@ -214,7 +214,7 @@ onMounted(() => {
         prepend-icon="tabler-plus"
         @click="openCreateDialog"
       >
-        Nouveau ticket
+        {{ t('new_ticket') }}
       </VBtn>
     </div>
 
@@ -407,7 +407,7 @@ onMounted(() => {
       max-width="600"
     >
       <VCard>
-        <VCardTitle>Créer un nouveau ticket</VCardTitle>
+        <VCardTitle>{{ t('create_new_ticket') }}</VCardTitle>
         <VCardText>
           <VForm @submit.prevent="createTicket">
             <VRow>

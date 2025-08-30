@@ -63,7 +63,7 @@ const headers = [
   { title: t('table_column_affiliate'), key: 'affiliate.nom_complet', sortable: true },
   { title: t('table_column_order'), key: 'commande_id', sortable: true },
   { title: 'SKU', key: 'sku', sortable: false, width: '120px' },
-  { title: 'Type Commande', key: 'order_type', sortable: false },
+  { title: t('table_column_order_type'), key: 'order_type', sortable: false },
   { title: t('table_column_type'), key: 'type', sortable: true },
   { title: t('admin_commissions_base_amount'), key: 'base_amount', sortable: true },
   { title: t('admin_commissions_rate'), key: 'rate', sortable: false },

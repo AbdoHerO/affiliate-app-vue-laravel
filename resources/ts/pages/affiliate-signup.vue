@@ -249,10 +249,10 @@ onMounted(() => {
             </div>
 
             <h4 class="text-h4 mb-1">
-              🚀 Rejoignez notre réseau d'affiliés
+              🚀 {{ t('join_our_affiliate_network') }}
             </h4>
             <p class="mb-0">
-              Commencez à gagner des commissions dès aujourd'hui !
+              {{ t('start_earning_commissions_today') }}
             </p>
           </div>
 
@@ -340,8 +340,8 @@ onMounted(() => {
                 <AppTextField
                   v-model="form.nom_complet"
                   autofocus
-                  label="Nom complet *"
-                  placeholder="Votre nom complet"
+                  :label="t('form_full_name_required')"
+                  :placeholder="t('full_name_placeholder')"
                   :error-messages="getError('nom_complet')"
                 />
               </VCol>
@@ -353,9 +353,9 @@ onMounted(() => {
               >
                 <AppTextField
                   v-model="form.email"
-                  label="Email *"
+                  :label="t('form_email_required')"
                   type="email"
-                  placeholder="votre@email.com"
+                  :placeholder="t('email_placeholder')"
                   :error-messages="getError('email')"
                 />
               </VCol>
@@ -367,7 +367,7 @@ onMounted(() => {
                 <AppTextField
                   v-model="form.telephone"
                   :label="t('form_phone_required')"
-                  placeholder="+212 6 12 34 56 78"
+                  :placeholder="t('phone_placeholder')"
                   :error-messages="getError('telephone')"
                 />
               </VCol>
@@ -379,8 +379,8 @@ onMounted(() => {
               >
                 <AppTextField
                   v-model="form.password"
-                  label="Mot de passe *"
-                  placeholder="············"
+                  :label="t('form_password_required')"
+                  :placeholder="t('password_placeholder')"
                   :type="isPasswordVisible ? 'text' : 'password'"
                   :append-inner-icon="isPasswordVisible ? 'tabler-eye-off' : 'tabler-eye'"
                   :error-messages="getError('password')"
@@ -394,8 +394,8 @@ onMounted(() => {
               >
                 <AppTextField
                   v-model="form.password_confirmation"
-                  label="Confirmer le mot de passe *"
-                  placeholder="············"
+                  :label="t('form_password_confirmation_required')"
+                  :placeholder="t('password_placeholder')"
                   :type="isPasswordConfirmationVisible ? 'text' : 'password'"
                   :append-inner-icon="isPasswordConfirmationVisible ? 'tabler-eye-off' : 'tabler-eye'"
                   :error-messages="getError('password_confirmation')"
@@ -407,7 +407,7 @@ onMounted(() => {
               <VCol cols="12">
                 <AppTextField
                   v-model="form.adresse"
-                  label="Adresse *"
+                  :label="t('form_address_required')"
                   :placeholder="t('affiliate_signup_address_placeholder')"
                   :error-messages="getError('adresse')"
                 />
@@ -420,8 +420,8 @@ onMounted(() => {
               >
                 <AppTextField
                   v-model="form.ville"
-                  label="Ville *"
-                  placeholder="Votre ville"
+                  :label="t('form_city_required')"
+                  :placeholder="t('city_placeholder')"
                   :error-messages="getError('ville')"
                 />
               </VCol>
@@ -445,7 +445,7 @@ onMounted(() => {
               >
                 <AppSelect
                   v-model="form.bank_type"
-                  label="Type de banque *"
+                  :label="t('form_bank_type_required')"
                   :placeholder="t('affiliate_signup_bank_placeholder')"
                   :items="bankTypes"
                   :error-messages="getError('bank_type')"
@@ -458,8 +458,8 @@ onMounted(() => {
               >
                 <AppTextField
                   v-model="form.rib"
-                  label="RIB *"
-                  placeholder="Votre RIB/IBAN"
+                  :label="t('form_rib_required')"
+                  :placeholder="t('rib_placeholder')"
                   style="font-family: monospace;"
                   :error-messages="getError('rib')"
                 />
@@ -469,7 +469,7 @@ onMounted(() => {
               <VCol cols="12">
                 <AppTextarea
                   v-model="form.notes"
-                  label="Notes (optionnel)"
+                  :label="t('form_notes_optional')"
                   :placeholder="t('affiliate_signup_experience_placeholder')"
                   rows="3"
                   :error-messages="getError('notes')"
