@@ -761,3 +761,35 @@ Route::get('test/chart-data/{type}', function($type) {
         return response()->json(['error' => $e->getMessage()], 500);
     }
 });
+
+// Test route for affiliate chart data (no auth required for testing)
+Route::get('test/affiliate-chart-data/{type}', function($type) {
+    try {
+        // Get first affiliate user for testing
+        $user = \App\Models\User::role('affiliate')->first();
+        if (!$user) {
+            return response()->json(['error' => 'No affiliate user found'], 404);
+        }
+
+        $controller = new \App\Http\Controllers\Api\AffiliateDashboardController();
+        $reflection = new ReflectionClass($controller);
+
+        switch($type) {
+            case 'top_products_sold':
+                $method = $reflection->getMethod('getMyTopProductsChart');
+                $method->setAccessible(true);
+                $data = $method->invoke($controller, $user, []);
+                break;
+            default:
+                return response()->json(['error' => 'Invalid affiliate chart type'], 400);
+        }
+
+        return response()->json([
+            'type' => $type,
+            'user_id' => $user->id,
+            'data' => $data
+        ]);
+    } catch (Exception $e) {
+        return response()->json(['error' => $e->getMessage()], 500);
+    }
+});

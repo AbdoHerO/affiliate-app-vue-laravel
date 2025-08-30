@@ -654,7 +654,7 @@ class AffiliateDashboardController extends Controller
      */
     private function getMyTopProductsChart(User $user, array $filters): array
     {
-        $topProducts = DB::table('commandes')
+        $query = DB::table('commandes')
             ->join('commande_articles', 'commandes.id', '=', 'commande_articles.commande_id')
             ->join('produits', 'commande_articles.produit_id', '=', 'produits.id')
             ->where('commandes.user_id', $user->id)
@@ -662,7 +662,17 @@ class AffiliateDashboardController extends Controller
                 'produits.titre as name',
                 DB::raw('SUM(commissions_affilies.amount) as commissions'),
             ])
-            ->leftJoin('commissions_affilies', 'commande_articles.id', '=', 'commissions_affilies.commande_article_id')
+            ->leftJoin('commissions_affilies', 'commande_articles.id', '=', 'commissions_affilies.commande_article_id');
+
+        // Apply date filters
+        if (isset($filters['dateRange']['start']) && isset($filters['dateRange']['end'])) {
+            $query->whereBetween('commandes.created_at', [
+                $filters['dateRange']['start'] . ' 00:00:00',
+                $filters['dateRange']['end'] . ' 23:59:59'
+            ]);
+        }
+
+        $topProducts = $query
             ->groupBy('produits.id', 'produits.titre')
             ->orderBy('commissions', 'desc')
             ->limit(5)

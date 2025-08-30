@@ -3191,6 +3191,15 @@
   "dashboard.affiliate.export": "Exporter",
   "dashboard.affiliate.period_filter": "Filtrer par période",
   "dashboard.affiliate.charts.title": "Mes performances",
+  "dashboard.affiliate.referral.title": "Partager votre lien de parrainage",
+  "dashboard.affiliate.referral.link_label": "Lien de parrainage",
+  "dashboard.affiliate.referral.description": "Partagez ce lien pour inviter de nouveaux affiliés et gagner des commissions",
+  "dashboard.affiliate.referral.copy_link": "Copier le lien",
+
+  "dashboard.charts.explanation": "Ces graphiques vous aident à comprendre vos performances. Utilisez les filtres pour analyser différentes périodes.",
+  "dashboard.export.success": "Données exportées avec succès",
+  "dashboard.export.error": "Erreur lors de l'export des données",
+  "dashboard.charts.load_error": "Erreur lors du chargement des graphiques",
 
   "dashboard.admin.charts.orders_by_period.description": "Évolution mensuelle du nombre de commandes sur les 12 derniers mois",
   "dashboard.admin.charts.monthly_revenue.description": "Évolution mensuelle du chiffre d'affaires sur les 12 derniers mois",
@@ -3202,6 +3211,11 @@
   "dashboard.filters.period.month": "Mois",
   "dashboard.filters.period.quarter": "Trimestre",
   "dashboard.filters.period.year": "Année",
+  "dashboard.filters.period.label": "Période",
+
+  "dashboard.common.refresh": "Actualiser",
+  "dashboard.refresh.success": "Données actualisées avec succès",
+  "dashboard.refresh.error": "Erreur lors de l'actualisation des données",
 
   "dashboard.export.success": "Données exportées avec succès",
   "dashboard.export.error": "Erreur lors de l'export des données",

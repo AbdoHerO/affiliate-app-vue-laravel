@@ -38,17 +38,30 @@ const breadcrumbs = computed(() => [
   { title: t('dashboard'), disabled: true, href: '/affiliate/dashboard' },
 ])
 
-// Computed properties for KPI cards using new unified format
+// KPI Cards - exactly 5 as specified
 const kpiCards = computed(() => {
   if (!dashboardStore.stats?.cards) return []
 
-  return dashboardStore.stats.cards.map(card => ({
-    title: t(card.labelKey),
-    value: typeof card.value === 'object' ? JSON.stringify(card.value) : card.value,
-    icon: getCardIcon(card.key),
-    color: getCardColor(card.key),
-    prefix: ['total_commissions', 'monthly_earnings'].includes(card.key) ? 'DH' : undefined,
-  }))
+  return dashboardStore.stats.cards.map(card => {
+    let displayValue = card.value
+    let prefix = undefined
+
+    // Handle special formatting for different card types
+    if (card.key === 'payments_status' && typeof card.value === 'object') {
+      const payments = card.value as any
+      displayValue = `${payments.received || 0} DH / ${payments.pending || 0} DH`
+    } else if (['total_commissions', 'monthly_earnings'].includes(card.key)) {
+      prefix = 'DH'
+    }
+
+    return {
+      title: t(card.labelKey),
+      value: displayValue,
+      icon: getCardIcon(card.key),
+      color: getCardColor(card.key),
+      prefix: prefix,
+    }
+  })
 })
 
 // Helper functions for card styling
@@ -115,9 +128,52 @@ const updateDateRange = () => {
   refreshData()
 }
 
-const changePeriod = (period: string) => {
+const changePeriod = async (period: string) => {
+  console.log('Affiliate Dashboard - Period changed to:', period)
   selectedPeriod.value = period
-  dashboardStore.fetchChartData(period)
+
+  // Update filters based on period
+  const now = new Date()
+  let startDate: Date
+
+  switch (period) {
+    case 'month':
+      startDate = new Date(now.getFullYear(), now.getMonth(), 1)
+      break
+    case 'quarter':
+      const quarter = Math.floor(now.getMonth() / 3)
+      startDate = new Date(now.getFullYear(), quarter * 3, 1)
+      break
+    case 'year':
+      startDate = new Date(now.getFullYear(), 0, 1)
+      break
+    default:
+      startDate = new Date(now.getFullYear(), now.getMonth(), 1)
+  }
+
+  const dateRange = {
+    start: startDate.toISOString().split('T')[0],
+    end: now.toISOString().split('T')[0],
+  }
+
+  console.log('Affiliate Dashboard - Date range:', dateRange)
+
+  // Update store filters
+  dashboardStore.updateFilters({
+    dateRange: dateRange,
+  })
+
+  // Refresh all data with new period
+  console.log('Affiliate Dashboard - Refreshing data...')
+  await Promise.all([
+    dashboardStore.fetchStats(),
+    dashboardStore.fetchChartData('top_products_sold'),
+    dashboardStore.fetchTableData('my_recent_orders'),
+    dashboardStore.fetchTableData('my_recent_payments'),
+    dashboardStore.fetchTableData('my_active_referrals'),
+  ])
+
+  console.log('Affiliate Dashboard - Chart data after refresh:', dashboardStore.topProductsSoldChart)
 }
 
 const copyReferralLink = async () => {
@@ -149,8 +205,7 @@ const exportDashboard = () => {
       period: selectedPeriod.value,
       stats: dashboardStore.stats,
       commissions: dashboardStore.totalCommissions,
-      referrals: dashboardStore.stats?.referrals,
-      charts: useAdvancedCharts.value ? 'advanced' : 'basic',
+      charts: 'standard',
     }
 
     // Create and download file
@@ -164,10 +219,28 @@ const exportDashboard = () => {
     document.body.removeChild(link)
     URL.revokeObjectURL(url)
 
-    showSuccess(t('affiliate_dashboard_export_success'))
+    showSuccess(t('dashboard.export.success'))
   } catch (error) {
     console.error('Error exporting dashboard:', error)
-    showError(t('errors.export_failed'))
+    showError(t('dashboard.export.error'))
+  }
+}
+
+// Load chart data for specific chart type
+const loadChartData = async (chartId: string) => {
+  try {
+    await dashboardStore.fetchChartData(chartId)
+  } catch (error) {
+    showError(t('dashboard.charts.load_error'))
+  }
+}
+
+// Refresh charts data
+const refreshCharts = async () => {
+  try {
+    await dashboardStore.fetchChartData()
+  } catch (error) {
+    showError(t('dashboard.charts.load_error'))
   }
 }
 
@@ -185,6 +258,7 @@ const setupAutoRefresh = () => {
 
 // Lifecycle
 onMounted(async () => {
+  console.log('Dashboard mounted with period:', selectedPeriod.value)
   await refreshData()
   setupAutoRefresh()
 })
@@ -208,38 +282,30 @@ watch(autoRefresh, setupAutoRefresh)
     <div class="d-flex align-center justify-space-between mb-6">
       <div>
         <h1 class="text-h4 font-weight-bold mb-1">
-          {{ t('affiliate_dashboard_my_title') }}
+          {{ t('dashboard.affiliate.title') }}
         </h1>
         <p class="text-body-1 text-medium-emphasis">
-          {{ t('affiliate.dashboard.welcomeMessage', { name: user?.nom_complet }) }}
+          {{ t('dashboard.affiliate.welcome', { name: user?.nom_complet }) }}
         </p>
       </div>
 
       <div class="d-flex align-center gap-3">
-        <!-- Referral Link Actions -->
-        <VBtn
-          color="primary"
-          variant="elevated"
-          prepend-icon="tabler-share"
-          @click="shareReferralLink"
+        <!-- Period Filter -->
+        <VSelect
+          v-model="selectedPeriod"
+          :items="periodOptions"
+          item-title="label"
+          item-value="value"
+          :label="t('dashboard.filters.period.label')"
+          variant="outlined"
+          density="compact"
+          style="min-width: 150px;"
+          @update:model-value="changePeriod"
         >
-          {{ t('affiliate_dashboard_share_link') }}
-        </VBtn>
-
-        <!-- Auto Refresh Toggle -->
-        <VTooltip :text="t('affiliate_dashboard_auto_refresh_tooltip')">
-          <template #activator="{ props }">
-            <VBtn
-              v-bind="props"
-              :color="autoRefresh ? 'success' : 'default'"
-              :variant="autoRefresh ? 'tonal' : 'outlined'"
-              icon
-              @click="autoRefresh = !autoRefresh"
-            >
-              <VIcon :icon="autoRefresh ? 'tabler-refresh' : 'tabler-refresh-off'" />
-            </VBtn>
+          <template #prepend-inner>
+            <VIcon icon="tabler-calendar" size="16" />
           </template>
-        </VTooltip>
+        </VSelect>
 
         <!-- Refresh Button -->
         <VBtn
@@ -249,7 +315,7 @@ watch(autoRefresh, setupAutoRefresh)
           @click="refreshData"
         >
           <VIcon start icon="tabler-refresh" />
-          {{ t('affiliate_dashboard_refresh') }}
+          {{ t('dashboard.common.refresh') }}
         </VBtn>
       </div>
     </div>
@@ -266,66 +332,23 @@ watch(autoRefresh, setupAutoRefresh)
       {{ dashboardStore.error }}
     </VAlert>
 
-    <!-- Referral Link Card -->
-    <VCard
-      v-if="dashboardStore.referralLink"
-      class="mb-6"
-      color="primary"
-      variant="tonal"
-    >
-      <VCardText>
-        <div class="d-flex align-center justify-space-between">
-          <div>
-            <h6 class="text-h6 mb-2">
-              {{ t('affiliate_dashboard_your_referral_link') }}
-            </h6>
-            <p class="text-body-2 mb-0 font-family-monospace">
-              {{ dashboardStore.referralLink.link }}
-            </p>
-          </div>
-          <div class="d-flex gap-2">
-            <VBtn
-              variant="elevated"
-              size="small"
-              @click="copyReferralLink"
-            >
-              <VIcon start icon="tabler-copy" />
-              {{ t('affiliate_dashboard_copy') }}
-            </VBtn>
-            <VBtn
-              variant="elevated"
-              size="small"
-              @click="shareReferralLink"
-            >
-              <VIcon start icon="tabler-share" />
-              {{ t('affiliate_dashboard_share') }}
-            </VBtn>
-          </div>
-        </div>
-      </VCardText>
-    </VCard>
-
-    <!-- KPI Cards -->
+    <!-- KPI Cards - 5 cards as specified -->
     <VRow class="mb-6">
       <VCol
-        v-for="(card, index) in kpiCards"
-        :key="index"
+        v-for="card in kpiCards"
+        :key="card.title"
         cols="12"
         sm="6"
-        lg="4"
-        xl="2"
+        md="4"
+        lg="2"
       >
         <StatisticsCard
           :title="card.title"
           :value="card.value"
-          :subtitle="card.subtitle"
           :icon="card.icon"
           :color="card.color"
-          :trend="card.trend"
           :prefix="card.prefix"
           :loading="dashboardStore.loading.stats"
-          :error="dashboardStore.error || undefined"
-          size="medium"
         />
       </VCol>
     </VRow>
@@ -333,294 +356,126 @@ watch(autoRefresh, setupAutoRefresh)
     <!-- Charts Section -->
     <VRow class="mb-6">
       <VCol cols="12">
-        <div class="d-flex align-center justify-space-between mb-4 flex-wrap gap-4">
-          <div>
-            <h2 class="text-h5 font-weight-bold">
-              {{ t('performance_analytics') }}
-            </h2>
-            <p class="text-body-2 text-disabled mb-0">
-              {{ t('personal_affiliate_performance_dashboard') }}
-            </p>
-          </div>
-
-          <div class="d-flex align-center gap-3 flex-wrap">
-            <!-- Action Buttons Group -->
-            <div class="d-flex align-center gap-2">
-              <!-- Refresh Button -->
-              <VTooltip :text="t('affiliate_dashboard_refresh_data_tooltip')">
-                <template #activator="{ props: tooltipProps }">
-                  <VBtn
-                    v-bind="tooltipProps"
-                    icon="tabler-refresh"
-                    variant="outlined"
-                    size="small"
-                    :loading="dashboardStore.loading.stats"
-                    @click="refreshData"
-                  />
-                </template>
-              </VTooltip>
-
-              <!-- Export Button -->
-              <VTooltip :text="t('affiliate.dashboard.exportTooltip')">
-                <template #activator="{ props: tooltipProps }">
-                  <VBtn
-                    v-bind="tooltipProps"
-                    icon="tabler-download"
-                    variant="outlined"
-                    size="small"
-                    @click="exportDashboard"
-                  />
-                </template>
-              </VTooltip>
-
-              <!-- Chart Style Toggle -->
-              <VTooltip :text="useAdvancedCharts ? t('affiliate_dashboard_switch_to_basic') : t('affiliate_dashboard_switch_to_advanced')">
-                <template #activator="{ props: tooltipProps }">
-                  <VBtn
-                    v-bind="tooltipProps"
-                    :icon="useAdvancedCharts ? 'tabler-chart-dots-3' : 'tabler-chart-line'"
-                    :color="useAdvancedCharts ? 'primary' : 'default'"
-                    variant="outlined"
-                    size="small"
-                    @click="useAdvancedCharts = !useAdvancedCharts"
-                  >
-                    <VIcon :icon="useAdvancedCharts ? 'tabler-chart-dots-3' : 'tabler-chart-line'" />
-                    <VTooltip
-                      activator="parent"
-                      location="bottom"
-                    >
-                      {{ useAdvancedCharts ? t('affiliate_dashboard_advanced_charts') : t('affiliate_dashboard_basic_charts') }}
-                    </VTooltip>
-                  </VBtn>
-                </template>
-              </VTooltip>
-            </div>
-
-            <!-- Period Selector - Responsive -->
-            <div class="period-selector-wrapper">
-              <!-- Desktop/Tablet View (768px and up) -->
-              <VBtnToggle
-                v-model="selectedPeriod"
-                color="primary"
-                variant="outlined"
-                divided
-                class="d-none d-md-flex"
-                @update:model-value="changePeriod"
-              >
-                <VBtn value="day" size="small">
-                  <VIcon icon="tabler-calendar-day" class="me-1" size="16" />
-                  {{ t('affiliate_dashboard_period_day') }}
-                </VBtn>
-                <VBtn value="week" size="small">
-                  <VIcon icon="tabler-calendar-week" class="me-1" size="16" />
-                  {{ t('affiliate_dashboard_period_week') }}
-                </VBtn>
-                <VBtn value="month" size="small">
-                  <VIcon icon="tabler-calendar-month" class="me-1" size="16" />
-                  {{ t('affiliate_dashboard_period_month') }}
-                </VBtn>
-                <VBtn value="year" size="small">
-                  <VIcon icon="tabler-calendar-year" class="me-1" size="16" />
-                  {{ t('affiliate_dashboard_period_year') }}
-                </VBtn>
-              </VBtnToggle>
-
-              <!-- Mobile/Tablet View (below 768px) -->
-              <VSelect
-                v-model="selectedPeriod"
-                :items="[
-                  { title: t('affiliate_dashboard_period_day'), value: 'day', prepend: 'tabler-calendar-day' },
-                  { title: t('affiliate_dashboard_period_week'), value: 'week', prepend: 'tabler-calendar-week' },
-                  { title: t('affiliate_dashboard_period_month'), value: 'month', prepend: 'tabler-calendar-month' },
-                  { title: t('affiliate_dashboard_period_year'), value: 'year', prepend: 'tabler-calendar-year' }
-                ]"
-                variant="outlined"
-                density="compact"
-                class="d-flex d-md-none period-select-mobile"
-                style="min-width: 120px; max-width: 140px;"
-                hide-details
-                @update:model-value="changePeriod"
-              >
-                <template #prepend-inner>
-                  <VIcon size="16" class="me-1">
-                    {{ selectedPeriod === 'day' ? 'tabler-calendar-day' : 
-                        selectedPeriod === 'week' ? 'tabler-calendar-week' :
-                        selectedPeriod === 'month' ? 'tabler-calendar-month' : 'tabler-calendar-year' }}
-                  </VIcon>
-                </template>
-              </VSelect>
-            </div>
-          </div>
-        </div>
-      </VCol>
-
-      <!-- Advanced Charts -->
-      <template v-if="useAdvancedCharts">
-        <VCol
-          v-for="(chart, index) in advancedChartConfigs"
-          :key="`advanced-${index}`"
-          v-bind="chart.cols"
-        >
-          <!-- Advanced Stats Card -->
-          <AdvancedStatsCard
-            v-if="chart.component === 'AdvancedStatsCard'"
-            :data="chart.data"
-            :loading="chart.loading"
-            :size="chart.size"
-          />
-
-          <!-- Earning Reports Weekly -->
-          <EarningReportsWeekly
-            v-else-if="chart.component === 'EarningReportsWeekly'"
-            :data="chart.data"
-            :loading="chart.loading"
-          />
-
-          <!-- Session Analytics Donut -->
-          <SessionAnalyticsDonut
-            v-else-if="chart.component === 'SessionAnalyticsDonut'"
-            :data="chart.data"
-            :loading="chart.loading"
-          />
-
-          <!-- Mixed Chart -->
-          <MixedChart
-            v-else-if="chart.component === 'MixedChart'"
-            :data="chart.data"
-            :loading="chart.loading"
-          />
-
-          <!-- Expenses Radial Chart -->
-          <ExpensesRadialChart
-            v-else-if="chart.component === 'ExpensesRadialChart'"
-            :data="chart.data"
-            :loading="chart.loading"
-          />
-
-          <!-- Sales Area Chart -->
-          <SalesAreaChart
-            v-else-if="chart.component === 'SalesAreaChart'"
-            :data="chart.data"
-            :loading="chart.loading"
-          />
-
-          <!-- Profit Line Chart -->
-          <ProfitLineChart
-            v-else-if="chart.component === 'ProfitLineChart'"
-            :data="chart.data"
-            :loading="chart.loading"
-          />
-
-          <!-- Revenue Growth Chart -->
-          <RevenueGrowthChart
-            v-else-if="chart.component === 'RevenueGrowthChart'"
-            :data="chart.data"
-            :loading="chart.loading"
-          />
-        </VCol>
-      </template>
-
-      <!-- Legacy Charts (fallback) -->
-      <template v-else>
-        <VCol
-          v-for="(chart, index) in legacyChartConfigs"
-          :key="`legacy-${index}`"
-          v-bind="chart.cols"
-        >
-          <DashboardChart
-            :type="chart.type"
-            :data="chart.data"
-            :title="chart.title"
-            :loading="dashboardStore.loading.charts"
-            :error="dashboardStore.error || undefined"
-            :height="350"
-          />
-        </VCol>
-      </template>
-    </VRow>
-
-    <!-- Recent Data Tables -->
-    <VRow>
-      <VCol cols="12" md="6">
         <VCard>
-          <VCardTitle class="d-flex align-center justify-space-between">
-            <span>{{ t('affiliate_dashboard_my_recent_leads') }}</span>
-            <VBtn
-              variant="text"
-              size="small"
-              @click="dashboardStore.fetchTableData('my_leads')"
-            >
-              <VIcon icon="tabler-refresh" />
-            </VBtn>
-          </VCardTitle>
+          <VCardItem>
+            <VCardTitle>{{ t('dashboard.affiliate.charts.top_products_sold') }}</VCardTitle>
+            <VCardSubtitle>{{ t('dashboard.affiliate.charts.top_products_sold.description') }}</VCardSubtitle>
+          </VCardItem>
           <VCardText>
-            <VDataTable
-              :items="dashboardStore.myLeads"
-              :headers="[
-                { title: t('affiliate_dashboard_table_name'), key: 'name' },
-                { title: t('affiliate_dashboard_table_email'), key: 'email' },
-                { title: t('affiliate_dashboard_table_status'), key: 'status' },
-                { title: t('affiliate_dashboard_table_signup_date'), key: 'signupDate' },
-              ]"
-              :loading="dashboardStore.loading.tables"
-              density="compact"
-              hide-default-footer
-            >
-              <template #item.signupDate="{ item }">
-                {{ new Date(item.signupDate).toLocaleDateString() }}
-              </template>
-              <template #item.status="{ item }">
-                <VChip
-                  :color="item.status === 'verified' ? 'success' : 'warning'"
-                  size="small"
-                  variant="tonal"
-                >
-                  {{ item.status }}
-                </VChip>
-              </template>
-            </VDataTable>
+            <DashboardChart
+              type="doughnut"
+              :data="dashboardStore.topProductsSoldChart"
+              :loading="dashboardStore.loading.charts"
+              :error="dashboardStore.error"
+            />
           </VCardText>
         </VCard>
       </VCol>
+    </VRow>
 
-      <VCol cols="12" md="6">
+
+    <!-- Tables Section - 3 tables as specified -->
+    <VRow>
+      <VCol cols="12" md="4">
         <VCard>
-          <VCardTitle class="d-flex align-center justify-space-between">
-            <span>{{ t('affiliate_dashboard_my_recent_orders') }}</span>
-            <VBtn
-              variant="text"
-              size="small"
-              @click="dashboardStore.fetchTableData('my_orders')"
-            >
-              <VIcon icon="tabler-refresh" />
-            </VBtn>
-          </VCardTitle>
+          <VCardTitle>{{ t('dashboard.affiliate.tables.my_recent_orders') }}</VCardTitle>
           <VCardText>
             <VDataTable
-              :items="dashboardStore.myOrders"
+              :items="dashboardStore.myRecentOrders"
               :headers="[
-                { title: t('affiliate_dashboard_table_product'), key: 'productTitle' },
-                { title: t('affiliate_dashboard_table_amount'), key: 'amount' },
-                { title: t('affiliate_dashboard_table_commission'), key: 'commission' },
-                { title: t('affiliate_dashboard_table_status'), key: 'status' },
+                { title: t('dashboard.affiliate.tables.columns.product'), key: 'product' },
+                { title: t('dashboard.affiliate.tables.columns.amount'), key: 'amount' },
+                { title: t('dashboard.affiliate.tables.columns.status'), key: 'status' },
+                { title: t('dashboard.affiliate.tables.columns.date'), key: 'date' },
               ]"
               :loading="dashboardStore.loading.tables"
               density="compact"
               hide-default-footer
+              items-per-page="5"
             >
               <template #item.amount="{ item }">
-                {{ item.amount.toLocaleString() }} DH
+                {{ (item as any).amount?.toLocaleString() }} DH
               </template>
-              <template #item.commission="{ item }">
-                {{ item.commission.toLocaleString() }} DH
+              <template #item.date="{ item }">
+                {{ new Date((item as any).date).toLocaleDateString() }}
               </template>
               <template #item.status="{ item }">
                 <VChip
-                  :color="item.status === 'delivered' ? 'success' : item.status === 'shipped' ? 'info' : 'warning'"
+                  :color="(item as any).status === 'delivered' ? 'success' : (item as any).status === 'pending' ? 'warning' : 'error'"
                   size="small"
                   variant="tonal"
                 >
-                  {{ item.status }}
+                  {{ (item as any).status }}
+                </VChip>
+              </template>
+            </VDataTable>
+          </VCardText>
+        </VCard>
+      </VCol>
+
+      <VCol cols="12" md="4">
+        <VCard>
+          <VCardTitle>{{ t('dashboard.affiliate.tables.my_recent_payments') }}</VCardTitle>
+          <VCardText>
+            <VDataTable
+              :items="dashboardStore.myRecentPayments"
+              :headers="[
+                { title: t('dashboard.affiliate.tables.columns.amount'), key: 'amount' },
+                { title: t('dashboard.affiliate.tables.columns.status'), key: 'status' },
+                { title: t('dashboard.affiliate.tables.columns.date'), key: 'date' },
+              ]"
+              :loading="dashboardStore.loading.tables"
+              density="compact"
+              hide-default-footer
+              items-per-page="5"
+            >
+              <template #item.amount="{ item }">
+                {{ (item as any).amount?.toLocaleString() }} DH
+              </template>
+              <template #item.date="{ item }">
+                {{ new Date((item as any).date).toLocaleDateString() }}
+              </template>
+              <template #item.status="{ item }">
+                <VChip
+                  :color="(item as any).status === 'paid' ? 'success' : (item as any).status === 'pending' ? 'warning' : 'error'"
+                  size="small"
+                  variant="tonal"
+                >
+                  {{ (item as any).status }}
+                </VChip>
+              </template>
+            </VDataTable>
+          </VCardText>
+        </VCard>
+      </VCol>
+
+      <VCol cols="12" md="4">
+        <VCard>
+          <VCardTitle>{{ t('dashboard.affiliate.tables.my_active_referrals') }}</VCardTitle>
+          <VCardText>
+            <VDataTable
+              :items="dashboardStore.myActiveReferrals"
+              :headers="[
+                { title: t('dashboard.affiliate.tables.columns.name'), key: 'name' },
+                { title: t('dashboard.affiliate.tables.columns.email'), key: 'email' },
+                { title: t('dashboard.affiliate.tables.columns.signup_date'), key: 'signup_date' },
+                { title: t('dashboard.affiliate.tables.columns.status'), key: 'status' },
+              ]"
+              :loading="dashboardStore.loading.tables"
+              density="compact"
+              hide-default-footer
+              items-per-page="5"
+            >
+              <template #item.signup_date="{ item }">
+                {{ new Date((item as any).signup_date).toLocaleDateString() }}
+              </template>
+              <template #item.status="{ item }">
+                <VChip
+                  :color="(item as any).status === 'verified' ? 'success' : 'pending'"
+                  size="small"
+                  variant="tonal"
+                >
+                  {{ (item as any).status }}
                 </VChip>
               </template>
             </VDataTable>
@@ -628,95 +483,36 @@ watch(autoRefresh, setupAutoRefresh)
         </VCard>
       </VCol>
     </VRow>
-
-    <!-- Referral Link Dialog -->
-    <VDialog
-      v-model="showReferralLinkDialog"
-      max-width="500"
-    >
-      <VCard>
-        <VCardTitle>Share Your Referral Link</VCardTitle>
-        <VCardText>
-          <VTextField
-            :model-value="dashboardStore.referralLink?.link"
-            :label="t('affiliate_dashboard_referral_link_label')"
-            readonly
-            variant="outlined"
-            append-inner-icon="tabler-copy"
-            @click:append-inner="copyReferralLink"
-          />
-          <div class="mt-4">
-            <p class="text-body-2 text-medium-emphasis">
-              {{ t('affiliate.dashboard.shareDescription') }}
-            </p>
-          </div>
-        </VCardText>
-        <VCardActions>
-          <VSpacer />
-          <VBtn
-            variant="text"
-            @click="showReferralLinkDialog = false"
-          >
-            {{ t('affiliate_dashboard_close') }}
-          </VBtn>
-          <VBtn
-            color="primary"
-            @click="copyReferralLink"
-          >
-            {{ t('affiliate_dashboard_copy_link') }}
-          </VBtn>
-        </VCardActions>
-      </VCard>
-    </VDialog>
   </div>
 </template>
 
+
 <style lang="scss" scoped>
-.dashboard-header-actions {
-  .period-selector-wrapper {
-    .period-select-mobile {
-      .v-input__control {
-        min-height: 32px;
-      }
-      
-      .v-field {
-        font-size: 0.875rem;
-      }
-      
-      .v-field__input {
-        padding: 0 8px;
+.affiliate-dashboard {
+  // Responsive adjustments for mobile and tablet
+  @media (max-width: 768px) {
+    .d-flex.align-center.justify-space-between {
+      flex-direction: column;
+      align-items: flex-start !important;
+      gap: 1rem;
+
+      > div:last-child {
+        width: 100%;
+        justify-content: flex-end;
       }
     }
   }
-}
 
-// Affiliate-specific responsive adjustments
-@media (max-width: 768px) {
-  .dashboard-header-actions {
-    .d-flex {
-      gap: 0.5rem !important;
-      flex-wrap: wrap;
-    }
-    
-    .period-selector-wrapper {
-      flex: 1;
-      min-width: 120px;
-      max-width: 140px;
-    }
-    
-    // Ensure the select is properly displayed
-    .period-select-mobile {
-      display: flex !important;
-    }
+  // Ensure charts are responsive
+  :deep(.chart-container) {
+    width: 100% !important;
+    height: auto !important;
   }
-}
 
-// Fine-tune for smaller screens
-@media (max-width: 600px) {
-  .dashboard-header-actions {
-    .period-selector-wrapper {
-      min-width: 100px;
-      max-width: 120px;
+  // Make data tables responsive
+  :deep(.v-data-table) {
+    @media (max-width: 768px) {
+      font-size: 0.875rem;
     }
   }
 }
