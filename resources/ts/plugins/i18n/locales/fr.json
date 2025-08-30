@@ -3367,5 +3367,387 @@
       "invalid_file_type": "Type de fichier non valide",
       "file_too_large": "Fichier trop volumineux"
     }
+  }, 
+  "common": {
+    "too_many_errors_redirecting": "Trop d'erreurs détectées, redirection en cours...",
+    "error_occurred": "Une erreur s'est produite",
+    "guest": "Invité",
+    "notprovided": "Non renseignée",
+    "unknown_error": "Erreur inconnue",
+    "error_loading_data": "Erreur lors du chargement des données",
+    "max_retries_reached": "Nombre maximum de tentatives atteint",
+    "retry": "Réessayer",
+    "details": "Détails",
+    "go_to_dashboard": "Aller au tableau de bord",
+    "norole": "Aucun Rôle"
+  },
+  "admin": {
+    "debug": {
+      "track": "Suivre",
+      "createdsuccessfully": "créé avec succès",
+      "ozonexpresstitle": "OzonExpress API Debug & Testing",
+      "trackparcel": "Suivre un Colis",
+      "parceldetails": "Détails du Colis",
+      "city": "Ville",
+      "advancedapidebug": "API Debug Avancé",
+      "realparcelsanalytics": "Analyse des Colis Réels",
+      "trackinginfo": "Informations de Suivi",
+      "mocktestmode": "Mode Test Mock",
+      "updated": "mis à jour",
+      "ozonExpressTitle": "OzonExpress API Debug & Testing",
+      "ozonExpressDescription": "Cette page permet de tester et déboguer l'intégration OzonExpress. Utilisez-la pour vérifier que l'API fonctionne correctement.",
+      "testMode": "Mode de Test",
+      "realApiMode": "Mode API Réelle",
+      "mockTestMode": "Mode Test Mock",
+      "productionMode": "Mode Production",
+      "productionModeDesc": "Les appels API créent de vrais colis avec de vrais numéros de suivi",
+      "testModeDesc": "Les appels API utilisent des données fictives pour les tests",
+      "systemStatus": "État du Système",
+      "checkStatus": "Vérifier l'État",
+      "platformSync": "Synchronisation Plateforme OzonExpress",
+      "realParcelsAnalytics": "Analyse des Colis Réels",
+      "recentRealParcels": "Colis Réels Récents",
+      "quickActions": "Actions Rapides",
+      "advancedApiDebug": "API Debug Avancé",
+      "sendParcel": "Envoyer un Colis",
+      "trackParcel": "Suivre un Colis",
+      "deliveryNoteTest": "Test Bon de Livraison (BL)",
+      "manualEntry": "Saisie Manuelle",
+      "fromOrder": "Depuis Commande",
+      "recipient": "Destinataire",
+      "phone": "Téléphone",
+      "price": "Prix",
+      "address": "Adresse",
+      "parcelNature": "Nature du colis",
+      "parcelType": "Type de colis",
+      "parcelDetails": "Détails du Colis",
+      "trackingInfo": "Informations de Suivi",
+      "result": "Résultat",
+      "trackingNumber": "Numéro de suivi",
+      "close": "Fermer",
+      "cancel": "Annuler",
+      "useLastCreated": "Utiliser Dernier Colis",
+      "createdSuccessfully": "créé avec succès",
+      "error": "Erreur",
+      "success": "Succès",
+      "realapimode": "Mode API Réelle",
+      "testmode": "Mode de Test",
+      "fromorder": "Depuis Commande",
+      "uselastcreated": "Utiliser Dernier Colis",
+      "sendparcel": "Envoyer un Colis",
+      "platformsync": "Synchronisation Plateforme OzonExpress",
+      "systemstatus": "État du Système",
+      "testmodedesc": "Les appels API utilisent des données fictives pour les tests",
+      "recentrealparcels": "Colis Réels Récents",
+      "quickactions": "Actions Rapides",
+      "deliverynotetest": "Test Bon de Livraison (BL)",
+      "checkstatus": "Vérifier l'État",
+      "parceltype": "Type de colis",
+      "parcelnature": "Nature du colis",
+      "trackingnumber": "Numéro de suivi",
+      "productionmode": "Mode Production",
+      "ozonexpressdescription": "Cette page permet de tester et déboguer l'intégration OzonExpress. Utilisez-la pour vérifier que l'API fonctionne correctement.",
+      "productionmodedesc": "Les appels API créent de vrais colis avec de vrais numéros de suivi",
+      "manualentry": "Saisie Manuelle"
+    },
+    "dashboard": {
+      "title": "Tableau de Bord Admin",
+      "updatedago": "Mis à jour il y a {time}",
+      "earnings": "Revenus",
+      "weeklyearningsoverview": "Aperçu des Revenus Hebdomadaires",
+      "products": "Produits",
+      "profit": "Profit",
+      "earningreports": "Rapports de Revenus",
+      "welcome": "Bienvenue dans l'espace administrateur",
+      "delete": "Supprimer",
+      "stats": {
+        "totalrevenue": "Revenus Totaux",
+        "totalorders": "Total Commandes",
+        "pendingorders": "Commandes en Attente",
+        "totalUsers": "Total Utilisateurs",
+        "totalOrders": "Total Commandes",
+        "totalRevenue": "Revenus Totaux",
+        "pendingOrders": "Commandes en Attente",
+        "totalusers": "Total Utilisateurs"
+      },
+      "revenue": "Revenus",
+      "viewmore": "Voir Plus",
+      "expense": "Dépenses",
+      "customers": "Clients",
+      "earningReports": "Rapports de Revenus",
+      "weeklyEarningsOverview": "Aperçu des Revenus Hebdomadaires",
+      "youInformed": "Vous êtes informé de cette semaine par rapport à la semaine dernière",
+      "viewMore": "Voir Plus",
+      "statistics": "Statistiques",
+      "updatedAgo": "Mis à jour il y a {time}",
+      "sales": "Ventes",
+      "youinformed": "Vous êtes informé de cette semaine par rapport à la semaine dernière"
+    },
+    "cities": {
+      "name": "Nom",
+      "ozonexpresscities": "Villes OzonExpress",
+      "saveerror": "Erreur lors de la sauvegarde",
+      "filetoimport": "Fichier à importer",
+      "import": "Importer",
+      "lastupdate": "Dernière MAJ",
+      "reference": "Référence",
+      "cityidplaceholder": "Ex: 97",
+      "cityname": "Nom de la ville",
+      "editCity": "Modifier la ville",
+      "ozonExpressCities": "Villes OzonExpress",
+      "manageCitiesDesc": "Gérez les villes disponibles pour les expéditions OzonExpress",
+      "newCity": "Nouvelle ville",
+      "totalCities": "Total des villes",
+      "activeCities": "Villes actives",
+      "inactiveCities": "Villes inactives",
+      "search": "Rechercher",
+      "searchPlaceholder": "Nom, ID ou référence...",
+      "status": "Statut",
+      "all": "Tous",
+      "active": "Actives",
+      "inactive": "Inactives",
+      "perPage": "Par page",
+      "clear": "Effacer",
+      "cityId": "ID Ville",
+      "lastUpdate": "Dernière MAJ",
+      "cityIdPlaceholder": "Ex: 97",
+      "referencePlaceholder": "Ex: CSA",
+      "cityName": "Nom de la ville",
+      "cityNamePlaceholder": "Ex: Casablanca",
+      "activeCity": "Ville active",
+      "deliveryPrice": "Prix livraison (MAD)",
+      "returnPrice": "Prix retour (MAD)",
+      "refusedPrice": "Prix refus (MAD)",
+      "importCities": "Importer des villes",
+      "fileToImport": "Fichier à importer",
+      "importFormats": "Formats acceptés : JSON, CSV. Le fichier doit contenir les colonnes : city_id, name, ref (optionnel), prices.",
+      "cityModifiedSuccess": "Ville modifiée avec succès",
+      "cityCreatedSuccess": "Ville créée avec succès",
+      "saveError": "Erreur lors de la sauvegarde",
+      "citiesImportedSuccess": "Villes importées avec succès",
+      "importError": "Erreur lors de l'importation",
+      "citiesimportedsuccess": "Villes importées avec succès",
+      "referenceplaceholder": "Ex: CSA",
+      "refusedprice": "Prix refus (MAD)",
+      "citycreatedsuccess": "Ville créée avec succès",
+      "deliveryprice": "Prix livraison (MAD)",
+      "totalcities": "Total des villes",
+      "citymodifiedsuccess": "Ville modifiée avec succès",
+      "importcities": "Importer des villes",
+      "perpage": "Par page",
+      "importformats": "Formats acceptés : JSON, CSV. Le fichier doit contenir les colonnes : city_id, name, ref (optionnel), prices.",
+      "editcity": "Modifier la ville",
+      "activecities": "Villes actives",
+      "returnprice": "Prix retour (MAD)",
+      "searchplaceholder": "Nom, ID ou référence...",
+      "cityid": "ID Ville",
+      "citynameplaceholder": "Ex: Casablanca",
+      "importerror": "Erreur lors de l'importation",
+      "newcity": "Nouvelle ville",
+      "activecity": "Ville active",
+      "inactivecities": "Villes inactives",
+      "managecitiesdesc": "Gérez les villes disponibles pour les expéditions OzonExpress"
+    },
+    "orders": {
+      "bulkupdatesuccess": "{count} commande(s) mise(s) à jour vers \"{status}\"",
+      "bulkUpdateSuccess": "{count} commande(s) mise(s) à jour vers \"{status}\""
+    },
+    "commissions": {
+      "details": "Détails de la commission"
+    }
+  },
+  "$vuetify": {
+    "pagination": {
+      "arialabel": {
+        "first": "d'abord",
+        "next": "suivante",
+        "page": "page",
+        "previous": "précédente",
+        "currentpage": "page actuelle",
+        "root": "racine",
+        "last": "dernière",
+        "currentPage": "page actuelle"
+      },
+      "ariaLabel": {
+        "root": "racine",
+        "previous": "précédente",
+        "first": "d'abord",
+        "last": "dernière",
+        "next": "suivante",
+        "currentPage": "page actuelle",
+        "page": "page"
+      }
+    },
+    "input": {
+      "clear": "dégager",
+      "otp": "otp",
+      "appendaction": "ajouter une action",
+      "appendAction": "ajouter une action",
+      "prependAction": "préfixer l'action",
+      "prependaction": "préfixer l'action"
+    },
+    "rating": {
+      "arialabel": {
+        "item": "Objet"
+      },
+      "ariaLabel": {
+        "item": "Objet"
+      }
+    },
+    "carousel": {
+      "ariaLabel": {
+        "delimiter": "délimiteur"
+      },
+      "arialabel": {
+        "delimiter": "délimiteur"
+      }
+    },
+    "close": "Fermer",
+    "fileinput": {
+      "counterSize": "Taille du compteur",
+      "countersize": "Taille du compteur"
+    },
+    "nodatatext": "Pas de données disponibles",
+    "datafooter": {
+      "itemsPerPageText": "Objets par page:",
+      "itemsPerPageAll": "Tout",
+      "pageText": "{0}-{1} of {2}",
+      "firstPage": "Première page",
+      "prevPage": "Page précédente",
+      "nextPage": "Page suivante",
+      "lastPage": "Dernière page"
+    },
+    "loading": "Chargement"
+  },
+  "stock": {
+    "kpi": {
+      "products": "Produits",
+      "on_hand": "En stock",
+      "reserved": "Réservé",
+      "available": "Disponible"
+    },
+    "filters": {
+      "title": "Filtres",
+      "search": "Rechercher",
+      "search_placeholder": "Nom de produit, référence...",
+      "boutique": "Boutique",
+      "category": "Catégorie",
+      "with_variants": "Avec variantes",
+      "min_qty": "Quantité min",
+      "max_qty": "Quantité max",
+      "type": "Type de mouvement",
+      "reason": "Raison",
+      "date_from": "Date de début",
+      "date_to": "Date de fin"
+    },
+    "columns": {
+      "product": "Produit",
+      "variant": "Variante",
+      "category": "Catégorie",
+      "boutique": "Boutique",
+      "on_hand": "En stock",
+      "reserved": "Réservé",
+      "available": "Disponible",
+      "last_movement": "Dernier mouvement"
+    },
+    "history": {
+      "title": "Historique des mouvements",
+      "title_for": "Historique - {product}",
+      "no_movements": "Aucun mouvement trouvé",
+      "no_movements_desc": "Aucun mouvement de stock n'a été enregistré pour ce produit",
+      "columns": {
+        "date": "Date",
+        "type": "Type",
+        "quantity": "Quantité",
+        "reference": "Référence",
+        "variant": "Variante"
+      }
+    },
+    "actions": {
+      "in": "Entrée stock",
+      "out": "Sortie stock",
+      "adjust": "Ajustement",
+      "history": "Historique"
+    },
+    "table": {
+      "title": "Liste des stocks",
+      "items": "éléments",
+      "no_data_title": "Aucun stock trouvé",
+      "no_data_subtitle": "Aucun produit ne correspond aux critères de recherche",
+      "reset_filters": "Réinitialiser les filtres"
+    },
+    "messages": {
+      "movement_created": "Mouvement de stock créé avec succès"
+    },
+    "movement_created_successfully": "Mouvement de stock créé avec succès"
+  },
+  "form": {
+    "address": "Adresse",
+    "title": "Titre",
+    "date": "Date",
+    "name": "Nom",
+    "created": "Créé",
+    "modified": "Modifié",
+    "description": "Description",
+    "email": "Email",
+    "fullname": "Nom complet",
+    "phone": "Téléphone",
+    "status": "Statut"
+  },
+  "a11y": {
+    "decorativeimage": "Image décorative",
+    "error404image": "Erreur 404"
+  },
+  "banks": {
+    "banque_populaire": "Banque Populaire",
+    "attijariwafa": "Attijariwafa"
+  },
+  "errors": {
+    "pagenotfoundtitle": "Page Non Trouvée ⚠️",
+    "pagenotfounddescription": "Nous n'avons pas pu trouver la page que vous recherchez.",
+    "ticket_close_failed": "Erreur lors de la fermeture du ticket",
+    "users_loading_error": "Erreur lors du chargement des utilisateurs",
+    "ticket_reopen_failed": "Erreur lors de la réouverture du ticket",
+    "message_add_failed": "Erreur lors de l'ajout du message",
+    "orders_load_failed": "Erreur lors du chargement des commandes",
+    "no_eligible_commissions": "Aucune commission éligible pour un retrait",
+    "commissions_loading_error": "Erreur lors du chargement des commissions",
+    "commissions_load_failed": "Erreur lors du chargement des commissions",
+    "message_required": "Veuillez saisir un message",
+    "ticket_load_failed": "Erreur lors du chargement du ticket",
+    "withdrawal_request_failed": "Erreur lors de la demande de retrait",
+    "withdrawals_load_failed": "Erreur lors du chargement des retraits"
+  },
+  "table": {
+    "of": "sur",
+    "itemsperpage": "Éléments par page",
+    "deletedonly": "Supprimées seulement",
+    "activeonly": "Actives seulement",
+    "nodataavailable": "Aucune donnée disponible",
+    "loading": "Chargement...",
+    "to": "à",
+    "allactiveanddeleted": "Toutes (actives + supprimées)",
+    "results": "résultats",
+    "showing": "Affichage de",
+    "display": "Affichage"
+  },
+  "dialogs": {
+    "confirmmessage": "Êtes-vous sûr de vouloir continuer ?",
+    "confirmaction": "Confirmer l'action"
+  },
+  "notifications": {
+    "nonotificationsfound": "Aucune notification trouvée !"
+  },
+  "payments": {
+    "actions": {
+      "view": "Voir Détails",
+      "download_pdf": "Télécharger PDF"
+    }
+  },
+  "search": {
+    "noresultsfor": "Aucun résultat pour"
+  },
+  "cart": {
+    "title": "Panier"
   }
 }
