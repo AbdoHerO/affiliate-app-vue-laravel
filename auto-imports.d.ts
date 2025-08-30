@@ -225,6 +225,7 @@ declare global {
   const useApi: typeof import('./resources/ts/composables/useApi')['useApi']
   const useApiErrorHandler: typeof import('./resources/ts/composables/useApiErrorHandler')['useApiErrorHandler']
   const useAppInitialization: typeof import('./resources/ts/composables/useAppInitialization')['useAppInitialization']
+  const useAppLogo: typeof import('./resources/ts/composables/useAppLogo')['useAppLogo']
   const useArrayDifference: typeof import('@vueuse/core')['useArrayDifference']
   const useArrayEvery: typeof import('@vueuse/core')['useArrayEvery']
   const useArrayFilter: typeof import('@vueuse/core')['useArrayFilter']
@@ -678,6 +679,7 @@ declare module 'vue' {
     readonly useApi: UnwrapRef<typeof import('./resources/ts/composables/useApi')['useApi']>
     readonly useApiErrorHandler: UnwrapRef<typeof import('./resources/ts/composables/useApiErrorHandler')['useApiErrorHandler']>
     readonly useAppInitialization: UnwrapRef<typeof import('./resources/ts/composables/useAppInitialization')['useAppInitialization']>
+    readonly useAppLogo: UnwrapRef<typeof import('./resources/ts/composables/useAppLogo')['useAppLogo']>
     readonly useArrayDifference: UnwrapRef<typeof import('@vueuse/core')['useArrayDifference']>
     readonly useArrayEvery: UnwrapRef<typeof import('@vueuse/core')['useArrayEvery']>
     readonly useArrayFilter: UnwrapRef<typeof import('@vueuse/core')['useArrayFilter']>

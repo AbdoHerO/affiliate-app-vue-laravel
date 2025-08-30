@@ -10,7 +10,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 
 class SettingsController extends Controller
 {
@@ -734,6 +733,8 @@ class SettingsController extends Controller
     private function isFileUploadField(string $key): bool
     {
         $fileFields = [
+            'company_logo',
+            'favicon',
             'app_logo',
             'app_favicon',
             'login_background_image',
@@ -765,10 +766,10 @@ class SettingsController extends Controller
         $filename = $key . '_' . time() . '.' . $extension;
 
         // Store file in public disk
-        $path = $file->storeAs('settings', $filename, 'public');
+        $file->storeAs('settings', $filename, 'public');
 
-        // Return public URL
-        return Storage::disk('public')->url($path);
+        // Return just the filename (not the full URL)
+        return $filename;
     }
 
     /**
@@ -777,6 +778,8 @@ class SettingsController extends Controller
     private function getAllowedMimesForField(string $key): array
     {
         $mimeMap = [
+            'company_logo' => ['image/jpeg', 'image/png', 'image/svg+xml'],
+            'favicon' => ['image/x-icon', 'image/png', 'image/jpeg'],
             'app_logo' => ['image/jpeg', 'image/png', 'image/svg+xml'],
             'app_favicon' => ['image/x-icon', 'image/png', 'image/jpeg'],
             'login_background_image' => ['image/jpeg', 'image/png', 'image/webp'],
@@ -792,6 +795,8 @@ class SettingsController extends Controller
     private function getMaxSizeForField(string $key): int
     {
         $sizeMap = [
+            'company_logo' => 2 * 1024 * 1024, // 2MB
+            'favicon' => 1 * 1024 * 1024, // 1MB
             'app_logo' => 2 * 1024 * 1024, // 2MB
             'app_favicon' => 1 * 1024 * 1024, // 1MB
             'login_background_image' => 5 * 1024 * 1024, // 5MB
@@ -811,7 +816,7 @@ class SettingsController extends Controller
         foreach ($settings as $key => $value) {
             if ($this->isFileUploadField($key) && $value && !filter_var($value, FILTER_VALIDATE_URL)) {
                 // If it's a file field and not already a URL, convert to public URL
-                $processed[$key] = Storage::disk('public')->url($value);
+                $processed[$key] = asset('storage/settings/' . $value);
             } else {
                 $processed[$key] = $value;
             }

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { $api } from '@/utils/api'
 import { useSettingsStore } from '@/stores/settings'
@@ -22,7 +22,7 @@ const localData = ref({
   app_keywords: '',
   company_logo: '',
   favicon: '',
-  facebook_pxm_api_key: ''
+  facebook_pixel_id: ''
 })
 
 // Computed state
@@ -32,8 +32,24 @@ const isFormLoading = computed(() => loading.value || isSaving.value)
 const logoPreview = ref('')
 const faviconPreview = ref('')
 
-// Password visibility for Facebook API key
-const showApiKey = ref(false)
+// Remove unused showApiKey variable
+
+// Image helper functions
+const getImageUrl = (filename: string | null) => {
+  if (!filename) return ''
+  // Return the full URL for the uploaded image
+  return `/storage/settings/${filename}`
+}
+
+const clearLogo = () => {
+  logoPreview.value = ''
+  localData.value.company_logo = ''
+}
+
+const clearFavicon = () => {
+  faviconPreview.value = ''
+  localData.value.favicon = ''
+}
 
 // Handle file uploads
 const handleLogoUpload = (event: Event) => {
@@ -94,6 +110,10 @@ const handleSave = async () => {
   isSaving.value = true
   try {
     await settingsStore.updateSettings('general', localData.value)
+
+    // Update metadata immediately after saving
+    updateAppMetadata()
+
     showSuccess(t('settings_saved_successfully'))
   } catch (error) {
     console.error('Failed to save settings:', error)
@@ -117,6 +137,17 @@ const loadSettings = async () => {
           (localData.value as any)[key] = response.data[key]
         }
       })
+
+      // Load existing images
+      if (localData.value.company_logo) {
+        logoPreview.value = getImageUrl(localData.value.company_logo)
+      }
+      if (localData.value.favicon) {
+        faviconPreview.value = getImageUrl(localData.value.favicon)
+      }
+
+      // Update app metadata immediately
+      updateAppMetadata()
     }
   } catch (error) {
     console.error('Failed to load settings:', error)
@@ -125,6 +156,80 @@ const loadSettings = async () => {
     loading.value = false
   }
 }
+
+// Update app metadata in real-time
+const updateAppMetadata = () => {
+  // Update document title
+  if (localData.value.app_name) {
+    document.title = localData.value.app_name
+  }
+
+  // Update meta description
+  const metaDescription = document.querySelector('meta[name="description"]')
+  if (metaDescription && localData.value.app_description) {
+    metaDescription.setAttribute('content', localData.value.app_description)
+  }
+
+  // Update meta keywords
+  let metaKeywords = document.querySelector('meta[name="keywords"]')
+  if (localData.value.app_keywords) {
+    if (!metaKeywords) {
+      metaKeywords = document.createElement('meta')
+      metaKeywords.setAttribute('name', 'keywords')
+      document.head.appendChild(metaKeywords)
+    }
+    metaKeywords.setAttribute('content', localData.value.app_keywords)
+  }
+
+  // Update favicon
+  if (localData.value.favicon) {
+    let faviconLink = document.querySelector('link[rel="icon"]') as HTMLLinkElement
+    if (!faviconLink) {
+      faviconLink = document.createElement('link')
+      faviconLink.rel = 'icon'
+      document.head.appendChild(faviconLink)
+    }
+    faviconLink.href = getImageUrl(localData.value.favicon)
+  }
+}
+
+// Watch for changes and update metadata in real-time
+watch(() => localData.value.app_name, (newValue) => {
+  if (newValue) {
+    document.title = newValue
+  }
+}, { immediate: true })
+
+watch(() => localData.value.app_description, (newValue) => {
+  const metaDescription = document.querySelector('meta[name="description"]')
+  if (metaDescription && newValue) {
+    metaDescription.setAttribute('content', newValue)
+  }
+}, { immediate: true })
+
+watch(() => localData.value.app_keywords, (newValue) => {
+  let metaKeywords = document.querySelector('meta[name="keywords"]')
+  if (newValue) {
+    if (!metaKeywords) {
+      metaKeywords = document.createElement('meta')
+      metaKeywords.setAttribute('name', 'keywords')
+      document.head.appendChild(metaKeywords)
+    }
+    metaKeywords.setAttribute('content', newValue)
+  }
+}, { immediate: true })
+
+watch(() => localData.value.favicon, (newValue) => {
+  if (newValue) {
+    let faviconLink = document.querySelector('link[rel="icon"]') as HTMLLinkElement
+    if (!faviconLink) {
+      faviconLink = document.createElement('link')
+      faviconLink.rel = 'icon'
+      document.head.appendChild(faviconLink)
+    }
+    faviconLink.href = getImageUrl(newValue)
+  }
+}, { immediate: true })
 
 // Initialize on mount
 onMounted(() => {
@@ -159,102 +264,165 @@ onMounted(() => {
       </VCol>
     </VRow>
 
-    <!-- Settings Tabs -->
-    <VCard v-else>
+    <!-- Enhanced Settings Tabs -->
+    <VCard v-else class="settings-card">
       <VTabs
         v-model="activeTab"
         color="primary"
         align-tabs="start"
+        class="settings-tabs"
+        bg-color="grey-lighten-5"
+        slider-color="primary"
+        show-arrows
       >
-        <VTab value="general">
-          <VIcon start icon="tabler-settings" />
-          {{ t('settings.tabs.general') }}
+        <VTab
+          value="general"
+          class="settings-tab"
+          prepend-icon="tabler-settings"
+        >
+          <div class="d-flex align-center">
+            <VIcon start icon="tabler-settings" size="20" />
+            <span class="tab-text">{{ t('settings.tabs.general') }}</span>
+          </div>
         </VTab>
 
-        <VTab value="business">
-          <VIcon start icon="tabler-building-store" />
-          {{ t('settings.tabs.business') }}
+        <VTab
+          value="business"
+          class="settings-tab"
+          prepend-icon="tabler-building-store"
+        >
+          <div class="d-flex align-center">
+            <VIcon start icon="tabler-building-store" size="20" />
+            <span class="tab-text">{{ t('settings.tabs.business') }}</span>
+          </div>
         </VTab>
 
-        <VTab value="shipping">
-          <VIcon start icon="tabler-truck" />
-          {{ t('settings.tabs.shipping') }}
-          <VChip
-            size="x-small"
-            color="warning"
-            class="ml-2"
-          >
-            {{ t('settings.coming_soon') }}
-          </VChip>
+        <VTab
+          value="shipping"
+          class="settings-tab"
+          prepend-icon="tabler-truck"
+        >
+          <div class="d-flex align-center">
+            <VIcon start icon="tabler-truck" size="20" />
+            <span class="tab-text">{{ t('settings.tabs.shipping') }}</span>
+            <VChip
+              size="x-small"
+              color="warning"
+              variant="tonal"
+              class="ml-2"
+            >
+              {{ t('settings.coming_soon') }}
+            </VChip>
+          </div>
         </VTab>
 
-        <VTab value="users">
-          <VIcon start icon="tabler-users" />
-          {{ t('settings.tabs.users') }}
-          <VChip
-            size="x-small"
-            color="warning"
-            class="ml-2"
-          >
-            {{ t('settings.coming_soon') }}
-          </VChip>
+        <VTab
+          value="users"
+          class="settings-tab"
+          prepend-icon="tabler-users"
+        >
+          <div class="d-flex align-center">
+            <VIcon start icon="tabler-users" size="20" />
+            <span class="tab-text">{{ t('settings.tabs.users') }}</span>
+            <VChip
+              size="x-small"
+              color="warning"
+              variant="tonal"
+              class="ml-2"
+            >
+              {{ t('settings.coming_soon') }}
+            </VChip>
+          </div>
         </VTab>
 
-        <VTab value="products">
-          <VIcon start icon="tabler-package" />
-          {{ t('settings.tabs.products') }}
-          <VChip
-            size="x-small"
-            color="warning"
-            class="ml-2"
-          >
-            {{ t('settings.coming_soon') }}
-          </VChip>
+        <VTab
+          value="products"
+          class="settings-tab"
+          prepend-icon="tabler-package"
+        >
+          <div class="d-flex align-center">
+            <VIcon start icon="tabler-package" size="20" />
+            <span class="tab-text">{{ t('settings.tabs.products') }}</span>
+            <VChip
+              size="x-small"
+              color="warning"
+              variant="tonal"
+              class="ml-2"
+            >
+              {{ t('settings.coming_soon') }}
+            </VChip>
+          </div>
         </VTab>
 
-        <VTab value="communication">
-          <VIcon start icon="tabler-mail" />
-          {{ t('settings.tabs.communication') }}
-          <VChip
-            size="x-small"
-            color="warning"
-            class="ml-2"
-          >
-            {{ t('settings.coming_soon') }}
-          </VChip>
+        <VTab
+          value="communication"
+          class="settings-tab"
+          prepend-icon="tabler-mail"
+        >
+          <div class="d-flex align-center">
+            <VIcon start icon="tabler-mail" size="20" />
+            <span class="tab-text">{{ t('settings.tabs.communication') }}</span>
+            <VChip
+              size="x-small"
+              color="warning"
+              variant="tonal"
+              class="ml-2"
+            >
+              {{ t('settings.coming_soon') }}
+            </VChip>
+          </div>
         </VTab>
 
-        <VTab value="security">
-          <VIcon start icon="tabler-shield" />
-          {{ t('settings.tabs.security') }}
-          <VChip
-            size="x-small"
-            color="warning"
-            class="ml-2"
-          >
-            {{ t('settings.coming_soon') }}
-          </VChip>
+        <VTab
+          value="security"
+          class="settings-tab"
+          prepend-icon="tabler-shield"
+        >
+          <div class="d-flex align-center">
+            <VIcon start icon="tabler-shield" size="20" />
+            <span class="tab-text">{{ t('settings.tabs.security') }}</span>
+            <VChip
+              size="x-small"
+              color="warning"
+              variant="tonal"
+              class="ml-2"
+            >
+              {{ t('settings.coming_soon') }}
+            </VChip>
+          </div>
         </VTab>
 
-        <VTab value="system">
-          <VIcon start icon="tabler-server" />
-          {{ t('settings.tabs.system') }}
-          <VChip
-            size="x-small"
-            color="warning"
-            class="ml-2"
-          >
-            {{ t('settings.coming_soon') }}
-          </VChip>
+        <VTab
+          value="system"
+          class="settings-tab"
+          prepend-icon="tabler-server"
+        >
+          <div class="d-flex align-center">
+            <VIcon start icon="tabler-server" size="20" />
+            <span class="tab-text">{{ t('settings.tabs.system') }}</span>
+            <VChip
+              size="x-small"
+              color="warning"
+              variant="tonal"
+              class="ml-2"
+            >
+              {{ t('settings.coming_soon') }}
+            </VChip>
+          </div>
         </VTab>
       </VTabs>
 
       <VTabsWindow v-model="activeTab">
         <!-- General Settings Tab -->
         <VTabsWindowItem value="general">
-          <VCardText>
+          <VCardText class="pa-6">
+            <div class="mb-6">
+              <h3 class="text-h5 mb-2">{{ t('settings.general.title') }}</h3>
+              <p class="text-body-2 text-medium-emphasis">{{ t('settings.general.description') }}</p>
+            </div>
+
             <VForm @submit.prevent="handleSave">
-              <VRow>
+              <VRow class="gy-4">
                 <!-- App Name -->
                 <VCol
                   cols="12"
@@ -309,23 +477,63 @@ onMounted(() => {
                   cols="12"
                   md="6"
                 >
-                  <VLabel class="text-body-2 text-high-emphasis mb-1">
-                    {{ t('company_logo') }}
-                  </VLabel>
-                  <VFileInput
-                    accept="image/jpeg,image/png,image/svg+xml"
-                    :label="t('select_logo_file')"
-                    prepend-icon="tabler-upload"
-                    @change="handleLogoUpload"
-                  />
-                  <div v-if="logoPreview" class="mt-2">
-                    <VImg
-                      :src="logoPreview"
-                      width="100"
-                      height="60"
-                      class="border rounded"
+                  <VCard variant="outlined" class="pa-4">
+                    <VCardTitle class="text-body-1 pa-0 mb-3">
+                      <VIcon start icon="tabler-photo" />
+                      {{ t('company_logo') }}
+                    </VCardTitle>
+
+                    <!-- Current Logo Display -->
+                    <div v-if="logoPreview || localData.company_logo" class="mb-4">
+                      <VLabel class="text-caption text-medium-emphasis mb-2">
+                        {{ t('settings.current_logo') }}
+                      </VLabel>
+                      <div class="d-flex align-center gap-3">
+                        <VAvatar
+                          size="80"
+                          rounded="lg"
+                          variant="outlined"
+                        >
+                          <VImg
+                            :src="logoPreview || getImageUrl(localData.company_logo)"
+                            :alt="t('company_logo')"
+                            cover
+                          />
+                        </VAvatar>
+                        <div>
+                          <p class="text-body-2 mb-1">{{ localData.company_logo || t('settings.no_logo') }}</p>
+                          <VBtn
+                            v-if="logoPreview || localData.company_logo"
+                            size="small"
+                            color="error"
+                            variant="text"
+                            @click="clearLogo"
+                          >
+                            <VIcon start icon="tabler-trash" />
+                            {{ t('settings.remove') }}
+                          </VBtn>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Upload New Logo -->
+                    <VFileInput
+                      accept="image/jpeg,image/png,image/svg+xml"
+                      :label="t('select_logo_file')"
+                      prepend-icon="tabler-upload"
+                      variant="outlined"
+                      density="compact"
+                      @change="handleLogoUpload"
                     />
-                  </div>
+                    <VAlert
+                      type="info"
+                      variant="tonal"
+                      density="compact"
+                      class="mt-2"
+                    >
+                      {{ t('settings.logo_requirements') }}
+                    </VAlert>
+                  </VCard>
                 </VCol>
 
                 <!-- Favicon Upload -->
@@ -333,41 +541,92 @@ onMounted(() => {
                   cols="12"
                   md="6"
                 >
-                  <VLabel class="text-body-2 text-high-emphasis mb-1">
-                    {{ t('favicon') }}
-                  </VLabel>
-                  <VFileInput
-                    accept="image/x-icon,image/png,image/jpeg"
-                    :label="t('select_favicon_file')"
-                    prepend-icon="tabler-upload"
-                    @change="handleFaviconUpload"
-                  />
-                  <div v-if="faviconPreview" class="mt-2">
-                    <VImg
-                      :src="faviconPreview"
-                      width="32"
-                      height="32"
-                      class="border rounded"
+                  <VCard variant="outlined" class="pa-4">
+                    <VCardTitle class="text-body-1 pa-0 mb-3">
+                      <VIcon start icon="tabler-world" />
+                      {{ t('favicon') }}
+                    </VCardTitle>
+
+                    <!-- Current Favicon Display -->
+                    <div v-if="faviconPreview || localData.favicon" class="mb-4">
+                      <VLabel class="text-caption text-medium-emphasis mb-2">
+                        {{ t('settings.current_favicon') }}
+                      </VLabel>
+                      <div class="d-flex align-center gap-3">
+                        <VAvatar
+                          size="40"
+                          rounded="sm"
+                          variant="outlined"
+                        >
+                          <VImg
+                            :src="faviconPreview || getImageUrl(localData.favicon)"
+                            :alt="t('favicon')"
+                            cover
+                          />
+                        </VAvatar>
+                        <div>
+                          <p class="text-body-2 mb-1">{{ localData.favicon || t('settings.no_favicon') }}</p>
+                          <VBtn
+                            v-if="faviconPreview || localData.favicon"
+                            size="small"
+                            color="error"
+                            variant="text"
+                            @click="clearFavicon"
+                          >
+                            <VIcon start icon="tabler-trash" />
+                            {{ t('settings.remove') }}
+                          </VBtn>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Upload New Favicon -->
+                    <VFileInput
+                      accept="image/x-icon,image/png,image/jpeg"
+                      :label="t('select_favicon_file')"
+                      prepend-icon="tabler-upload"
+                      variant="outlined"
+                      density="compact"
+                      @change="handleFaviconUpload"
                     />
-                  </div>
+                    <VAlert
+                      type="info"
+                      variant="tonal"
+                      density="compact"
+                      class="mt-2"
+                    >
+                      {{ t('settings.favicon_requirements') }}
+                    </VAlert>
+                  </VCard>
                 </VCol>
 
-                <!-- Facebook Pixel API Key -->
+                <!-- Facebook Pixel ID -->
                 <VCol cols="12">
-                  <AppTextField
-                    v-model="localData.facebook_pxm_api_key"
-                    :label="t('facebook_pixel_api_key')"
-                    :placeholder="t('enter_facebook_pixel_api_key')"
-                    :type="showApiKey ? 'text' : 'password'"
-                    :append-inner-icon="showApiKey ? 'tabler-eye-off' : 'tabler-eye'"
-                    @click:append-inner="showApiKey = !showApiKey"
-                  >
-                    <template #details>
-                      <div class="text-caption text-medium-emphasis">
-                        {{ t('facebook_pixel_api_key_description') }}
-                      </div>
-                    </template>
-                  </AppTextField>
+                  <VCard variant="outlined" class="pa-4">
+                    <VCardTitle class="text-body-1 pa-0 mb-3">
+                      <VIcon start icon="tabler-brand-facebook" />
+                      {{ t('settings.facebook_pixel_id') }}
+                    </VCardTitle>
+
+                    <AppTextField
+                      v-model="localData.facebook_pixel_id"
+                      :label="t('settings.facebook_pixel_id')"
+                      :placeholder="t('settings.enter_facebook_pixel_id')"
+                      variant="outlined"
+                      density="compact"
+                      prepend-inner-icon="tabler-hash"
+                    />
+
+                    <VAlert
+                      type="info"
+                      variant="tonal"
+                      density="compact"
+                      class="mt-3"
+                    >
+                      <VIcon start icon="tabler-info-circle" />
+                      {{ t('settings.facebook_pixel_description') }}
+                    </VAlert>
+                  </VCard>
                 </VCol>
 
                 <!-- Action Buttons -->
@@ -440,3 +699,137 @@ onMounted(() => {
     </VCard>
   </div>
 </template>
+
+<style scoped>
+.settings-card {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.settings-tabs {
+  border-bottom: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+}
+
+.settings-tab {
+  min-height: 64px;
+  padding: 12px 20px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  border-radius: 8px 8px 0 0;
+}
+
+.settings-tab:hover {
+  background-color: rgba(var(--v-theme-primary), 0.08);
+  transform: translateY(-1px);
+}
+
+.settings-tab.v-tab--selected {
+  background-color: rgba(var(--v-theme-primary), 0.12);
+  color: rgb(var(--v-theme-primary));
+  font-weight: 600;
+}
+
+.tab-text {
+  font-size: 0.875rem;
+  font-weight: inherit;
+  margin-left: 8px;
+}
+
+.v-card {
+  transition: all 0.3s ease;
+}
+
+.v-card:hover {
+  box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.v-file-input {
+  transition: all 0.3s ease;
+}
+
+.v-file-input:hover {
+  transform: translateY(-1px);
+}
+
+.v-avatar {
+  transition: all 0.3s ease;
+}
+
+.v-avatar:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.v-alert {
+  border-radius: 8px;
+  font-size: 0.8rem;
+}
+
+.v-btn {
+  transition: all 0.3s ease;
+  border-radius: 8px;
+}
+
+.v-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.v-text-field {
+  transition: all 0.3s ease;
+}
+
+.v-text-field:hover {
+  transform: translateY(-1px);
+}
+
+/* Enhanced form styling */
+.v-card-title {
+  font-weight: 600;
+  color: rgb(var(--v-theme-on-surface));
+}
+
+.v-label {
+  font-weight: 500;
+  color: rgb(var(--v-theme-on-surface-variant));
+}
+
+/* Coming soon section styling */
+.text-center {
+  padding: 3rem 2rem;
+}
+
+.text-center .v-icon {
+  opacity: 0.6;
+  margin-bottom: 1rem;
+}
+
+.text-center h3 {
+  color: rgb(var(--v-theme-on-surface));
+  margin-bottom: 0.5rem;
+}
+
+.text-center p {
+  color: rgb(var(--v-theme-on-surface-variant));
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .settings-tabs {
+    overflow-x: auto;
+  }
+
+  .settings-tab {
+    min-width: 120px;
+    padding: 8px 16px;
+  }
+
+  .tab-text {
+    font-size: 0.8rem;
+  }
+}
+</style>
