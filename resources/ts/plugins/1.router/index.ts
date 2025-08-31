@@ -6,7 +6,8 @@ import { createRouter, createWebHistory } from 'vue-router/auto'
 import { setupRouterGuards } from '@/plugins/router/guards'
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
+  history: createWebHistory('/tujjar/'),
+   // Changed from import.meta.env.BASE_URL to explicit path
   scrollBehavior(to) {
     if (to.hash)
       return { el: to.hash, behavior: 'smooth', top: 60 }
