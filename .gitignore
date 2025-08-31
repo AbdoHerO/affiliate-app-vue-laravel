@@ -64,6 +64,7 @@ resources/ts/plugins/iconify/icons.css
 # Ignore public zip files
 public/*.zip
 
+
 # Env files
 .env*
 !.env.example
