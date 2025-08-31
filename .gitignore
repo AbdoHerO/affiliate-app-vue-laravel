@@ -61,6 +61,9 @@ resources/ts/plugins/iconify/icons.css
 # Ignore MSW script
 # public/mockServiceWorker.js
 
+# Ignore public zip files
+public/*.zip
+
 # Env files
 .env*
 !.env.example
