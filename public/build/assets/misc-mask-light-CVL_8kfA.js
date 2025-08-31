@@ -1,1 +1,0 @@
-import{aE as o,aF as i,V as m}from"./main-3LuWNv9W.js";const k=(e,t,n,u,a=!1)=>{const s=o(),{global:r}=i();return m(()=>r.name.value==="light"?s.skin==="bordered"&&a?n:e:r.name.value==="dark"?s.skin==="bordered"&&a?u:t:e)},l="/tujjar/assets/misc-mask-dark-D4eSvDKH.png",f="/tujjar/assets/misc-mask-light-7GUBPWb3.png";export{l as a,f as b,k as u};

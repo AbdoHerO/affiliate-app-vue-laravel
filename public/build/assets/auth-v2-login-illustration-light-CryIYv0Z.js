@@ -1,1 +1,0 @@
-const t="/tujjar/assets/auth-v2-login-illustration-bordered-dark-cDkPk8mY.png",a="/tujjar/assets/auth-v2-login-illustration-bordered-light-CIHqcIVA.png",s="/tujjar/assets/auth-v2-login-illustration-dark-ClExSVqL.png",o="/tujjar/assets/auth-v2-login-illustration-light-C4sKfRS1.png";export{t as a,a as b,s as c,o as d};
