@@ -4,9 +4,11 @@
 
 import { handle401Unauthorized, is401Error, handleApiError } from '@/utils/authHandler'
 import { useNotifications } from './useNotifications'
+import { useI18n } from 'vue-i18n'
 
 export function useApiErrorHandler() {
   const { showError } = useNotifications()
+  const { t } = useI18n()
 
   /**
    * Handle API errors with proper 401 handling and user notifications
@@ -27,10 +29,10 @@ export function useApiErrorHandler() {
 
       switch (status) {
         case 403:
-          showError(customMessage || 'Accès refusé. Vous n\'avez pas les permissions nécessaires.')
+          showError(customMessage || t('alerts.api_errors.access_denied'))
           break
         case 404:
-          showError(customMessage || 'Ressource non trouvée.')
+          showError(customMessage || t('alerts.api_errors.resource_not_found'))
           break
         case 422:
           // Validation errors - let the component handle them
@@ -39,17 +41,17 @@ export function useApiErrorHandler() {
             if (Array.isArray(firstError) && firstError.length > 0) {
               showError(customMessage || firstError[0])
             } else {
-              showError(customMessage || 'Erreur de validation.')
+              showError(customMessage || t('alerts.api_errors.validation_error'))
             }
           } else {
-            showError(customMessage || data?.message || 'Erreur de validation.')
+            showError(customMessage || data?.message || t('alerts.api_errors.validation_error'))
           }
           break
         case 429:
-          showError(customMessage || 'Trop de requêtes. Veuillez patienter avant de réessayer.')
+          showError(customMessage || t('alerts.api_errors.too_many_requests'))
           break
         case 500:
-          showError(customMessage || 'Erreur serveur. Veuillez réessayer plus tard.')
+          showError(customMessage || t('alerts.api_errors.server_error'))
           break
         default:
           showError(customMessage || data?.message || `Erreur ${status}. Veuillez réessayer.`)
@@ -57,13 +59,13 @@ export function useApiErrorHandler() {
     } else if (error?.message) {
       // Network or other errors
       if (error.message.includes('Network Error') || error.message.includes('fetch')) {
-        showError(customMessage || 'Erreur de connexion. Vérifiez votre connexion internet.')
+        showError(customMessage || t('alerts.api_errors.connection_error'))
       } else {
         showError(customMessage || error.message)
       }
     } else {
       // Unknown errors
-      showError(customMessage || 'Une erreur inattendue s\'est produite.')
+      showError(customMessage || t('alerts.api_errors.unexpected_error'))
     }
 
     // Re-throw the error for component-level handling if needed

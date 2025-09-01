@@ -310,7 +310,7 @@ const updateShippingStatus = async () => {
     // Refresh the orders list
     await fetchShippingOrders()
   } catch (error: any) {
-    showError(error.message || 'Erreur lors de la mise à jour du statut')
+    showError(error.message || t('alerts.admin.status_update_error'))
   } finally {
     statusUpdateLoading.value = false
   }
@@ -349,7 +349,7 @@ const handleShipOrder = async (order: any) => {
     showSuccess(t('alerts.shipping.order_shipped_success'))
     await fetchShippingOrders()
   } catch (error: any) {
-    showError(error.message || 'Erreur lors de l\'expédition')
+    showError(error.message || t('alerts.admin.shipping_error'))
   } finally {
     shippingActionLoading.value = null
   }
@@ -371,7 +371,7 @@ const confirmReturnToWarehouse = async () => {
     showReturnConfirmDialog.value = false
     await fetchShippingOrders()
   } catch (error: any) {
-    showError(error.message || 'Erreur lors du retour en entrepôt')
+    showError(error.message || t('alerts.admin.return_error'))
   } finally {
     shippingActionLoading.value = null
     currentReturnOrder.value = null

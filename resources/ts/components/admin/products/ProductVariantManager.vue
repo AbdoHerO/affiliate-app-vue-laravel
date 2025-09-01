@@ -383,7 +383,7 @@ const saveVariant = async () => {
       if (apiError.errors) {
         errors.value = apiError.errors
       } else {
-        showError(apiError.message || 'Error saving variant')
+        showError(apiError.message || t('alerts.admin.error_saving_variant'))
       }
       return
     }

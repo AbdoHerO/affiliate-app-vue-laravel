@@ -355,7 +355,7 @@ const saveVideo = async () => {
       if (apiError.errors) {
         errors.value = apiError.errors
       } else {
-        showError(apiError.message || 'Error saving video')
+        showError(apiError.message || t('alerts.admin.error_saving_video'))
       }
       return
     }

@@ -324,14 +324,14 @@ const toggleUserStatus = async (user: User) => {
     })
 
     if (apiError.value) {
-      showError(apiError.value.message || 'Failed to toggle user status')
+      showError(apiError.value.message || t('alerts.admin.failed_toggle_user_status'))
       console.error('Toggle status error:', apiError.value)
     } else if (data.value) {
       await fetchUsers(pagination.value.current_page)
       showSuccess(t('user_status_updated_successfully'))
     }
   } catch (err: any) {
-    showError(err.message || 'Failed to toggle user status')
+    showError(err.message || t('alerts.admin.failed_toggle_user_status'))
     console.error('Toggle status error:', err)
   }
 }

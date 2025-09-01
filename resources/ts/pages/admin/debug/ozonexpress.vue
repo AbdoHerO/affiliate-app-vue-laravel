@@ -1360,7 +1360,7 @@ const testCreateParcel = async () => {
       showSuccess(t('admin_debug_test_parcel_created'))
       await loadShippingParcels()
     } else {
-      showError(result.message || 'Erreur lors de la création du colis test')
+      showError(result.message || t('alerts.admin.test_package_creation_error'))
     }
   } catch (error: any) {
     console.error('Error creating test parcel:', error)
@@ -1368,7 +1368,7 @@ const testCreateParcel = async () => {
       success: false,
       message: 'Erreur lors de la création du colis test: ' + error.message
     }
-    showError(error.message || 'Erreur lors de la création du colis test')
+    showError(error.message || t('alerts.admin.test_package_creation_error'))
   } finally {
     loading.value.createTest = false
   }
@@ -1397,7 +1397,7 @@ const testTrackParcel = async () => {
       showSuccess(t('admin_debug_tracking_updated'))
       await loadShippingParcels()
     } else {
-      showError(result.message || 'Erreur lors du suivi du colis')
+      showError(result.message || t('alerts.admin.package_tracking_error'))
     }
   } catch (error: any) {
     console.error('Error tracking parcel:', error)
@@ -1405,7 +1405,7 @@ const testTrackParcel = async () => {
       success: false,
       message: 'Erreur lors du suivi du colis: ' + error.message
     }
-    showError(error.message || 'Erreur lors du suivi du colis')
+    showError(error.message || t('alerts.admin.package_tracking_error'))
   } finally {
     loading.value.trackTest = false
   }
@@ -1435,7 +1435,7 @@ const trackLastCreatedParcel = async () => {
       showSuccess(t('admin_debug_last_parcel_tracking_updated'))
       await loadShippingParcels()
     } else {
-      showError(result.message || 'Erreur lors du suivi du colis créé')
+      showError(result.message || t('alerts.admin.created_package_tracking_error'))
     }
   } catch (error: any) {
     console.error('Error tracking last created parcel:', error)
@@ -1443,7 +1443,7 @@ const trackLastCreatedParcel = async () => {
       success: false,
       message: 'Erreur lors du suivi du colis créé: ' + error.message
     }
-    showError(error.message || 'Erreur lors du suivi du colis créé')
+    showError(error.message || t('alerts.admin.created_package_tracking_error'))
   } finally {
     loading.value.trackTest = false
   }
@@ -1532,10 +1532,10 @@ const sendManualParcel = async () => {
       // Refresh parcels data
       await loadShippingParcels()
     } else {
-      showError(result.message || 'Erreur lors de l\'envoi du colis')
+      showError(result.message || t('alerts.admin.package_send_error'))
     }
   } catch (error: any) {
-    showError(error.message || 'Erreur lors de l\'envoi du colis')
+    showError(error.message || t('alerts.admin.package_send_error'))
   }
 }
 
@@ -1556,10 +1556,10 @@ const sendFromOrder = async () => {
       // Refresh parcels data
       await loadShippingParcels()
     } else {
-      showError(result.message || 'Erreur lors de l\'envoi du colis')
+      showError(result.message || t('alerts.admin.package_send_error'))
     }
   } catch (error: any) {
-    showError(error.message || 'Erreur lors de l\'envoi du colis')
+    showError(error.message || t('alerts.admin.package_send_error'))
   }
 }
 
@@ -1579,10 +1579,10 @@ const trackParcelEnhanced = async () => {
       // Refresh parcels data
       await loadShippingParcels()
     } else {
-      showError(result.message || 'Erreur lors du suivi du colis')
+      showError(result.message || t('alerts.admin.package_tracking_error'))
     }
   } catch (error: any) {
-    showError(error.message || 'Erreur lors du suivi du colis')
+    showError(error.message || t('alerts.admin.package_tracking_error'))
   }
 }
 
@@ -1616,7 +1616,7 @@ const testCreateDeliveryNote = async () => {
       deliveryNoteRef.value = data.data.ref
       showSuccess(t('alerts.shipping.shipping_slip_ref') + `: ${data.data.ref}`)
     } else {
-      showError(data.message || 'Erreur lors de la création du bon de livraison')
+      showError(data.message || t('alerts.admin.shipping_slip_creation_error'))
     }
   } catch (error: any) {
     deliveryNoteResult.value = {
@@ -1657,7 +1657,7 @@ const testAddParcelsToDeliveryNote = async () => {
     if (data.success) {
       showSuccess(`${testTrackingNumbers.length} ${t('alerts.shipping.packages_added_to_slip')}`)
     } else {
-      showError(data.message || 'Erreur lors de l\'ajout des colis')
+      showError(data.message || t('alerts.admin.package_add_error'))
     }
   } catch (error: any) {
     deliveryNoteResult.value = {
@@ -1694,7 +1694,7 @@ const testSaveDeliveryNote = async () => {
     if (data.success) {
       showSuccess(t('admin_debug_delivery_note_saved'))
     } else {
-      showError(data.message || 'Erreur lors de la sauvegarde')
+      showError(data.message || t('alerts.admin.save_error'))
     }
   } catch (error: any) {
     deliveryNoteResult.value = {
@@ -1732,7 +1732,7 @@ const testGetDeliveryNotePdf = async () => {
         window.open(links.bl_pdf, '_blank')
       }
     } else {
-      showError(data.message || 'Erreur lors de la récupération des PDFs')
+      showError(data.message || t('alerts.admin.pdf_retrieval_error'))
     }
   } catch (error: any) {
     deliveryNoteResult.value = {

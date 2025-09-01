@@ -782,7 +782,7 @@ const addVariantsBulk = async () => {
           variantes.value.push(...response.data.created)
         }
         resetVariantForm()
-        showSuccess(response.message || 'Variants added successfully')
+        showSuccess(response.message || t('alerts.admin.variants_added_success'))
 
         // Show additional info if some were skipped
         if (response.data.skipped && response.data.skipped.length > 0) {
@@ -820,7 +820,7 @@ const deleteVariant = async (id: string) => {
     })
 
     if (apiError.value) {
-      showError(apiError.value.message || 'Failed to delete variant')
+      showError(apiError.value.message || t('alerts.admin.failed_delete_variant'))
       console.error('Delete variant error:', apiError.value)
     } else {
       const idx = variantes.value.findIndex(v => v.id === id)
@@ -831,7 +831,7 @@ const deleteVariant = async (id: string) => {
     }
   } catch (error: any) {
     console.error('Error deleting variant:', error)
-    showError(error.message || 'Failed to delete variant')
+    showError(error.message || t('alerts.admin.failed_delete_variant'))
   }
 }
 const uploadVariantImage = async (id: string, file: File) => {
@@ -859,7 +859,7 @@ const uploadVariantImage = async (id: string, file: File) => {
         }
       } else {
         console.error('[ProductForm] Upload failed:', response.message)
-        showError(response.message || 'Failed to upload variant image')
+        showError(response.message || t('alerts.admin.failed_upload_variant_image'))
       }
     } else {
       console.error('[ProductForm] API error:', error.value)
@@ -1128,7 +1128,7 @@ const addProposition = async (propositionData: { titre: string; description: str
     })
 
     if (apiError.value) {
-      showError(apiError.value.message || 'Failed to add proposition')
+      showError(apiError.value.message || t('alerts.admin.failed_add_proposition'))
       console.error('Add proposition error:', apiError.value)
     } else if (data.value) {
       const response = data.value as any
@@ -1140,7 +1140,7 @@ const addProposition = async (propositionData: { titre: string; description: str
     }
   } catch (error: any) {
     console.error('Error adding proposition:', error)
-    showError(error.message || 'Failed to add proposition')
+    showError(error.message || t('alerts.admin.failed_add_proposition'))
   }
 }
 
@@ -1213,7 +1213,7 @@ const uploadPropositionImage = async (propositionId: string, file: File) => {
         }
       } else {
         console.error('[ProductForm] Proposition upload failed:', response.message)
-        showError(response.message || 'Failed to upload proposition image')
+        showError(response.message || t('alerts.admin.failed_upload_proposition_image'))
       }
     } else {
       console.error('[ProductForm] Proposition API error:', error.value)
@@ -1338,7 +1338,7 @@ const handleAddRupture = async () => {
           }
         })
       }
-      showError(apiError.value.message || 'Failed to report stock issue')
+      showError(apiError.value.message || t('alerts.admin.failed_report_stock_issue'))
       console.error('Add rupture error:', apiError.value)
       return
     }
@@ -1354,7 +1354,7 @@ const handleAddRupture = async () => {
     }
   } catch (error: any) {
     console.error('Error adding rupture:', error)
-    showError(error.message || 'Failed to report stock issue')
+    showError(error.message || t('alerts.admin.failed_report_stock_issue'))
   }
 }
 

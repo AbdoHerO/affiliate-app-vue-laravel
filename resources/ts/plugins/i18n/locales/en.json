@@ -4089,6 +4089,37 @@
     },
     "profile_management": {
       "image_removed_success": "Profile image removed successfully"
+    },
+    "admin": {
+      "variants_added_success": "Variants added successfully",
+      "failed_delete_variant": "Failed to delete variant",
+      "failed_upload_variant_image": "Failed to upload variant image",
+      "failed_add_proposition": "Failed to add proposition",
+      "failed_upload_proposition_image": "Failed to upload proposition image",
+      "failed_report_stock_issue": "Failed to report stock issue",
+      "error_saving_video": "Error saving video",
+      "error_saving_variant": "Error saving variant",
+      "failed_toggle_user_status": "Failed to toggle user status",
+      "status_update_error": "Error updating status",
+      "shipping_error": "Shipping error",
+      "return_error": "Return to warehouse error",
+      "test_package_creation_error": "Error creating test package",
+      "package_tracking_error": "Error tracking package",
+      "created_package_tracking_error": "Error tracking created package",
+      "package_send_error": "Error sending package",
+      "shipping_slip_creation_error": "Error creating shipping slip",
+      "package_add_error": "Error adding packages",
+      "save_error": "Error saving",
+      "pdf_retrieval_error": "Error retrieving PDFs"
+    },
+    "api_errors": {
+      "access_denied": "Access denied. You do not have the necessary permissions.",
+      "resource_not_found": "Resource not found.",
+      "validation_error": "Validation error.",
+      "too_many_requests": "Too many requests. Please wait before retrying.",
+      "server_error": "Server error. Please try again later.",
+      "connection_error": "Connection error. Check your internet connection.",
+      "unexpected_error": "An unexpected error occurred."
     }
   }
 }

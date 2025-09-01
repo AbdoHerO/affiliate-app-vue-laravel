@@ -212,7 +212,7 @@ const updateShippingStatus = async () => {
     // Refresh the order data
     await fetchShippingOrder()
   } catch (error: any) {
-    showError(error.message || 'Erreur lors de la mise à jour du statut')
+    showError(error.message || t('alerts.admin.status_update_error'))
   } finally {
     statusUpdateLoading.value = false
   }

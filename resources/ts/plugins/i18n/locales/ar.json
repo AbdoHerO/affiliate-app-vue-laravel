@@ -4077,6 +4077,37 @@
     },
     "profile_management": {
       "image_removed_success": "تم حذف صورة الملف الشخصي بنجاح"
+    },
+    "admin": {
+      "variants_added_success": "تم إضافة المتغيرات بنجاح",
+      "failed_delete_variant": "فشل في حذف المتغير",
+      "failed_upload_variant_image": "فشل في رفع صورة المتغير",
+      "failed_add_proposition": "فشل في إضافة الاقتراح",
+      "failed_upload_proposition_image": "فشل في رفع صورة الاقتراح",
+      "failed_report_stock_issue": "فشل في الإبلاغ عن مشكلة المخزون",
+      "error_saving_video": "خطأ في حفظ الفيديو",
+      "error_saving_variant": "خطأ في حفظ المتغير",
+      "failed_toggle_user_status": "فشل في تغيير حالة المستخدم",
+      "status_update_error": "خطأ في تحديث الحالة",
+      "shipping_error": "خطأ في الشحن",
+      "return_error": "خطأ في الإرجاع إلى المستودع",
+      "test_package_creation_error": "خطأ في إنشاء الطرد التجريبي",
+      "package_tracking_error": "خطأ في تتبع الطرد",
+      "created_package_tracking_error": "خطأ في تتبع الطرد المُنشأ",
+      "package_send_error": "خطأ في إرسال الطرد",
+      "shipping_slip_creation_error": "خطأ في إنشاء بوليصة الشحن",
+      "package_add_error": "خطأ في إضافة الطرود",
+      "save_error": "خطأ في الحفظ",
+      "pdf_retrieval_error": "خطأ في استرجاع ملفات PDF"
+    },
+    "api_errors": {
+      "access_denied": "الوصول مرفوض. ليس لديك الصلاحيات اللازمة.",
+      "resource_not_found": "المورد غير موجود.",
+      "validation_error": "خطأ في التحقق.",
+      "too_many_requests": "طلبات كثيرة جداً. يرجى الانتظار قبل المحاولة مرة أخرى.",
+      "server_error": "خطأ في الخادم. يرجى المحاولة لاحقاً.",
+      "connection_error": "خطأ في الاتصال. تحقق من اتصالك بالإنترنت.",
+      "unexpected_error": "حدث خطأ غير متوقع."
     }
   }
 }

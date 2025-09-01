@@ -4145,6 +4145,37 @@
     },
     "profile_management": {
       "image_removed_success": "Image de profil supprimée avec succès"
+    },
+    "admin": {
+      "variants_added_success": "Variantes ajoutées avec succès",
+      "failed_delete_variant": "Échec de la suppression de la variante",
+      "failed_upload_variant_image": "Échec du téléchargement de l'image de variante",
+      "failed_add_proposition": "Échec de l'ajout de la proposition",
+      "failed_upload_proposition_image": "Échec du téléchargement de l'image de proposition",
+      "failed_report_stock_issue": "Échec du signalement du problème de stock",
+      "error_saving_video": "Erreur lors de l'enregistrement de la vidéo",
+      "error_saving_variant": "Erreur lors de l'enregistrement de la variante",
+      "failed_toggle_user_status": "Échec du changement de statut utilisateur",
+      "status_update_error": "Erreur lors de la mise à jour du statut",
+      "shipping_error": "Erreur lors de l'expédition",
+      "return_error": "Erreur lors du retour en entrepôt",
+      "test_package_creation_error": "Erreur lors de la création du colis test",
+      "package_tracking_error": "Erreur lors du suivi du colis",
+      "created_package_tracking_error": "Erreur lors du suivi du colis créé",
+      "package_send_error": "Erreur lors de l'envoi du colis",
+      "shipping_slip_creation_error": "Erreur lors de la création du bon de livraison",
+      "package_add_error": "Erreur lors de l'ajout des colis",
+      "save_error": "Erreur lors de la sauvegarde",
+      "pdf_retrieval_error": "Erreur lors de la récupération des PDFs"
+    },
+    "api_errors": {
+      "access_denied": "Accès refusé. Vous n'avez pas les permissions nécessaires.",
+      "resource_not_found": "Ressource non trouvée.",
+      "validation_error": "Erreur de validation.",
+      "too_many_requests": "Trop de requêtes. Veuillez patienter avant de réessayer.",
+      "server_error": "Erreur serveur. Veuillez réessayer plus tard.",
+      "connection_error": "Erreur de connexion. Vérifiez votre connexion internet.",
+      "unexpected_error": "Une erreur inattendue s'est produite."
     }
   }
 }

@@ -256,10 +256,10 @@ const saveProduct = async () => {
     // Handle validation errors and other API errors
     if (error.errors) {
       setProductErrors(error.errors)
-      showError(error.message || 'Validation failed')
+      showError(error.message || t('alerts.products.validation_failed'))
       console.error('Product validation error:', error)
     } else {
-      showError(error.message || 'Failed to save product')
+      showError(error.message || t('alerts.products.failed_to_save'))
       console.error('Error saving product:', error)
     }
   } finally {
@@ -407,7 +407,7 @@ const handleImageUpload = async (files: FileList | File[]) => {
 
       if (apiError.value) {
         console.error('Image upload error details:', apiError.value)
-        showError(apiError.value.message || 'Failed to upload image')
+        showError(apiError.value.message || t('alerts.products.failed_upload_image'))
         console.error('Image upload error:', apiError.value)
       } else if (data.value) {
         const response = data.value as any
@@ -418,7 +418,7 @@ const handleImageUpload = async (files: FileList | File[]) => {
       }
     } catch (error: any) {
       console.error('Error uploading image:', error)
-      showError(error.message || 'Failed to upload image')
+      showError(error.message || t('alerts.products.failed_upload_image'))
     }
   }
 }
@@ -436,7 +436,7 @@ const handleDeleteImage = async (imageId: string) => {
     })
 
     if (apiError.value) {
-      showError(apiError.value.message || 'Failed to delete image')
+      showError(apiError.value.message || t('alerts.products.failed_delete_image'))
       console.error('Delete image error:', apiError.value)
     } else {
       const idx = images.value.findIndex(img => img.id === imageId)
@@ -447,7 +447,7 @@ const handleDeleteImage = async (imageId: string) => {
     }
   } catch (error: any) {
     console.error('Error deleting image:', error)
-    showError(error.message || 'Failed to delete image')
+    showError(error.message || t('alerts.products.failed_delete_image'))
   }
 }
 
@@ -471,7 +471,7 @@ const handleAddVideoUrl = async () => {
     })
 
     if (apiError.value) {
-      showError(apiError.value.message || 'Failed to add video')
+      showError(apiError.value.message || t('alerts.products.failed_add_video'))
       console.error('Add video URL error:', apiError.value)
     } else if (data.value) {
       const response = data.value as any
@@ -484,7 +484,7 @@ const handleAddVideoUrl = async () => {
     }
   } catch (error: any) {
     console.error('Error adding video URL:', error)
-    showError(error.message || 'Failed to add video')
+    showError(error.message || t('alerts.products.failed_add_video'))
   }
 }
 const handleAddVideoUpload = async (files: FileList | File[]) => {
@@ -504,7 +504,7 @@ const handleAddVideoUpload = async (files: FileList | File[]) => {
       })
 
       if (apiError.value) {
-        showError(apiError.value.message || 'Failed to upload video')
+        showError(apiError.value.message || t('alerts.products.failed_upload_video'))
         console.error('Video upload error:', apiError.value)
       } else if (data.value) {
         const response = data.value as any
@@ -515,7 +515,7 @@ const handleAddVideoUpload = async (files: FileList | File[]) => {
       }
     } catch (error: any) {
       console.error('Error uploading video:', error)
-      showError(error.message || 'Failed to upload video')
+      showError(error.message || t('alerts.products.failed_upload_video'))
     }
   }
 }
@@ -532,7 +532,7 @@ const deleteVideo = async (id: string) => {
     })
 
     if (apiError.value) {
-      showError(apiError.value.message || 'Failed to delete video')
+      showError(apiError.value.message || t('alerts.products.failed_delete_video'))
       console.error('Delete video error:', apiError.value)
     } else {
       const idx = videos.value.findIndex(v => v.id === id)
@@ -543,7 +543,7 @@ const deleteVideo = async (id: string) => {
     }
   } catch (error: any) {
     console.error('Error deleting video:', error)
-    showError(error.message || 'Failed to delete video')
+    showError(error.message || t('alerts.products.failed_delete_video'))
   }
 }
 
@@ -615,7 +615,7 @@ const addVariant = async () => {
     })
 
     if (apiError.value) {
-      showError(apiError.value.message || 'Failed to add variant')
+      showError(apiError.value.message || t('alerts.products.failed_add_variant'))
       console.error('Add variant error:', apiError.value)
     } else if (data.value) {
       const response = data.value as any
@@ -634,7 +634,7 @@ const addVariant = async () => {
     }
   } catch (error: any) {
     console.error('Error adding variant:', error)
-    showError(error.message || 'Failed to add variant')
+    showError(error.message || t('alerts.products.failed_add_variant'))
   }
 }
 const deleteVariant = async (id: string) => {
@@ -650,7 +650,7 @@ const deleteVariant = async (id: string) => {
     })
 
     if (apiError.value) {
-      showError(apiError.value.message || 'Failed to delete variant')
+      showError(apiError.value.message || t('alerts.admin.failed_delete_variant'))
       console.error('Delete variant error:', apiError.value)
     } else {
       const idx = variantes.value.findIndex(v => v.id === id)
@@ -661,7 +661,7 @@ const deleteVariant = async (id: string) => {
     }
   } catch (error: any) {
     console.error('Error deleting variant:', error)
-    showError(error.message || 'Failed to delete variant')
+    showError(error.message || t('alerts.admin.failed_delete_variant'))
   }
 }
 const uploadVariantImage = async (id: string, file: File) => {
@@ -689,7 +689,7 @@ const uploadVariantImage = async (id: string, file: File) => {
         }
       } else {
         console.error('[ProductForm] Upload failed:', response.message)
-        showError(response.message || 'Failed to upload variant image')
+        showError(response.message || t('alerts.admin.failed_upload_variant_image'))
       }
     } else {
       console.error('[ProductForm] API error:', error.value)
@@ -712,7 +712,7 @@ const addProposition = async (propositionData: { titre: string; description: str
     })
 
     if (apiError.value) {
-      showError(apiError.value.message || 'Failed to add proposition')
+      showError(apiError.value.message || t('alerts.admin.failed_add_proposition'))
       console.error('Add proposition error:', apiError.value)
     } else if (data.value) {
       const response = data.value as any
@@ -724,7 +724,7 @@ const addProposition = async (propositionData: { titre: string; description: str
     }
   } catch (error: any) {
     console.error('Error adding proposition:', error)
-    showError(error.message || 'Failed to add proposition')
+    showError(error.message || t('alerts.admin.failed_add_proposition'))
   }
 }
 
@@ -797,7 +797,7 @@ const uploadPropositionImage = async (propositionId: string, file: File) => {
         }
       } else {
         console.error('[ProductForm] Proposition upload failed:', response.message)
-        showError(response.message || 'Failed to upload proposition image')
+        showError(response.message || t('alerts.admin.failed_upload_proposition_image'))
       }
     } else {
       console.error('[ProductForm] Proposition API error:', error.value)
@@ -922,7 +922,7 @@ const handleAddRupture = async () => {
           }
         })
       }
-      showError(apiError.value.message || 'Failed to report stock issue')
+      showError(apiError.value.message || t('alerts.admin.failed_report_stock_issue'))
       console.error('Add rupture error:', apiError.value)
       return
     }
@@ -938,7 +938,7 @@ const handleAddRupture = async () => {
     }
   } catch (error: any) {
     console.error('Error adding rupture:', error)
-    showError(error.message || 'Failed to report stock issue')
+    showError(error.message || t('alerts.admin.failed_report_stock_issue'))
   }
 }
 
