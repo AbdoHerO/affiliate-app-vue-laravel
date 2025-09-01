@@ -3,20 +3,16 @@ import type { App } from 'vue'
 
 import type { RouteRecordRaw } from 'vue-router/auto'
 import { createRouter, createWebHistory } from 'vue-router/auto'
-import { setupRouterGuards } from '@/plugins/router/guards'
+import { setupRouterGuards } from '@/plugins/router/guards_production'
 
 const router = createRouter({
-  history: createWebHistory('/tujjar/'),
-   // Changed from import.meta.env.BASE_URL to explicit path
+  history: createWebHistory('/'), // Root domain - no subfolder
   scrollBehavior(to) {
     if (to.hash)
       return { el: to.hash, behavior: 'smooth', top: 60 }
 
     return { top: 0 }
   },
-  // IMPORTANT: Apply layouts to the entire routes array, not only leaf nodes.
-  // This ensures parent index routes that have children (e.g., /admin/affiliates, /admin/orders/pre)
-  // are also wrapped with the default layout and show the sidebar/header.
   extendRoutes: routes => setupLayouts(routes as unknown as RouteRecordRaw[]),
 })
 

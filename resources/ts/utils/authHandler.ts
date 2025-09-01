@@ -4,21 +4,29 @@
  */
 
 let isHandling401 = false // Prevent multiple simultaneous redirects
+let lastHandleTime = 0 // Prevent rapid successive calls
 
 export const handle401Unauthorized = async (): Promise<void> => {
   // Prevent multiple simultaneous 401 handling
-  if (isHandling401) {
-    console.log('🔄 [Auth Handler] 401 already being handled, skipping...')
+  const now = Date.now()
+  if (isHandling401 || (now - lastHandleTime) < 1000) {
+    console.log('🔄 [Auth Handler] 401 already being handled or too soon, skipping...')
     return
   }
 
   isHandling401 = true
+  lastHandleTime = now
   console.log('🚫 [Auth Handler] Handling 401 Unauthorized')
 
   try {
     // Clear all auth data from localStorage
-    localStorage.removeItem('auth_token')
-    localStorage.removeItem('auth_user')
+    try {
+      localStorage.removeItem('auth_token')
+      localStorage.removeItem('auth_user')
+      console.log('✅ [Auth Handler] LocalStorage cleared')
+    } catch (storageError) {
+      console.warn('⚠️ [Auth Handler] LocalStorage clearing failed:', storageError)
+    }
     
     // Clear auth store if available
     try {
@@ -26,8 +34,8 @@ export const handle401Unauthorized = async (): Promise<void> => {
       const authStore = useAuthStore()
       authStore.clearAuth()
       console.log('✅ [Auth Handler] Auth store cleared')
-    } catch (e) {
-      console.warn('⚠️ [Auth Handler] Could not access auth store:', e)
+    } catch (storeError) {
+      console.warn('⚠️ [Auth Handler] Could not access auth store:', storeError)
     }
     
     // Redirect to login using router if available
@@ -36,13 +44,18 @@ export const handle401Unauthorized = async (): Promise<void> => {
       const router = useRouter()
       
       // Only redirect if not already on login page
-      if (router.currentRoute.value.name !== 'login') {
+      const currentRoute = router.currentRoute.value
+      if (currentRoute.name !== 'login' && !currentRoute.path.includes('/login')) {
         console.log('🔄 [Auth Handler] Redirecting to login via router')
-        await router.push({ name: 'login' })
+        await router.push({ name: 'login' }).catch((routerError) => {
+          console.warn('⚠️ [Auth Handler] Router navigation failed:', routerError)
+          // Fallback to window.location
+          window.location.href = '/login'
+        })
       } else {
         console.log('ℹ️ [Auth Handler] Already on login page')
       }
-    } catch (e) {
+    } catch (routerError) {
       // Fallback to window.location if router is not available
       console.warn('⚠️ [Auth Handler] Router not available, using window.location')
       if (!window.location.pathname.includes('/login')) {
@@ -52,12 +65,16 @@ export const handle401Unauthorized = async (): Promise<void> => {
   } catch (error) {
     console.error('❌ [Auth Handler] Error handling 401:', error)
     // Ultimate fallback
-    window.location.href = '/login'
+    try {
+      window.location.href = '/login'
+    } catch (locationError) {
+      console.error('❌ [Auth Handler] Even window.location failed:', locationError)
+    }
   } finally {
     // Reset the flag after a delay to allow for navigation
     setTimeout(() => {
       isHandling401 = false
-    }, 1000)
+    }, 2000)
   }
 }
 

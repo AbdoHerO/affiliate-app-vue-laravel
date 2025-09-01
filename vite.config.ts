@@ -14,6 +14,35 @@ import svgLoader from 'vite-svg-loader'
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  // Remove base and subfolder plugin - we're at root now
+  build: {
+    target: 'esnext',
+    minify: 'esbuild', // Use esbuild instead of terser for faster builds
+    sourcemap: false,
+    chunkSizeWarningLimit: 5000,
+    rollupOptions: {
+      output: {
+        chunkFileNames: 'assets/[name]-[hash].js',
+        entryFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: 'assets/[name]-[hash].[ext]',
+        manualChunks: (id) => {
+          // Create separate chunks for vendor libraries
+          if (id.includes('node_modules')) {
+            if (id.includes('vue')) {
+              return 'vendor-vue'
+            }
+            if (id.includes('vuetify')) {
+              return 'vendor-vuetify'
+            }
+            if (id.includes('axios') || id.includes('pinia')) {
+              return 'vendor-core'
+            }
+            return 'vendor-other'
+          }
+        },
+      },
+    },
+  },
   plugins: [// Docs: https://github.com/posva/unplugin-vue-router
   // ℹ️ This plugin should be placed before vue plugin
     VueRouter({
@@ -41,8 +70,9 @@ export default defineConfig({
     laravel({
       input: ['resources/ts/main.ts'],
       refresh: true,
-      buildDirectory: 'build', // Prevent /build prefix
+      buildDirectory: 'build',
     }),
+    // Remove createSubfolderPlugin - not needed for root domain
     vueJsx(), // Docs: https://github.com/vuetifyjs/vuetify-loader/tree/master/packages/vite-plugin
     vuetify({
       styles: {
@@ -102,9 +132,9 @@ export default defineConfig({
       '@api-utils': fileURLToPath(new URL('./resources/ts/plugins/fake-api/utils/', import.meta.url)),
     },
   },
-  build: {
-    chunkSizeWarningLimit: 5000,
-  },
+  // build: {
+  //   chunkSizeWarningLimit: 5000,
+  // },
   optimizeDeps: {
     exclude: ['vuetify'],
     entries: [

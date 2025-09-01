@@ -59,27 +59,33 @@ export const useAuthStore = defineStore('auth', () => {
     console.log('🔄 [Auth Store] Initializing authentication...')
     isLoading.value = true
 
-    const storedToken = localStorage.getItem('auth_token')
-    const storedUser = localStorage.getItem('auth_user')
+    try {
+      const storedToken = localStorage.getItem('auth_token')
+      const storedUser = localStorage.getItem('auth_user')
 
-    console.log('🔍 [Auth Store] Stored token:', storedToken ? storedToken.substring(0, 20) + '...' : 'None')
-    console.log('🔍 [Auth Store] Stored user:', storedUser ? 'Found' : 'None')
+      console.log('🔍 [Auth Store] Stored token:', storedToken ? storedToken.substring(0, 20) + '...' : 'None')
+      console.log('🔍 [Auth Store] Stored user:', storedUser ? 'Found' : 'None')
 
-    if (storedToken && storedUser) {
-      token.value = storedToken
-      try {
-        user.value = JSON.parse(storedUser)
-        console.log('✅ [Auth Store] Authentication restored from storage')
-      } catch (e) {
-        console.error('❌ [Auth Store] Failed to parse stored user data:', e)
-        clearAuth()
+      if (storedToken && storedUser) {
+        token.value = storedToken
+        try {
+          user.value = JSON.parse(storedUser)
+          console.log('✅ [Auth Store] Authentication restored from storage')
+        } catch (e) {
+          console.error('❌ [Auth Store] Failed to parse stored user data:', e)
+          clearAuth()
+        }
+      } else {
+        console.log('ℹ️ [Auth Store] No stored authentication found')
       }
-    } else {
-      console.log('ℹ️ [Auth Store] No stored authentication found')
-    }
 
-    isInitialized.value = true
-    isLoading.value = false
+      isInitialized.value = true
+    } catch (error) {
+      console.error('❌ [Auth Store] Initialization error:', error)
+      clearAuth()
+    } finally {
+      isLoading.value = false
+    }
   }
 
   const login = async (credentials: LoginCredentials): Promise<void> => {

@@ -24,6 +24,8 @@ return [
         'http://127.0.0.1:8000',
         'http://localhost:3000', // If using Vite dev server
         'http://localhost:5173', // Vite default port
+        'https://tujjar.shop', // Production domain
+        'http://tujjar.shop', // HTTP fallback
     ],
 
     'allowed_origins_patterns' => [],
