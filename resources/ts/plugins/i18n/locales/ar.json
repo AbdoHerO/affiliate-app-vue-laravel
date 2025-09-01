@@ -4064,7 +4064,12 @@
     "profile": {
       "image_select_valid": "يرجى اختيار ملف صورة صالح",
       "image_size_limit": "يجب أن يكون حجم الصورة أقل من 2 ميجابايت",
-      "image_remove_failed": "فشل في إزالة الصورة"
+      "image_remove_failed": "فشل في إزالة الصورة",
+      "location_not_specified": "الموقع غير محدد",
+      "join_date_unknown": "تاريخ الانضمام غير معروف",
+      "joined_date": "انضم في {date}",
+      "administrator": "مدير",
+      "affiliate_partner": "شريك تسويق"
     },
     "tickets": {
       "created_success": "تم إنشاء التذكرة بنجاح",

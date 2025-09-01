@@ -4074,7 +4074,12 @@
     "profile": {
       "image_select_valid": "Please select a valid image file",
       "image_size_limit": "Image size must be less than 2MB",
-      "image_remove_failed": "Failed to remove image"
+      "image_remove_failed": "Failed to remove image",
+      "location_not_specified": "Location not specified",
+      "join_date_unknown": "Join date unknown",
+      "joined_date": "Joined {date}",
+      "administrator": "Administrator",
+      "affiliate_partner": "Affiliate Partner"
     },
     "tickets": {
       "created_success": "Ticket created successfully",

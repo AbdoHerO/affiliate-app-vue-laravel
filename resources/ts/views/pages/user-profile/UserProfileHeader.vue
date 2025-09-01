@@ -1,11 +1,13 @@
 <script lang="ts" setup>
 import { useAuth } from '@/composables/useAuth'
+import { useI18n } from 'vue-i18n'
 import { getAvatarUrl } from '@/utils/imageUtils'
 import type { ProfileHeader } from '@/types/profile'
 import defaultCoverImg from '@images/pages/user-profile-header-bg.png'
 import defaultAvatar from '@images/avatars/avatar-1.png'
 
 const { user } = useAuth()
+const { t } = useI18n()
 
 // Create profile header data from authenticated user
 const profileHeaderData = computed<ProfileHeader>(() => {
@@ -22,11 +24,11 @@ const profileHeaderData = computed<ProfileHeader>(() => {
 
   return {
     fullName: user.value.nom_complet,
-    location: user.value.adresse || 'Location not specified',
+    location: user.value.adresse || t('profile.location_not_specified'),
     joiningDate: user.value.created_at 
-      ? `Joined ${new Date(user.value.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}`
-      : 'Join date unknown',
-    designation: user.value.roles?.includes('admin') ? 'Administrator' : 'Affiliate Partner',
+      ? t('profile.joined_date', { date: new Date(user.value.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) })
+      : t('profile.join_date_unknown'),
+    designation: user.value.roles?.includes('admin') ? t('profile.administrator') : t('profile.affiliate_partner'),
     profileImg: getAvatarUrl(user.value.photo_profil),
     coverImg: defaultCoverImg,
   }

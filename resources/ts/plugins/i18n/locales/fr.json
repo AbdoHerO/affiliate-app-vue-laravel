@@ -4132,7 +4132,12 @@
     "profile": {
       "image_select_valid": "Veuillez sélectionner un fichier image valide",
       "image_size_limit": "La taille de l'image doit être inférieure à 2 Mo",
-      "image_remove_failed": "Échec de la suppression de l'image"
+      "image_remove_failed": "Échec de la suppression de l'image",
+      "location_not_specified": "Lieu non spécifié",
+      "join_date_unknown": "Date d'inscription inconnue",
+      "joined_date": "Inscrit en {date}",
+      "administrator": "Administrateur",
+      "affiliate_partner": "Partenaire affilié"
     },
     "tickets": {
       "created_success": "Ticket créé avec succès",
