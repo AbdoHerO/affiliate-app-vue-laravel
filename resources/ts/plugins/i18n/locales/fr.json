@@ -4021,7 +4021,10 @@
       "error_adding": "Erreur lors de l'ajout au panier",
       "error_creating_order": "Erreur lors de la création de la commande. Veuillez réessayer plus tard.",
       "stock_insufficient": "Stock insuffisant",
-      "product_not_found": "Produit non trouvé"
+      "product_not_found": "Produit non trouvé",
+      "error_loading_cart": "Erreur lors du chargement du panier",
+      "order_created_success": "Commande créée avec succès",
+      "error_validating_order": "Erreur lors de la validation de la commande"
     },
     "orders": {
       "shipped_success": "Commande expédiée avec succès et stock décrémenté",
@@ -4055,6 +4058,7 @@
       "variant_added": "Variante ajoutée avec succès",
       "variant_deleted": "Variante supprimée avec succès",
       "variant_image_uploaded": "Image de variante téléchargée avec succès",
+      "stock_distributed": "Stock réparti entre les combinaisons de variantes",
       "proposition_added": "Proposition ajoutée avec succès",
       "proposition_updated": "Proposition mise à jour avec succès",
       "proposition_deleted": "Proposition supprimée avec succès",
@@ -4074,7 +4078,9 @@
     },
     "catalogue": {
       "error_loading_product": "Erreur lors du chargement du produit",
-      "error_loading_categories": "Erreur lors du chargement des catégories"
+      "error_loading_categories": "Erreur lors du chargement des catégories",
+      "unknown_error": "Erreur inconnue",
+      "failed_fetch_product_details": "Échec de la récupération des détails du produit"
     },
     "cities": {
       "error_loading": "Erreur lors du chargement des villes"
@@ -4085,12 +4091,14 @@
     },
     "profile": {
       "image_select_valid": "Veuillez sélectionner un fichier image valide",
-      "image_size_limit": "La taille de l'image doit être inférieure à 2 Mo"
+      "image_size_limit": "La taille de l'image doit être inférieure à 2 Mo",
+      "image_remove_failed": "Échec de la suppression de l'image"
     },
     "tickets": {
       "created_success": "Ticket créé avec succès",
       "error_loading_users": "Erreur lors du chargement des utilisateurs",
-      "unexpected_response": "Format de réponse inattendu du serveur"
+      "unexpected_response": "Format de réponse inattendu du serveur",
+      "failed_create": "Échec de la création du ticket"
     },
     "kyc": {
       "file_required": "Veuillez sélectionner un fichier",

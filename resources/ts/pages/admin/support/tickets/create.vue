@@ -414,7 +414,7 @@ const handleSubmit = async () => {
     console.error('🚫 [Create Ticket] Error creating ticket:', error)
     hasError.value = true
     errorMessage.value = error.message || 'An error occurred while creating the ticket'
-    showError(error.message || 'Failed to create ticket')
+    showError(error.message || t('alerts.tickets.failed_create'))
   } finally {
     isSubmitting.value = false
   }

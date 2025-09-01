@@ -3965,7 +3965,10 @@
       "error_adding": "Error adding to cart",
       "error_creating_order": "Error creating order. Please try again later.",
       "stock_insufficient": "Insufficient stock",
-      "product_not_found": "Product not found"
+      "product_not_found": "Product not found",
+      "error_loading_cart": "Error loading cart",
+      "order_created_success": "Order created successfully",
+      "error_validating_order": "Error validating order"
     },
     "orders": {
       "shipped_success": "Order shipped successfully and stock decremented",
@@ -3999,6 +4002,7 @@
       "variant_added": "Variant added successfully",
       "variant_deleted": "Variant deleted successfully",
       "variant_image_uploaded": "Variant image uploaded successfully",
+      "stock_distributed": "Stock distributed across variant combinations",
       "proposition_added": "Proposition added successfully",
       "proposition_updated": "Proposition updated successfully",
       "proposition_deleted": "Proposition deleted successfully",
@@ -4018,7 +4022,9 @@
     },
     "catalogue": {
       "error_loading_product": "Error loading product",
-      "error_loading_categories": "Error loading categories"
+      "error_loading_categories": "Error loading categories",
+      "unknown_error": "Unknown error",
+      "failed_fetch_product_details": "Failed to fetch product details"
     },
     "cities": {
       "error_loading": "Error loading cities"
@@ -4029,12 +4035,14 @@
     },
     "profile": {
       "image_select_valid": "Please select a valid image file",
-      "image_size_limit": "Image size must be less than 2MB"
+      "image_size_limit": "Image size must be less than 2MB",
+      "image_remove_failed": "Failed to remove image"
     },
     "tickets": {
       "created_success": "Ticket created successfully",
       "error_loading_users": "Error loading users",
-      "unexpected_response": "Unexpected response format from server"
+      "unexpected_response": "Unexpected response format from server",
+      "failed_create": "Failed to create ticket"
     },
     "kyc": {
       "file_required": "Please select a file",

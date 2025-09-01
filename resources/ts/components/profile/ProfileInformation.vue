@@ -165,7 +165,7 @@ const removeProfileImage = async () => {
 
     if (!response.ok) {
       const errorData = await response.json()
-      showError(errorData.message || 'Failed to remove image')
+      showError(errorData.message || t('alerts.profile.image_remove_failed'))
       return
     }
 
@@ -175,7 +175,7 @@ const removeProfileImage = async () => {
       showSuccess(data.message || t('alerts.profile_management.image_removed_success'))
     }
   } catch (err: any) {
-    showError(err.message || 'Failed to remove image')
+    showError(err.message || t('alerts.profile.image_remove_failed'))
   } finally {
     removingImage.value = false
   }

@@ -595,7 +595,7 @@ const handleAddVideoUrl = async () => {
         videos.value.push(response.data)
         newVideoUrl.value = ''
         newVideoTitle.value = ''
-        showSuccess('Video added successfully')
+        showSuccess(t('alerts.products.video_added'))
       }
     }
   } catch (error: any) {
@@ -626,7 +626,7 @@ const handleAddVideoUpload = async (files: FileList | File[]) => {
         const response = data.value as any
         if (response.success) {
           videos.value.push(response.data)
-          showSuccess('Video uploaded successfully')
+          showSuccess(t('alerts.products.video_uploaded'))
         }
       }
     } catch (error: any) {
@@ -654,7 +654,7 @@ const deleteVideo = async (id: string) => {
       const idx = videos.value.findIndex(v => v.id === id)
       if (idx > -1) {
         videos.value.splice(idx, 1)
-        showSuccess('Video deleted successfully')
+        showSuccess(t('alerts.products.video_deleted'))
       }
     }
   } catch (error: any) {
@@ -739,7 +739,7 @@ const addVariant = async () => {
       if (response.success) {
         variantes.value.push(response.data)
         resetVariantForm()
-        showSuccess('Variant added successfully')
+        showSuccess(t('alerts.products.variant_added'))
       }
     }
   } catch (error: any) {
@@ -826,7 +826,7 @@ const deleteVariant = async (id: string) => {
       const idx = variantes.value.findIndex(v => v.id === id)
       if (idx > -1) {
         variantes.value.splice(idx, 1)
-        showSuccess('Variant deleted successfully')
+        showSuccess(t('alerts.products.variant_deleted'))
       }
     }
   } catch (error: any) {
@@ -855,7 +855,7 @@ const uploadVariantImage = async (id: string, file: File) => {
         if (variant) {
           variant.image_url = response.data.image_url
           console.debug('[ProductForm] Variant image updated:', variant.image_url)
-          showSuccess('Variant image uploaded successfully')
+          showSuccess(t('alerts.products.variant_image_uploaded'))
         }
       } else {
         console.error('[ProductForm] Upload failed:', response.message)
@@ -989,7 +989,7 @@ const distributeStock = () => {
     item.available = Math.max(0, qty - item.reserved)
   })
 
-  showSuccess('Stock distributed across variant combinations')
+  showSuccess(t('alerts.products.stock_distributed'))
 }
 
 const generateCombinations = async () => {
@@ -1134,7 +1134,7 @@ const addProposition = async (propositionData: { titre: string; description: str
       const response = data.value as any
       if (response.success) {
         propositions.value.push(response.data)
-        showSuccess('Proposition added successfully')
+        showSuccess(t('alerts.products.proposition_added'))
         return response.data
       }
     }
@@ -1159,7 +1159,7 @@ const updateProposition = async (propositionId: string, propositionData: any) =>
         if (idx > -1) {
           propositions.value[idx] = response.data
         }
-        showSuccess('Proposition updated successfully')
+        showSuccess(t('alerts.products.proposition_updated'))
         return response.data
       }
     }
@@ -1179,7 +1179,7 @@ const deleteProposition = async (propositionId: string) => {
       const idx = propositions.value.findIndex(p => p.id === propositionId)
       if (idx > -1) {
         propositions.value.splice(idx, 1)
-        showSuccess('Proposition deleted successfully')
+        showSuccess(t('alerts.products.proposition_deleted'))
       }
     }
   } catch (error) {
@@ -1209,7 +1209,7 @@ const uploadPropositionImage = async (propositionId: string, file: File) => {
         if (proposition) {
           proposition.image_url = response.data.image_url
           console.debug('[ProductForm] Proposition image updated:', proposition.image_url)
-          showSuccess('Proposition image uploaded successfully')
+          showSuccess(t('alerts.products.proposition_image_uploaded'))
         }
       } else {
         console.error('[ProductForm] Proposition upload failed:', response.message)
@@ -1349,7 +1349,7 @@ const handleAddRupture = async () => {
         console.debug('[ProductForm] Added rupture response:', response.data)
         ruptures.value.push(response.data)
         Object.assign(newRupture, { variante_id: null, motif: '', started_at: '', expected_restock_at: '' })
-        showSuccess('Stock issue reported successfully')
+        showSuccess(t('alerts.products.stock_issue_reported'))
       }
     }
   } catch (error: any) {
@@ -1372,7 +1372,7 @@ const handleResolveRupture = async (ruptureId: string) => {
         if (idx > -1) {
           ruptures.value[idx] = response.data
         }
-        showSuccess('Stock issue resolved successfully')
+        showSuccess(t('alerts.products.stock_issue_resolved'))
       }
     }
   } catch (error) {
@@ -1396,7 +1396,7 @@ const handleDeleteRupture = async (ruptureId: string) => {
       const idx = ruptures.value.findIndex(r => r.id === ruptureId)
       if (idx > -1) {
         ruptures.value.splice(idx, 1)
-        showSuccess('Stock issue deleted successfully')
+        showSuccess(t('alerts.products.stock_issue_deleted'))
       }
     }
   } catch (error) {

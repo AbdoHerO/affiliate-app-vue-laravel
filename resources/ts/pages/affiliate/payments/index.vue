@@ -285,7 +285,7 @@ const downloadEvidence = (withdrawalId: string): void => {
   xhr.ontimeout = function() {
     console.error('Evidence download timeout')
     downloadingPdf.value = null
-    showError('Timeout lors du téléchargement')
+    showError(t('alerts.payments.timeout_error'))
   }
 
   xhr.timeout = 30000 // 30 seconds timeout

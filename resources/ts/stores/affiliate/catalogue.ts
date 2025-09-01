@@ -527,7 +527,7 @@ export const useCatalogueStore = defineStore('affiliate-catalogue', () => {
       }
     } catch (err: any) {
       error.value = err.message || 'Erreur lors du chargement du catalogue'
-      showError(error.value || 'Erreur inconnue')
+      showError(error.value || t('alerts.catalogue.unknown_error'))
     } finally {
       loading.value = false
     }
@@ -551,7 +551,7 @@ export const useCatalogueStore = defineStore('affiliate-catalogue', () => {
       }
     } catch (err: any) {
       error.value = err.message || 'Erreur lors du chargement du produit'
-      showError(error.value || 'Erreur inconnue')
+      showError(error.value || t('alerts.catalogue.unknown_error'))
     } finally {
       detailLoading.value = false
     }
@@ -638,7 +638,7 @@ export const useCatalogueStore = defineStore('affiliate-catalogue', () => {
 
       if (apiError.value) {
         error.value = apiError.value.message || 'Failed to fetch product details'
-        showError(error.value || 'Failed to fetch product details')
+        showError(error.value || t('alerts.catalogue.failed_fetch_product_details'))
         return
       }
 
@@ -658,7 +658,7 @@ export const useCatalogueStore = defineStore('affiliate-catalogue', () => {
       }
     } catch (err: any) {
       error.value = err.message || 'Failed to fetch product details'
-      showError(error.value || 'Failed to fetch product details')
+      showError(error.value || t('alerts.catalogue.failed_fetch_product_details'))
     } finally {
       detailLoading.value = false
     }
@@ -791,7 +791,7 @@ export const useCatalogueStore = defineStore('affiliate-catalogue', () => {
         } else if (apiError.value.status === 404) {
           showError(t('alerts.cart.product_not_found'))
         } else {
-          showError(apiError.value.message || 'Erreur lors de l\'ajout au panier')
+          showError(apiError.value.message || t('alerts.cart.error_adding'))
         }
         return false
       }
@@ -804,7 +804,7 @@ export const useCatalogueStore = defineStore('affiliate-catalogue', () => {
 
       return false
     } catch (err: any) {
-      showError(err.message || 'Erreur lors de l\'ajout au panier')
+      showError(err.message || t('alerts.cart.error_adding'))
       return false
     } finally {
       addingToCart.value = false

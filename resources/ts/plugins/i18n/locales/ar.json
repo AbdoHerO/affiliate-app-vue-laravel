@@ -3960,7 +3960,10 @@
       "error_adding": "خطأ في الإضافة للسلة",
       "error_creating_order": "خطأ في إنشاء الطلب. يرجى المحاولة مرة أخرى لاحقاً.",
       "stock_insufficient": "المخزون غير كافي",
-      "product_not_found": "المنتج غير موجود"
+      "product_not_found": "المنتج غير موجود",
+      "error_loading_cart": "خطأ في تحميل السلة",
+      "order_created_success": "تم إنشاء الطلب بنجاح",
+      "error_validating_order": "خطأ في التحقق من الطلب"
     },
     "orders": {
       "shipped_success": "تم شحن الطلب بنجاح وتقليل المخزون",
@@ -3994,6 +3997,7 @@
       "variant_added": "تم إضافة المتغير بنجاح",
       "variant_deleted": "تم حذف المتغير بنجاح",
       "variant_image_uploaded": "تم رفع صورة المتغير بنجاح",
+      "stock_distributed": "تم توزيع المخزون عبر تركيبات المتغيرات",
       "error_saving_variant": "خطأ في حفظ المتغير",
       "error_deleting_variant": "خطأ في حذف المتغير",
       "error_saving_video": "خطأ في حفظ الفيديو",
@@ -4006,7 +4010,9 @@
     },
     "catalogue": {
       "error_loading_product": "خطأ في تحميل المنتج",
-      "error_loading_categories": "خطأ في تحميل الفئات"
+      "error_loading_categories": "خطأ في تحميل الفئات",
+      "unknown_error": "خطأ غير معروف",
+      "failed_fetch_product_details": "فشل في جلب تفاصيل المنتج"
     },
     "cities": {
       "error_loading": "خطأ في تحميل المدن"
@@ -4017,12 +4023,14 @@
     },
     "profile": {
       "image_select_valid": "يرجى اختيار ملف صورة صالح",
-      "image_size_limit": "يجب أن يكون حجم الصورة أقل من 2 ميجابايت"
+      "image_size_limit": "يجب أن يكون حجم الصورة أقل من 2 ميجابايت",
+      "image_remove_failed": "فشل في إزالة الصورة"
     },
     "tickets": {
       "created_success": "تم إنشاء التذكرة بنجاح",
       "error_loading_users": "خطأ في تحميل المستخدمين",
-      "unexpected_response": "تنسيق استجابة غير متوقع من الخادم"
+      "unexpected_response": "تنسيق استجابة غير متوقع من الخادم",
+      "failed_create": "فشل في إنشاء التذكرة"
     },
     "kyc": {
       "file_required": "يرجى اختيار ملف",

@@ -146,7 +146,7 @@ export const useAffiliateCartStore = defineStore('affiliate-cart', () => {
     } catch (err: any) {
       error.value = err.message || 'Erreur lors du chargement du panier'
       console.error('❌ [Cart Store] Fetch cart error:', err)
-      showError(error.value || 'Erreur lors du chargement du panier')
+      showError(error.value || t('alerts.cart.error_loading_cart'))
     } finally {
       loading.value = false
     }
@@ -353,7 +353,7 @@ export const useAffiliateCartStore = defineStore('affiliate-cart', () => {
 
       const responseData = data.value as any
       if (responseData?.success) {
-        showSuccess(responseData.message || 'Commande créée avec succès')
+        showSuccess(responseData.message || t('alerts.cart.order_created_success'))
         // Clear cart after successful checkout
         items.value = []
         summary.value = {
@@ -366,7 +366,7 @@ export const useAffiliateCartStore = defineStore('affiliate-cart', () => {
       return data.value as CheckoutResponse
     } catch (err: any) {
       error.value = err.message || 'Erreur lors de la validation de la commande'
-      showError(error.value || 'Erreur lors de la validation de la commande')
+      showError(error.value || t('alerts.cart.error_validating_order'))
       throw err
     } finally {
       loading.value = false
