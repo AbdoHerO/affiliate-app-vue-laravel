@@ -52,7 +52,10 @@ onMounted(async () => {
 
   if (!token || !email) {
     showError(t('reset_password_invalid_token'))
-    router.push({ name: 'login' })
+    setTimeout(() => {
+      router.push({ name: 'login' })
+    }, 3000)
+    isValidating.value = false
     return
   }
 
@@ -68,12 +71,17 @@ onMounted(async () => {
     if (response.data.success) {
       isValidToken.value = true
     } else {
-      showError(t('reset_password_invalid_token'))
-      router.push({ name: 'forgot-password' })
+      showError(response.data.message || t('reset_password_invalid_token'))
+      setTimeout(() => {
+        router.push({ name: 'forgot-password' })
+      }, 3000)
     }
   } catch (error: any) {
-    showError(t('reset_password_invalid_token'))
-    router.push({ name: 'forgot-password' })
+    const errorMessage = error.response?.data?.message || t('reset_password_invalid_token')
+    showError(errorMessage)
+    setTimeout(() => {
+      router.push({ name: 'forgot-password' })
+    }, 3000)
   } finally {
     isValidating.value = false
   }

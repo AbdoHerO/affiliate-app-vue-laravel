@@ -41,8 +41,6 @@ const handleSubmit = async () => {
   clearErrors()
   isLoading.value = true
 
-  console.log('Submitting form with email:', form.value.email)
-
   // Basic validation
   if (!form.value.email || !form.value.email.trim()) {
     showError(t('forgot_password_email_required') || 'Email is required')
@@ -55,8 +53,6 @@ const handleSubmit = async () => {
       email: form.value.email,
     })
 
-    console.log('Response:', response.data)
-
     if (response.data.success) {
       isSubmitted.value = true
       showSuccess(t('forgot_password_success'))
@@ -64,7 +60,6 @@ const handleSubmit = async () => {
       showError(response.data.message || t('forgot_password_error'))
     }
   } catch (error: any) {
-    console.error('Error:', error.response?.data || error.message)
     if (error.response?.status === 422 && error.response?.data?.errors) {
       setErrors(error.response.data.errors)
     } else {

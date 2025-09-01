@@ -12,22 +12,47 @@ export class AppInitService {
 
     try {
       console.log('Initializing app with settings...')
-      
-      // Load general settings from the backend
-      const response = await $api('/admin/settings/general', {
-        method: 'GET'
-      })
 
-      if (response.success && response.data) {
-        // Update theme config with settings
-        ThemeConfigService.updateFromSettings(response.data)
-        
-        // Update document meta tags
-        this.updateDocumentMeta(response.data)
-        
-        console.log('App initialized successfully with settings')
+      // Check if we're on a public page (no authentication required)
+      const currentPath = window.location.pathname
+      const isPublicPage = [
+        '/login',
+        '/register',
+        '/affiliate-signup',
+        '/forgot-password',
+        '/reset-password'
+      ].some(path => currentPath.includes(path))
+
+      if (isPublicPage) {
+        console.log('Public page detected, skipping admin settings load')
+        this.initialized = true
+        return
       }
-      
+
+      // Only load admin settings for authenticated pages
+      try {
+        const response = await $api('/admin/settings/general', {
+          method: 'GET'
+        })
+
+        if (response.success && response.data) {
+          // Update theme config with settings
+          ThemeConfigService.updateFromSettings(response.data)
+
+          // Update document meta tags
+          this.updateDocumentMeta(response.data)
+
+          console.log('App initialized successfully with settings')
+        }
+      } catch (settingsError: any) {
+        // If it's a 401 error, we're probably on a public page
+        if (settingsError.response?.status === 401) {
+          console.log('Unauthorized access to settings - likely on public page')
+        } else {
+          console.error('Failed to load settings:', settingsError)
+        }
+      }
+
       this.initialized = true
     } catch (error) {
       console.error('Failed to initialize app with settings:', error)
