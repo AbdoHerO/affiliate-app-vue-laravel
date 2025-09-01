@@ -277,7 +277,7 @@ const handleSubmitOrder = async () => {
     }
   } catch (error) {
     console.error('Checkout error:', error)
-    showError('Erreur lors de la création de la commande. Veuillez réessayer plus tard.')
+    showError(t('alerts.cart.error_creating_order'))
   } finally {
     submitting.value = false
   }

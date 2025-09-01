@@ -361,10 +361,10 @@ const saveProduct = async () => {
     // Handle validation errors and other API errors
     if (error.errors) {
       setProductErrors(error.errors)
-      showError(error.message || 'Validation failed')
+      showError(error.message || t('alerts.products.validation_failed'))
       console.error('Product validation error:', error)
     } else {
-      showError(error.message || 'Failed to save product')
+      showError(error.message || t('alerts.products.failed_to_save'))
       console.error('Error saving product:', error)
     }
   } finally {
@@ -523,7 +523,7 @@ const handleImageUpload = async (files: FileList | File[]) => {
 
       if (apiError.value) {
         console.error('Image upload error details:', apiError.value)
-        showError(apiError.value.message || 'Failed to upload image')
+        showError(apiError.value.message || t('alerts.products.failed_upload_image'))
         console.error('Image upload error:', apiError.value)
       } else if (data.value) {
         const response = data.value as any
@@ -534,7 +534,7 @@ const handleImageUpload = async (files: FileList | File[]) => {
       }
     } catch (error: any) {
       console.error('Error uploading image:', error)
-      showError(error.message || 'Failed to upload image')
+      showError(error.message || t('alerts.products.failed_upload_image'))
     }
   }
 }
@@ -552,18 +552,18 @@ const handleDeleteImage = async (imageId: string) => {
     })
 
     if (apiError.value) {
-      showError(apiError.value.message || 'Failed to delete image')
+      showError(apiError.value.message || t('alerts.products.failed_delete_image'))
       console.error('Delete image error:', apiError.value)
     } else {
       const idx = images.value.findIndex(img => img.id === imageId)
       if (idx > -1) {
         images.value.splice(idx, 1)
-        showSuccess('Image deleted successfully')
+        showSuccess(t('alerts.products.image_deleted'))
       }
     }
   } catch (error: any) {
     console.error('Error deleting image:', error)
-    showError(error.message || 'Failed to delete image')
+    showError(error.message || t('alerts.products.failed_delete_image'))
   }
 }
 
@@ -587,7 +587,7 @@ const handleAddVideoUrl = async () => {
     })
 
     if (apiError.value) {
-      showError(apiError.value.message || 'Failed to add video')
+      showError(apiError.value.message || t('alerts.products.failed_add_video'))
       console.error('Add video URL error:', apiError.value)
     } else if (data.value) {
       const response = data.value as any
@@ -600,7 +600,7 @@ const handleAddVideoUrl = async () => {
     }
   } catch (error: any) {
     console.error('Error adding video URL:', error)
-    showError(error.message || 'Failed to add video')
+    showError(error.message || t('alerts.products.failed_add_video'))
   }
 }
 const handleAddVideoUpload = async (files: FileList | File[]) => {
@@ -620,7 +620,7 @@ const handleAddVideoUpload = async (files: FileList | File[]) => {
       })
 
       if (apiError.value) {
-        showError(apiError.value.message || 'Failed to upload video')
+        showError(apiError.value.message || t('alerts.products.failed_upload_video'))
         console.error('Video upload error:', apiError.value)
       } else if (data.value) {
         const response = data.value as any
@@ -631,7 +631,7 @@ const handleAddVideoUpload = async (files: FileList | File[]) => {
       }
     } catch (error: any) {
       console.error('Error uploading video:', error)
-      showError(error.message || 'Failed to upload video')
+      showError(error.message || t('alerts.products.failed_upload_video'))
     }
   }
 }
@@ -648,7 +648,7 @@ const deleteVideo = async (id: string) => {
     })
 
     if (apiError.value) {
-      showError(apiError.value.message || 'Failed to delete video')
+      showError(apiError.value.message || t('alerts.products.failed_delete_video'))
       console.error('Delete video error:', apiError.value)
     } else {
       const idx = videos.value.findIndex(v => v.id === id)
@@ -659,7 +659,7 @@ const deleteVideo = async (id: string) => {
     }
   } catch (error: any) {
     console.error('Error deleting video:', error)
-    showError(error.message || 'Failed to delete video')
+    showError(error.message || t('alerts.products.failed_delete_video'))
   }
 }
 
@@ -732,7 +732,7 @@ const addVariant = async () => {
     })
 
     if (apiError.value) {
-      showError(apiError.value.message || 'Failed to add variant')
+      showError(apiError.value.message || t('alerts.products.failed_add_variant'))
       console.error('Add variant error:', apiError.value)
     } else if (data.value) {
       const response = data.value as any
@@ -744,7 +744,7 @@ const addVariant = async () => {
     }
   } catch (error: any) {
     console.error('Error adding variant:', error)
-    showError(error.message || 'Failed to add variant')
+    showError(error.message || t('alerts.products.failed_add_variant'))
   }
 }
 
@@ -772,7 +772,7 @@ const addVariantsBulk = async () => {
     })
 
     if (apiError.value) {
-      showError(apiError.value.message || 'Failed to add variants')
+      showError(apiError.value.message || t('alerts.products.failed_add_variants'))
       console.error('Add variants bulk error:', apiError.value)
     } else if (data.value) {
       const response = data.value as any
@@ -792,7 +792,7 @@ const addVariantsBulk = async () => {
     }
   } catch (error: any) {
     console.error('Error adding variants bulk:', error)
-    showError(error.message || 'Failed to add variants')
+    showError(error.message || t('alerts.products.failed_add_variants'))
   }
 }
 

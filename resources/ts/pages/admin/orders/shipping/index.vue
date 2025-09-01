@@ -300,8 +300,11 @@ const updateShippingStatus = async () => {
       note: statusNote.value || undefined
     })
 
-    showSuccess(`Statut mis à jour vers: ${getStatusText(newStatus.value)}` +
-                (newStatus.value === 'livree' ? ' (Commission créée automatiquement)' : ''))
+    const statusMessage = newStatus.value === 'livree' 
+      ? t('alerts.shipping.status_updated_with_commission', { status: getStatusText(newStatus.value) })
+      : t('alerts.shipping.status_updated_to', { status: getStatusText(newStatus.value) })
+    
+    showSuccess(statusMessage)
     showStatusUpdateDialog.value = false
 
     // Refresh the orders list
@@ -426,7 +429,7 @@ const createDeliveryNote = async () => {
 }
 
 const handleDeliveryNoteCreated = (ref: string) => {
-  showSuccess(`Bon de livraison créé avec succès: ${ref}`)
+  showSuccess(t('alerts.shipping.shipping_slip_created_with_ref', { ref }))
   selectedOrders.value = []
   // Refresh the list to show updated delivery note refs
   fetchShippingOrders()

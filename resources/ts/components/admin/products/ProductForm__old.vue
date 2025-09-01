@@ -174,7 +174,7 @@ const loadProduct = async () => {
         await loadRuptures()
       }
     } catch (error) {
-      showError('Failed to load product')
+      showError(t('alerts.products.failed_to_load'))
       console.error('Error loading product:', error)
     } finally {
       loading.value = false
@@ -193,12 +193,12 @@ const saveProduct = async () => {
 
   // Basic validation
   if (!form.value.titre.trim()) {
-    showError('Product title is required')
+    showError(t('alerts.products.title_required'))
     return
   }
 
   if (!form.value.boutique_id) {
-    showError('Boutique selection is required')
+    showError(t('alerts.products.boutique_required'))
     return
   }
 
@@ -240,17 +240,17 @@ const saveProduct = async () => {
       router.replace(`/admin/produits/${created.id}/edit?tab=images`)
 
       clearProductErrors()
-      showSuccess('Product created successfully')
+      showSuccess(t('alerts.products.created_success'))
     } else if (localId.value) {
       // Update existing product
       console.debug('[ProductForm] Updating product with ID:', localId.value)
       const updated = await produitsStore.updateProduit(localId.value, form.value)
       emit('updated', updated)
       clearProductErrors()
-      showSuccess('Product updated successfully')
+      showSuccess(t('alerts.products.updated_success'))
     } else {
       console.error('[ProductForm] Invalid state: create mode but no localId and no create action')
-      showError('Invalid form state')
+      showError(t('alerts.products.invalid_form'))
     }
   } catch (error: any) {
     // Handle validation errors and other API errors
@@ -442,7 +442,7 @@ const handleDeleteImage = async (imageId: string) => {
       const idx = images.value.findIndex(img => img.id === imageId)
       if (idx > -1) {
         images.value.splice(idx, 1)
-        showSuccess('Image deleted successfully')
+        showSuccess(t('alerts.products.image_deleted'))
       }
     }
   } catch (error: any) {
@@ -479,7 +479,7 @@ const handleAddVideoUrl = async () => {
         videos.value.push(response.data)
         newVideoUrl.value = ''
         newVideoTitle.value = ''
-        showSuccess('Video added successfully')
+        showSuccess(t('alerts.products.video_added'))
       }
     }
   } catch (error: any) {
@@ -510,7 +510,7 @@ const handleAddVideoUpload = async (files: FileList | File[]) => {
         const response = data.value as any
         if (response.success) {
           videos.value.push(response.data)
-          showSuccess('Video uploaded successfully')
+          showSuccess(t('alerts.products.video_uploaded'))
         }
       }
     } catch (error: any) {

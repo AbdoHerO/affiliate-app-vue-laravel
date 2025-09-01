@@ -377,7 +377,7 @@ const saveVideo = async () => {
       closeDialog()
     }
   } catch (err) {
-    showError('Error saving video')
+    showError(t('alerts.products.error_saving_video'))
   } finally {
     isLoading.value = false
   }
@@ -407,7 +407,7 @@ const confirmDeleteVideo = async () => {
     showDeleteDialog.value = false
     videoToDelete.value = null
   } catch (err) {
-    showError('Error deleting video')
+    showError(t('alerts.products.error_deleting_video'))
   } finally {
     isLoading.value = false
   }

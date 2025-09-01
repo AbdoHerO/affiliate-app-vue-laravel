@@ -3963,6 +3963,7 @@
       "product_removed": "Product removed from cart",
       "cart_cleared": "Cart cleared",
       "error_adding": "Error adding to cart",
+      "error_creating_order": "Error creating order. Please try again later.",
       "stock_insufficient": "Insufficient stock",
       "product_not_found": "Product not found"
     },
@@ -4060,7 +4061,9 @@
     "shipping": {
       "status_updated": "Status updated to",
       "status_updated_with_commission": "Status updated to: {status} (Commission created automatically)",
+      "status_updated_to": "Status updated to: {status}",
       "shipping_slip_created": "Shipping slip created successfully",
+      "shipping_slip_created_with_ref": "Shipping slip created successfully: {ref}",
       "shipping_slip_ref": "Shipping slip created",
       "packages_added_to_slip": "packages added to shipping slip",
       "order_shipped_success": "Order shipped successfully and stock decremented",

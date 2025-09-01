@@ -431,7 +431,7 @@ const saveVariant = async () => {
       closeDialog()
     }
   } catch (err) {
-    showError('Error saving variant')
+    showError(t('alerts.products.error_saving_variant'))
   } finally {
     isLoading.value = false
   }
@@ -461,7 +461,7 @@ const confirmDeleteVariant = async () => {
     showDeleteDialog.value = false
     variantToDelete.value = null
   } catch (err) {
-    showError('Error deleting variant')
+    showError(t('alerts.products.error_deleting_variant'))
   } finally {
     isLoading.value = false
   }

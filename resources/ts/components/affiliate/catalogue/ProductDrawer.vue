@@ -265,7 +265,7 @@ const copyToClipboard = async (text: string) => {
     await navigator.clipboard.writeText(text)
     showSuccess('Texte copié dans le presse-papiers')
   } catch (err) {
-    showError('Erreur lors de la copie')
+    showError(t('alerts.copy.copy_error'))
   }
 }
 

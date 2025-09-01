@@ -4019,6 +4019,7 @@
       "product_removed": "Produit retiré du panier",
       "cart_cleared": "Panier vidé",
       "error_adding": "Erreur lors de l'ajout au panier",
+      "error_creating_order": "Erreur lors de la création de la commande. Veuillez réessayer plus tard.",
       "stock_insufficient": "Stock insuffisant",
       "product_not_found": "Produit non trouvé"
     },
@@ -4116,7 +4117,9 @@
     "shipping": {
       "status_updated": "Statut mis à jour vers",
       "status_updated_with_commission": "Statut mis à jour vers: {status} (Commission créée automatiquement)",
+      "status_updated_to": "Statut mis à jour vers: {status}",
       "shipping_slip_created": "Bon de livraison créé avec succès",
+      "shipping_slip_created_with_ref": "Bon de livraison créé avec succès: {ref}",
       "shipping_slip_ref": "Bon de livraison créé",
       "packages_added_to_slip": "colis ajoutés au bon de livraison",
       "order_shipped_success": "Commande expédiée avec succès et stock décrémenté",
