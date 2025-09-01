@@ -269,7 +269,7 @@ const downloadEvidence = (withdrawalId: string): void => {
       link.click()
       document.body.removeChild(link)
       window.URL.revokeObjectURL(url)
-      showSuccess('Preuve de paiement téléchargée avec succès')
+      showSuccess(t('alerts.payments.proof_uploaded'))
     } else {
       console.error(`Evidence download failed with status: ${xhr.status}`)
       showError(`Erreur lors du téléchargement: ${xhr.status}`)

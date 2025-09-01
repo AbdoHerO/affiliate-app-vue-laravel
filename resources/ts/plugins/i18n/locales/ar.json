@@ -4025,6 +4025,38 @@
     },
     "navigation": {
       "commission_details_error": "خطأ في التنقل لتفاصيل العمولة"
+    },
+    "form_validation": {
+      "failed_upload_variant_image": "فشل في رفع صورة المتغير",
+      "failed_load_warehouses": "فشل في تحميل المستودعات",
+      "invalid_warehouse_data": "بيانات مستودع غير صالحة تم استلامها",
+      "error_loading_warehouses": "خطأ في تحميل المستودعات",
+      "warehouse_not_found": "المستودع غير موجود. يرجى التحقق من تكوين المستودع.",
+      "failed_load_stock_matrix": "فشل في تحميل مصفوفة المخزون",
+      "error_loading_stock_matrix": "خطأ في تحميل مصفوفة المخزون",
+      "error_generating_combinations": "خطأ في إنتاج التركيبات",
+      "unexpected_error_combinations": "خطأ غير متوقع في إنتاج التركيبات",
+      "unexpected_error_stock_allocation": "خطأ غير متوقع أثناء تخصيص المخزون",
+      "failed_update_proposition": "فشل في تحديث الاقتراح",
+      "failed_delete_proposition": "فشل في حذف الاقتراح",
+      "failed_upload_proposition_image": "فشل في رفع صورة الاقتراح",
+      "failed_resolve_stock_issue": "فشل في حل مشكلة المخزون",
+      "failed_delete_stock_issue": "فشل في حذف مشكلة المخزون"
+    },
+    "shipping": {
+      "status_updated": "تم تحديث الحالة إلى",
+      "status_updated_with_commission": "تم تحديث الحالة إلى: {status} (تم إنشاء العمولة تلقائياً)",
+      "shipping_slip_created": "تم إنشاء سند الشحن بنجاح",
+      "shipping_slip_ref": "تم إنشاء سند الشحن",
+      "packages_added_to_slip": "طرود تمت إضافتها إلى سند الشحن",
+      "order_shipped_success": "تم شحن الطلب بنجاح وتم تقليل المخزون",
+      "order_returned_success": "تم إرجاع الطلب إلى المستودع بنجاح وتم زيادة المخزون"
+    },
+    "preorders": {
+      "sent_to_ozonexpress": "تم إرسال الطلب إلى OzonExpress بوضع"
+    },
+    "profile_management": {
+      "image_removed_success": "تم حذف صورة الملف الشخصي بنجاح"
     }
   }
 }

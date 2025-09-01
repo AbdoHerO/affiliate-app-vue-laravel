@@ -273,7 +273,7 @@ const loadProduct = async () => {
         isDirty.value = false
       }
     } catch (error) {
-      showError('Failed to load product')
+      showError(t('alerts.products.failed_to_load'))
       console.error('Error loading product:', error)
     } finally {
       loading.value = false
@@ -292,12 +292,12 @@ const saveProduct = async () => {
 
   // Basic validation
   if (!form.value.titre.trim()) {
-    showError('Product title is required')
+    showError(t('alerts.products.title_required'))
     return
   }
 
   if (!form.value.boutique_id) {
-    showError('Boutique selection is required')
+    showError(t('alerts.products.boutique_required'))
     return
   }
 
@@ -355,7 +355,7 @@ const saveProduct = async () => {
       await handleStockAllocation()
     } else {
       console.error('[ProductForm] Invalid state: create mode but no localId and no create action')
-      showError('Invalid form state')
+      showError(t('alerts.products.invalid_form'))
     }
   } catch (error: any) {
     // Handle validation errors and other API errors
@@ -1007,11 +1007,11 @@ const generateCombinations = async () => {
       // Reload the stock matrix to show the new combinations
       await loadStockMatrix()
     } else if (error.value) {
-      showError('Erreur lors de la génération des combinaisons')
+      showError(t('alerts.form_validation.error_generating_combinations'))
     }
   } catch (error) {
     console.error('Failed to generate combinations:', error)
-    showError('Erreur inattendue lors de la génération des combinaisons')
+    showError(t('alerts.form_validation.unexpected_error_combinations'))
   } finally {
     generatingCombinations.value = false
   }
@@ -1113,7 +1113,7 @@ const handleStockAllocation = async () => {
       await loadStockMatrix()
     }
   } catch (error: any) {
-    showError('Erreur inattendue lors de l\'allocation du stock')
+    showError(t('alerts.form_validation.unexpected_error_stock_allocation'))
   }
 }
 

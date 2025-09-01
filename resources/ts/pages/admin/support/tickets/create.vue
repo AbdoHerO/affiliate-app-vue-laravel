@@ -399,7 +399,7 @@ const handleSubmit = async () => {
 
     if (result?.success) {
       console.log('✅ [Create Ticket] Ticket created successfully')
-      showSuccess('Ticket created successfully')
+      showSuccess(t('alerts.tickets.created_success'))
       
       // Navigate back to tickets list
       await safePush('/admin/support/tickets', {

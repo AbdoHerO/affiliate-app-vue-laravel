@@ -3982,6 +3982,15 @@
       "title_required": "Product title is required",
       "boutique_required": "Boutique selection is required",
       "failed_to_load": "Failed to load product",
+      "validation_failed": "Validation failed",
+      "failed_to_save": "Failed to save product",
+      "failed_upload_image": "Failed to upload image",
+      "failed_delete_image": "Failed to delete image",
+      "failed_add_video": "Failed to add video",
+      "failed_upload_video": "Failed to upload video",
+      "failed_delete_video": "Failed to delete video",
+      "failed_add_variant": "Failed to add variant",
+      "failed_add_variants": "Failed to add variants",
       "image_deleted": "Image deleted successfully",
       "video_added": "Video added successfully",
       "video_uploaded": "Video uploaded successfully",
@@ -4030,6 +4039,38 @@
     },
     "navigation": {
       "commission_details_error": "Error navigating to commission details"
+    },
+    "form_validation": {
+      "failed_upload_variant_image": "Failed to upload variant image",
+      "failed_load_warehouses": "Failed to load warehouses",
+      "invalid_warehouse_data": "Invalid warehouse data received",
+      "error_loading_warehouses": "Error loading warehouses",
+      "warehouse_not_found": "Warehouse not found. Please check warehouse configuration.",
+      "failed_load_stock_matrix": "Failed to load stock matrix",
+      "error_loading_stock_matrix": "Error loading stock matrix",
+      "error_generating_combinations": "Error generating combinations",
+      "unexpected_error_combinations": "Unexpected error generating combinations",
+      "unexpected_error_stock_allocation": "Unexpected error during stock allocation",
+      "failed_update_proposition": "Failed to update proposition",
+      "failed_delete_proposition": "Failed to delete proposition",
+      "failed_upload_proposition_image": "Failed to upload proposition image",
+      "failed_resolve_stock_issue": "Failed to resolve stock issue",
+      "failed_delete_stock_issue": "Failed to delete stock issue"
+    },
+    "shipping": {
+      "status_updated": "Status updated to",
+      "status_updated_with_commission": "Status updated to: {status} (Commission created automatically)",
+      "shipping_slip_created": "Shipping slip created successfully",
+      "shipping_slip_ref": "Shipping slip created",
+      "packages_added_to_slip": "packages added to shipping slip",
+      "order_shipped_success": "Order shipped successfully and stock decremented",
+      "order_returned_success": "Order returned to warehouse successfully and stock re-incremented"
+    },
+    "preorders": {
+      "sent_to_ozonexpress": "Order sent to OzonExpress in mode"
+    },
+    "profile_management": {
+      "image_removed_success": "Profile image removed successfully"
     }
   }
 }

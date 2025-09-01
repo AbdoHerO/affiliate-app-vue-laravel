@@ -4038,6 +4038,15 @@
       "title_required": "Le titre du produit est requis",
       "boutique_required": "La sélection de boutique est requise",
       "failed_to_load": "Échec du chargement du produit",
+      "validation_failed": "Échec de la validation",
+      "failed_to_save": "Échec de l'enregistrement du produit",
+      "failed_upload_image": "Échec du téléchargement de l'image",
+      "failed_delete_image": "Échec de la suppression de l'image",
+      "failed_add_video": "Échec de l'ajout de la vidéo",
+      "failed_upload_video": "Échec du téléchargement de la vidéo",
+      "failed_delete_video": "Échec de la suppression de la vidéo",
+      "failed_add_variant": "Échec de l'ajout de la variante",
+      "failed_add_variants": "Échec de l'ajout des variantes",
       "image_deleted": "Image supprimée avec succès",
       "video_added": "Vidéo ajoutée avec succès",
       "video_uploaded": "Vidéo téléchargée avec succès",
@@ -4086,6 +4095,38 @@
     },
     "navigation": {
       "commission_details_error": "Erreur de navigation vers les détails de la commission"
+    },
+    "form_validation": {
+      "failed_upload_variant_image": "Échec du téléchargement de l'image de variante",
+      "failed_load_warehouses": "Échec du chargement des entrepôts",
+      "invalid_warehouse_data": "Données d'entrepôt invalides reçues",
+      "error_loading_warehouses": "Erreur lors du chargement des entrepôts",
+      "warehouse_not_found": "Entrepôt non trouvé. Veuillez vérifier la configuration de l'entrepôt.",
+      "failed_load_stock_matrix": "Échec du chargement de la matrice de stock",
+      "error_loading_stock_matrix": "Erreur lors du chargement de la matrice de stock",
+      "error_generating_combinations": "Erreur lors de la génération des combinaisons",
+      "unexpected_error_combinations": "Erreur inattendue lors de la génération des combinaisons",
+      "unexpected_error_stock_allocation": "Erreur inattendue lors de l'allocation du stock",
+      "failed_update_proposition": "Échec de la mise à jour de la proposition",
+      "failed_delete_proposition": "Échec de la suppression de la proposition",
+      "failed_upload_proposition_image": "Échec du téléchargement de l'image de proposition",
+      "failed_resolve_stock_issue": "Échec de la résolution du problème de stock",
+      "failed_delete_stock_issue": "Échec de la suppression du problème de stock"
+    },
+    "shipping": {
+      "status_updated": "Statut mis à jour vers",
+      "status_updated_with_commission": "Statut mis à jour vers: {status} (Commission créée automatiquement)",
+      "shipping_slip_created": "Bon de livraison créé avec succès",
+      "shipping_slip_ref": "Bon de livraison créé",
+      "packages_added_to_slip": "colis ajoutés au bon de livraison",
+      "order_shipped_success": "Commande expédiée avec succès et stock décrémenté",
+      "order_returned_success": "Commande retournée en entrepôt avec succès et stock ré-incrémenté"
+    },
+    "preorders": {
+      "sent_to_ozonexpress": "Commande envoyée vers OzonExpress en mode"
+    },
+    "profile_management": {
+      "image_removed_success": "Image de profil supprimée avec succès"
     }
   }
 }

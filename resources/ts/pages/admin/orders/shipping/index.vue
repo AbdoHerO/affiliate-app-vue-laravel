@@ -343,7 +343,7 @@ const handleShipOrder = async (order: any) => {
   shippingActionLoading.value = order.id
   try {
     await shippingStore.decrementStock(order.id)
-    showSuccess('Commande expédiée avec succès et stock décrémenté')
+    showSuccess(t('alerts.shipping.order_shipped_success'))
     await fetchShippingOrders()
   } catch (error: any) {
     showError(error.message || 'Erreur lors de l\'expédition')
@@ -364,7 +364,7 @@ const confirmReturnToWarehouse = async () => {
   shippingActionLoading.value = currentReturnOrder.value.id
   try {
     await shippingStore.incrementStock(currentReturnOrder.value.id, returnReason.value)
-    showSuccess('Commande retournée en entrepôt avec succès et stock ré-incrémenté')
+    showSuccess(t('alerts.shipping.order_returned_success'))
     showReturnConfirmDialog.value = false
     await fetchShippingOrders()
   } catch (error: any) {

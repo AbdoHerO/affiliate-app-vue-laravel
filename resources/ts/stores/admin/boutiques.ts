@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { $api } from '@/utils/api'
 import { useNotifications } from '@/composables/useNotifications'
+import { useI18n } from 'vue-i18n'
 
 export interface Boutique {
   id: string
@@ -73,6 +74,7 @@ export const useBoutiquesStore = defineStore('admin-boutiques', () => {
 
   // Actions
   const { showSuccess, showError } = useNotifications()
+  const { t } = useI18n()
 
   const setError = (message: string) => {
     error.value = message
@@ -200,7 +202,7 @@ export const useBoutiquesStore = defineStore('admin-boutiques', () => {
           items.value.unshift(newBoutique)
         }
 
-        showSuccess('Boutique created successfully')
+        showSuccess(t('alerts.boutiques.created_success'))
 
         return newBoutique
       }
@@ -248,7 +250,7 @@ export const useBoutiquesStore = defineStore('admin-boutiques', () => {
           currentItem.value = updatedBoutique
         }
 
-        showSuccess('Boutique updated successfully')
+        showSuccess(t('alerts.boutiques.updated_success'))
 
         return updatedBoutique
       }
@@ -292,7 +294,7 @@ export const useBoutiquesStore = defineStore('admin-boutiques', () => {
           pagination.value.total--
         }
 
-        showSuccess('Boutique deleted successfully')
+        showSuccess(t('alerts.boutiques.deleted_success'))
       }
     } catch (err: any) {
       console.error('Error deleting boutique:', err)

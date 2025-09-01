@@ -75,13 +75,13 @@ const handleImageUpload = async (event: Event) => {
 
   // Validate file type
   if (!file.type.startsWith('image/')) {
-    showError('Please select a valid image file')
+    showError(t('alerts.profile.image_select_valid'))
     return
   }
 
   // Validate file size (2MB)
   if (file.size > 2 * 1024 * 1024) {
-    showError('Image size must be less than 2MB')
+    showError(t('alerts.profile.image_size_limit'))
     return
   }
 
@@ -172,7 +172,7 @@ const removeProfileImage = async () => {
     const data = await response.json()
     if (data.success) {
       form.value.photo_profil = ''
-      showSuccess(data.message || 'Profile image removed successfully')
+      showSuccess(data.message || t('alerts.profile_management.image_removed_success'))
     }
   } catch (err: any) {
     showError(err.message || 'Failed to remove image')
