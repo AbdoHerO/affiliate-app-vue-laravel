@@ -83,6 +83,21 @@ return [
     'password_update_failed' => 'Password update failed.',
     'current_password_incorrect' => 'Current password is incorrect.',
 
+    // Password reset
+    'email_required' => 'Email is required.',
+    'email_invalid' => 'Please enter a valid email address.',
+    'email_not_found' => 'We could not find a user with that email address.',
+    'password_required' => 'Password is required.',
+    'password_min_length' => 'Password must be at least 8 characters.',
+    'password_confirmation_mismatch' => 'Password confirmation does not match.',
+    'token_required' => 'Reset token is required.',
+    'password_reset_link_sent' => 'We have sent your password reset link to your email.',
+    'password_reset_link_failed' => 'Failed to send password reset link.',
+    'password_reset_successful' => 'Your password has been reset successfully.',
+    'password_reset_failed' => 'Failed to reset password.',
+    'password_reset_token_invalid' => 'This password reset token is invalid or has expired.',
+    'password_reset_token_valid' => 'Password reset token is valid.',
+
     // Profile page
     'joined' => 'Joined',
     'email_verified' => 'Email Verified',

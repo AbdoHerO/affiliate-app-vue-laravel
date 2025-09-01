@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { useFacebookPixel } from '@/composables/useFacebookPixel'
+import GlobalSnackbar from '@/components/common/GlobalSnackbar.vue'
 
 const { injectSkinClasses } = useSkins()
 
@@ -31,6 +32,9 @@ watch([isFallbackStateActive, refLoadingIndicator], () => {
 
 <template>
   <AppLoadingIndicator ref="refLoadingIndicator" />
+
+  <!-- Global snackbar for notifications -->
+  <GlobalSnackbar />
 
   <div
     class="layout-wrapper layout-blank"

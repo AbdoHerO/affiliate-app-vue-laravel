@@ -99,6 +99,11 @@ Route::prefix('public')->group(function () {
 Route::prefix('auth')->group(function () {
     Route::post('login', [AuthController::class, 'login']);
     Route::post('register', [AuthController::class, 'register']);
+
+    // Password reset routes
+    Route::post('forgot-password', [App\Http\Controllers\Api\PasswordResetController::class, 'sendResetLink']);
+    Route::post('reset-password', [App\Http\Controllers\Api\PasswordResetController::class, 'resetPassword']);
+    Route::post('validate-reset-token', [App\Http\Controllers\Api\PasswordResetController::class, 'validateToken']);
 });
 
 

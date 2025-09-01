@@ -13,6 +13,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
+use App\Notifications\ResetPasswordNotification;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
@@ -277,5 +278,23 @@ class User extends Authenticatable implements MustVerifyEmail
     public function isApprovedAffiliate(): bool
     {
         return $this->hasRole('affiliate') && $this->approval_status === 'approved';
+    }
+
+    /**
+     * Send the password reset notification.
+     */
+    public function sendPasswordResetNotification($token): void
+    {
+        $notification = new ResetPasswordNotification($token);
+        $notification->setUser($this);
+        $this->notify($notification);
+    }
+
+    /**
+     * Get the email address where password reset links are sent.
+     */
+    public function getEmailForPasswordReset(): string
+    {
+        return $this->email;
     }
 }

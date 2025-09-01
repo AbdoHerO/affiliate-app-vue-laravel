@@ -79,6 +79,21 @@ return [
     'password_update_failed' => 'Échec de la mise à jour du mot de passe.',
     'current_password_incorrect' => 'Le mot de passe actuel est incorrect.',
 
+    // Password reset
+    'email_required' => 'L\'adresse email est requise.',
+    'email_invalid' => 'Veuillez entrer une adresse email valide.',
+    'email_not_found' => 'Nous n\'avons pas trouvé d\'utilisateur avec cette adresse email.',
+    'password_required' => 'Le mot de passe est requis.',
+    'password_min_length' => 'Le mot de passe doit contenir au moins 8 caractères.',
+    'password_confirmation_mismatch' => 'La confirmation du mot de passe ne correspond pas.',
+    'token_required' => 'Le jeton de réinitialisation est requis.',
+    'password_reset_link_sent' => 'Nous avons envoyé le lien de réinitialisation à votre email.',
+    'password_reset_link_failed' => 'Échec de l\'envoi du lien de réinitialisation.',
+    'password_reset_successful' => 'Votre mot de passe a été réinitialisé avec succès.',
+    'password_reset_failed' => 'Échec de la réinitialisation du mot de passe.',
+    'password_reset_token_invalid' => 'Ce jeton de réinitialisation est invalide ou a expiré.',
+    'password_reset_token_valid' => 'Le jeton de réinitialisation est valide.',
+
     // Profile page
     'joined' => 'Rejoint',
     'email_verified' => 'Email Vérifié',

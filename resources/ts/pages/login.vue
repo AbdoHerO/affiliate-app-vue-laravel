@@ -168,12 +168,12 @@ const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
                     v-model="form.remember"
                     :label="t('remember_me')"
                   />
-                  <a
+                  <RouterLink
+                    :to="{ name: 'forgot-password' }"
                     class="text-primary"
-                    href="javascript:void(0)"
                   >
                     {{ t('forgot_password') }}
-                  </a>
+                  </RouterLink>
                 </div>
 
                 <VBtn
