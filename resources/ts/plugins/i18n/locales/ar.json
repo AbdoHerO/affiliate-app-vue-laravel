@@ -155,7 +155,9 @@
   "nav_payments": "المدفوعات",
   "nav_my_payments": "مدفوعاتي",
   "payments": "المدفوعات",
-  "actions": "الإجراءات",
+  "actions": {
+    "backToLogin": "العودة إلى تسجيل الدخول"
+  },
   "view": "عرض التفاصيل",
   "download_pdf": "تحميل PDF",
   "nav_gestion_stock": "إدارة المخزون",
@@ -2346,7 +2348,6 @@
   "value": "القيمة",
   "price": "السعر",
   "image": "الصورة",
-  "actions": "الإجراءات",
   "no_image": "لا توجد صورة",
   "no_variants_found_create_first": "لم يتم العثور على متغيرات. أنشئ متغيرات الحجم و/أو اللون أولاً.",
   "separate_size_color_variants_detected": "لديك متغيرات حجم ولون منفصلة.",

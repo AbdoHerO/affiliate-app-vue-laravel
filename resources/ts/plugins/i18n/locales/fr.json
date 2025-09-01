@@ -155,7 +155,9 @@
   "nav_payments": "Paiements",
   "nav_my_payments": "Mes paiements",
   "payments": "Paiements",
-  "actions": "Actions",
+  "actions": {
+    "backToLogin": "Retour à la connexion"
+  },
   "view": "Voir les détails",
   "download_pdf": "Télécharger PDF",
   "nav_gestion_stock": "Gestion du stock",
@@ -2442,7 +2444,6 @@
   "value": "Valeur",
   "price": "Prix",
   "image": "Image",
-  "actions": "Actions",
   "no_image": "Aucune image",
   "no_variants_found_create_first": "Aucune variante trouvée. Créez des variantes de taille et/ou couleur d'abord.",
   "separate_size_color_variants_detected": "Vous avez des variantes de taille et couleur séparées.",
