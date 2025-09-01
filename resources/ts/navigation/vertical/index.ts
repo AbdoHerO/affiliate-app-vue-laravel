@@ -17,11 +17,6 @@ const adminNavigation = [
         icon: { icon: 'tabler-user-circle' },
       },
       {
-        title: 'nav_affiliate_users',
-        to: '/admin/affiliates-users',
-        icon: { icon: 'tabler-user-star' },
-      },
-      {
         title: 'nav_roles_permissions',
         to: '/admin/roles',
         icon: { icon: 'tabler-shield-lock' },
@@ -37,6 +32,11 @@ const adminNavigation = [
     title: 'nav_affiliate_management',
     icon: { icon: 'tabler-user-star' },
     children: [
+      {
+        title: 'nav_affiliate_users',
+        to: '/admin/affiliates-users',
+        icon: { icon: 'tabler-user-star' },
+      },
       {
         title: 'nav_affiliate_approval_queue',
         to: '/admin/affiliates',

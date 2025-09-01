@@ -505,8 +505,8 @@ const getOrderTypeColor = (type: string) => {
 
 const getOrderTypeLabel = (type: string) => {
   const labels: Record<string, string> = {
-    'order_sample': 'Échantillon',
-    'exchange': 'Échange'
+    'order_sample': t('order_sample'),
+    'exchange': t('exchange')
   }
   return labels[type] || type || 'N/A'
 }

@@ -56,7 +56,7 @@ const orderId = computed(() => route.params.id as string)
 
 // Status options
 const statusOptions = [
-  { title: 'En attente', value: 'en_attente' },
+  { title: t('admin_preorder_status_pending'), value: 'en_attente' },
   { title: t('admin_preorder_status_confirmed_fem'), value: 'confirmee' },
 ]
 
@@ -180,7 +180,7 @@ const getStatusColor = (status: string) => {
 const getStatusText = (status: string) => {
   switch (status) {
     case 'en_attente':
-      return 'En attente'
+      return t('admin_preorder_status_pending')
     case 'confirmee':
       return t('admin_preorder_status_confirmed_fem')
     default:
@@ -404,7 +404,7 @@ onMounted(() => {
       >
         <VTab value="client">
           <VIcon start icon="tabler-user" />
-          Client & Adresse
+          {{ t('admin_preorder_tab_client_address') }}
         </VTab>
         <VTab value="articles">
           <VIcon start icon="tabler-package" />
@@ -582,14 +582,14 @@ onMounted(() => {
           <VRow>
             <VCol cols="12" md="8">
               <VCard>
-                <VCardTitle>Détails de la Commande</VCardTitle>
+                <VCardTitle>{{ t('admin_preorder_order_details') }}</VCardTitle>
                 <VCardText>
                   <VRow>
                     <VCol cols="12" md="6">
                       <VSelect
                         v-if="isEditing"
                         v-model="formData.statut"
-                        label="Statut"
+                        :label="t('admin_status')"
                         :items="statusOptions"
                         variant="outlined"
                       />
@@ -607,12 +607,12 @@ onMounted(() => {
                       <VSelect
                         v-if="isEditing"
                         v-model="formData.confirmation_cc"
-                        label="Confirmation CC"
+                        :label="t('admin_preorder_confirmation_cc')"
                         :items="confirmationOptions"
                         variant="outlined"
                       />
                       <div v-else class="mb-4">
-                        <div class="text-body-2 text-medium-emphasis mb-1">Confirmation CC</div>
+                        <div class="text-body-2 text-medium-emphasis mb-1">{{ t('admin_preorder_confirmation_cc') }}</div>
                         <VChip
                           :color="getConfirmationColor(preorder?.confirmation_cc || '')"
                           variant="tonal"
@@ -626,13 +626,13 @@ onMounted(() => {
                   <VTextarea
                     v-if="isEditing"
                     v-model="formData.notes"
-                    label="Notes"
+                    :label="t('notes')"
                     variant="outlined"
                     rows="3"
                   />
                   <div v-else class="mb-4">
-                    <div class="text-body-2 text-medium-emphasis mb-1">Notes</div>
-                    <div class="text-body-1">{{ preorder?.notes || 'Aucune note' }}</div>
+                    <div class="text-body-2 text-medium-emphasis mb-1">{{ t('notes') }}</div>
+                    <div class="text-body-1">{{ preorder?.notes || t('no_note_defined') }}</div>
                   </div>
 
                   <VDivider class="my-4" />

@@ -123,9 +123,12 @@ const addParcelsToDeliveryNote = async () => {
   }
 
   const confirmed = await confirm({
-    title: 'Ajouter le colis au bon de livraison',
-    text: `Ajouter le colis ${shippingOrder.value.shipping_parcel.tracking_number} au bon ${deliveryNoteRef.value} ?`,
-    confirmText: 'Ajouter',
+    title: t('admin_shipping_add_parcel_title'),
+    text: t('admin_shipping_add_parcel_text', {
+      tracking: shippingOrder.value.shipping_parcel.tracking_number,
+      ref: deliveryNoteRef.value
+    }),
+    confirmText: t('admin_shipping_add_parcel_confirm'),
     color: 'primary',
   })
 
@@ -149,9 +152,9 @@ const saveDeliveryNote = async () => {
   }
 
   const confirmed = await confirm({
-    title: 'Sauvegarder le bon de livraison',
-    text: `Sauvegarder le bon de livraison ${deliveryNoteRef.value} ?`,
-    confirmText: 'Sauvegarder',
+    title: t('admin_shipping_save_delivery_note_title'),
+    text: t('admin_shipping_save_delivery_note_text', { ref: deliveryNoteRef.value }),
+    confirmText: t('admin_shipping_save_delivery_note_confirm'),
     color: 'success',
   })
 
@@ -436,7 +439,7 @@ ${getClientFinalCity()}, ${getClientFinalCountry()}`
 // Delivery boy methods
 const saveDeliveryBoyInfo = async () => {
   if (!deliveryBoyName.value.trim() && !deliveryBoyPhone.value.trim()) {
-    showError('Veuillez saisir au moins le nom ou le téléphone du livreur')
+    showError(t('admin_shipping_delivery_boy_required'))
     return
   }
 
@@ -447,10 +450,10 @@ const saveDeliveryBoyInfo = async () => {
       delivery_boy_phone: deliveryBoyPhone.value.trim() || null
     })
 
-    showSuccess('Informations du livreur enregistrées avec succès')
+    showSuccess(t('admin_shipping_delivery_boy_saved'))
     await fetchShippingOrder() // Refresh data
   } catch (error: any) {
-    showError(error.message || 'Erreur lors de l\'enregistrement')
+    showError(error.message || t('admin_shipping_delivery_boy_error'))
   } finally {
     deliveryBoyLoading.value = false
   }
@@ -685,7 +688,7 @@ onBeforeRouteLeave(async (to, from, next) => {
         </VTab>
         <VTab value="delivery-boy">
           <VIcon start icon="tabler-user" />
-          Livreur
+          {{ t('admin_shipping_delivery_boy') }}
         </VTab>
       </VTabs>
 
@@ -762,7 +765,7 @@ onBeforeRouteLeave(async (to, from, next) => {
                   <VRow>
                     <VCol cols="12" md="6">
                       <div class="mb-4">
-                        <div class="text-body-2 text-medium-emphasis mb-1">Numéro de suivi</div>
+                        <div class="text-body-2 text-medium-emphasis mb-1">{{ t('tracking_number') }}</div>
                         <VChip color="primary" variant="tonal" class="font-mono">
                           {{ shippingOrder.shipping_parcel.tracking_number }}
                         </VChip>
@@ -797,8 +800,8 @@ onBeforeRouteLeave(async (to, from, next) => {
                   <VDivider class="my-4" />
 
                   <div class="mb-4">
-                    <div class="text-body-2 text-medium-emphasis mb-1">Note</div>
-                    <div class="text-body-1">{{ shippingOrder.shipping_parcel.note || 'Aucune note' }}</div>
+                    <div class="text-body-2 text-medium-emphasis mb-1">{{ t('note') }}</div>
+                    <div class="text-body-1">{{ shippingOrder.shipping_parcel.note || t('no_note_defined') }}</div>
                   </div>
 
                   <VRow v-if="shippingOrder.shipping_parcel.delivered_price">
@@ -1166,15 +1169,15 @@ onBeforeRouteLeave(async (to, from, next) => {
           <VCard>
             <VCardTitle class="d-flex align-center">
               <VIcon icon="tabler-user" class="me-2" />
-              Informations du Livreur
+              {{ t('admin_shipping_delivery_boy_info') }}
             </VCardTitle>
             <VCardText>
               <VRow>
                 <VCol cols="12" md="6">
                   <VTextField
                     v-model="deliveryBoyName"
-                    label="Nom du livreur"
-                    placeholder="Ex: Ahmed Benali"
+                    :label="t('admin_shipping_delivery_boy_name')"
+                    :placeholder="t('admin_shipping_delivery_boy_name_placeholder')"
                     variant="outlined"
                     prepend-inner-icon="tabler-user"
                     :disabled="deliveryBoyLoading"
@@ -1183,8 +1186,8 @@ onBeforeRouteLeave(async (to, from, next) => {
                 <VCol cols="12" md="6">
                   <VTextField
                     v-model="deliveryBoyPhone"
-                    label="Téléphone du livreur"
-                    placeholder="Ex: +212 6 12 34 56 78"
+                    :label="t('admin_shipping_delivery_boy_phone')"
+                    :placeholder="t('admin_shipping_delivery_boy_phone_placeholder')"
                     variant="outlined"
                     prepend-inner-icon="tabler-phone"
                     :disabled="deliveryBoyLoading"
@@ -1200,7 +1203,7 @@ onBeforeRouteLeave(async (to, from, next) => {
                   @click="saveDeliveryBoyInfo"
                 >
                   <VIcon start icon="tabler-device-floppy" />
-                  Enregistrer
+                  {{ t('admin_shipping_save') }}
                 </VBtn>
                 <VBtn
                   variant="outlined"
@@ -1208,7 +1211,7 @@ onBeforeRouteLeave(async (to, from, next) => {
                   :disabled="deliveryBoyLoading"
                 >
                   <VIcon start icon="tabler-refresh" />
-                  Réinitialiser
+                  {{ t('admin_shipping_reset') }}
                 </VBtn>
               </div>
 
@@ -1219,12 +1222,12 @@ onBeforeRouteLeave(async (to, from, next) => {
                 variant="tonal"
                 class="mt-4"
               >
-                <VAlertTitle>Informations actuelles</VAlertTitle>
+                <VAlertTitle>{{ t('admin_shipping_current_info') }}</VAlertTitle>
                 <div v-if="shippingOrder?.delivery_boy_name">
-                  <strong>Nom:</strong> {{ shippingOrder.delivery_boy_name }}
+                  <strong>{{ t('admin_shipping_name') }}:</strong> {{ shippingOrder.delivery_boy_name }}
                 </div>
                 <div v-if="shippingOrder?.delivery_boy_phone">
-                  <strong>Téléphone:</strong> {{ shippingOrder.delivery_boy_phone }}
+                  <strong>{{ t('admin_shipping_phone') }}:</strong> {{ shippingOrder.delivery_boy_phone }}
                 </div>
               </VAlert>
             </VCardText>
@@ -1314,7 +1317,7 @@ onBeforeRouteLeave(async (to, from, next) => {
 
         <VTextarea
           v-model="statusNote"
-          label="Note (optionnelle)"
+          :label="t('admin_shipping_status_note_label')"
           :placeholder="t('admin_shipping_status_note_placeholder')"
           rows="3"
           variant="outlined"

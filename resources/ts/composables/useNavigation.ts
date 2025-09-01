@@ -48,10 +48,6 @@ export function useNavigation() {
                 to: 'admin-users',
               },
               {
-                title: t('nav_affiliate_users'),
-                to: 'admin-affiliates-users',
-              },
-              {
                 title: t('nav_roles_permissions'),
                 to: 'admin-roles',
               },
@@ -65,6 +61,10 @@ export function useNavigation() {
             title: t('nav_affiliate_management'),
             icon: { icon: 'tabler-user-star' },
             children: [
+              {
+                title: t('nav_affiliate_users'),
+                to: 'admin-affiliates-users',
+              },
               {
                 title: 'File d\'Attente d\'Approbation',
                 to: 'admin-affiliates',
