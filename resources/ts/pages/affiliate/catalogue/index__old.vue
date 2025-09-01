@@ -134,7 +134,7 @@ const handleProductOpen = async (productId: string) => {
     showProductDrawer.value = true
   } catch (error) {
     showProductDrawer.value = false
-    showError('Erreur lors du chargement du produit')
+    showError(t('alerts.catalogue.error_loading_product'))
   }
 }
 
@@ -173,7 +173,7 @@ const loadCategories = async () => {
     }
   } catch (err) {
     console.error('Error loading categories:', err)
-    showError('Erreur lors du chargement des catégories')
+    showError(t('alerts.catalogue.error_loading_categories'))
   } finally {
     categoriesLoading.value = false
   }

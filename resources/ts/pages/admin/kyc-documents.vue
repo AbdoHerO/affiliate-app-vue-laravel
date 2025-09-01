@@ -198,7 +198,7 @@ const fetchUsers = async () => {
 
   } catch (err: any) {
     console.error('❌ Users fetch error:', err)
-    showError('Failed to load users: ' + err.message)
+    showError(t('alerts.kyc.failed_load_users') + ': ' + err.message)
   } finally {
     loadingUsers.value = false
   }
@@ -248,17 +248,17 @@ const fetchDocuments = async (page = 1) => {
 
 const uploadDocument = async () => {
   if (!uploadForm.value.fichier) {
-    showError('Please select a file')
+    showError(t('alerts.kyc.file_required'))
     return
   }
 
   if (!uploadForm.value.utilisateur_id) {
-    showError('Please select a user')
+    showError(t('alerts.kyc.user_required'))
     return
   }
 
   if (!uploadForm.value.type_doc) {
-    showError('Please select a document type')
+    showError(t('alerts.kyc.document_type_required'))
     return
   }
 

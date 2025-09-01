@@ -1591,7 +1591,7 @@ const copyToClipboard = async (text: string) => {
     await navigator.clipboard.writeText(text)
     showSuccess(t('admin_shipping_tracking_copied'))
   } catch (error) {
-    showError('Erreur lors de la copie')
+    showError(t('alerts.copy.copy_error'))
   }
 }
 
@@ -1614,7 +1614,7 @@ const testCreateDeliveryNote = async () => {
 
     if (data.success) {
       deliveryNoteRef.value = data.data.ref
-      showSuccess(`Bon de livraison créé: ${data.data.ref}`)
+      showSuccess(t('alerts.shipping.shipping_slip_ref') + `: ${data.data.ref}`)
     } else {
       showError(data.message || 'Erreur lors de la création du bon de livraison')
     }
@@ -1623,7 +1623,7 @@ const testCreateDeliveryNote = async () => {
       success: false,
       message: 'Erreur de connexion: ' + error.message
     }
-    showError('Erreur de connexion')
+    showError(t('alerts.debug.connection_error'))
   } finally {
     loading.value.deliveryNote = false
   }
@@ -1655,7 +1655,7 @@ const testAddParcelsToDeliveryNote = async () => {
     deliveryNoteResult.value = data
 
     if (data.success) {
-      showSuccess(`${testTrackingNumbers.length} colis ajoutés au bon de livraison`)
+      showSuccess(`${testTrackingNumbers.length} ${t('alerts.shipping.packages_added_to_slip')}`)
     } else {
       showError(data.message || 'Erreur lors de l\'ajout des colis')
     }
@@ -1664,7 +1664,7 @@ const testAddParcelsToDeliveryNote = async () => {
       success: false,
       message: 'Erreur de connexion: ' + error.message
     }
-    showError('Erreur de connexion')
+    showError(t('alerts.debug.connection_error'))
   } finally {
     loading.value.deliveryNote = false
   }
@@ -1701,7 +1701,7 @@ const testSaveDeliveryNote = async () => {
       success: false,
       message: 'Erreur de connexion: ' + error.message
     }
-    showError('Erreur de connexion')
+    showError(t('alerts.debug.connection_error'))
   } finally {
     loading.value.deliveryNote = false
   }
@@ -1739,7 +1739,7 @@ const testGetDeliveryNotePdf = async () => {
       success: false,
       message: 'Erreur de connexion: ' + error.message
     }
-    showError('Erreur de connexion')
+    showError(t('alerts.debug.connection_error'))
   } finally {
     loading.value.deliveryNote = false
   }

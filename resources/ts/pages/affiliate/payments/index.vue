@@ -279,7 +279,7 @@ const downloadEvidence = (withdrawalId: string): void => {
   xhr.onerror = function() {
     console.error('Evidence download network error')
     downloadingPdf.value = null
-    showError('Erreur réseau lors du téléchargement')
+    showError(t('alerts.payments.network_error'))
   }
 
   xhr.ontimeout = function() {

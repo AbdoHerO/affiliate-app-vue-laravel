@@ -339,14 +339,14 @@ const saveProduct = async () => {
       router.replace(`/admin/produits/${created.id}/edit?tab=images`)
 
       clearProductErrors()
-      showSuccess('Product created successfully')
+      showSuccess(t('alerts.products.created_success'))
     } else if (localId.value) {
       // Update existing product
       console.debug('[ProductForm] Updating product with ID:', localId.value)
       const updated = await produitsStore.updateProduit(localId.value, form.value)
       emit('updated', updated)
       clearProductErrors()
-      showSuccess('Product updated successfully')
+      showSuccess(t('alerts.products.updated_success'))
 
       // Reset dirty state after successful update
       isDirty.value = false
@@ -863,11 +863,11 @@ const uploadVariantImage = async (id: string, file: File) => {
       }
     } else {
       console.error('[ProductForm] API error:', error.value)
-      showError('Failed to upload variant image')
+      showError(t('alerts.form_validation.failed_upload_variant_image'))
     }
   } catch (error) {
     console.error('Error uploading variant image:', error)
-    showError('Failed to upload variant image')
+    showError(t('alerts.form_validation.failed_upload_variant_image'))
   }
 }
 
@@ -880,7 +880,7 @@ const loadWarehouses = async () => {
 
     if (error.value) {
       console.error('Failed to load warehouses:', error.value)
-      showError('Failed to load warehouses')
+      showError(t('alerts.form_validation.failed_load_warehouses'))
       return
     }
 
@@ -898,11 +898,11 @@ const loadWarehouses = async () => {
       }
     } else {
       console.error('Invalid warehouse response:', response)
-      showError('Invalid warehouse data received')
+      showError(t('alerts.form_validation.invalid_warehouse_data'))
     }
   } catch (error) {
     console.error('Exception loading warehouses:', error)
-    showError('Error loading warehouses')
+    showError(t('alerts.form_validation.error_loading_warehouses'))
   }
 }
 
@@ -937,9 +937,9 @@ const loadStockMatrix = async () => {
           }
         }
 
-        showError('Warehouse not found. Please check warehouse configuration.')
+        showError(t('alerts.form_validation.warehouse_not_found'))
       } else {
-        showError('Failed to load stock matrix: ' + (error.value.message || 'Unknown error'))
+        showError(t('alerts.form_validation.failed_load_stock_matrix') + ': ' + (error.value.message || 'Unknown error'))
       }
 
       stockMatrix.value = []
@@ -963,7 +963,7 @@ const loadStockMatrix = async () => {
   } catch (error) {
     console.error('Exception loading stock matrix:', error)
     stockMatrix.value = []
-    showError('Error loading stock matrix')
+    showError(t('alerts.form_validation.error_loading_stock_matrix'))
   } finally {
     loadingMatrix.value = false
   }
@@ -1165,7 +1165,7 @@ const updateProposition = async (propositionId: string, propositionData: any) =>
     }
   } catch (error) {
     console.error('Error updating proposition:', error)
-    showError('Failed to update proposition')
+    showError(t('alerts.form_validation.failed_update_proposition'))
   }
 }
 
@@ -1184,7 +1184,7 @@ const deleteProposition = async (propositionId: string) => {
     }
   } catch (error) {
     console.error('Error deleting proposition:', error)
-    showError('Failed to delete proposition')
+    showError(t('alerts.form_validation.failed_delete_proposition'))
   }
 }
 
@@ -1217,11 +1217,11 @@ const uploadPropositionImage = async (propositionId: string, file: File) => {
       }
     } else {
       console.error('[ProductForm] Proposition API error:', error.value)
-      showError('Failed to upload proposition image')
+      showError(t('alerts.form_validation.failed_upload_proposition_image'))
     }
   } catch (error) {
     console.error('Error uploading proposition image:', error)
-    showError('Failed to upload proposition image')
+    showError(t('alerts.form_validation.failed_upload_proposition_image'))
   }
 }
 
@@ -1377,7 +1377,7 @@ const handleResolveRupture = async (ruptureId: string) => {
     }
   } catch (error) {
     console.error('Error resolving rupture:', error)
-    showError('Failed to resolve stock issue')
+    showError(t('alerts.form_validation.failed_resolve_stock_issue'))
   }
 }
 
@@ -1401,7 +1401,7 @@ const handleDeleteRupture = async (ruptureId: string) => {
     }
   } catch (error) {
     console.error('Error deleting rupture:', error)
-    showError('Failed to delete stock issue')
+    showError(t('alerts.form_validation.failed_delete_stock_issue'))
   }
 }
 

@@ -209,11 +209,11 @@ const loadUsers = async (search?: string) => {
       console.log('✅ [Create Ticket] Users loaded from data array:', users.value.length)
     } else {
       console.error('❌ [Create Ticket] API returned unexpected format:', response)
-      showError('Unexpected response format from server')
+      showError(t('alerts.tickets.unexpected_response'))
     }
   } catch (error) {
     console.error('🚫 [Create Ticket] Error loading users:', error)
-    showError('Error loading users')
+    showError(t('alerts.tickets.error_loading_users'))
   } finally {
     usersLoading.value = false
   }
