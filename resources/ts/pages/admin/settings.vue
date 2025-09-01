@@ -142,12 +142,12 @@ const validateImageFile = (file: File, type: 'logo' | 'favicon'): boolean => {
   }
 
   if (file.size > maxSizes[type]) {
-    showError(`File too large. Maximum size for ${type} is ${maxSizes[type] / (1024 * 1024)}MB`)
+    showError(t('settings.file_too_large_with_type', { type, maxSize: maxSizes[type] / (1024 * 1024) }))
     return false
   }
 
   if (!allowedTypes[type].includes(file.type)) {
-    showError(`Invalid file type for ${type}. Allowed types: ${allowedTypes[type].join(', ')}`)
+    showError(t('settings.invalid_file_type_with_types', { type, allowedTypes: allowedTypes[type].join(', ') }))
     return false
   }
 

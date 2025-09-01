@@ -3731,7 +3731,14 @@
     },
     "orders": {
       "bulkupdatesuccess": "{count} order(s) updated to \"{status}\"",
-      "bulkUpdateSuccess": "{count} order(s) updated to \"{status}\""
+      "bulkUpdateSuccess": "{count} order(s) updated to \"{status}\"",
+      "shipped_success": "Order shipped successfully and stock decremented",
+      "returned_success": "Order returned to warehouse successfully and stock re-incremented",
+      "confirmation_success": "Order confirmed successfully",
+      "unexpected_error": "An unexpected error occurred while processing the order",
+      "created_success_with_ref": "Order created successfully! Reference: {ref}",
+      "sent_to_ozonexpress_mode": "Order sent to OzonExpress in {mode} mode",
+      "shipping_slip_created_with_ref": "Shipping slip created: {ref}"
     },
     "commissions": {
       "details": "Commission details"
@@ -3992,7 +3999,12 @@
     },
     "orders": {
       "shipped_success": "Order shipped successfully and stock decremented",
-      "returned_success": "Order returned to warehouse successfully and stock re-incremented"
+      "returned_success": "Order returned to warehouse successfully and stock re-incremented",
+      "confirmation_success": "Order confirmed successfully",
+      "unexpected_error": "An unexpected error occurred while processing the order",
+      "created_success_with_ref": "Order created successfully! Reference: {ref}",
+      "sent_to_ozonexpress_mode": "Order sent to OzonExpress in {mode} mode",
+      "shipping_slip_created_with_ref": "Shipping slip created: {ref}"
     },
     "payments": {
       "proof_uploaded": "Payment proof uploaded successfully",
@@ -4021,6 +4033,12 @@
       "video_deleted": "Video deleted successfully",
       "variant_added": "Variant added successfully",
       "variant_deleted": "Variant deleted successfully",
+      "add_to_cart_success": "Product added to cart",
+      "add_to_cart_error": "Error adding product to cart",
+      "cart_updated": "Cart updated",
+      "success_message": "Product processed successfully",
+      "error_message": "Error processing product",
+      "form_saved": "Product form saved successfully",
       "variant_image_uploaded": "Variant image uploaded successfully",
       "stock_distributed": "Stock distributed across variant combinations",
       "proposition_added": "Proposition added successfully",
@@ -4130,7 +4148,10 @@
       "shipping_slip_creation_error": "Error creating shipping slip",
       "package_add_error": "Error adding packages",
       "save_error": "Error saving",
-      "pdf_retrieval_error": "Error retrieving PDFs"
+      "pdf_retrieval_error": "Error retrieving PDFs",
+      "settings_updated": "Settings updated successfully",
+      "generic_error": "An error occurred. Please try again.",
+      "action_completed": "Action completed successfully"
     },
     "api_errors": {
       "access_denied": "Access denied. You do not have the necessary permissions.",
@@ -4140,6 +4161,22 @@
       "server_error": "Server error. Please try again later.",
       "connection_error": "Connection error. Check your internet connection.",
       "unexpected_error": "An unexpected error occurred."
+    },
+    "files": {
+      "download_started": "Download of \"{filename}\" started successfully",
+      "download_error": "Error during download: {error}",
+      "file_not_found": "File not found",
+      "upload_error": "Upload error: {status}",
+      "file_too_large": "File too large. Maximum size for {type} is {maxSize}MB",
+      "invalid_file_type": "Invalid file type for {type}. Allowed types: {allowedTypes}",
+      "text_copied": "Text copied to clipboard"
+    },
+    "stock": {
+      "variant_sum_exceeds_total": "Cannot save: Variant sum ({variantSum}) exceeds total stock ({totalStock})"
+    },
+    "settings": {
+      "file_too_large_with_type": "File too large. Maximum size for {type} is {maxSize}MB",
+      "invalid_file_type_with_types": "Invalid file type for {type}. Allowed types: {allowedTypes}"
     }
   }
 }

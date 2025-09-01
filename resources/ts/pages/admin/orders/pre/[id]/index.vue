@@ -151,7 +151,7 @@ const handleOzonConfirm = async (mode: 'ramassage' | 'stock') => {
   ozonDialogLoading.value = true
   try {
     await preordersStore.sendToShipping(preorder.value.id, mode)
-    showSuccess(`Commande envoyée vers OzonExpress en mode ${mode === 'ramassage' ? 'Ramassage' : 'Stock'}`)
+    showSuccess(t('orders.sent_to_ozonexpress_mode', { mode: mode === 'ramassage' ? 'Ramassage' : 'Stock' }))
     // Refresh order data
     await fetchPreorder()
   } catch (error: any) {

@@ -271,7 +271,7 @@ const handleSubmitOrder = async () => {
       step.value = 'success'
 
       // Show success notification
-      showSuccess(`Commande créée avec succès! Référence: ${response.data.commande.id}`)
+      showSuccess(t('orders.created_success_with_ref', { ref: response.data.commande.id }))
 
       emit('success')
     }

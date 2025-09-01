@@ -2,11 +2,13 @@
 import { useAuth } from '@/composables/useAuth'
 import { useAuthStore } from '@/stores/auth'
 import { useI18n } from 'vue-i18n'
+import { useNotifications } from '@/composables/useNotifications'
 import ProfileImageUpload from '@/components/ProfileImageUpload.vue'
 
 const { user } = useAuth()
 const authStore = useAuthStore()
 const { t } = useI18n()
+const { showSuccess, showError } = useNotifications()
 
 // Form data
 const accountForm = ref({
@@ -56,7 +58,7 @@ const saveAccount = async () => {
     const result = await response.json()
 
     if (result.success) {
-      alert(t('account_updated_successfully'))
+      showSuccess(t('account_updated_successfully'))
       // Refresh user data
       // You might want to call a method to refresh the user data in the auth store
     } else {
@@ -64,7 +66,7 @@ const saveAccount = async () => {
     }
   } catch (error) {
     console.error('Error updating account:', error)
-    alert(t('account_update_failed'))
+    showError(t('account_update_failed'))
   } finally {
     isLoading.value = false
   }
@@ -91,12 +93,12 @@ const deactivateAccount = async () => {
 
   try {
     // This would be an API call to deactivate the account
-    alert(t('account_deactivation_requested'))
+    showSuccess(t('account_deactivation_requested'))
     isDeactivateDialogOpen.value = false
     deactivateConfirmation.value = ''
   } catch (error) {
     console.error('Error deactivating account:', error)
-    alert(t('account_deactivation_failed'))
+    showError(t('account_deactivation_failed'))
   }
 }
 

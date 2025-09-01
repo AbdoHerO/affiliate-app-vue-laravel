@@ -219,11 +219,11 @@ const downloadFile = async (url: string, filename: string) => {
     // Clean up blob URL
     window.URL.revokeObjectURL(blobUrl)
 
-    showSuccess(`Téléchargement de "${filename}" démarré avec succès`)
+    showSuccess(t('files.download_started', { filename }))
 
   } catch (error) {
     console.error('Download error:', error)
-    showError(`Erreur lors du téléchargement: ${error instanceof Error ? error.message : 'Fichier introuvable'}`)
+    showError(t('files.download_error', { error: error instanceof Error ? error.message : t('files.file_not_found') }))
   }
 }
 
@@ -263,7 +263,7 @@ const selectedVariantStock = computed(() => {
 const copyToClipboard = async (text: string) => {
   try {
     await navigator.clipboard.writeText(text)
-    showSuccess('Texte copié dans le presse-papiers')
+    showSuccess(t('files.text_copied'))
   } catch (err) {
     showError(t('alerts.copy.copy_error'))
   }

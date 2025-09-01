@@ -3987,7 +3987,12 @@
     },
     "orders": {
       "shipped_success": "تم شحن الطلب بنجاح وتقليل المخزون",
-      "returned_success": "تم إرجاع الطلب للمستودع بنجاح وزيادة المخزون"
+      "returned_success": "تم إرجاع الطلب للمستودع بنجاح وزيادة المخزون",
+      "confirmation_success": "تم تأكيد الطلب بنجاح",
+      "unexpected_error": "حدث خطأ غير متوقع أثناء معالجة الطلب",
+      "created_success_with_ref": "تم إنشاء الطلب بنجاح! المرجع: {ref}",
+      "sent_to_ozonexpress_mode": "تم إرسال الطلب إلى OzonExpress في وضع {mode}",
+      "shipping_slip_created_with_ref": "تم إنشاء بوليصة الشحن: {ref}"
     },
     "payments": {
       "proof_uploaded": "تم رفع إثبات الدفع بنجاح",
@@ -4021,7 +4026,13 @@
       "error_saving_variant": "خطأ في حفظ المتغير",
       "error_deleting_variant": "خطأ في حذف المتغير",
       "error_saving_video": "خطأ في حفظ الفيديو",
-      "error_deleting_video": "خطأ في حذف الفيديو"
+      "error_deleting_video": "خطأ في حذف الفيديو",
+      "add_to_cart_success": "تم إضافة المنتج للسلة",
+      "add_to_cart_error": "خطأ في إضافة المنتج للسلة",
+      "cart_updated": "تم تحديث السلة",
+      "success_message": "تم معالجة المنتج بنجاح",
+      "error_message": "خطأ في معالجة المنتج",
+      "form_saved": "تم حفظ نموذج المنتج بنجاح"
     },
     "boutiques": {
       "created_success": "تم إنشاء المتجر بنجاح",
@@ -4040,6 +4051,15 @@
     "copy": {
       "text_copied": "تم نسخ النص للحافظة",
       "copy_error": "خطأ في النسخ"
+    },
+    "files": {
+      "download_started": "بدأ تحميل \"{filename}\" بنجاح",
+      "download_error": "خطأ أثناء التحميل: {error}",
+      "file_not_found": "الملف غير موجود",
+      "upload_error": "خطأ في الرفع: {status}",
+      "file_too_large": "الملف كبير جداً. الحد الأقصى للحجم لـ {type} هو {maxSize}MB",
+      "invalid_file_type": "نوع الملف غير صالح لـ {type}. الأنواع المسموحة: {allowedTypes}",
+      "text_copied": "تم نسخ النص للحافظة"
     },
     "profile": {
       "image_select_valid": "يرجى اختيار ملف صورة صالح",
@@ -4118,7 +4138,10 @@
       "shipping_slip_creation_error": "خطأ في إنشاء بوليصة الشحن",
       "package_add_error": "خطأ في إضافة الطرود",
       "save_error": "خطأ في الحفظ",
-      "pdf_retrieval_error": "خطأ في استرجاع ملفات PDF"
+      "pdf_retrieval_error": "خطأ في استرجاع ملفات PDF",
+      "settings_updated": "تم تحديث الإعدادات بنجاح",
+      "generic_error": "حدث خطأ. يرجى المحاولة مرة أخرى.",
+      "action_completed": "تم إتمام العملية بنجاح"
     },
     "api_errors": {
       "access_denied": "الوصول مرفوض. ليس لديك الصلاحيات اللازمة.",

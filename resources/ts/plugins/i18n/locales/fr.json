@@ -4048,7 +4048,12 @@
     },
     "orders": {
       "shipped_success": "Commande expédiée avec succès et stock décrémenté",
-      "returned_success": "Commande retournée en entrepôt avec succès et stock ré-incrémenté"
+      "returned_success": "Commande retournée en entrepôt avec succès et stock ré-incrémenté",
+      "confirmation_success": "Commande confirmée avec succès",
+      "unexpected_error": "Une erreur inattendue s'est produite lors du traitement de la commande",
+      "created_success_with_ref": "Commande créée avec succès ! Référence: {ref}",
+      "sent_to_ozonexpress_mode": "Commande envoyée à OzonExpress en mode {mode}",
+      "shipping_slip_created_with_ref": "Bon d'expédition créé: {ref}"
     },
     "payments": {
       "proof_uploaded": "Preuve de paiement téléchargée avec succès",
@@ -4089,7 +4094,13 @@
       "error_saving_variant": "Erreur lors de l'enregistrement de la variante",
       "error_deleting_variant": "Erreur lors de la suppression de la variante",
       "error_saving_video": "Erreur lors de l'enregistrement de la vidéo",
-      "error_deleting_video": "Erreur lors de la suppression de la vidéo"
+      "error_deleting_video": "Erreur lors de la suppression de la vidéo",
+      "add_to_cart_success": "Produit ajouté au panier",
+      "add_to_cart_error": "Erreur lors de l'ajout au panier",
+      "cart_updated": "Panier mis à jour",
+      "success_message": "Produit traité avec succès",
+      "error_message": "Erreur lors du traitement du produit",
+      "form_saved": "Formulaire produit sauvegardé avec succès"
     },
     "boutiques": {
       "created_success": "Boutique créée avec succès",
@@ -4108,6 +4119,15 @@
     "copy": {
       "text_copied": "Texte copié dans le presse-papiers",
       "copy_error": "Erreur lors de la copie"
+    },
+    "files": {
+      "download_started": "Téléchargement de \"{filename}\" démarré avec succès",
+      "download_error": "Erreur lors du téléchargement: {error}",
+      "file_not_found": "Fichier introuvable",
+      "upload_error": "Erreur de téléchargement: {status}",
+      "file_too_large": "Fichier trop volumineux. Taille maximale pour {type} est {maxSize}MB",
+      "invalid_file_type": "Type de fichier invalide pour {type}. Types autorisés: {allowedTypes}",
+      "text_copied": "Texte copié dans le presse-papiers"
     },
     "profile": {
       "image_select_valid": "Veuillez sélectionner un fichier image valide",
@@ -4186,7 +4206,10 @@
       "shipping_slip_creation_error": "Erreur lors de la création du bon de livraison",
       "package_add_error": "Erreur lors de l'ajout des colis",
       "save_error": "Erreur lors de la sauvegarde",
-      "pdf_retrieval_error": "Erreur lors de la récupération des PDFs"
+      "pdf_retrieval_error": "Erreur lors de la récupération des PDFs",
+      "settings_updated": "Paramètres mis à jour avec succès",
+      "generic_error": "Une erreur s'est produite. Veuillez réessayer.",
+      "action_completed": "Action terminée avec succès"
     },
     "api_errors": {
       "access_denied": "Accès refusé. Vous n'avez pas les permissions nécessaires.",

@@ -2,10 +2,12 @@
 import { useI18n } from 'vue-i18n'
 import { useAuth } from '@/composables/useAuth'
 import { useAuthStore } from '@/stores/auth'
+import { useNotifications } from '@/composables/useNotifications'
 
 const { t } = useI18n()
 const { user } = useAuth()
 const authStore = useAuthStore()
+const { showSuccess, showError } = useNotifications()
 
 // Password change form
 const isCurrentPasswordVisible = ref(false)
@@ -96,13 +98,13 @@ const changePassword = async () => {
       newPassword.value = ''
       confirmPassword.value = ''
       
-      alert(t('password_changed_successfully'))
+      showSuccess(t('password_changed_successfully'))
     } else {
       throw new Error(result.message || t('password_change_failed'))
     }
   } catch (error) {
     console.error('Error changing password:', error)
-    alert(t('password_change_failed'))
+    showError(t('password_change_failed'))
   } finally {
     isChangingPassword.value = false
   }
@@ -115,7 +117,7 @@ const toggle2FA = async () => {
     // This would be an API call to enable/disable 2FA
     await new Promise(resolve => setTimeout(resolve, 1000))
     isTwoFactorEnabled.value = !isTwoFactorEnabled.value
-    alert(isTwoFactorEnabled.value ? t('2fa_enabled') : t('2fa_disabled'))
+    showSuccess(isTwoFactorEnabled.value ? t('2fa_enabled') : t('2fa_disabled'))
   } catch (error) {
     console.error('Error toggling 2FA:', error)
   } finally {
@@ -126,12 +128,12 @@ const toggle2FA = async () => {
 // Logout from device
 const logoutFromDevice = (deviceIndex: number) => {
   if (recentDevices.value[deviceIndex].isCurrent) {
-    alert(t('cannot_logout_current_device'))
+    showError(t('cannot_logout_current_device'))
     return
   }
   
   recentDevices.value.splice(deviceIndex, 1)
-  alert(t('device_logged_out'))
+  showSuccess(t('device_logged_out'))
 }
 </script>
 
