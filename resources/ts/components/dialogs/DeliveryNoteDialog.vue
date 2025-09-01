@@ -83,7 +83,7 @@
         <div v-else-if="step === 3">
           <div class="text-center mb-6">
             <VIcon icon="tabler-check-circle" size="64" color="success" class="mb-4" />
-            <h6 class="text-h6 mb-2">Bon de livraison créé avec succès</h6>
+            <h6 class="text-h6 mb-2">{{ t('admin.delivery_note_created') }}</h6>
             <p class="text-body-2 text-medium-emphasis">
               Référence: <VChip size="small" color="success" variant="tonal">{{ deliveryNoteRef }}</VChip>
             </p>
@@ -94,9 +94,9 @@
             variant="tonal"
             class="mb-4"
           >
-            <VAlertTitle>Prêt pour téléchargement</VAlertTitle>
+            <VAlertTitle>{{ t('admin.ready_for_download') }}</VAlertTitle>
             <p class="mb-0">
-              Votre bon de livraison est maintenant disponible au téléchargement en différents formats.
+              {{ t('admin.delivery_note_download_ready') }}
             </p>
           </VAlert>
 

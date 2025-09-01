@@ -1045,7 +1045,10 @@ const handleStockAllocation = async () => {
 
   // Block saving if stock is exceeded
   if (stockExceeded.value) {
-    showError(`Impossible de sauvegarder : La somme des variantes (${totalVariantStock.value}) dépasse le stock total (${stockForm.stock_total})`)
+    showError(t('stock.variant_sum_exceeds_total', { 
+      variantSum: totalVariantStock.value, 
+      totalStock: stockForm.stock_total 
+    }))
     return
   }
 

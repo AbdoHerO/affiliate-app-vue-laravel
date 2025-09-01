@@ -272,7 +272,7 @@ const downloadEvidence = (withdrawalId: string): void => {
       showSuccess(t('alerts.payments.proof_uploaded'))
     } else {
       console.error(`Evidence download failed with status: ${xhr.status}`)
-      showError(`Erreur lors du téléchargement: ${xhr.status}`)
+      showError(t('alerts.payments.download_error_status', { status: xhr.status }))
     }
   }
 

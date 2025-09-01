@@ -4058,7 +4058,8 @@
     "payments": {
       "proof_uploaded": "Preuve de paiement téléchargée avec succès",
       "network_error": "Erreur réseau lors du téléchargement",
-      "timeout_error": "Timeout lors du téléchargement"
+      "timeout_error": "Timeout lors du téléchargement",
+      "download_error_status": "Erreur lors du téléchargement: statut {status}"
     },
     "products": {
       "created_success": "Produit créé avec succès",
@@ -4183,7 +4184,15 @@
       "shipping_slip_ref": "Bon de livraison créé",
       "packages_added_to_slip": "colis ajoutés au bon de livraison",
       "order_shipped_success": "Commande expédiée avec succès et stock décrémenté",
-      "order_returned_success": "Commande retournée en entrepôt avec succès et stock ré-incrémenté"
+      "order_returned_success": "Commande retournée en entrepôt avec succès et stock ré-incrémenté",
+      "delivery_note_created": "Bon de livraison créé avec succès",
+      "ready_for_download": "Prêt pour téléchargement",
+      "delivery_note_download_ready": "Votre bon de livraison est maintenant disponible au téléchargement en différents formats.",
+      "package_created_success": "Colis Créé avec Succès",
+      "tracking_error": "Erreur de suivi"
+    },
+    "affiliate": {
+      "order_created_success": "Commande créée avec succès!"
     },
     "preorders": {
       "sent_to_ozonexpress": "Commande envoyée vers OzonExpress en mode"
@@ -4212,6 +4221,9 @@
       "package_add_error": "Erreur lors de l'ajout des colis",
       "save_error": "Erreur lors de la sauvegarde",
       "pdf_retrieval_error": "Erreur lors de la récupération des PDFs",
+      "delivery_note_created": "Bon de livraison créé: {ref}",
+      "status_updated": "Statut mis à jour vers: {status}",
+      "status_updated_with_commission": "Statut mis à jour vers: {status} (Commission créée automatiquement)",
       "settings_updated": "Paramètres mis à jour avec succès",
       "generic_error": "Une erreur s'est produite. Veuillez réessayer.",
       "action_completed": "Action terminée avec succès"

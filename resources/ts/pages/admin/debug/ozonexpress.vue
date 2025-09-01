@@ -457,7 +457,7 @@
 
               <div v-if="createTestResult.success && createTestResult.data" class="mt-2">
                 <VCard variant="tonal" color="success">
-                  <VCardTitle class="text-h6">Colis Créé avec Succès</VCardTitle>
+                  <VCardTitle class="text-h6">{{ t('admin.package_created_success') }}</VCardTitle>
                   <VCardText>
                     <div class="d-flex flex-column gap-2">
                       <div><strong>Numéro de Suivi:</strong> {{ createTestResult.data.tracking_number }}</div>

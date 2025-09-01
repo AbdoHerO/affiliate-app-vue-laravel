@@ -33,7 +33,7 @@
 
         <div v-else-if="error" class="text-center py-8">
           <VIcon icon="tabler-alert-circle" size="64" color="error" class="mb-4" />
-          <h6 class="text-h6 mb-2">Erreur de suivi</h6>
+          <h6 class="text-h6 mb-2">{{ t('shipping.tracking_error') }}</h6>
           <p class="text-body-2 text-medium-emphasis">{{ error }}</p>
           <VBtn color="primary" variant="outlined" @click="$emit('retry')">
             Réessayer
@@ -166,6 +166,9 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 interface TrackingEvent {
   status: string

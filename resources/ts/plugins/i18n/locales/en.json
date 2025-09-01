@@ -4009,7 +4009,8 @@
     "payments": {
       "proof_uploaded": "Payment proof uploaded successfully",
       "network_error": "Network error during upload",
-      "timeout_error": "Upload timeout"
+      "timeout_error": "Upload timeout",
+      "download_error_status": "Download error: status {status}"
     },
     "products": {
       "created_success": "Product created successfully",
@@ -4125,7 +4126,15 @@
       "shipping_slip_ref": "Shipping slip created",
       "packages_added_to_slip": "packages added to shipping slip",
       "order_shipped_success": "Order shipped successfully and stock decremented",
-      "order_returned_success": "Order returned to warehouse successfully and stock re-incremented"
+      "order_returned_success": "Order returned to warehouse successfully and stock re-incremented",
+      "delivery_note_created": "Delivery note created successfully",
+      "ready_for_download": "Ready for download",
+      "delivery_note_download_ready": "Your delivery note is now available for download in different formats.",
+      "package_created_success": "Package Created Successfully",
+      "tracking_error": "Tracking Error"
+    },
+    "affiliate": {
+      "order_created_success": "Order created successfully!"
     },
     "preorders": {
       "sent_to_ozonexpress": "Order sent to OzonExpress in mode"
@@ -4154,6 +4163,9 @@
       "package_add_error": "Error adding packages",
       "save_error": "Error saving",
       "pdf_retrieval_error": "Error retrieving PDFs",
+      "delivery_note_created": "Delivery note created: {ref}",
+      "status_updated": "Status updated to: {status}",
+      "status_updated_with_commission": "Status updated to: {status} (Commission created automatically)",
       "settings_updated": "Settings updated successfully",
       "generic_error": "An error occurred. Please try again.",
       "action_completed": "Action completed successfully"

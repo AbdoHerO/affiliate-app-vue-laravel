@@ -109,7 +109,7 @@ const createDeliveryNote = async () => {
     try {
       const ref = await shippingStore.createDeliveryNote()
       deliveryNoteRef.value = ref
-      showSuccess(`Bon de livraison créé: ${ref}`)
+      showSuccess(t('admin.delivery_note_created', { ref }))
     } catch (error: any) {
       showError(error.message || t('admin_shipping_delivery_note_create_error'))
     }
@@ -205,8 +205,13 @@ const updateShippingStatus = async () => {
       note: statusNote.value || undefined
     })
 
-    showSuccess(`Statut mis à jour vers: ${getStatusText(newStatus.value)}` +
-                (newStatus.value === 'livree' ? ' (Commission créée automatiquement)' : ''))
+    const statusText = getStatusText(newStatus.value)
+    const isDelivered = newStatus.value === 'livree'
+    
+    showSuccess(isDelivered 
+      ? t('admin.status_updated_with_commission', { status: statusText })
+      : t('admin.status_updated', { status: statusText })
+    )
     showStatusUpdateDialog.value = false
 
     // Refresh the order data

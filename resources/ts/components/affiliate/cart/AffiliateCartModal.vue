@@ -559,7 +559,7 @@ onMounted(() => {
         <!-- Success Step -->
         <div v-else-if="step === 'success'" class="text-center py-8">
           <VIcon icon="tabler-check-circle" size="64" class="mb-4" color="success" />
-          <h3 class="text-h5 mb-2">Commande créée avec succès!</h3>
+          <h3 class="text-h5 mb-2">{{ t('affiliate.order_created_success') }}</h3>
           <p class="text-body-1 mb-4">Référence: {{ orderRef }}</p>
           <p class="text-body-2 text-medium-emphasis">
             Votre commande a été transmise et sera traitée par l'équipe admin.

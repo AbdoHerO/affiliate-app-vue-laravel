@@ -3997,7 +3997,8 @@
     "payments": {
       "proof_uploaded": "تم رفع إثبات الدفع بنجاح",
       "network_error": "خطأ في الشبكة أثناء الرفع",
-      "timeout_error": "انتهت مهلة الرفع"
+      "timeout_error": "انتهت مهلة الرفع",
+      "download_error_status": "خطأ في التحميل: حالة {status}"
     },
     "products": {
       "created_success": "تم إنشاء المنتج بنجاح",
@@ -4115,7 +4116,15 @@
       "shipping_slip_ref": "تم إنشاء سند الشحن",
       "packages_added_to_slip": "طرود تمت إضافتها إلى سند الشحن",
       "order_shipped_success": "تم شحن الطلب بنجاح وتم تقليل المخزون",
-      "order_returned_success": "تم إرجاع الطلب إلى المستودع بنجاح وتم زيادة المخزون"
+      "order_returned_success": "تم إرجاع الطلب إلى المستودع بنجاح وتم زيادة المخزون",
+      "delivery_note_created": "تم إنشاء مذكرة التسليم بنجاح",
+      "ready_for_download": "جاهز للتحميل",
+      "delivery_note_download_ready": "مذكرة التسليم الخاصة بك متاحة الآن للتحميل بتنسيقات مختلفة.",
+      "package_created_success": "تم إنشاء الطرد بنجاح",
+      "tracking_error": "خطأ في التتبع"
+    },
+    "affiliate": {
+      "order_created_success": "تم إنشاء الطلب بنجاح!"
     },
     "preorders": {
       "sent_to_ozonexpress": "تم إرسال الطلب إلى OzonExpress بوضع"
@@ -4144,6 +4153,9 @@
       "package_add_error": "خطأ في إضافة الطرود",
       "save_error": "خطأ في الحفظ",
       "pdf_retrieval_error": "خطأ في استرجاع ملفات PDF",
+      "delivery_note_created": "تم إنشاء مذكرة التسليم: {ref}",
+      "status_updated": "تم تحديث الحالة إلى: {status}",
+      "status_updated_with_commission": "تم تحديث الحالة إلى: {status} (تم إنشاء العمولة تلقائياً)",
       "settings_updated": "تم تحديث الإعدادات بنجاح",
       "generic_error": "حدث خطأ. يرجى المحاولة مرة أخرى.",
       "action_completed": "تم إتمام العملية بنجاح"
