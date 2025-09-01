@@ -669,7 +669,6 @@
   "login_button": "Login",
   "login_failed": "Login Failed",
 
-  // Password Reset
   "forgot_password_title": "Forgot Password?",
   "forgot_password_subtitle": "Enter your email and we'll send you instructions to reset your password",
   "forgot_password_email_label": "Email",
@@ -4211,6 +4210,7 @@
         "delivered": "Delivered"
       }
     }
-  }
+  },
+  "all_types": "All types"
 }
 

@@ -670,7 +670,6 @@
   "login_button": "Connexion",
   "login_failed": "Échec de la connexion",
 
-  // Password Reset
   "forgot_password_title": "Mot de passe oublié ?",
   "forgot_password_subtitle": "Entrez votre email et nous vous enverrons les instructions pour réinitialiser votre mot de passe",
   "forgot_password_email_label": "Email",
@@ -4252,6 +4251,28 @@
         "in_transit": "En transit",
         "delivered": "Livré"
       }
+    }
+  },
+  "app_version": "Version de l'application",
+  "contact_information": "Informations de contact",
+  "alerts": {
+    "settings": {
+      "file_too_large_with_type": "Fichier trop volumineux. Taille maximale pour {type} est {maxSize}MB",
+      "invalid_file_type_with_types": "Type de fichier invalide pour {type}. Types autorisés : {allowedTypes}"
+    },
+    "stock": {
+      "variant_sum_exceeds_total": "Impossible d'enregistrer : La somme des variantes ({variantSum}) dépasse le stock total ({totalStock})"
+    }
+  },
+  "admin": {
+    "orders": {
+      "returned_success": "Commande retournée à l'entrepôt avec succès et stock réincrémenté",
+      "confirmation_success": "Commande confirmée avec succès",
+      "unexpected_error": "Une erreur inattendue s'est produite lors du traitement de la commande",
+      "created_success_with_ref": "Commande créée avec succès ! Référence : {ref}",
+      "sent_to_ozonexpress_mode": "Commande envoyée à OzonExpress en mode {mode}",
+      "shipped_success": "Commande expédiée avec succès et stock décrémenté",
+      "shipping_slip_created_with_ref": "Bon d'expédition créé : {ref}"
     }
   }
 }

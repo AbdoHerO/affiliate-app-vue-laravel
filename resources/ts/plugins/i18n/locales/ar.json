@@ -669,7 +669,6 @@
   "login_button": "تسجيل الدخول",
   "login_failed": "فشل تسجيل الدخول",
 
-  // Password Reset
   "forgot_password_title": "نسيت كلمة المرور؟",
   "forgot_password_subtitle": "أدخل بريدك الإلكتروني وسنرسل لك تعليمات لإعادة تعيين كلمة المرور",
   "forgot_password_email_label": "البريد الإلكتروني",
@@ -4184,6 +4183,47 @@
         "in_transit": "في الطريق",
         "delivered": "تم التسليم"
       }
+    }
+  },
+  "alerts": {
+    "products": {
+      "proposition_updated": "تم تحديث الاقتراح بنجاح",
+      "stock_issue_resolved": "تم حل مشكلة المخزون بنجاح",
+      "proposition_image_uploaded": "تم رفع صورة الاقتراح بنجاح",
+      "stock_issue_reported": "تم الإبلاغ عن مشكلة المخزون بنجاح",
+      "stock_issue_deleted": "تم حذف مشكلة المخزون بنجاح",
+      "proposition_deleted": "تم حذف الاقتراح بنجاح",
+      "proposition_added": "تم إضافة الاقتراح بنجاح"
+    }
+  },
+  "all_types": "جميع الأنواع",
+  "admin": {
+    "orders": {
+      "confirmation_success": "تم تأكيد الطلب بنجاح",
+      "unexpected_error": "حدث خطأ غير متوقع أثناء معالجة الطلب",
+      "created_success_with_ref": "تم إنشاء الطلب بنجاح! المرجع: {ref}",
+      "returned_success": "تم إرجاع الطلب إلى المستودع بنجاح وتم زيادة المخزون",
+      "sent_to_ozonexpress_mode": "تم إرسال الطلب إلى OzonExpress في وضع {mode}",
+      "shipped_success": "تم شحن الطلب بنجاح وتم تقليل المخزون",
+      "shipping_slip_created_with_ref": "تم إنشاء إيصال الشحن: {ref}"
+    }
+  },
+  "alerts": {
+    "settings": {
+      "invalid_file_type_with_types": "نوع ملف غير صالح لـ {type}. الأنواع المسموحة: {allowedTypes}",
+      "file_too_large_with_type": "الملف كبير جداً. الحد الأقصى للحجم لـ {type} هو {maxSize}MB"
+    },
+    "products": {
+      "proposition_updated": "تم تحديث الاقتراح بنجاح",
+      "stock_issue_resolved": "تم حل مشكلة المخزون بنجاح",
+      "proposition_image_uploaded": "تم رفع صورة الاقتراح بنجاح",
+      "stock_issue_reported": "تم الإبلاغ عن مشكلة المخزون بنجاح",
+      "stock_issue_deleted": "تم حذف مشكلة المخزون بنجاح",
+      "proposition_deleted": "تم حذف الاقتراح بنجاح",
+      "proposition_added": "تم إضافة الاقتراح بنجاح"
+    },
+    "stock": {
+      "variant_sum_exceeds_total": "لا يمكن الحفظ: مجموع المتغيرات ({variantSum}) يتجاوز إجمالي المخزون ({totalStock})"
     }
   }
 }
