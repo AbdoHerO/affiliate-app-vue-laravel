@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { useApi } from '@/composables/useApi'
 import { useNotifications } from '@/composables/useNotifications'
+import { useI18n } from 'vue-i18n'
 
 // Types
 export interface CartItem {
@@ -56,6 +57,9 @@ export interface CheckoutResponse {
 }
 
 export const useAffiliateCartStore = defineStore('affiliate-cart', () => {
+  const { showSuccess, showError } = useNotifications()
+  const { t } = useI18n()
+  
   // State
   const items = ref<CartItem[]>([])
   const summary = ref<CartSummary>({
@@ -65,9 +69,6 @@ export const useAffiliateCartStore = defineStore('affiliate-cart', () => {
   })
   const loading = ref(false)
   const error = ref<string | null>(null)
-
-  // Notifications
-  const { showSuccess, showError } = useNotifications()
 
   // Getters
   const count = computed(() => summary.value.items_count)
@@ -190,14 +191,14 @@ export const useAffiliateCartStore = defineStore('affiliate-cart', () => {
         }
       }
 
-      showSuccess('Ajouté au panier')
+      showSuccess(t('alerts.cart.added_to_cart'))
       console.log('✅ [Cart Store] Item added successfully, refreshing cart...')
       await fetchCart() // Refresh cart
       console.log('🔄 [Cart Store] Cart refreshed, new count:', items.value.length)
       return data.value
     } catch (err: any) {
       console.error('❌ [Cart Store] Add item error:', err)
-      const message = err.message || 'Erreur lors de l\'ajout au panier'
+      const message = err.message || t('alerts.cart.error_adding')
       if (!err.message) {
         showError(message)
       }
@@ -232,7 +233,7 @@ export const useAffiliateCartStore = defineStore('affiliate-cart', () => {
         }
       }
 
-      showSuccess('Panier mis à jour')
+      showSuccess(t('alerts.cart.cart_updated'))
       await fetchCart() // Refresh cart
       return data.value
     } catch (err: any) {
@@ -270,7 +271,7 @@ export const useAffiliateCartStore = defineStore('affiliate-cart', () => {
         }
       }
 
-      showSuccess('Produit retiré du panier')
+      showSuccess(t('alerts.cart.product_removed'))
       await fetchCart() // Refresh cart
       return data.value
     } catch (err: any) {
@@ -292,7 +293,7 @@ export const useAffiliateCartStore = defineStore('affiliate-cart', () => {
         throw apiError.value
       }
 
-      showSuccess('Panier vidé')
+      showSuccess(t('alerts.cart.cart_cleared'))
       items.value = []
       summary.value = {
         items_count: 0,
@@ -407,7 +408,7 @@ export const useAffiliateCartStore = defineStore('affiliate-cart', () => {
       return validatedCities
     } catch (err: any) {
       console.error('❌ [Cart Store] Fetch cities error:', err)
-      showError('Erreur lors du chargement des villes')
+      showError(t('alerts.cities.error_loading'))
       return []
     }
   }

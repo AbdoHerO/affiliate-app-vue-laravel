@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { ref, reactive, computed } from 'vue'
 import { useApi } from '@/composables/useApi'
 import { useNotifications } from '@/composables/useNotifications'
+import { useI18n } from 'vue-i18n'
 
 // Types for affiliate catalogue
 export interface CatalogueProduct {
@@ -164,6 +165,9 @@ export interface NormalizedProduct {
 }
 
 export const useCatalogueStore = defineStore('affiliate-catalogue', () => {
+  const { showSuccess, showError } = useNotifications()
+  const { t } = useI18n()
+  
   // State
   const items = ref<NormalizedProduct[]>([])
   const selectedProduct = ref<CatalogueProduct | null>(null)
@@ -297,9 +301,6 @@ export const useCatalogueStore = defineStore('affiliate-catalogue', () => {
   const isLoading = computed(() => loading.value)
   const isDetailLoading = computed(() => detailLoading.value)
   const totalItems = computed(() => pagination.total)
-
-  // Notifications
-  const { showSuccess, showError } = useNotifications()
 
   // Data mapper - normalize API response to card view model
   const mapProductToNormalized = (product: CatalogueProduct): NormalizedProduct => {
@@ -570,7 +571,7 @@ export const useCatalogueStore = defineStore('affiliate-catalogue', () => {
         throw apiError.value
       }
 
-      showSuccess('Produit ajouté au panier')
+      showSuccess(t('alerts.cart.added_to_cart'))
 
       // Update cart summary
       await fetchCartSummary()
@@ -788,7 +789,7 @@ export const useCatalogueStore = defineStore('affiliate-catalogue', () => {
           const validationMessage = apiError.value.data?.message || 'Stock insuffisant ou données invalides'
           showError(validationMessage)
         } else if (apiError.value.status === 404) {
-          showError('Produit non trouvé')
+          showError(t('alerts.cart.product_not_found'))
         } else {
           showError(apiError.value.message || 'Erreur lors de l\'ajout au panier')
         }

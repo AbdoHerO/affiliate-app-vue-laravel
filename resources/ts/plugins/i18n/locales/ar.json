@@ -3950,6 +3950,82 @@
   "verification_email_sent_to": "تم إرسال بريد إلكتروني للتحقق إلى",
   "welcome_to_our_affiliate_network": "مرحباً بك في شبكة الشراكة الخاصة بنا",
   "settings_saved_successfully": "تم حفظ الإعدادات بنجاح",
-  "email_readonly_notice": "لا يمكن تعديل البريد الإلكتروني"
+  "email_readonly_notice": "لا يمكن تعديل البريد الإلكتروني",
+  "alerts": {
+    "cart": {
+      "added_to_cart": "تمت الإضافة للسلة",
+      "cart_updated": "تم تحديث السلة",
+      "product_removed": "تم إزالة المنتج من السلة",
+      "cart_cleared": "تم إفراغ السلة",
+      "error_adding": "خطأ في الإضافة للسلة",
+      "stock_insufficient": "المخزون غير كافي",
+      "product_not_found": "المنتج غير موجود"
+    },
+    "orders": {
+      "shipped_success": "تم شحن الطلب بنجاح وتقليل المخزون",
+      "returned_success": "تم إرجاع الطلب للمستودع بنجاح وزيادة المخزون"
+    },
+    "payments": {
+      "proof_uploaded": "تم رفع إثبات الدفع بنجاح",
+      "network_error": "خطأ في الشبكة أثناء الرفع",
+      "timeout_error": "انتهت مهلة الرفع"
+    },
+    "products": {
+      "created_success": "تم إنشاء المنتج بنجاح",
+      "updated_success": "تم تحديث المنتج بنجاح",
+      "invalid_form": "حالة النموذج غير صالحة",
+      "title_required": "عنوان المنتج مطلوب",
+      "boutique_required": "اختيار المتجر مطلوب",
+      "failed_to_load": "فشل في تحميل المنتج",
+      "image_deleted": "تم حذف الصورة بنجاح",
+      "video_added": "تم إضافة الفيديو بنجاح",
+      "video_uploaded": "تم رفع الفيديو بنجاح",
+      "video_deleted": "تم حذف الفيديو بنجاح",
+      "variant_added": "تم إضافة المتغير بنجاح",
+      "variant_deleted": "تم حذف المتغير بنجاح",
+      "variant_image_uploaded": "تم رفع صورة المتغير بنجاح",
+      "error_saving_variant": "خطأ في حفظ المتغير",
+      "error_deleting_variant": "خطأ في حذف المتغير",
+      "error_saving_video": "خطأ في حفظ الفيديو",
+      "error_deleting_video": "خطأ في حذف الفيديو"
+    },
+    "boutiques": {
+      "created_success": "تم إنشاء المتجر بنجاح",
+      "updated_success": "تم تحديث المتجر بنجاح",
+      "deleted_success": "تم حذف المتجر بنجاح"
+    },
+    "catalogue": {
+      "error_loading_product": "خطأ في تحميل المنتج",
+      "error_loading_categories": "خطأ في تحميل الفئات"
+    },
+    "cities": {
+      "error_loading": "خطأ في تحميل المدن"
+    },
+    "copy": {
+      "text_copied": "تم نسخ النص للحافظة",
+      "copy_error": "خطأ في النسخ"
+    },
+    "profile": {
+      "image_select_valid": "يرجى اختيار ملف صورة صالح",
+      "image_size_limit": "يجب أن يكون حجم الصورة أقل من 2 ميجابايت"
+    },
+    "tickets": {
+      "created_success": "تم إنشاء التذكرة بنجاح",
+      "error_loading_users": "خطأ في تحميل المستخدمين",
+      "unexpected_response": "تنسيق استجابة غير متوقع من الخادم"
+    },
+    "kyc": {
+      "file_required": "يرجى اختيار ملف",
+      "user_required": "يرجى اختيار مستخدم",
+      "document_type_required": "يرجى اختيار نوع الوثيقة",
+      "failed_load_users": "فشل في تحميل المستخدمين"
+    },
+    "debug": {
+      "connection_error": "خطأ في الاتصال"
+    },
+    "navigation": {
+      "commission_details_error": "خطأ في التنقل لتفاصيل العمولة"
+    }
+  }
 }
 

@@ -4011,5 +4011,81 @@
   },
   "cart": {
     "title": "Panier"
+  },
+  "alerts": {
+    "cart": {
+      "added_to_cart": "Ajouté au panier",
+      "cart_updated": "Panier mis à jour",
+      "product_removed": "Produit retiré du panier",
+      "cart_cleared": "Panier vidé",
+      "error_adding": "Erreur lors de l'ajout au panier",
+      "stock_insufficient": "Stock insuffisant",
+      "product_not_found": "Produit non trouvé"
+    },
+    "orders": {
+      "shipped_success": "Commande expédiée avec succès et stock décrémenté",
+      "returned_success": "Commande retournée en entrepôt avec succès et stock ré-incrémenté"
+    },
+    "payments": {
+      "proof_uploaded": "Preuve de paiement téléchargée avec succès",
+      "network_error": "Erreur réseau lors du téléchargement",
+      "timeout_error": "Timeout lors du téléchargement"
+    },
+    "products": {
+      "created_success": "Produit créé avec succès",
+      "updated_success": "Produit mis à jour avec succès",
+      "invalid_form": "État du formulaire invalide",
+      "title_required": "Le titre du produit est requis",
+      "boutique_required": "La sélection de boutique est requise",
+      "failed_to_load": "Échec du chargement du produit",
+      "image_deleted": "Image supprimée avec succès",
+      "video_added": "Vidéo ajoutée avec succès",
+      "video_uploaded": "Vidéo téléchargée avec succès",
+      "video_deleted": "Vidéo supprimée avec succès",
+      "variant_added": "Variante ajoutée avec succès",
+      "variant_deleted": "Variante supprimée avec succès",
+      "variant_image_uploaded": "Image de variante téléchargée avec succès",
+      "error_saving_variant": "Erreur lors de l'enregistrement de la variante",
+      "error_deleting_variant": "Erreur lors de la suppression de la variante",
+      "error_saving_video": "Erreur lors de l'enregistrement de la vidéo",
+      "error_deleting_video": "Erreur lors de la suppression de la vidéo"
+    },
+    "boutiques": {
+      "created_success": "Boutique créée avec succès",
+      "updated_success": "Boutique mise à jour avec succès",
+      "deleted_success": "Boutique supprimée avec succès"
+    },
+    "catalogue": {
+      "error_loading_product": "Erreur lors du chargement du produit",
+      "error_loading_categories": "Erreur lors du chargement des catégories"
+    },
+    "cities": {
+      "error_loading": "Erreur lors du chargement des villes"
+    },
+    "copy": {
+      "text_copied": "Texte copié dans le presse-papiers",
+      "copy_error": "Erreur lors de la copie"
+    },
+    "profile": {
+      "image_select_valid": "Veuillez sélectionner un fichier image valide",
+      "image_size_limit": "La taille de l'image doit être inférieure à 2 Mo"
+    },
+    "tickets": {
+      "created_success": "Ticket créé avec succès",
+      "error_loading_users": "Erreur lors du chargement des utilisateurs",
+      "unexpected_response": "Format de réponse inattendu du serveur"
+    },
+    "kyc": {
+      "file_required": "Veuillez sélectionner un fichier",
+      "user_required": "Veuillez sélectionner un utilisateur",
+      "document_type_required": "Veuillez sélectionner un type de document",
+      "failed_load_users": "Échec du chargement des utilisateurs"
+    },
+    "debug": {
+      "connection_error": "Erreur de connexion"
+    },
+    "navigation": {
+      "commission_details_error": "Erreur de navigation vers les détails de la commission"
+    }
   }
 }

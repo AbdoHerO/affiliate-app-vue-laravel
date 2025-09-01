@@ -3955,6 +3955,82 @@
   "welcome_to_our_affiliate_network": "Welcome to our affiliate network",
   "joined": "Member since",
   "settings_saved_successfully": "Settings saved successfully",
-  "email_readonly_notice": "Email cannot be modified"
+  "email_readonly_notice": "Email cannot be modified",
+  "alerts": {
+    "cart": {
+      "added_to_cart": "Added to cart",
+      "cart_updated": "Cart updated",
+      "product_removed": "Product removed from cart",
+      "cart_cleared": "Cart cleared",
+      "error_adding": "Error adding to cart",
+      "stock_insufficient": "Insufficient stock",
+      "product_not_found": "Product not found"
+    },
+    "orders": {
+      "shipped_success": "Order shipped successfully and stock decremented",
+      "returned_success": "Order returned to warehouse successfully and stock re-incremented"
+    },
+    "payments": {
+      "proof_uploaded": "Payment proof uploaded successfully",
+      "network_error": "Network error during upload",
+      "timeout_error": "Upload timeout"
+    },
+    "products": {
+      "created_success": "Product created successfully",
+      "updated_success": "Product updated successfully",
+      "invalid_form": "Invalid form state",
+      "title_required": "Product title is required",
+      "boutique_required": "Boutique selection is required",
+      "failed_to_load": "Failed to load product",
+      "image_deleted": "Image deleted successfully",
+      "video_added": "Video added successfully",
+      "video_uploaded": "Video uploaded successfully",
+      "video_deleted": "Video deleted successfully",
+      "variant_added": "Variant added successfully",
+      "variant_deleted": "Variant deleted successfully",
+      "variant_image_uploaded": "Variant image uploaded successfully",
+      "error_saving_variant": "Error saving variant",
+      "error_deleting_variant": "Error deleting variant",
+      "error_saving_video": "Error saving video",
+      "error_deleting_video": "Error deleting video"
+    },
+    "boutiques": {
+      "created_success": "Boutique created successfully",
+      "updated_success": "Boutique updated successfully",
+      "deleted_success": "Boutique deleted successfully"
+    },
+    "catalogue": {
+      "error_loading_product": "Error loading product",
+      "error_loading_categories": "Error loading categories"
+    },
+    "cities": {
+      "error_loading": "Error loading cities"
+    },
+    "copy": {
+      "text_copied": "Text copied to clipboard",
+      "copy_error": "Copy error"
+    },
+    "profile": {
+      "image_select_valid": "Please select a valid image file",
+      "image_size_limit": "Image size must be less than 2MB"
+    },
+    "tickets": {
+      "created_success": "Ticket created successfully",
+      "error_loading_users": "Error loading users",
+      "unexpected_response": "Unexpected response format from server"
+    },
+    "kyc": {
+      "file_required": "Please select a file",
+      "user_required": "Please select a user",
+      "document_type_required": "Please select a document type",
+      "failed_load_users": "Failed to load users"
+    },
+    "debug": {
+      "connection_error": "Connection error"
+    },
+    "navigation": {
+      "commission_details_error": "Error navigating to commission details"
+    }
+  }
 }
 
