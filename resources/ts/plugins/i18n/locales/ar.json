@@ -1675,6 +1675,7 @@
   "product.stock.error_invalid_variants": "بعض المتغيرات غير صحيحة. يرجى التحقق من بياناتك.",
   "product.stock.error_size_variants_only": "يمكن فقط لمتغيرات الحجم أن تحصل على مخزون مخصص.",
   "product.stock.error_database": "خطأ في قاعدة البيانات. يرجى الاتصال بالمدير.",
+  "product.stock.error_allocation": "خطأ أثناء تخصيص المخزون",
   "product.stock.success_allocated": "تم تخصيص المخزون بنجاح",
   "product.stock.matrix.color": "اللون",
   "product.stock.matrix.size": "الحجم",
@@ -3992,7 +3993,8 @@
       "unexpected_error": "حدث خطأ غير متوقع أثناء معالجة الطلب",
       "created_success_with_ref": "تم إنشاء الطلب بنجاح! المرجع: {ref}",
       "sent_to_ozonexpress_mode": "تم إرسال الطلب إلى OzonExpress في وضع {mode}",
-      "shipping_slip_created_with_ref": "تم إنشاء بوليصة الشحن: {ref}"
+      "shipping_slip_created_with_ref": "تم إنشاء بوليصة الشحن: {ref}",
+      "timeline_loading_error": "خطأ في تحميل السجل الزمني"
     },
     "payments": {
       "proof_uploaded": "تم رفع إثبات الدفع بنجاح",
@@ -4121,7 +4123,14 @@
       "ready_for_download": "جاهز للتحميل",
       "delivery_note_download_ready": "مذكرة التسليم الخاصة بك متاحة الآن للتحميل بتنسيقات مختلفة.",
       "package_created_success": "تم إنشاء الطرد بنجاح",
-      "tracking_error": "خطأ في التتبع"
+      "tracking_error": "خطأ في التتبع",
+      "delivery_note_creation_error": "خطأ في إنشاء مذكرة التسليم",
+      "delivery_note_feature_unavailable": "ميزة مذكرة التسليم غير متوفرة في هذا الإصدار من OzonExpress",
+      "connection_error": "خطأ في الاتصال: {message}",
+      "delivery_note_add_packages_error": "خطأ في إضافة الطرود",
+      "delivery_note_saving": "حفظ مذكرة التسليم...",
+      "delivery_note_save_error": "خطأ في حفظ مذكرة التسليم",
+      "delivery_note_generating_pdf": "توليد روابط PDF..."
     },
     "affiliate": {
       "order_created_success": "تم إنشاء الطلب بنجاح!"
@@ -4168,6 +4177,13 @@
       "server_error": "خطأ في الخادم. يرجى المحاولة لاحقاً.",
       "connection_error": "خطأ في الاتصال. تحقق من اتصالك بالإنترنت.",
       "unexpected_error": "حدث خطأ غير متوقع."
+    },
+    "order": {
+      "status": {
+        "created": "تم إنشاؤه",
+        "in_transit": "في الطريق",
+        "delivered": "تم التسليم"
+      }
     }
   }
 }

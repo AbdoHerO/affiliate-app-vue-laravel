@@ -62,11 +62,11 @@ const fetchTimeline = async () => {
     if (response.success) {
       timeline.value = response.data
     } else {
-      error.value = response.message || 'Erreur lors du chargement de l\'historique'
+      error.value = response.message || t('orders.timeline_loading_error')
     }
   } catch (err: any) {
     console.error('Error fetching timeline:', err)
-    error.value = err.response?.data?.message || 'Erreur lors du chargement de l\'historique'
+    error.value = err.response?.data?.message || t('orders.timeline_loading_error')
   } finally {
     loading.value = false
   }

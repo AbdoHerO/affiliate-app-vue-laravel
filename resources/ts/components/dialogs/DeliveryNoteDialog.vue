@@ -268,13 +268,13 @@ const createDeliveryNote = async () => {
       deliveryNoteRef.value = data.data.ref
       step.value = 2
     } else {
-      error.value = data.message || 'Erreur lors de la création du bon de livraison'
+      error.value = data.message || t('admin.delivery_note_creation_error')
     }
   } catch (err: any) {
     if (err.response?.status === 404) {
-      error.value = 'Fonctionnalité de bon de livraison non disponible dans cette version d\'OzonExpress'
+      error.value = t('admin.delivery_note_feature_unavailable')
     } else {
-      error.value = 'Erreur de connexion: ' + err.message
+      error.value = t('admin.connection_error', { message: err.message })
     }
   } finally {
     loading.value = false
@@ -303,11 +303,11 @@ const addParcelsAndSave = async () => {
     const addData = await addResponse.json()
 
     if (!addData.success) {
-      error.value = addData.message || 'Erreur lors de l\'ajout des colis'
+      error.value = addData.message || t('admin.delivery_note_add_packages_error')
       return
     }
 
-    loadingMessage.value = 'Sauvegarde du bon de livraison...'
+    loadingMessage.value = t('admin.delivery_note_saving')
 
     // Save delivery note
     const saveResponse = await fetch('/api/admin/shipping/ozon/dn/save', {
@@ -324,11 +324,11 @@ const addParcelsAndSave = async () => {
     const saveData = await saveResponse.json()
 
     if (!saveData.success) {
-      error.value = saveData.message || 'Erreur lors de la sauvegarde'
+      error.value = saveData.message || t('admin.delivery_note_save_error')
       return
     }
 
-    loadingMessage.value = 'Génération des liens PDF...'
+    loadingMessage.value = t('admin.delivery_note_generating_pdf')
 
     // Get PDF links
     const pdfResponse = await fetch(`/api/admin/shipping/ozon/dn/pdf?ref=${deliveryNoteRef.value}`, {
@@ -348,9 +348,9 @@ const addParcelsAndSave = async () => {
 
   } catch (err: any) {
     if (err.response?.status === 404) {
-      error.value = 'Fonctionnalité de bon de livraison non disponible dans cette version d\'OzonExpress'
+      error.value = t('admin.delivery_note_feature_unavailable')
     } else {
-      error.value = 'Erreur de connexion: ' + err.message
+      error.value = t('admin.connection_error', { message: err.message })
     }
   } finally {
     loading.value = false

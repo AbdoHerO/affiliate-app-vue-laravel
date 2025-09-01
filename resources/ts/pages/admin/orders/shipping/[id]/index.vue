@@ -247,11 +247,11 @@ const getStatusColor = (status: string) => {
 const getStatusText = (status: string) => {
   switch (status) {
     case 'created':
-      return 'Créé'
+      return t('order.status.created')
     case 'in_transit':
-      return 'En transit'
+      return t('order.status.in_transit')
     case 'delivered':
-      return 'Livré'
+      return t('order.status.delivered')
     case 'returned':
       return t('order.status.returned')
     default:

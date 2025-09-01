@@ -1682,6 +1682,7 @@
   "product.stock.error_invalid_variants": "Certaines variantes sont invalides. Veuillez vérifier vos données.",
   "product.stock.error_size_variants_only": "Seules les variantes de taille peuvent avoir du stock alloué.",
   "product.stock.error_database": "Erreur de base de données. Veuillez contacter l'administrateur.",
+  "product.stock.error_allocation": "Erreur lors de l'allocation du stock",
   "product.stock.success_allocated": "Stock alloué avec succès",
   "product.stock.matrix.color": "Couleur",
   "product.stock.matrix.size": "Taille",
@@ -4053,7 +4054,8 @@
       "unexpected_error": "Une erreur inattendue s'est produite lors du traitement de la commande",
       "created_success_with_ref": "Commande créée avec succès ! Référence: {ref}",
       "sent_to_ozonexpress_mode": "Commande envoyée à OzonExpress en mode {mode}",
-      "shipping_slip_created_with_ref": "Bon d'expédition créé: {ref}"
+      "shipping_slip_created_with_ref": "Bon d'expédition créé: {ref}",
+      "timeline_loading_error": "Erreur lors du chargement de l'historique"
     },
     "payments": {
       "proof_uploaded": "Preuve de paiement téléchargée avec succès",
@@ -4189,7 +4191,14 @@
       "ready_for_download": "Prêt pour téléchargement",
       "delivery_note_download_ready": "Votre bon de livraison est maintenant disponible au téléchargement en différents formats.",
       "package_created_success": "Colis Créé avec Succès",
-      "tracking_error": "Erreur de suivi"
+      "tracking_error": "Erreur de suivi",
+      "delivery_note_creation_error": "Erreur lors de la création du bon de livraison",
+      "delivery_note_feature_unavailable": "Fonctionnalité de bon de livraison non disponible dans cette version d'OzonExpress",
+      "connection_error": "Erreur de connexion: {message}",
+      "delivery_note_add_packages_error": "Erreur lors de l'ajout des colis",
+      "delivery_note_saving": "Sauvegarde du bon de livraison...",
+      "delivery_note_save_error": "Erreur lors de la sauvegarde",
+      "delivery_note_generating_pdf": "Génération des liens PDF..."
     },
     "affiliate": {
       "order_created_success": "Commande créée avec succès!"
@@ -4236,6 +4245,13 @@
       "server_error": "Erreur serveur. Veuillez réessayer plus tard.",
       "connection_error": "Erreur de connexion. Vérifiez votre connexion internet.",
       "unexpected_error": "Une erreur inattendue s'est produite."
+    },
+    "order": {
+      "status": {
+        "created": "Créé",
+        "in_transit": "En transit",
+        "delivered": "Livré"
+      }
     }
   }
 }

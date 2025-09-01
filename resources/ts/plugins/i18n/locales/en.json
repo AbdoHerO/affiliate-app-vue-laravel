@@ -1675,6 +1675,7 @@
   "product.stock.error_invalid_variants": "Some variants are invalid. Please check your data.",
   "product.stock.error_size_variants_only": "Only size variants can have allocated stock.",
   "product.stock.error_database": "Database error. Please contact administrator.",
+  "product.stock.error_allocation": "Error during stock allocation",
   "product.stock.success_allocated": "Stock allocated successfully",
   "product.stock.matrix.color": "Color",
   "product.stock.matrix.size": "Size",
@@ -4004,7 +4005,8 @@
       "unexpected_error": "An unexpected error occurred while processing the order",
       "created_success_with_ref": "Order created successfully! Reference: {ref}",
       "sent_to_ozonexpress_mode": "Order sent to OzonExpress in {mode} mode",
-      "shipping_slip_created_with_ref": "Shipping slip created: {ref}"
+      "shipping_slip_created_with_ref": "Shipping slip created: {ref}",
+      "timeline_loading_error": "Error loading timeline"
     },
     "payments": {
       "proof_uploaded": "Payment proof uploaded successfully",
@@ -4131,7 +4133,14 @@
       "ready_for_download": "Ready for download",
       "delivery_note_download_ready": "Your delivery note is now available for download in different formats.",
       "package_created_success": "Package Created Successfully",
-      "tracking_error": "Tracking Error"
+      "tracking_error": "Tracking Error",
+      "delivery_note_creation_error": "Error creating delivery note",
+      "delivery_note_feature_unavailable": "Delivery note feature not available in this version of OzonExpress",
+      "connection_error": "Connection error: {message}",
+      "delivery_note_add_packages_error": "Error adding packages",
+      "delivery_note_saving": "Saving delivery note...",
+      "delivery_note_save_error": "Error saving delivery note",
+      "delivery_note_generating_pdf": "Generating PDF links..."
     },
     "affiliate": {
       "order_created_success": "Order created successfully!"
@@ -4194,6 +4203,13 @@
     "settings": {
       "file_too_large_with_type": "File too large. Maximum size for {type} is {maxSize}MB",
       "invalid_file_type_with_types": "Invalid file type for {type}. Allowed types: {allowedTypes}"
+    },
+    "order": {
+      "status": {
+        "created": "Created",
+        "in_transit": "In Transit",
+        "delivered": "Delivered"
+      }
     }
   }
 }

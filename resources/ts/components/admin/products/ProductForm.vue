@@ -1095,7 +1095,7 @@ const handleStockAllocation = async () => {
 
     if (error.value) {
       // Provide user-friendly error messages using i18n
-      let errorMessage = 'Erreur lors de l\'allocation du stock'
+      let errorMessage = t('product.stock.error_allocation')
 
       if (error.value.message?.includes('No warehouse found')) {
         errorMessage = t('product.stock.error_no_warehouse')
