@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
@@ -50,17 +51,32 @@ class PasswordResetController extends Controller
         }
 
         try {
+            Log::info('Password reset requested', [
+                'email' => $request->email,
+                'ip' => $request->ip(),
+                'user_agent' => $request->userAgent()
+            ]);
+
             // Send password reset link
             $status = Password::sendResetLink(
                 $request->only('email')
             );
 
             if ($status === Password::RESET_LINK_SENT) {
+                Log::info('Password reset link sent successfully', [
+                    'email' => $request->email
+                ]);
+
                 return response()->json([
                     'success' => true,
                     'message' => __('messages.password_reset_link_sent'),
                 ]);
             }
+
+            Log::warning('Password reset link failed to send', [
+                'email' => $request->email,
+                'status' => $status
+            ]);
 
             return response()->json([
                 'success' => false,
@@ -68,6 +84,12 @@ class PasswordResetController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
 
         } catch (\Exception $e) {
+            Log::error('Password reset exception', [
+                'email' => $request->email,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
             return response()->json([
                 'success' => false,
                 'message' => __('messages.server_error'),
