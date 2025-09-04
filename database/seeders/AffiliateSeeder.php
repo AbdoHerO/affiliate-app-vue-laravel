@@ -22,75 +22,46 @@ class AffiliateSeeder extends Seeder
             'actif' => true,
         ]);
 
-        // Create multiple test affiliate users
-        $affiliateData = [
-            [
-                'email' => 'affiliate1@test.com',
-                'nom_complet' => 'Ahmed Benali',
-                'telephone' => '0600000001',
-                'statut' => 'actif',
-                'kyc_statut' => 'valide',
-                'profile_statut' => 'actif',
-            ],
-            [
-                'email' => 'affiliate2@test.com',
-                'nom_complet' => 'Fatima Alaoui',
-                'telephone' => '0600000002',
-                'statut' => 'actif',
-                'kyc_statut' => 'en_attente',
-                'profile_statut' => 'actif',
-            ],
-            [
-                'email' => 'affiliate3@test.com',
-                'nom_complet' => 'Mohamed Tazi',
-                'telephone' => '0600000003',
-                'statut' => 'inactif',
-                'kyc_statut' => 'refuse',
-                'profile_statut' => 'suspendu',
-            ],
-            [
-                'email' => 'affiliate4@test.com',
-                'nom_complet' => 'Aicha Bennani',
-                'telephone' => '0600000004',
-                'statut' => 'bloque',
-                'kyc_statut' => 'non_requis',
-                'profile_statut' => 'suspendu',
-            ],
-            [
-                'email' => 'affiliate5@test.com',
-                'nom_complet' => 'Youssef Idrissi',
-                'telephone' => '0600000005',
-                'statut' => 'actif',
-                'kyc_statut' => 'valide',
-                'profile_statut' => 'actif',
-            ],
-        ];
+        // 1. Create admin user
+        $adminUser = User::firstOrCreate([
+            'email' => 'admin@cod.test',
+        ], [
+            'nom_complet' => 'Admin COD',
+            'email_verifie' => true,
+            'mot_de_passe_hash' => bcrypt('password'),
+            'telephone' => '0600000000',
+            'statut' => 'actif',
+            'kyc_statut' => 'valide',
+        ]);
 
-        foreach ($affiliateData as $data) {
-            $user = User::firstOrCreate([
-                'email' => $data['email'],
-            ], [
-                'nom_complet' => $data['nom_complet'],
-                'email_verifie' => true,
-                'mot_de_passe_hash' => bcrypt('password'),
-                'telephone' => $data['telephone'],
-                'statut' => $data['statut'],
-                'kyc_statut' => $data['kyc_statut'],
-            ]);
+        $adminUser->assignRole('admin');
+        $this->command->info('✅ Created admin user: ' . $adminUser->email);
 
-            $user->assignRole('affiliate');
+        // 2. Create single affiliate user for production
+        $affiliateUser = User::firstOrCreate([
+            'email' => 'affiliate@cod.test',
+        ], [
+            'nom_complet' => 'Affiliate COD',
+            'email_verifie' => true,
+            'mot_de_passe_hash' => bcrypt('password'),
+            'telephone' => '0600000001',
+            'statut' => 'actif',
+            'kyc_statut' => 'valide',
+        ]);
 
-            // Create affiliate profile
-            ProfilAffilie::firstOrCreate([
-                'utilisateur_id' => $user->id,
-            ], [
-                'gamme_id' => $gamme->id,
-                'points' => 0, // Start with 0 points for clean testing
-                'statut' => $data['profile_statut'],
-                'rib' => rand(0, 1) ? 'RIB' . str_pad(rand(1, 999999), 6, '0', STR_PAD_LEFT) : null,
-            ]);
+        $affiliateUser->assignRole('affiliate');
 
-            $this->command->info('Created affiliate profile for: ' . $user->email);
-        }
+        // Create affiliate profile
+        ProfilAffilie::firstOrCreate([
+            'utilisateur_id' => $affiliateUser->id,
+        ], [
+            'gamme_id' => $gamme->id,
+            'points' => 0, // Start with 0 points for clean production testing
+            'statut' => 'actif',
+            'rib' => null, // No RIB for clean testing
+        ]);
+
+        $this->command->info('✅ Created affiliate user: ' . $affiliateUser->email);
+        $this->command->info('🎯 Production-ready users created successfully!');
     }
 }

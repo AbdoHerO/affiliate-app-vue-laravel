@@ -12,7 +12,7 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        $this->command->info('🚀 Starting complete database seeding...');
+        $this->command->info('🚀 Starting PRODUCTION-READY database seeding...');
 
         // // Check environment safety
         // if (app()->environment('production')) {
@@ -29,64 +29,70 @@ class DatabaseSeeder extends Seeder
             CommissionSettingsSeeder::class,
         ]);
 
-        // 2. CATALOG: Categories, boutiques, and products
-        $this->command->info('🏪 Step 2: Catalog (Categories, Boutiques, Products)');
+        // 2. CATALOG: Essential catalog structure (Variants/Attributes + Production Categories/Boutique)
+        $this->command->info('🏪 Step 2: Essential Catalog (Variants, Categories, Boutique)');
         $this->call([
-            BoutiqueSeeder::class,
-            CategorieSeeder::class,
             VariantCatalogSeeder::class,
-            ComprehensiveProductSeeder::class,
+            CategorieSeeder::class,  // Traditional Moroccan clothing categories
+            BoutiqueSeeder::class,   // Tujjar Store only
         ]);
 
-        // 3. INTEGRATIONS: External services
-        $this->command->info('🌐 Step 3: Integrations (OzonExpress)');
+        // COMMENTED OUT FOR PRODUCTION - Dynamic product data
+        // $this->command->info('🏪 Step 2: Catalog (Products)');
+        // $this->call([
+        //     ComprehensiveProductSeeder::class,
+        // ]);
+
+        // 3. INTEGRATIONS: External services (Essential cities only)
+        $this->command->info('🌐 Step 3: Integrations (OzonExpress Cities)');
         $this->call([
             OzonExpressCitiesSeeder::class,
-            OzonExpressSeeder::class,
         ]);
 
-        // 4. USERS: Affiliates and test users
-        $this->command->info('👥 Step 4: Users & Affiliates');
+        // COMMENTED OUT FOR PRODUCTION - Test credentials
+        // $this->call([
+        //     OzonExpressSeeder::class,
+        // ]);
+
+        // 4. USERS: Essential users only (1 admin + 1 affiliate)
+        $this->command->info('👥 Step 4: Essential Users (Admin + Affiliate)');
         $this->call([
-            AffiliateSeeder::class,
+            AffiliateSeeder::class,  // Will be modified to create minimal users
         ]);
 
-        // 5. ORDERS: Pre-orders and shipping orders
-        $this->command->info('📦 Step 5: Orders (Pre-orders & Shipping)');
-        $this->call([
-            OrdersSeeder::class,         // Basic orders with client final integration
-            OrdersE2ETestSeeder::class,  // Comprehensive order scenarios
-        ]);
+        // COMMENTED OUT FOR PRODUCTION - Dynamic order data
+        // $this->command->info('📦 Step 5: Orders (Pre-orders & Shipping)');
+        // $this->call([
+        //     OrdersSeeder::class,         // Basic orders with client final integration
+        //     OrdersE2ETestSeeder::class,  // Comprehensive order scenarios
+        // ]);
 
-        // 6. COMMISSIONS: Commission calculations
-        // COMMENTED OUT FOR CLEAN TESTING - These create points/referral data
+        // COMMENTED OUT FOR PRODUCTION - Commission test data
         // $this->command->info('💰 Step 6: Commissions');
         // $this->call([
         //     CommissionTestSeeder::class,
         // ]);
 
-        // 7. PAYMENTS & WITHDRAWALS: Complete payment system
-        // COMMENTED OUT FOR CLEAN TESTING - These create points/referral data
+        // COMMENTED OUT FOR PRODUCTION - Payment/withdrawal test data
         // $this->command->info('🏦 Step 7: Payments & Withdrawals');
         // $this->call([
         //     ComprehensiveWithdrawalSeeder::class,  // Comprehensive withdrawal data
         //     FinalWithdrawalSeeder::class,          // Final 2 withdrawals to reach 10 total
         // ]);
 
-        // 8. SUPPORT: Support tickets and communications
-        $this->command->info('🎧 Step 8: Support System');
-        $this->call([
-            TicketSeeder::class,
-        ]);
+        // COMMENTED OUT FOR PRODUCTION - Support ticket test data
+        // $this->command->info('🎧 Step 8: Support System');
+        // $this->call([
+        //     TicketSeeder::class,
+        // ]);
 
-        // 9. DASHBOARD DATA: Simple dashboard analytics data
-        $this->command->info('📊 Step 9: Dashboard Analytics Data');
-        $this->call([
-            SimpleDashboardSeeder::class,
-        ]);
+        // COMMENTED OUT FOR PRODUCTION - Dashboard analytics test data
+        // $this->command->info('📊 Step 9: Dashboard Analytics Data');
+        // $this->call([
+        //     SimpleDashboardSeeder::class,
+        // ]);
 
-        // 10. REFERRAL SYSTEM: Referral codes, clicks, attributions, and dispensations
-        // COMMENTED OUT FOR CLEAN TESTING - Uncomment when you want test data
+        // COMMENTED OUT FOR PRODUCTION - Referral system test data
         // $this->command->info('🔗 Step 10: Referral System');
         // $this->call([
         //     ReferralSystemSeeder::class,
@@ -95,7 +101,8 @@ class DatabaseSeeder extends Seeder
         // ]);
 
         $this->command->info('');
-        $this->command->info('✅ Complete database seeding finished!');
-        $this->command->info('🎯 Your system is ready for testing with comprehensive data.');
+        $this->command->info('✅ PRODUCTION-READY database seeding finished!');
+        $this->command->info('🎯 Clean minimal database ready for production testing.');
+        $this->command->info('📝 Only essential data: Roles, Settings, Variants, Cities, and 2 test users.');
     }
 }
