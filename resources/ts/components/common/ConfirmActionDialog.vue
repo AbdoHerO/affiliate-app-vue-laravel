@@ -39,15 +39,16 @@
         <VBtn
           variant="outlined"
           color="secondary"
-          :disabled="isLoading"
+          :disabled="isLoading || isHandling"
           @click="handleCancel"
         >
           {{ cancelButtonText }}
         </VBtn>
-        
+
         <VBtn
           :color="dialogColor"
-          :loading="isLoading"
+          :loading="isLoading || isHandling"
+          :disabled="isHandling"
           variant="elevated"
           @click="handleConfirm"
         >
@@ -59,6 +60,8 @@
 </template>
 
 <script setup lang="ts">
+import { ref, nextTick } from 'vue'
+
 interface Props {
   isDialogVisible: boolean
   isLoading: boolean
@@ -75,15 +78,54 @@ interface Emits {
   (e: 'cancel'): void
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
-const handleConfirm = () => {
-  emit('confirm')
+// Prevent double-clicks and rapid button presses
+const isHandling = ref(false)
+
+const handleConfirm = async () => {
+  if (isHandling.value || props.isLoading) {
+    console.log('[ConfirmDialog] Ignoring confirm click - already handling or loading')
+    return
+  }
+
+  isHandling.value = true
+  console.log('[ConfirmDialog] Emitting confirm event')
+
+  try {
+    emit('confirm')
+    // Small delay to prevent rapid clicks
+    await nextTick()
+    setTimeout(() => {
+      isHandling.value = false
+    }, 100)
+  } catch (error) {
+    console.error('[ConfirmDialog] Error in handleConfirm:', error)
+    isHandling.value = false
+  }
 }
 
-const handleCancel = () => {
-  emit('cancel')
+const handleCancel = async () => {
+  if (isHandling.value) {
+    console.log('[ConfirmDialog] Ignoring cancel click - already handling')
+    return
+  }
+
+  isHandling.value = true
+  console.log('[ConfirmDialog] Emitting cancel event')
+
+  try {
+    emit('cancel')
+    // Small delay to prevent rapid clicks
+    await nextTick()
+    setTimeout(() => {
+      isHandling.value = false
+    }, 100)
+  } catch (error) {
+    console.error('[ConfirmDialog] Error in handleCancel:', error)
+    isHandling.value = false
+  }
 }
 </script>
 

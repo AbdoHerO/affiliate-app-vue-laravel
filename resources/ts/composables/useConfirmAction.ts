@@ -1,4 +1,5 @@
 import { ref, computed, inject } from 'vue'
+import { debounce } from '@/utils/debounce'
 
 // Global instance for injection / fallback singleton (declared early so factory can self-register)
 let globalConfirmAction: ReturnType<typeof useConfirmAction> | null
@@ -36,15 +37,19 @@ export interface ConfirmPresets {
 
 export function useConfirmAction() {
   const { t } = useI18n()
-  
+
   // Dialog state
   const isDialogVisible = ref(false)
   const dialogOptions = ref<ConfirmOptions>({})
   const isLoading = ref(false)
-  
-  // Promise resolvers for async behavior
+
+  // Promise resolvers for async behavior with better tracking
   let resolvePromise: ((value: boolean) => void) | null = null
   let rejectPromise: ((reason?: any) => void) | null = null
+  let currentPromiseId: string | null = null
+
+  // Track if dialog is in the middle of an operation
+  const isProcessing = ref(false)
 
   // Computed properties for dialog display
   const dialogTitle = computed(() => dialogOptions.value.title || t('common.confirm'))
@@ -153,46 +158,118 @@ export function useConfirmAction() {
     })
   }
 
-  // Main confirm function
+  // Main confirm function with improved error handling
   const confirm = async (options: ConfirmOptions | ConfirmPreset): Promise<boolean> => {
-    // Prevent opening a second dialog while one is active
-    if (isDialogVisible.value && resolvePromise) return Promise.resolve(false)
+    // Generate unique ID for this promise
+    const promiseId = Math.random().toString(36).substr(2, 9)
+
+    // If dialog is already visible or processing, queue this request
+    if (isDialogVisible.value || isProcessing.value) {
+      console.warn('[ConfirmAction] Dialog already active, rejecting new request')
+      return Promise.resolve(false)
+    }
+
+    // Clean up any previous unresolved promises
+    if (resolvePromise || rejectPromise) {
+      console.warn('[ConfirmAction] Cleaning up previous unresolved promise')
+      if (resolvePromise) resolvePromise(false)
+      resolvePromise = null
+      rejectPromise = null
+    }
 
     return new Promise((resolve, reject) => {
-      dialogOptions.value = { ...options }
-      isDialogVisible.value = true
-      isLoading.value = false
+      try {
+        currentPromiseId = promiseId
+        dialogOptions.value = { ...options }
+        isDialogVisible.value = true
+        isLoading.value = false
+        isProcessing.value = true
 
-      resolvePromise = resolve
-      rejectPromise = reject
+        resolvePromise = (value: boolean) => {
+          // Only resolve if this is still the current promise
+          if (currentPromiseId === promiseId) {
+            resolve(value)
+          }
+        }
+        rejectPromise = (reason?: any) => {
+          // Only reject if this is still the current promise
+          if (currentPromiseId === promiseId) {
+            reject(reason)
+          }
+        }
+
+        // Auto-cleanup after 30 seconds to prevent memory leaks
+        setTimeout(() => {
+          if (currentPromiseId === promiseId && resolvePromise) {
+            console.warn('[ConfirmAction] Auto-cleanup: Dialog timeout after 30s')
+            resolvePromise(false)
+            cleanup()
+          }
+        }, 30000)
+
+      } catch (error) {
+        console.error('[ConfirmAction] Error setting up dialog:', error)
+        reject(error)
+      }
     })
   }
 
-  // Handle confirm action
-  const handleConfirm = () => {
-    if (resolvePromise) {
-      resolvePromise(true)
-      resolvePromise = null
-      rejectPromise = null
-    }
-    closeDialog()
-  }
-
-  // Handle cancel action
-  const handleCancel = () => {
-    if (resolvePromise) {
-      resolvePromise(false)
-      resolvePromise = null
-      rejectPromise = null
-    }
-    closeDialog()
-  }
-
-  // Close dialog
-  const closeDialog = () => {
+  // Cleanup function to reset all state
+  const cleanup = () => {
+    resolvePromise = null
+    rejectPromise = null
+    currentPromiseId = null
+    isProcessing.value = false
     isDialogVisible.value = false
     isLoading.value = false
     dialogOptions.value = {}
+  }
+
+  // Handle confirm action with better error handling and debouncing
+  const handleConfirm = debounce(() => {
+    try {
+      console.log('[ConfirmAction] Confirm button clicked')
+
+      if (!resolvePromise) {
+        console.warn('[ConfirmAction] No promise resolver available')
+        closeDialog()
+        return
+      }
+
+      const resolver = resolvePromise
+      cleanup()
+      resolver(true)
+
+    } catch (error) {
+      console.error('[ConfirmAction] Error in handleConfirm:', error)
+      cleanup()
+    }
+  }, 300, true) // 300ms debounce, immediate execution
+
+  // Handle cancel action with better error handling and debouncing
+  const handleCancel = debounce(() => {
+    try {
+      console.log('[ConfirmAction] Cancel button clicked')
+
+      if (!resolvePromise) {
+        console.warn('[ConfirmAction] No promise resolver available')
+        closeDialog()
+        return
+      }
+
+      const resolver = resolvePromise
+      cleanup()
+      resolver(false)
+
+    } catch (error) {
+      console.error('[ConfirmAction] Error in handleCancel:', error)
+      cleanup()
+    }
+  }, 300, true) // 300ms debounce, immediate execution
+
+  // Close dialog (legacy method, now uses cleanup)
+  const closeDialog = () => {
+    cleanup()
   }
 
   // Set loading state (useful for async operations)
