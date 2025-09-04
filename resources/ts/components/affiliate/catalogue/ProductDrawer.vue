@@ -7,6 +7,7 @@ import { useAffiliateCartStore } from '@/stores/affiliate/cart'
 import { useNotifications } from '@/composables/useNotifications'
 import { useAffiliateCartUi } from '@/composables/useAffiliateCartUi'
 import ImageZoomModal from '@/components/common/ImageZoomModal.vue'
+import ImageMagnifier from '@/components/common/ImageMagnifier.vue'
 
 interface Props {
   modelValue: boolean
@@ -463,20 +464,22 @@ const formatCopywriting = (text: string): string => {
           <VRow>
             <!-- Left: Main Image + Thumbnails -->
             <VCol cols="6">
-              <!-- Main Image -->
+              <!-- Main Image with Magnifier -->
               <div class="main-image-container mb-4 position-relative">
-                <VImg
+                <ImageMagnifier
                   :src="currentImage"
                   :alt="product.titre"
-                  aspect-ratio="1"
-                  cover
-                  class="rounded-lg main-image cursor-pointer"
-                  style="max-height: 350px;"
+                  :width="350"
+                  :height="350"
+                  :magnifier-size="180"
+                  :zoom-level="3"
+                  :border-radius="8"
+                  class="main-image"
                   @click="openZoomModal(selectedImageIndex)"
                 />
-                <!-- Zoom indicator -->
+                <!-- Zoom modal indicator -->
                 <VBtn
-                  icon="tabler-zoom-in"
+                  icon="tabler-fullscreen"
                   size="small"
                   variant="elevated"
                   color="primary"
@@ -1212,13 +1215,19 @@ const formatCopywriting = (text: string): string => {
 .zoom-btn {
   position: absolute;
   top: 8px;
-  right: 8px;
+  left: 8px;
   opacity: 0;
   transition: opacity 0.2s ease;
+  z-index: 10;
 }
 
 .main-image-container:hover .zoom-btn {
   opacity: 1;
+}
+
+.main-image {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .main-image {

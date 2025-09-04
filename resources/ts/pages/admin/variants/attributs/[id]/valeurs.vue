@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useApi } from '@/composables/useApi'
 import { useQuickConfirm } from '@/composables/useConfirmAction'
+import ColorPicker from '@/components/common/ColorPicker.vue'
 
 // Page meta
 definePage({
@@ -34,6 +35,7 @@ interface VariantValeur {
   libelle: string
   actif: boolean
   ordre: number
+  hex_color?: string
 }
 
 // State
@@ -51,7 +53,8 @@ const formData = ref({
   code: '',
   libelle: '',
   actif: true,
-  ordre: 0
+  ordre: 0,
+  hex_color: ''
 })
 
 const formErrors = ref<Record<string, string[]>>({})
@@ -61,12 +64,16 @@ const attributId = computed(() => route.params.id as string)
 
 const filteredValeurs = computed(() => {
   if (!searchQuery.value) return valeurs.value
-  
+
   const query = searchQuery.value.toLowerCase()
-  return valeurs.value.filter(val => 
+  return valeurs.value.filter(val =>
     val.code.toLowerCase().includes(query) ||
     val.libelle.toLowerCase().includes(query)
   )
+})
+
+const isColorAttribute = computed(() => {
+  return attribut.value && ['couleur', 'color'].includes(attribut.value.code.toLowerCase())
 })
 
 // Methods
@@ -109,7 +116,8 @@ const handleCreate = () => {
     code: '',
     libelle: '',
     actif: true,
-    ordre: maxOrdre + 1
+    ordre: maxOrdre + 1,
+    hex_color: ''
   }
   formErrors.value = {}
   showCreateDialog.value = true
@@ -121,7 +129,8 @@ const handleEdit = (valeur: VariantValeur) => {
     code: valeur.code,
     libelle: valeur.libelle,
     actif: valeur.actif,
-    ordre: valeur.ordre
+    ordre: valeur.ordre,
+    hex_color: valeur.hex_color || ''
   }
   formErrors.value = {}
   showEditDialog.value = true
@@ -386,7 +395,16 @@ onMounted(() => {
               variant="outlined"
               class="mb-4"
             />
-            
+
+            <!-- Color Picker for Color Attributes -->
+            <ColorPicker
+              v-if="isColorAttribute"
+              v-model="formData.hex_color"
+              label="Color"
+              :error-messages="formErrors.hex_color"
+              class="mb-4"
+            />
+
             <VCheckbox
               v-model="formData.actif"
               label="Active"
@@ -433,7 +451,16 @@ onMounted(() => {
               variant="outlined"
               class="mb-4"
             />
-            
+
+            <!-- Color Picker for Color Attributes -->
+            <ColorPicker
+              v-if="isColorAttribute"
+              v-model="formData.hex_color"
+              label="Color"
+              :error-messages="formErrors.hex_color"
+              class="mb-4"
+            />
+
             <VCheckbox
               v-model="formData.actif"
               :label="t('active')"

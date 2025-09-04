@@ -18,6 +18,7 @@ class VariantValeur extends Model
         'libelle',
         'actif',
         'ordre',
+        'hex_color',
     ];
 
     protected $casts = [
@@ -48,5 +49,39 @@ class VariantValeur extends Model
     public function scopeOrdered($query)
     {
         return $query->orderBy('ordre');
+    }
+
+    /**
+     * Check if this value is a color variant
+     */
+    public function isColorVariant(): bool
+    {
+        return $this->attribut && in_array(strtolower($this->attribut->code), ['couleur', 'color']);
+    }
+
+    /**
+     * Get the color swatch for display
+     */
+    public function getColorSwatchAttribute(): ?string
+    {
+        return $this->hex_color;
+    }
+
+    /**
+     * Scope to get only color variants
+     */
+    public function scopeColorVariants($query)
+    {
+        return $query->whereHas('attribut', function ($q) {
+            $q->whereIn('code', ['couleur', 'color']);
+        });
+    }
+
+    /**
+     * Scope to get variants with hex colors
+     */
+    public function scopeWithHexColor($query)
+    {
+        return $query->whereNotNull('hex_color');
     }
 }

@@ -73,29 +73,82 @@ class ProduitSeeder extends Seeder
             ]);
         }
 
-        // Create color values
+        // Create comprehensive color values for clothing merchants
         $colors = [
-            ['name' => 'Rouge', 'hex' => '#FF0000'],
-            ['name' => 'Bleu', 'hex' => '#0000FF'],
-            ['name' => 'Vert', 'hex' => '#00FF00'],
+            // Basic colors
             ['name' => 'Noir', 'hex' => '#000000'],
             ['name' => 'Blanc', 'hex' => '#FFFFFF'],
             ['name' => 'Gris', 'hex' => '#808080'],
-            ['name' => 'Rose', 'hex' => '#FFC0CB'],
+            ['name' => 'Gris Clair', 'hex' => '#C0C0C0'],
+            ['name' => 'Gris Foncé', 'hex' => '#404040'],
+
+            // Reds
+            ['name' => 'Rouge', 'hex' => '#FF0000'],
+            ['name' => 'Rouge Foncé', 'hex' => '#8B0000'],
+            ['name' => 'Bordeaux', 'hex' => '#800020'],
+            ['name' => 'Cerise', 'hex' => '#DE3163'],
+            ['name' => 'Corail', 'hex' => '#FF7F50'],
+            ['name' => 'Saumon', 'hex' => '#FA8072'],
+
+            // Blues
+            ['name' => 'Bleu', 'hex' => '#0000FF'],
+            ['name' => 'Bleu Marine', 'hex' => '#000080'],
+            ['name' => 'Bleu Ciel', 'hex' => '#87CEEB'],
+            ['name' => 'Bleu Royal', 'hex' => '#4169E1'],
+            ['name' => 'Turquoise', 'hex' => '#40E0D0'],
+            ['name' => 'Cyan', 'hex' => '#00FFFF'],
+
+            // Greens
+            ['name' => 'Vert', 'hex' => '#008000'],
+            ['name' => 'Vert Foncé', 'hex' => '#006400'],
+            ['name' => 'Vert Olive', 'hex' => '#808000'],
+            ['name' => 'Vert Menthe', 'hex' => '#98FB98'],
+            ['name' => 'Emeraude', 'hex' => '#50C878'],
+            ['name' => 'Kaki', 'hex' => '#F0E68C'],
+
+            // Yellows/Oranges
             ['name' => 'Jaune', 'hex' => '#FFFF00'],
+            ['name' => 'Or', 'hex' => '#FFD700'],
             ['name' => 'Orange', 'hex' => '#FFA500'],
+            ['name' => 'Orange Foncé', 'hex' => '#FF8C00'],
+            ['name' => 'Pêche', 'hex' => '#FFCBA4'],
+            ['name' => 'Abricot', 'hex' => '#FBCEB1'],
+
+            // Purples/Pinks
             ['name' => 'Violet', 'hex' => '#800080'],
-            ['name' => 'Beige', 'hex' => '#F5F5DC'],
+            ['name' => 'Mauve', 'hex' => '#E0B0FF'],
+            ['name' => 'Lavande', 'hex' => '#E6E6FA'],
+            ['name' => 'Rose', 'hex' => '#FFC0CB'],
+            ['name' => 'Rose Foncé', 'hex' => '#C21807'],
+            ['name' => 'Fuchsia', 'hex' => '#FF00FF'],
+
+            // Browns/Beiges
             ['name' => 'Marron', 'hex' => '#8B4513'],
+            ['name' => 'Chocolat', 'hex' => '#D2691E'],
+            ['name' => 'Camel', 'hex' => '#C19A6B'],
+            ['name' => 'Beige', 'hex' => '#F5F5DC'],
+            ['name' => 'Crème', 'hex' => '#FFFDD0'],
+            ['name' => 'Taupe', 'hex' => '#483C32'],
+
+            // Fashion colors
+            ['name' => 'Anthracite', 'hex' => '#2F4F4F'],
+            ['name' => 'Écru', 'hex' => '#F5F5DC'],
+            ['name' => 'Ivoire', 'hex' => '#FFFFF0'],
+            ['name' => 'Prune', 'hex' => '#8E4585'],
+            ['name' => 'Aubergine', 'hex' => '#614051'],
+            ['name' => 'Terracotta', 'hex' => '#E2725B'],
+            ['name' => 'Moutarde', 'hex' => '#FFDB58'],
+            ['name' => 'Indigo', 'hex' => '#4B0082'],
         ];
 
         foreach ($colors as $index => $color) {
             VariantValeur::firstOrCreate([
                 'attribut_id' => $colorAttr->id,
-                'code' => strtolower($color['name']),
+                'code' => strtolower(str_replace(' ', '_', $color['name'])),
                 'libelle' => $color['name'],
                 'actif' => true,
-                'ordre' => $index + 1
+                'ordre' => $index + 1,
+                'hex_color' => $color['hex']
             ]);
         }
     }

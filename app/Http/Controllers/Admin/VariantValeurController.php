@@ -70,7 +70,8 @@ class VariantValeurController extends Controller
                 ],
                 'libelle' => 'required|string|max:100',
                 'actif' => 'boolean',
-                'ordre' => 'integer|min:0'
+                'ordre' => 'integer|min:0',
+                'hex_color' => 'nullable|string|regex:/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/'
             ]);
 
             if ($validator->fails()) {
@@ -133,7 +134,8 @@ class VariantValeurController extends Controller
                 ],
                 'libelle' => 'required|string|max:100',
                 'actif' => 'boolean',
-                'ordre' => 'integer|min:0'
+                'ordre' => 'integer|min:0',
+                'hex_color' => 'nullable|string|regex:/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/'
             ]);
 
             if ($validator->fails()) {
