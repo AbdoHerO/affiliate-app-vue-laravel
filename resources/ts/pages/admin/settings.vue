@@ -372,7 +372,7 @@ onMounted(() => {
 
         <VTab
           value="business"
-          class="settings-tab"
+          class="settings-tab d-none"
         >
           <div class="d-flex align-center">
             <VIcon start icon="tabler-building-store" size="20" />
@@ -382,7 +382,7 @@ onMounted(() => {
 
         <VTab
           value="shipping"
-          class="settings-tab"
+          class="settings-tab d-none"
         >
           <div class="d-flex align-center">
             <VIcon start icon="tabler-truck" size="20" />
@@ -400,7 +400,7 @@ onMounted(() => {
 
         <VTab
           value="users"
-          class="settings-tab"
+          class="settings-tab d-none"
         >
           <div class="d-flex align-center">
             <VIcon start icon="tabler-users" size="20" />
@@ -418,7 +418,7 @@ onMounted(() => {
 
         <VTab
           value="products"
-          class="settings-tab"
+          class="settings-tab d-none"
         >
           <div class="d-flex align-center">
             <VIcon start icon="tabler-package" size="20" />
@@ -436,7 +436,7 @@ onMounted(() => {
 
         <VTab
           value="communication"
-          class="settings-tab"
+          class="settings-tab d-none"
         >
           <div class="d-flex align-center">
             <VIcon start icon="tabler-mail" size="20" />
@@ -454,7 +454,7 @@ onMounted(() => {
 
         <VTab
           value="security"
-          class="settings-tab"
+          class="settings-tab d-none"
         >
           <div class="d-flex align-center">
             <VIcon start icon="tabler-shield" size="20" />
@@ -472,7 +472,7 @@ onMounted(() => {
 
         <VTab
           value="system"
-          class="settings-tab"
+          class="settings-tab d-none"
         >
           <div class="d-flex align-center">
             <VIcon start icon="tabler-server" size="20" />

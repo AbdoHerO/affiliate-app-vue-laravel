@@ -59,7 +59,7 @@ class CartController extends Controller
                     $minimumPrice = $product->prix_achat + 50;
                     if ($validated['sell_price'] < $minimumPrice) {
                         return response()->json([
-                            'message' => 'Le prix de vente minimum pour un échantillon est de ' . $minimumPrice . ' MAD (Prix d\'achat + 50 MAD livraison)',
+                            'message' => 'Le prix de vente minimum pour une commande est de ' . $minimumPrice . ' MAD (Prix d\'achat + 50 MAD livraison)',
                             'success' => false
                         ], 422);
                     }
