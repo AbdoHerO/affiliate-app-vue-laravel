@@ -223,7 +223,7 @@ class AffiliateDashboardController extends Controller
             [
                 'key' => 'pending_tickets',
                 'labelKey' => 'dashboard.affiliate.cards.pending_tickets',
-                'value' => Ticket::where('requester_id', $user->id)->where('status', 'open')->count()
+                'value' => Ticket::where('requester_id', $user->id)->whereIn('status', ['open', 'pending', 'waiting_user', 'waiting_third_party'])->count()
             ]
         ];
     }

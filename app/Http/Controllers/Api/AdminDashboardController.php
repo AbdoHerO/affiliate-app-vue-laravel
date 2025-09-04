@@ -182,7 +182,7 @@ class AdminDashboardController extends Controller
             [
                 'key' => 'pending_tickets',
                 'labelKey' => 'dashboard.admin.cards.pending_tickets',
-                'value' => Ticket::where('status', 'open')->count()
+                'value' => Ticket::whereIn('status', ['open', 'pending', 'waiting_user', 'waiting_third_party'])->count()
             ]
         ];
     }
