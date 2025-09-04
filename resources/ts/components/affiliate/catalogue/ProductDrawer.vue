@@ -31,6 +31,37 @@ const { openCartDrawer } = useAffiliateCartUi()
 const selectedImageIndex = ref(0)
 const activeImageUrl = ref('')
 
+// Responsive magnifier settings
+const magnifierSettings = computed(() => {
+  // Check screen size for responsive settings
+  if (typeof window !== 'undefined') {
+    const width = window.innerWidth
+    if (width < 768) {
+      return {
+        size: 100,        // Small circle for mobile
+        zoomLevel: 1.9,   // Subtle zoom for mobile
+        width: 280,
+        height: 280
+      }
+    } else if (width < 1200) {
+      return {
+        size: 130,        // Medium circle for tablet
+        zoomLevel: 2.0,   // Subtle zoom for tablet
+        width: 350,
+        height: 350
+      }
+    }
+  }
+  
+  // Desktop settings - Subtle/Professional
+  return {
+    size: 150,          // Professional circle size
+    zoomLevel: 2.0,     // Subtle zoom level
+    width: 400,
+    height: 400
+  }
+})
+
 // Image zoom modal state
 const isZoomModalOpen = ref(false)
 const zoomModalImages = computed(() => {
@@ -469,21 +500,12 @@ const formatCopywriting = (text: string): string => {
                 <ImageMagnifier
                   :src="currentImage"
                   :alt="product.titre"
-                  :width="350"
-                  :height="350"
-                  :magnifier-size="180"
-                  :zoom-level="3"
-                  :border-radius="8"
+                  :width="magnifierSettings.width"
+                  :height="magnifierSettings.height"
+                  :magnifier-size="magnifierSettings.size"
+                  :zoom-level="magnifierSettings.zoomLevel"
+                  :border-radius="12"
                   class="main-image"
-                  @click="openZoomModal(selectedImageIndex)"
-                />
-                <!-- Zoom modal indicator -->
-                <VBtn
-                  icon="tabler-fullscreen"
-                  size="small"
-                  variant="elevated"
-                  color="primary"
-                  class="zoom-btn"
                   @click="openZoomModal(selectedImageIndex)"
                 />
               </div>
@@ -1036,9 +1058,26 @@ const formatCopywriting = (text: string): string => {
   background: rgba(var(--v-theme-primary), 0.5);
 }
 
+.main-image-container {
+  border-radius: 12px;
+  overflow: hidden;
+  background: linear-gradient(135deg, rgba(var(--v-theme-surface-variant), 0.3), rgba(var(--v-theme-surface), 0.8));
+  padding: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.main-image-container:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
 .main-image {
   transition: all 0.3s ease;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  overflow: hidden;
 }
 
 .thumbnail-container {
@@ -1210,7 +1249,36 @@ const formatCopywriting = (text: string): string => {
   color: rgb(var(--v-theme-secondary));
 }
 
-/* Removed duplicate download-btn rules - using download-btn-fixed instead */
+/* Mobile Responsive Magnifier */
+@media (max-width: 1200px) {
+  .main-image-container {
+    max-width: 350px;
+    margin: 0 auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .main-image-container {
+    max-width: 300px;
+    padding: 6px;
+  }
+  
+  .thumbnails-rail {
+    margin-top: 12px;
+  }
+  
+  .thumbnail {
+    width: 50px !important;
+    height: 50px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .main-image-container {
+    max-width: 280px;
+    padding: 4px;
+  }
+}
 
 .zoom-btn {
   position: absolute;

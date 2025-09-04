@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
+import ImageMagnifier from '@/components/common/ImageMagnifier.vue'
 
 interface Image {
   url: string
@@ -26,6 +27,7 @@ const emit = defineEmits<Emits>()
 const currentIndex = ref(props.initialIndex)
 const isZoomed = ref(false)
 const imageRef = ref<HTMLImageElement>()
+const useMagnifier = ref(true) // Toggle between magnifier and simple zoom
 
 // Computed
 const isOpen = computed({
@@ -64,6 +66,10 @@ const next = () => {
 
 const toggleZoom = () => {
   isZoomed.value = !isZoomed.value
+}
+
+const toggleMagnifier = () => {
+  useMagnifier.value = !useMagnifier.value
 }
 
 const handleKeydown = (event: KeyboardEvent) => {
@@ -133,6 +139,13 @@ onUnmounted(() => {
           <!-- Action buttons -->
           <div class="d-flex align-center gap-2">
             <VBtn
+              :icon="useMagnifier ? 'tabler-focus-2' : 'tabler-zoom-in'"
+              variant="text"
+              color="white"
+              @click="toggleMagnifier"
+              :title="useMagnifier ? 'Switch to Simple Zoom' : 'Switch to Magnifier'"
+            />
+            <VBtn
               v-if="canNavigate"
               icon="tabler-chevron-left"
               variant="text"
@@ -169,22 +182,38 @@ onUnmounted(() => {
         <div 
           class="image-zoom-modal__image-container"
           :class="{ 'image-zoom-modal__image-container--zoomed': isZoomed }"
-          @click="toggleZoom"
         >
-          <VImg
-            ref="imageRef"
-            :src="currentImage.url"
-            :alt="currentImage.alt || `Image ${currentIndex + 1}`"
-            class="image-zoom-modal__image"
-            :class="{ 'image-zoom-modal__image--zoomed': isZoomed }"
-            contain
-          >
-            <template #placeholder>
-              <div class="d-flex align-center justify-center fill-height">
-                <VProgressCircular indeterminate color="white" />
-              </div>
-            </template>
-          </VImg>
+          <!-- Magnifier Mode -->
+          <div v-if="useMagnifier" class="magnifier-container">
+            <ImageMagnifier
+              :src="currentImage.url"
+              :alt="currentImage.alt || `Image ${currentIndex + 1}`"
+              :width="'100%'"
+              :height="'100vh'"
+              :magnifier-size="250"
+              :zoom-level="3.5"
+              :border-radius="0"
+              class="modal-magnifier"
+            />
+          </div>
+
+          <!-- Simple Zoom Mode -->
+          <div v-else @click="toggleZoom">
+            <VImg
+              ref="imageRef"
+              :src="currentImage.url"
+              :alt="currentImage.alt || `Image ${currentIndex + 1}`"
+              class="image-zoom-modal__image"
+              :class="{ 'image-zoom-modal__image--zoomed': isZoomed }"
+              contain
+            >
+              <template #placeholder>
+                <div class="d-flex align-center justify-center fill-height">
+                  <VProgressCircular indeterminate color="white" />
+                </div>
+              </template>
+            </VImg>
+          </div>
         </div>
       </VCardText>
 
@@ -248,6 +277,21 @@ onUnmounted(() => {
   justify-content: center;
   cursor: zoom-in;
   transition: all 0.3s ease;
+}
+
+.magnifier-container {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.9);
+}
+
+.modal-magnifier {
+  max-width: 90%;
+  max-height: 90%;
+  object-fit: contain;
 }
 
 .image-zoom-modal__image-container--zoomed {
