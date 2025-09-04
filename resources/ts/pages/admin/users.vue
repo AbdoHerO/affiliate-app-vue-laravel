@@ -525,7 +525,7 @@ watch(
               <th>{{ t('phone') }}</th>
               <th>{{ t('role') }}</th>
               <th>{{ t('status') }}</th>
-              <th>{{ t('record_status') }}</th>
+              <!-- <th>{{ t('record_status') }}</th> -->
               <th>{{ t('kyc_status') }}</th>
               <th>{{ t('created') }}</th>
               <th>{{ t('actions') }}</th>
@@ -558,7 +558,7 @@ watch(
                   {{ user.statut }}
                 </VChip>
               </td>
-              <td>
+              <!-- <td>
                 <VChip
                   :color="getStatusColor(user)"
                   size="small"
@@ -566,7 +566,7 @@ watch(
                 >
                   {{ getStatusText(user) }}
                 </VChip>
-              </td>
+              </td> -->
               <td>
                 <VChip
                   :color="user.kyc_statut === 'valide' ? 'success' : user.kyc_statut === 'refuse' ? 'error' : 'warning'"

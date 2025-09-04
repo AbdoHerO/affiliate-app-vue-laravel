@@ -387,7 +387,6 @@ onMounted(() => {
               prepend-inner-icon="tabler-search"
               :loading="loading"
               clearable
-              :hint="t('search_withdrawals_hint')"
               persistent-hint
             />
           </VCol>
