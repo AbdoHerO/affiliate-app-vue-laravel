@@ -7,6 +7,7 @@ use App\Models\VariantAttribut;
 use App\Models\VariantValeur;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 class VariantValeurController extends Controller
@@ -71,7 +72,15 @@ class VariantValeurController extends Controller
                 'libelle' => 'required|string|max:100',
                 'actif' => 'boolean',
                 'ordre' => 'integer|min:0',
-                'hex_color' => 'nullable|string|regex:/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/'
+                'hex_color' => [
+                    'nullable',
+                    'string',
+                    function ($attribute, $value, $fail) {
+                        if ($value && !preg_match('/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/', $value)) {
+                            $fail('The hex color must be a valid hex color code (e.g., #FF0000 or #fff).');
+                        }
+                    }
+                ]
             ]);
 
             if ($validator->fails()) {
@@ -91,6 +100,11 @@ class VariantValeurController extends Controller
                 $data['ordre'] = $maxOrdre + 1;
             }
 
+            // Convert empty hex_color to null
+            if (isset($data['hex_color']) && empty(trim($data['hex_color']))) {
+                $data['hex_color'] = null;
+            }
+
             $valeur = VariantValeur::create($data);
 
             return response()->json([
@@ -99,9 +113,16 @@ class VariantValeurController extends Controller
                 'data' => $valeur
             ], 201);
         } catch (\Exception $e) {
+            Log::error('Error creating variant value: ' . $e->getMessage(), [
+                'exception' => $e,
+                'request_data' => $request->all(),
+                'attribut_id' => $variantAttribut->id
+            ]);
+
             return response()->json([
                 'success' => false,
-                'message' => 'Error creating variant value'
+                'message' => 'Error creating variant value',
+                'error' => config('app.debug') ? $e->getMessage() : 'Internal server error'
             ], 500);
         }
     }
@@ -135,7 +156,15 @@ class VariantValeurController extends Controller
                 'libelle' => 'required|string|max:100',
                 'actif' => 'boolean',
                 'ordre' => 'integer|min:0',
-                'hex_color' => 'nullable|string|regex:/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/'
+                'hex_color' => [
+                    'nullable',
+                    'string',
+                    function ($attribute, $value, $fail) {
+                        if ($value && !preg_match('/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/', $value)) {
+                            $fail('The hex color must be a valid hex color code (e.g., #FF0000 or #fff).');
+                        }
+                    }
+                ]
             ]);
 
             if ($validator->fails()) {
@@ -146,7 +175,14 @@ class VariantValeurController extends Controller
                 ], 422);
             }
 
-            $variantValeur->update($validator->validated());
+            $data = $validator->validated();
+
+            // Convert empty hex_color to null
+            if (isset($data['hex_color']) && empty(trim($data['hex_color']))) {
+                $data['hex_color'] = null;
+            }
+
+            $variantValeur->update($data);
 
             return response()->json([
                 'success' => true,
@@ -154,9 +190,17 @@ class VariantValeurController extends Controller
                 'data' => $variantValeur
             ]);
         } catch (\Exception $e) {
+            Log::error('Error updating variant value: ' . $e->getMessage(), [
+                'exception' => $e,
+                'request_data' => $request->all(),
+                'attribut_id' => $variantAttribut->id,
+                'valeur_id' => $variantValeur->id
+            ]);
+
             return response()->json([
                 'success' => false,
-                'message' => 'Error updating variant value'
+                'message' => 'Error updating variant value',
+                'error' => config('app.debug') ? $e->getMessage() : 'Internal server error'
             ], 500);
         }
     }

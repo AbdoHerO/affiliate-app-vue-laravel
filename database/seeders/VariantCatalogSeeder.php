@@ -14,14 +14,13 @@ class VariantCatalogSeeder extends Seeder
      */
     public function run(): void
     {
-        // Create Size attribute
-        $sizeAttribut = VariantAttribut::create([
-            'code' => 'size',
-            'nom' => 'Size',
-            'actif' => true
-        ]);
+        // Get or create Size attribute
+        $sizeAttribut = VariantAttribut::firstOrCreate(
+            ['code' => 'size'],
+            ['nom' => 'Size', 'actif' => true]
+        );
 
-        // Create size values
+        // Create size values if they don't exist
         $sizeValues = [
             ['code' => 'xs', 'libelle' => 'Extra Small', 'ordre' => 1],
             ['code' => 's', 'libelle' => 'Small', 'ordre' => 2],
@@ -32,52 +31,63 @@ class VariantCatalogSeeder extends Seeder
         ];
 
         foreach ($sizeValues as $value) {
-            VariantValeur::create([
-                'attribut_id' => $sizeAttribut->id,
-                'code' => $value['code'],
-                'libelle' => $value['libelle'],
-                'ordre' => $value['ordre'],
-                'actif' => true
-            ]);
+            VariantValeur::firstOrCreate(
+                [
+                    'attribut_id' => $sizeAttribut->id,
+                    'code' => $value['code']
+                ],
+                [
+                    'libelle' => $value['libelle'],
+                    'ordre' => $value['ordre'],
+                    'actif' => true
+                ]
+            );
         }
 
-        // Create Color attribute
-        $colorAttribut = VariantAttribut::create([
-            'code' => 'color',
-            'nom' => 'Color',
-            'actif' => true
-        ]);
+        // Get or create Color attribute
+        $colorAttribut = VariantAttribut::firstOrCreate(
+            ['code' => 'color'],
+            ['nom' => 'Color', 'actif' => true]
+        );
 
-        // Create color values
+        // Create color values with hex colors
         $colorValues = [
-            ['code' => 'black', 'libelle' => 'Black', 'ordre' => 1],
-            ['code' => 'white', 'libelle' => 'White', 'ordre' => 2],
-            ['code' => 'red', 'libelle' => 'Red', 'ordre' => 3],
-            ['code' => 'blue', 'libelle' => 'Blue', 'ordre' => 4],
-            ['code' => 'green', 'libelle' => 'Green', 'ordre' => 5],
-            ['code' => 'yellow', 'libelle' => 'Yellow', 'ordre' => 6],
-            ['code' => 'gray', 'libelle' => 'Gray', 'ordre' => 7],
-            ['code' => 'navy', 'libelle' => 'Navy', 'ordre' => 8],
+            ['code' => 'black', 'libelle' => 'Noir', 'ordre' => 1, 'hex_color' => '#000000'],
+            ['code' => 'white', 'libelle' => 'Blanc', 'ordre' => 2, 'hex_color' => '#FFFFFF'],
+            ['code' => 'red', 'libelle' => 'Rouge', 'ordre' => 3, 'hex_color' => '#DC2626'],
+            ['code' => 'blue', 'libelle' => 'Bleu', 'ordre' => 4, 'hex_color' => '#2563EB'],
+            ['code' => 'green', 'libelle' => 'Vert', 'ordre' => 5, 'hex_color' => '#16A34A'],
+            ['code' => 'yellow', 'libelle' => 'Jaune', 'ordre' => 6, 'hex_color' => '#EAB308'],
+            ['code' => 'gray', 'libelle' => 'Gris', 'ordre' => 7, 'hex_color' => '#6B7280'],
+            ['code' => 'navy', 'libelle' => 'Bleu Marine', 'ordre' => 8, 'hex_color' => '#1E3A8A'],
+            ['code' => 'pink', 'libelle' => 'Rose', 'ordre' => 9, 'hex_color' => '#EC4899'],
+            ['code' => 'purple', 'libelle' => 'Violet', 'ordre' => 10, 'hex_color' => '#7C3AED'],
+            ['code' => 'orange', 'libelle' => 'Orange', 'ordre' => 11, 'hex_color' => '#EA580C'],
+            ['code' => 'brown', 'libelle' => 'Marron', 'ordre' => 12, 'hex_color' => '#92400E'],
         ];
 
         foreach ($colorValues as $value) {
-            VariantValeur::create([
-                'attribut_id' => $colorAttribut->id,
-                'code' => $value['code'],
-                'libelle' => $value['libelle'],
-                'ordre' => $value['ordre'],
-                'actif' => true
-            ]);
+            VariantValeur::updateOrCreate(
+                [
+                    'attribut_id' => $colorAttribut->id,
+                    'code' => $value['code']
+                ],
+                [
+                    'libelle' => $value['libelle'],
+                    'ordre' => $value['ordre'],
+                    'hex_color' => $value['hex_color'],
+                    'actif' => true
+                ]
+            );
         }
 
-        // Create Material attribute
-        $materialAttribut = VariantAttribut::create([
-            'code' => 'material',
-            'nom' => 'Material',
-            'actif' => true
-        ]);
+        // Get or create Material attribute
+        $materialAttribut = VariantAttribut::firstOrCreate(
+            ['code' => 'material'],
+            ['nom' => 'Material', 'actif' => true]
+        );
 
-        // Create material values
+        // Create material values if they don't exist
         $materialValues = [
             ['code' => 'cotton', 'libelle' => 'Cotton', 'ordre' => 1],
             ['code' => 'polyester', 'libelle' => 'Polyester', 'ordre' => 2],
@@ -88,13 +98,17 @@ class VariantCatalogSeeder extends Seeder
         ];
 
         foreach ($materialValues as $value) {
-            VariantValeur::create([
-                'attribut_id' => $materialAttribut->id,
-                'code' => $value['code'],
-                'libelle' => $value['libelle'],
-                'ordre' => $value['ordre'],
-                'actif' => true
-            ]);
+            VariantValeur::firstOrCreate(
+                [
+                    'attribut_id' => $materialAttribut->id,
+                    'code' => $value['code']
+                ],
+                [
+                    'libelle' => $value['libelle'],
+                    'ordre' => $value['ordre'],
+                    'actif' => true
+                ]
+            );
         }
 
         $this->command->info('Variant catalog seeded successfully!');

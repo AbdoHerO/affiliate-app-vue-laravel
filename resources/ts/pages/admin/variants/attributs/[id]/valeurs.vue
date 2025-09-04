@@ -167,10 +167,17 @@ const submitCreate = async () => {
 
   try {
     formErrors.value = {}
+
+    // Prepare form data - convert empty hex_color to null
+    const submitData = {
+      ...formData.value,
+      hex_color: formData.value.hex_color?.trim() || null
+    }
+
     const { data, error } = await useApi(`/admin/variant-attributs/${attributId.value}/valeurs`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(formData.value)
+      body: JSON.stringify(submitData)
     })
     
     if (!error.value && data.value) {
@@ -199,10 +206,17 @@ const submitEdit = async () => {
 
   try {
     formErrors.value = {}
+
+    // Prepare form data - convert empty hex_color to null
+    const submitData = {
+      ...formData.value,
+      hex_color: formData.value.hex_color?.trim() || null
+    }
+
     const { data, error } = await useApi(`/admin/variant-attributs/${attributId.value}/valeurs/${selectedValeur.value.id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(formData.value)
+      body: JSON.stringify(submitData)
     })
     
     if (!error.value && data.value) {
@@ -323,12 +337,31 @@ onMounted(() => {
             >
               <VCardText class="pb-2">
                 <div class="d-flex justify-space-between align-start mb-3">
-                  <div>
-                    <h4 class="text-h6 font-weight-bold">{{ valeur.libelle }}</h4>
+                  <div class="flex-grow-1">
+                    <div class="d-flex align-center gap-2 mb-2">
+                      <h4 class="text-h6 font-weight-bold">{{ valeur.libelle }}</h4>
+                      <!-- Color Swatch -->
+                      <div
+                        v-if="valeur.hex_color && isColorAttribute"
+                        class="color-swatch"
+                        :style="{ backgroundColor: valeur.hex_color }"
+                        :title="valeur.hex_color"
+                      />
+                    </div>
                     <p class="text-caption text-medium-emphasis">{{ valeur.code }}</p>
-                    <VChip size="x-small" variant="outlined" class="mt-1">
-                      {{ t('order') }}: {{ valeur.ordre }}
-                    </VChip>
+                    <div class="d-flex gap-1 flex-wrap mt-1">
+                      <VChip size="x-small" variant="outlined">
+                        {{ t('order') }}: {{ valeur.ordre }}
+                      </VChip>
+                      <VChip
+                        v-if="valeur.hex_color && isColorAttribute"
+                        size="x-small"
+                        variant="outlined"
+                        color="primary"
+                      >
+                        {{ valeur.hex_color }}
+                      </VChip>
+                    </div>
                   </div>
                   <VChip
                     :color="valeur.actif ? 'success' : 'error'"
@@ -487,5 +520,20 @@ onMounted(() => {
 .value-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.color-swatch {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2), inset 0 0 0 1px rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.color-swatch:hover {
+  transform: scale(1.1);
 }
 </style>

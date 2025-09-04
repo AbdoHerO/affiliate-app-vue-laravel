@@ -81,6 +81,7 @@ declare module 'vue-router/auto-routes' {
     'affiliate-tickets-id': RouteRecordInfo<'affiliate-tickets-id', '/affiliate/tickets/:id', { id: ParamValue<true> }, { id: ParamValue<false> }>,
     'affiliate-signup': RouteRecordInfo<'affiliate-signup', '/affiliate-signup', Record<never, never>, Record<never, never>>,
     'affiliate-verified': RouteRecordInfo<'affiliate-verified', '/affiliate-verified', Record<never, never>, Record<never, never>>,
+    'debug-translations': RouteRecordInfo<'debug-translations', '/debug-translations', Record<never, never>, Record<never, never>>,
     'forgot-password': RouteRecordInfo<'forgot-password', '/forgot-password', Record<never, never>, Record<never, never>>,
     'login': RouteRecordInfo<'login', '/login', Record<never, never>, Record<never, never>>,
     'pslug': RouteRecordInfo<'pslug', '/p/:slug', { slug: ParamValue<true> }, { slug: ParamValue<false> }>,
