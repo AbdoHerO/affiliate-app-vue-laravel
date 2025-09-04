@@ -162,10 +162,17 @@ export function useConfirmAction() {
     // Generate unique ID for this promise
     const promiseId = Math.random().toString(36).substring(2, 11)
 
-    // If dialog is already visible or processing, queue this request
+    // If dialog is already visible, wait a bit and try again (instead of rejecting immediately)
     if (isDialogVisible.value || isProcessing.value) {
-      console.warn('[ConfirmAction] Dialog already active, rejecting new request')
-      return Promise.resolve(false)
+      console.warn('[ConfirmAction] Dialog already active, waiting for it to close...')
+      // Wait for current dialog to close, then try again
+      await new Promise(resolve => setTimeout(resolve, 100))
+
+      // If still active after waiting, force cleanup and proceed
+      if (isDialogVisible.value || isProcessing.value) {
+        console.warn('[ConfirmAction] Force cleaning up previous dialog')
+        cleanup()
+      }
     }
 
     // Clean up any previous unresolved promises

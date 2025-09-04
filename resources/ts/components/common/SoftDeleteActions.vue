@@ -23,9 +23,6 @@
         label="actions.delete"
         variant="danger"
         :loading="isLoading"
-        confirm
-        confirm-title="Confirmer la suppression"
-        :confirm-message="`Êtes-vous sûr de vouloir supprimer ${getItemName(item)} ?`"
         @click="handleSoftDelete"
       />
     </template>
@@ -54,9 +51,6 @@
         label="actions.force_delete"
         variant="danger"
         :loading="isLoading"
-        confirm
-        confirm-title="Suppression définitive"
-        :confirm-message="`Êtes-vous sûr de vouloir supprimer définitivement ${getItemName(item)} ? Cette action est irréversible.`"
         @click="handlePermanentDelete"
       />
     </template>
