@@ -1,5 +1,4 @@
 import { ref, computed, inject } from 'vue'
-import { debounce } from '@/utils/debounce'
 
 // Global instance for injection / fallback singleton (declared early so factory can self-register)
 let globalConfirmAction: ReturnType<typeof useConfirmAction> | null
@@ -161,7 +160,7 @@ export function useConfirmAction() {
   // Main confirm function with improved error handling
   const confirm = async (options: ConfirmOptions | ConfirmPreset): Promise<boolean> => {
     // Generate unique ID for this promise
-    const promiseId = Math.random().toString(36).substr(2, 9)
+    const promiseId = Math.random().toString(36).substring(2, 11)
 
     // If dialog is already visible or processing, queue this request
     if (isDialogVisible.value || isProcessing.value) {
@@ -225,47 +224,43 @@ export function useConfirmAction() {
     dialogOptions.value = {}
   }
 
-  // Handle confirm action with better error handling and debouncing
-  const handleConfirm = debounce(() => {
+  // Handle confirm action with better error handling
+  const handleConfirm = () => {
     try {
-      console.log('[ConfirmAction] Confirm button clicked')
-
       if (!resolvePromise) {
-        console.warn('[ConfirmAction] No promise resolver available')
         closeDialog()
         return
       }
 
+      // CRITICAL FIX: Store resolver BEFORE cleanup to prevent it from being nullified
       const resolver = resolvePromise
-      cleanup()
       resolver(true)
+      cleanup()
 
     } catch (error) {
       console.error('[ConfirmAction] Error in handleConfirm:', error)
       cleanup()
     }
-  }, 300, true) // 300ms debounce, immediate execution
+  }
 
-  // Handle cancel action with better error handling and debouncing
-  const handleCancel = debounce(() => {
+  // Handle cancel action with better error handling
+  const handleCancel = () => {
     try {
-      console.log('[ConfirmAction] Cancel button clicked')
-
       if (!resolvePromise) {
-        console.warn('[ConfirmAction] No promise resolver available')
         closeDialog()
         return
       }
 
+      // CRITICAL FIX: Store resolver BEFORE cleanup to prevent it from being nullified
       const resolver = resolvePromise
-      cleanup()
       resolver(false)
+      cleanup()
 
     } catch (error) {
       console.error('[ConfirmAction] Error in handleCancel:', error)
       cleanup()
     }
-  }, 300, true) // 300ms debounce, immediate execution
+  }
 
   // Close dialog (legacy method, now uses cleanup)
   const closeDialog = () => {

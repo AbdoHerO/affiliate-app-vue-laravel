@@ -31,9 +31,18 @@ const {
   dialogColor,
   confirmButtonText,
   cancelButtonText,
-  handleConfirm,
-  handleCancel
+  handleConfirm: originalHandleConfirm,
+  handleCancel: originalHandleCancel
 } = confirmAction
+
+// Wrap handlers with minimal logging for debugging
+const handleConfirm = () => {
+  originalHandleConfirm()
+}
+
+const handleCancel = () => {
+  originalHandleCancel()
+}
 
 // Provide the confirm action globally
 provide('confirmAction', confirmAction)
