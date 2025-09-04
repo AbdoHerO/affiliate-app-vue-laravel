@@ -109,7 +109,7 @@ onMounted(() => {
               {{ ordersStore.getStatusLabel(currentOrder.statut) }}
             </VChip>
             <span class="text-body-2 text-medium-emphasis">
-              {{ t('affiliate.orders.createdOn', { date: formatDate(currentOrder.created_at) }) }}
+              {{ t('alerts.affiliate.orders.createdOn', { date: formatDate(currentOrder.created_at) }) }}
             </span>
           </div>
         </div>
@@ -125,8 +125,8 @@ onMounted(() => {
       <!-- Tabs -->
       <VTabs v-model="activeTab" class="mb-6">
         <VTab value="details">{{ t('common.details') }}</VTab>
-        <VTab value="articles">{{ t('affiliate.orders.articles') }}</VTab>
-        <VTab value="shipping">{{ t('affiliate.orders.shipping') }}</VTab>
+        <VTab value="articles">{{ t('alerts.affiliate.orders.articles') }}</VTab>
+        <VTab value="shipping">{{ t('alerts.affiliate.orders.shipping') }}</VTab>
         <VTab value="commissions">{{ t('commissions') }}</VTab>
       </VTabs>
 
@@ -196,7 +196,7 @@ onMounted(() => {
                       </VListItemSubtitle>
                     </VListItem>
                     <VListItem v-if="currentOrder.adresse">
-                      <VListItemTitle>{{ t('affiliate.orders.deliveryAddress') }}</VListItemTitle>
+                      <VListItemTitle>{{ t('alerts.affiliate.orders.deliveryAddress') }}</VListItemTitle>
                       <VListItemSubtitle>
                         {{ currentOrder.adresse.adresse }}<br>
                         {{ currentOrder.adresse.ville }}
@@ -251,7 +251,7 @@ onMounted(() => {
 
           <!-- Notes -->
           <VCard v-if="currentOrder.notes" class="mt-6">
-            <VCardTitle>Notes</VCardTitle>
+            <VCardTitle>{{ t('notes') }}</VCardTitle>
             <VCardText>
               <p class="text-body-1">{{ currentOrder.notes }}</p>
             </VCardText>
@@ -261,15 +261,15 @@ onMounted(() => {
         <!-- Articles Tab -->
         <VWindowItem value="articles">
           <VCard>
-            <VCardTitle>Articles commandés</VCardTitle>
+            <VCardTitle>{{ t('alerts.affiliate.orders.orderedArticles') }}</VCardTitle>
             <VDataTable
               :headers="[
-                { title: t('affiliate.orders.product'), key: 'produit.titre' },
+                { title: t('alerts.affiliate.orders.product'), key: 'produit.titre' },
                 { title: 'SKU', key: 'produit.sku' },
-                { title: t('affiliate.orders.variant'), key: 'variante.nom' },
-                { title: t('affiliate.orders.quantity'), key: 'quantite' },
-                { title: t('affiliate.orders.unitPrice'), key: 'prix_unitaire' },
-                { title: t('affiliate.orders.total'), key: 'total' },
+                { title: t('alerts.affiliate.orders.variant'), key: 'variante.nom' },
+                { title: t('alerts.affiliate.orders.quantity'), key: 'quantite' },
+                { title: t('alerts.affiliate.orders.unitPrice'), key: 'prix_unitaire' },
+                { title: t('alerts.affiliate.orders.total'), key: 'total' },
               ]"
               :items="currentOrder.articles || []"
               hide-default-footer
@@ -318,10 +318,10 @@ onMounted(() => {
         <!-- Shipping Tab -->
         <VWindowItem value="shipping">
           <VCard>
-            <VCardTitle>Informations d'expédition</VCardTitle>
+            <VCardTitle>{{ t('alerts.affiliate.orders.shippingInformation') }}</VCardTitle>
             <VCardText>
               <div v-if="currentOrder.shippingParcel">
-                <p class="text-body-1 mb-4">Colis créé et en cours de traitement</p>
+                <p class="text-body-1 mb-4">{{ t('alerts.affiliate.orders.packageCreatedAndProcessing') }}</p>
                 <!-- Add shipping details here -->
               </div>
               <div v-else>
@@ -329,7 +329,7 @@ onMounted(() => {
                   type="info"
                   variant="tonal"
                 >
-                  Cette commande n'a pas encore été expédiée.
+                  {{ t('alerts.affiliate.orders.orderNotShippedYet') }}
                 </VAlert>
               </div>
             </VCardText>
@@ -339,15 +339,15 @@ onMounted(() => {
         <!-- Commissions Tab -->
         <VWindowItem value="commissions">
           <VCard>
-            <VCardTitle>Commissions</VCardTitle>
+            <VCardTitle>{{ t('alerts.affiliate.orders.commissions') }}</VCardTitle>
             <VCardText>
               <div v-if="currentOrder.commissions?.length">
                 <VDataTable
                   :headers="[
-                    { title: t('affiliate.orders.type'), key: 'type' },
-                    { title: t('affiliate.orders.baseAmount'), key: 'base_amount' },
-                    { title: t('affiliate.orders.rate'), key: 'rate' },
-                    { title: t('affiliate.orders.commission'), key: 'amount' },
+                    { title: t('alerts.affiliate.orders.type'), key: 'type' },
+                    { title: t('alerts.affiliate.orders.baseAmount'), key: 'base_amount' },
+                    { title: t('alerts.affiliate.orders.rate'), key: 'rate' },
+                    { title: t('alerts.affiliate.orders.commission'), key: 'amount' },
                     { title: t('form.status'), key: 'status' },
                   ]"
                   :items="currentOrder.commissions"
@@ -378,7 +378,7 @@ onMounted(() => {
                   type="info"
                   variant="tonal"
                 >
-                  Aucune commission générée pour cette commande.
+                  {{ t('alerts.affiliate.orders.noCommissionGenerated') }}
                 </VAlert>
               </div>
             </VCardText>
@@ -409,7 +409,7 @@ onMounted(() => {
         color="primary"
         @click="goBack"
       >
-        {{ t('affiliate.orders.backToOrders') }}
+        {{ t('alerts.affiliate.orders.backToOrders') }}
       </VBtn>
     </div>
   </div>

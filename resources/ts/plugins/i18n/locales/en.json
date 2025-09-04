@@ -1298,7 +1298,7 @@
   "saveError": "Error saving",
   "citiesImportedSuccess": "Cities imported successfully",
   "importError": "Error importing",
-  "affiliate": "Affiliate",
+  "affiliate_label": "Affiliate",
   "welcomeMessage": "Welcome {name}",
   "exportTooltip": "Export performance report",
   "shareDescription": "Share this link with potential customers to earn commissions on their purchases.",
@@ -2473,7 +2473,11 @@
   "search.label": "Search...",
   "filters.date_start": "Start Date",
   "filters.date_end": "End Date",
+  "dashboard": "Dashboard",
+  "my_orders": "My Orders",
+  "order_details": "Order Details",
   "order_loading": "Loading order...",
+  "order_loading_error": "Error loading order",
   "order_number": "Order #{number}",
   "order_information": "Order Information",
   "reference": "Reference",
@@ -3910,6 +3914,7 @@
     "nonotificationsfound": "No notifications found!"
   },
   "common": {
+    "details": "Details",
     "go_to_dashboard": "Go to dashboard",
     "norole": "No Role",
     "guest": "Guest",
@@ -3918,7 +3923,6 @@
     "max_retries_reached": "Maximum number of attempts reached",
     "error_loading_data": "Error loading data",
     "error_occurred": "An error occurred",
-    "details": "Details",
     "too_many_errors_redirecting": "Too many errors detected, redirecting...",
     "notprovided": "Not provided"
   },
@@ -4146,7 +4150,29 @@
       "delivery_note_generating_pdf": "Generating PDF links..."
     },
     "affiliate": {
-      "order_created_success": "Order created successfully!"
+      "order_created_success": "Order created successfully!",
+      "orders": {
+        "createdOn": "Created on {date}",
+        "articles": "Articles",
+        "shipping": "Shipping",
+        "deliveryAddress": "Delivery Address",
+        "product": "Product",
+        "variant": "Variant",
+        "quantity": "Quantity",
+        "unitPrice": "Unit Price",
+        "total": "Total",
+        "type": "Type",
+        "baseAmount": "Base Amount",
+        "rate": "Rate",
+        "commission": "Commission",
+        "backToOrders": "Back to Orders",
+        "orderedArticles": "Ordered Articles",
+        "shippingInformation": "Shipping Information",
+        "commissions": "Commissions",
+        "packageCreatedAndProcessing": "Package created and being processed",
+        "orderNotShippedYet": "This order has not been shipped yet.",
+        "noCommissionGenerated": "No commission generated for this order."
+      }
     },
     "preorders": {
       "sent_to_ozonexpress": "Order sent to OzonExpress in mode"

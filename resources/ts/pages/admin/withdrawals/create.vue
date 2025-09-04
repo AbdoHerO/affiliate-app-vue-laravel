@@ -356,7 +356,7 @@ fetchUsers()
                   <VCardTitle>{{ t('withdrawal_information') }}</VCardTitle>
                   <VCardText>
                     <div class="mb-2">
-                      <strong>{{ t('affiliate') }}:</strong> 
+                      <strong>{{ t('affiliate_label') }}:</strong> 
                       {{ users.find(u => u.id === form.user_id)?.nom_complet }}
                     </div>
                     <div class="mb-2">

@@ -1305,7 +1305,7 @@
   "saveError": "Erreur lors de la sauvegarde",
   "citiesImportedSuccess": "Villes importées avec succès",
   "importError": "Erreur lors de l'importation",
-  "affiliate": "Affilié",
+  "affiliate_label": "Affilié",
   "welcomeMessage": "Bienvenue {name}",
   "exportTooltip": "Exporter le rapport de performance",
   "shareDescription": "Partagez ce lien avec des clients potentiels pour gagner des commissions sur leurs achats.",
@@ -2569,6 +2569,9 @@
   "search.label": "Rechercher...",
   "filters.date_start": "Date de début",
   "filters.date_end": "Date de fin",
+  "dashboard": "Tableau de bord",
+  "my_orders": "Mes commandes",
+  "order_details": "Détails de la commande",
   "order_loading": "Chargement de la commande...",
   "order_number": "Commande #{number}",
   "order_information": "Informations de la commande",
@@ -3655,6 +3658,7 @@
     }
   }, 
   "common": {
+    "details": "Détails",
     "too_many_errors_redirecting": "Trop d'erreurs détectées, redirection en cours...",
     "error_occurred": "Une erreur s'est produite",
     "guest": "Invité",
@@ -3663,7 +3667,6 @@
     "error_loading_data": "Erreur lors du chargement des données",
     "max_retries_reached": "Nombre maximum de tentatives atteint",
     "retry": "Réessayer",
-    "details": "Détails",
     "go_to_dashboard": "Aller au tableau de bord",
     "norole": "Aucun Rôle"
   },
@@ -3836,7 +3839,14 @@
     },
     "orders": {
       "bulkupdatesuccess": "{count} commande(s) mise(s) à jour vers \"{status}\"",
-      "bulkUpdateSuccess": "{count} commande(s) mise(s) à jour vers \"{status}\""
+      "bulkUpdateSuccess": "{count} commande(s) mise(s) à jour vers \"{status}\"",
+      "returned_success": "Commande retournée à l'entrepôt avec succès et stock réincrémenté",
+      "confirmation_success": "Commande confirmée avec succès",
+      "unexpected_error": "Une erreur inattendue s'est produite lors du traitement de la commande",
+      "created_success_with_ref": "Commande créée avec succès ! Référence : {ref}",
+      "sent_to_ozonexpress_mode": "Commande envoyée à OzonExpress en mode {mode}",
+      "shipped_success": "Commande expédiée avec succès et stock décrémenté",
+      "shipping_slip_created_with_ref": "Bon d'expédition créé : {ref}"
     },
     "commissions": {
       "details": "Détails de la commission"
@@ -4204,7 +4214,29 @@
       "delivery_note_generating_pdf": "Génération des liens PDF..."
     },
     "affiliate": {
-      "order_created_success": "Commande créée avec succès!"
+      "order_created_success": "Commande créée avec succès!",
+      "orders": {
+        "createdOn": "Créée le {date}",
+        "articles": "Articles",
+        "shipping": "Expédition",
+        "deliveryAddress": "Adresse de livraison",
+        "product": "Produit",
+        "variant": "Variante",
+        "quantity": "Quantité",
+        "unitPrice": "Prix unitaire",
+        "total": "Total",
+        "type": "Type",
+        "baseAmount": "Montant de base",
+        "rate": "Taux",
+        "commission": "Commission",
+        "backToOrders": "Retour aux commandes",
+        "orderedArticles": "Articles commandés",
+        "shippingInformation": "Informations d'expédition",
+        "commissions": "Commissions",
+        "packageCreatedAndProcessing": "Colis créé et en cours de traitement",
+        "orderNotShippedYet": "Cette commande n'a pas encore été expédiée.",
+        "noCommissionGenerated": "Aucune commission générée pour cette commande."
+      }
     },
     "preorders": {
       "sent_to_ozonexpress": "Commande envoyée vers OzonExpress en mode"
@@ -4255,11 +4287,7 @@
         "in_transit": "En transit",
         "delivered": "Livré"
       }
-    }
-  },
-  "app_version": "Version de l'application",
-  "contact_information": "Informations de contact",
-  "alerts": {
+    },
     "settings": {
       "file_too_large_with_type": "Fichier trop volumineux. Taille maximale pour {type} est {maxSize}MB",
       "invalid_file_type_with_types": "Type de fichier invalide pour {type}. Types autorisés : {allowedTypes}"
@@ -4268,15 +4296,6 @@
       "variant_sum_exceeds_total": "Impossible d'enregistrer : La somme des variantes ({variantSum}) dépasse le stock total ({totalStock})"
     }
   },
-  "admin": {
-    "orders": {
-      "returned_success": "Commande retournée à l'entrepôt avec succès et stock réincrémenté",
-      "confirmation_success": "Commande confirmée avec succès",
-      "unexpected_error": "Une erreur inattendue s'est produite lors du traitement de la commande",
-      "created_success_with_ref": "Commande créée avec succès ! Référence : {ref}",
-      "sent_to_ozonexpress_mode": "Commande envoyée à OzonExpress en mode {mode}",
-      "shipped_success": "Commande expédiée avec succès et stock décrémenté",
-      "shipping_slip_created_with_ref": "Bon d'expédition créé : {ref}"
-    }
-  }
+  "app_version": "Version de l'application",
+  "contact_information": "Informations de contact"
 }

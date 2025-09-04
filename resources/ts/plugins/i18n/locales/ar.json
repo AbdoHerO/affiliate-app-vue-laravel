@@ -1298,7 +1298,7 @@
   "saveError": "خطأ في الحفظ",
   "citiesImportedSuccess": "تم استيراد المدن بنجاح",
   "importError": "خطأ في الاستيراد",
-  "affiliate": "الشريك",
+  "affiliate_label": "الشريك",
   "welcomeMessage": "مرحباً {name}",
   "exportTooltip": "تصدير تقرير الأداء",
   "shareDescription": "شارك هذا الرابط مع العملاء المحتملين لكسب عمولات على مشترياتهم.",
@@ -2473,7 +2473,11 @@
   "search.label": "بحث...",
   "filters.date_start": "تاريخ البداية",
   "filters.date_end": "تاريخ النهاية",
+  "dashboard": "لوحة التحكم",
+  "my_orders": "طلباتي",
+  "order_details": "تفاصيل الطلب",
   "order_loading": "جاري تحميل الطلب...",
+  "order_loading_error": "خطأ في تحميل الطلب",
   "order_number": "الطلب رقم #{number}",
   "order_information": "معلومات الطلب",
   "reference": "المرجع",
@@ -3899,6 +3903,7 @@
     "nonotificationsfound": "لم يتم العثور على إشعارات!"
   },
   "common": {
+    "details": "التفاصيل",
     "go_to_dashboard": "الذهاب إلى لوحة التحكم",
     "norole": "لا يوجد دور",
     "guest": "ضيف",
@@ -3907,7 +3912,6 @@
     "max_retries_reached": "تم الوصول إلى الحد الأقصى للمحاولات",
     "error_loading_data": "خطأ في تحميل البيانات",
     "error_occurred": "حدث خطأ",
-    "details": "التفاصيل",
     "too_many_errors_redirecting": "تم اكتشاف أخطاء كثيرة، جاري إعادة التوجيه...",
     "notprovided": "غير محدد"
   },
@@ -4136,7 +4140,29 @@
       "delivery_note_generating_pdf": "توليد روابط PDF..."
     },
     "affiliate": {
-      "order_created_success": "تم إنشاء الطلب بنجاح!"
+      "order_created_success": "تم إنشاء الطلب بنجاح!",
+      "orders": {
+        "createdOn": "تم الإنشاء في {date}",
+        "articles": "المقالات",
+        "shipping": "الشحن",
+        "deliveryAddress": "عنوان التسليم",
+        "product": "المنتج",
+        "variant": "النوع",
+        "quantity": "الكمية",
+        "unitPrice": "سعر الوحدة",
+        "total": "المجموع",
+        "type": "النوع",
+        "baseAmount": "المبلغ الأساسي",
+        "rate": "المعدل",
+        "commission": "العمولة",
+        "backToOrders": "العودة للطلبات",
+        "orderedArticles": "المقالات المطلوبة",
+        "shippingInformation": "معلومات الشحن",
+        "commissions": "العمولات",
+        "packageCreatedAndProcessing": "تم إنشاء الطرد وهو قيد المعالجة",
+        "orderNotShippedYet": "هذا الطلب لم يتم شحنه بعد.",
+        "noCommissionGenerated": "لم يتم إنشاء عمولة لهذا الطلب."
+      }
     },
     "preorders": {
       "sent_to_ozonexpress": "تم إرسال الطلب إلى OzonExpress بوضع"
