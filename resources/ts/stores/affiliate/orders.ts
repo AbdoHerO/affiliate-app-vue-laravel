@@ -211,32 +211,56 @@ export const useAffiliateOrdersStore = defineStore('affiliateOrders', () => {
 
   const getStatusColor = (status: string): string => {
     const statusColors: Record<string, string> = {
-      'pending': 'warning',
-      'confirmed': 'info',
-      'sent': 'primary',
-      'expedited': 'purple',
-      'delivered': 'success',
-      'canceled': 'error',
-      'returned': 'orange',
+      // Actual French status values from database
+      'en_attente': 'warning',
+      'confirmee': 'success',
+      'expediee': 'primary',
+      'livree': 'success',
+      'annulee': 'error',
+      'retournee': 'secondary',
       'returned_to_warehouse': 'info',
-      'delivery_failed': 'error',
-      'paid': 'success',
+      'echec_livraison': 'error',
+      // OzonExpress statuses (for shipping)
+      'pending': 'warning',
+      'received': 'info',
+      'in_transit': 'primary',
+      'shipped': 'primary',
+      'at_facility': 'info',
+      'ready_for_delivery': 'primary',
+      'out_for_delivery': 'primary',
+      'delivery_attempted': 'warning',
+      'delivered': 'success',
+      'returned': 'secondary',
+      'refused': 'error',
+      'cancelled': 'error',
     }
     return statusColors[status] || 'secondary'
   }
 
   const getStatusLabel = (status: string): string => {
     const statusLabels: Record<string, string> = {
-      'pending': 'En attente',
-      'confirmed': 'Confirmée',
-      'sent': 'Envoyée',
-      'expedited': 'Expédiée',
-      'delivered': 'Livrée',
-      'canceled': 'Annulée',
-      'returned': 'Retournée',
+      // Actual French status values from database
+      'en_attente': 'En attente',
+      'confirmee': 'Confirmée',
+      'expediee': 'Expédiée',
+      'livree': 'Livrée',
+      'annulee': 'Annulée',
+      'retournee': 'Retournée',
       'returned_to_warehouse': 'Retournée en entrepôt',
-      'delivery_failed': 'Échec livraison',
-      'paid': 'Payée',
+      'echec_livraison': 'Échec livraison',
+      // OzonExpress statuses (for shipping)
+      'pending': 'En attente',
+      'received': 'Reçu',
+      'in_transit': 'En transit',
+      'shipped': 'Expédié',
+      'at_facility': 'En centre',
+      'ready_for_delivery': 'Prêt livraison',
+      'out_for_delivery': 'En livraison',
+      'delivery_attempted': 'Tentative livraison',
+      'delivered': 'Livré',
+      'returned': 'Retourné',
+      'refused': 'Refusé',
+      'cancelled': 'Annulé',
     }
     return statusLabels[status] || status
   }

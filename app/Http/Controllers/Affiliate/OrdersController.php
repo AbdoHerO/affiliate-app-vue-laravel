@@ -9,7 +9,7 @@ use App\Services\OrderService;
 use App\Services\OrderStatusHistoryService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Gate;
+
 use Illuminate\Support\Facades\Log;
 
 class OrdersController extends Controller
@@ -87,8 +87,32 @@ class OrdersController extends Controller
             $query->orderBy($sortBy, $sortDir);
 
             // Paginate
-            $perPage = min($request->get('per_page', 15), 100);
-            $orders = $query->paginate($perPage);
+            $perPage = $request->get('per_page', 15);
+
+            // Handle special case for per_page=-1 (get all records)
+            if ($perPage == -1) {
+                $orders = $query->get();
+
+                // Create a mock pagination object for consistency
+                $paginationData = [
+                    'current_page' => 1,
+                    'last_page' => 1,
+                    'per_page' => $orders->count(),
+                    'total' => $orders->count(),
+                    'from' => $orders->count() > 0 ? 1 : null,
+                    'to' => $orders->count(),
+                ];
+
+                return response()->json([
+                    'success' => true,
+                    'data' => OrderResource::collection($orders),
+                    'pagination' => $paginationData,
+                ]);
+            } else {
+                // Normal pagination
+                $perPage = min($perPage, 100);
+                $orders = $query->paginate($perPage);
+            }
 
             return response()->json([
                 'success' => true,

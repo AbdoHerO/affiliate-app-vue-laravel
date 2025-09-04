@@ -38,7 +38,7 @@ const breadcrumbs = computed(() => [
 
 const statusOptions = [
   { value: 'pending', title: t('affiliate_orders_status_pending'), color: 'warning' },
-  { value: 'confirmed', title: t('affiliate_orders_status_confirmed'), color: 'info' },
+  { value: 'confirmed', title: t('affiliate_orders_status_confirmed'), color: 'success' },
   { value: 'sent', title: t('affiliate_orders_status_sent'), color: 'primary' },
   { value: 'expedited', title: t('affiliate_orders_status_expedited'), color: 'purple' },
   { value: 'delivered', title: t('affiliate_orders_status_delivered'), color: 'success' },
@@ -246,6 +246,7 @@ onMounted(() => {
         :loading="loading"
         :items-length="pagination.total"
         :items-per-page="pagination.per_page"
+        :items-per-page-options="[10, 15, 25, 50, 100]"
         :page="pagination.current_page"
         item-value="id"
         @update:page="handlePageChange"
